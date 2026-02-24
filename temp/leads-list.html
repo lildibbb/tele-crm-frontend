@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mobile Lead Intelligence List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d4111b",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#080810",
+                        "card-dark": "#141422",
+                        "accent-gold": "#d4af37",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-20 bg-background-dark/80 backdrop-blur-md px-4 pt-6 pb-2">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="bg-primary/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary text-2xl">shield_person</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight">Lead Intelligence</h1>
+<span class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Titan Journal CRM</span>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800/50">
+<span class="material-symbols-outlined text-slate-300">notifications</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="relative mb-4">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">search</span>
+<input class="w-full bg-slate-800/40 border-none rounded-xl py-3 pl-12 pr-4 text-sm focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-slate-600" placeholder="Search leads by name or ID..." type="text"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+<button class="whitespace-nowrap px-5 py-1.5 rounded-full bg-primary text-white text-sm font-medium">All</button>
+<button class="whitespace-nowrap px-5 py-1.5 rounded-full bg-slate-800/60 text-slate-400 text-sm font-medium">New</button>
+<button class="whitespace-nowrap px-5 py-1.5 rounded-full bg-slate-800/60 text-slate-400 text-sm font-medium">Registered</button>
+<button class="whitespace-nowrap px-5 py-1.5 rounded-full bg-slate-800/60 text-slate-400 text-sm font-medium">Deposit Reported</button>
+<button class="whitespace-nowrap px-5 py-1.5 rounded-full bg-slate-800/60 text-slate-400 text-sm font-medium">Confirmed</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 py-2 space-y-3 pb-24">
+<!-- Lead Card: New -->
+<div class="bg-card-dark rounded-xl overflow-hidden relative border border-slate-800/50">
+<div class="absolute left-0 top-0 bottom-0 w-[3px] bg-blue-500"></div>
+<div class="p-4 flex justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up portrait of a young man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsAsx4Mhyq9W4kvjWLI9G7WNbrMXS2d_SZiOXXSnFH-Gx2AzR6Yuev4-A6pgVor8Z4SznzhQvsd0ivFsL6GdLRlG1QJq0AyrifibUj9tQooNxQiTs0pKlYKY15YnBTa9iUtAt-qgGKqJEUk4lmSpvptszHiqz992U6xXyUQB8z5YBkUFzXzjxO0N_hwhX5ljR6_mWAn9QCX8PnLe_Rb4mr5VrYHmJOZfKjGrdyMlBzOp99f54M2ur4rwuOYPmPtrZDk7Jni4jkBPgX"/>
+</div>
+<div>
+<h3 class="font-semibold text-base">Johnathan Wick</h3>
+<p class="font-mono text-[11px] text-slate-500 mt-0.5">HFM ID: 827391</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[11px] text-slate-500">2 min ago</p>
+<span class="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 uppercase tracking-wider">New</span>
+</div>
+</div>
+</div>
+<!-- Lead Card: Deposit Reported -->
+<div class="bg-card-dark rounded-xl overflow-hidden relative border border-slate-800/50">
+<div class="absolute left-0 top-0 bottom-0 w-[3px] bg-amber-500"></div>
+<div class="p-4 flex justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Professional woman in a business setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXnVBuK00P6jmiqQ9E7ZOLSudX7V5DIt-mRl494xB50uBstf_PbFL2vaBTeHFUQc0MyAulXzqMLUpD8GlwahEzrLXUsTvwGAEA-By3tIKsNNwLZgVgLPQrKt54FPGqg9b587VVw5wNNaK7cu1cWuMpeI54GRuyDqo4WvGMKXhsSRFEhzirNucOv_SrgtCCzC8Xk6jqTQEV8R1hJ83RJwXy5vePFKQA2zHzFdDL1sgTYBkWyP7EuHgIBGztmFZLKuHLHKms3tcjT_M1"/>
+</div>
+<div>
+<h3 class="font-semibold text-base">Sarah Jenkins</h3>
+<p class="font-mono text-[11px] text-slate-500 mt-0.5">HFM ID: 910223</p>
+<div class="flex items-center gap-1 mt-2">
+<span class="material-symbols-outlined text-accent-gold text-sm">payments</span>
+<span class="text-accent-gold font-bold text-sm">$4,250.00</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[11px] text-slate-500">14 min ago</p>
+<span class="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 uppercase tracking-wider">Deposit Reported</span>
+</div>
+</div>
+</div>
+<!-- Lead Card: Registered -->
+<div class="bg-card-dark rounded-xl overflow-hidden relative border border-slate-800/50">
+<div class="absolute left-0 top-0 bottom-0 w-[3px] bg-purple-500"></div>
+<div class="p-4 flex justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Friendly male face with beard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZRJuj4Lt7D9espD-gq2TIFsnqnxKL4cv3YRFPBXki1oVitfmSPgvIvm87Js6OqtPtMfho-pGh7DTXOihNE_dNyBDdSp_mWDl0SfnTu325_NhkNLBCiFVtu_qH1D2RZXlYbluPqgkU4OvSnGjoyWhSo9tVkVA5p-VWte3jn8Z0sFu2mcxsOM5cwINQqWvHwiKV_ny3Dg3BWuxH6c0tQiixgwVVmUxopS8bT9lMfMFpZmcaJh-cws0LXrayhnsv77joRSfxzXvWenaF"/>
+</div>
+<div>
+<h3 class="font-semibold text-base">Marcus Aurelius</h3>
+<p class="font-mono text-[11px] text-slate-500 mt-0.5">HFM ID: 112045</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[11px] text-slate-500">1h ago</p>
+<span class="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-400 uppercase tracking-wider">Registered</span>
+</div>
+</div>
+</div>
+<!-- Lead Card: Confirmed -->
+<div class="bg-card-dark rounded-xl overflow-hidden relative border border-slate-800/50">
+<div class="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-500"></div>
+<div class="p-4 flex justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Woman smiling at the camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG9l7pNm_eg7EYS1sDMJ4JmsNFs5ndSyCnw1dXiPP2w8FJfX1hgxKJ7545FCpfTKfy0hgjqdEVSLnlqoXq61-XS9671uwHnwqB4DHuJOBgNXHnsxEJZ0aDr7Ah2a_aTK5qTdOThihXv6xWSPe8YR5hhWoQqtxZnYNKUkmHSaXZpoxklDnzGwkZTzl3vAMhvqPTIMMMVm7mZN5wSld-pvD4UODsmVJDYKnEEctwPeSbOTlQqhKGvw6p9Vz1PfMtX7vVQ8nA1Bn-2hgI"/>
+</div>
+<div>
+<h3 class="font-semibold text-base">Elena Rodriguez</h3>
+<p class="font-mono text-[11px] text-slate-500 mt-0.5">HFM ID: 772910</p>
+<div class="flex items-center gap-1 mt-2">
+<span class="material-symbols-outlined text-accent-gold text-sm">verified</span>
+<span class="text-accent-gold font-bold text-sm">$12,000.00</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[11px] text-slate-500">3h ago</p>
+<span class="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 uppercase tracking-wider">Confirmed</span>
+</div>
+</div>
+</div>
+<!-- Lead Card: Registered -->
+<div class="bg-card-dark rounded-xl overflow-hidden relative border border-slate-800/50">
+<div class="absolute left-0 top-0 bottom-0 w-[3px] bg-purple-500"></div>
+<div class="p-4 flex justify-between">
+<div class="flex gap-4">
+<div class="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a person with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDL8FYy7lbbSr2B4rZ_gL-45gF5oCG7tLjr4FuebWHd8_1yfg8t_4GYKtjsWVYOXi2Z6XVv1CqTIFisqhS4yGGPs0A3edYWMhjMr5PXisFdOif4iV0RdY71MAMZx1qk73XuzEkyZlwmMzMiJpnrV3C1FhaVJAfNJI5o4_iAsU9p_D5Xa0z_n-tBZAs7U48WnwOOspc-CkFzK7OLMWITGglVOEdESuZyNDctLpQcy45wJ0Qe6JwP7CvxHJM620GKjgx0_qNTHrfEjZc1"/>
+</div>
+<div>
+<h3 class="font-semibold text-base">Kevin Spacey</h3>
+<p class="font-mono text-[11px] text-slate-500 mt-0.5">HFM ID: 443219</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[11px] text-slate-500">5h ago</p>
+<span class="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-400 uppercase tracking-wider">Registered</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary rounded-full shadow-lg shadow-primary/30 flex items-center justify-center text-white z-30">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-lg border-t border-slate-800 px-6 py-3 flex justify-between items-center z-40">
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-[10px] font-medium">Leads</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">task_alt</span>
+<span class="text-[10px] font-medium">Tasks</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</nav>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+```</body></html>

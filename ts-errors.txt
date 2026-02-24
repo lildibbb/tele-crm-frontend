@@ -1,0 +1,233 @@
+src/components/data-grid/data-grid-cell-variants.tsx(9,26): error TS2307: Cannot find module '@/components/ui/calendar' or its corresponding type declarations.
+src/components/data-grid/data-grid-cell-variants.tsx(34,34): error TS2307: Cannot find module '@/hooks/use-badge-overflow' or its corresponding type declarations.
+src/components/data-grid/data-grid-cell-variants.tsx(35,38): error TS2307: Cannot find module '@/hooks/use-debounced-callback' or its corresponding type declarations.
+src/components/data-grid/data-grid-cell-variants.tsx(45,8): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/components/data-grid/data-grid-cell-variants.tsx(1163,18): error TS7006: Parameter 'label' implicitly has an 'any' type.
+src/components/data-grid/data-grid-cell-variants.tsx(1277,31): error TS7006: Parameter 'label' implicitly has an 'any' type.
+src/components/data-grid/data-grid-cell-variants.tsx(1277,38): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/data-grid/data-grid-cell-variants.tsx(1918,18): error TS7006: Parameter 'file' implicitly has an 'any' type.
+src/components/data-grid/data-grid-cell-variants.tsx(2082,30): error TS7006: Parameter 'file' implicitly has an 'any' type.
+src/components/data-grid/data-grid-cell-wrapper.tsx(4,33): error TS2307: Cannot find module '@/lib/compose-refs' or its corresponding type declarations.
+src/components/data-grid/data-grid-cell-wrapper.tsx(5,28): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/components/data-grid/data-grid-column-header.tsx(33,34): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/components/data-grid/data-grid-context-menu.tsx(14,26): error TS2307: Cannot find module '@/hooks/use-as-ref' or its corresponding type declarations.
+src/components/data-grid/data-grid-context-menu.tsx(15,30): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/components/data-grid/data-grid-context-menu.tsx(157,36): error TS7006: Parameter 'col' implicitly has an 'any' type.
+src/components/data-grid/data-grid-filter-menu.tsx(3,30): error TS2307: Cannot find module '@radix-ui/react-direction' or its corresponding type declarations.
+src/components/data-grid/data-grid-filter-menu.tsx(17,26): error TS2307: Cannot find module '@/components/ui/calendar' or its corresponding type declarations.
+src/components/data-grid/data-grid-filter-menu.tsx(45,8): error TS2307: Cannot find module '@/components/ui/sortable' or its corresponding type declarations.
+src/components/data-grid/data-grid-filter-menu.tsx(46,38): error TS2307: Cannot find module '@/hooks/use-debounced-callback' or its corresponding type declarations.
+src/components/data-grid/data-grid-filter-menu.tsx(50,8): error TS2307: Cannot find module '@/lib/data-grid-filters' or its corresponding type declarations.
+src/components/data-grid/data-grid-filter-menu.tsx(51,28): error TS2307: Cannot find module '@/lib/format' or its corresponding type declarations.
+src/components/data-grid/data-grid-filter-menu.tsx(200,22): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/data-grid/data-grid-filter-menu.tsx(509,29): error TS7006: Parameter 'op' implicitly has an 'any' type.
+src/components/data-grid/data-grid-filter-menu.tsx(727,26): error TS7006: Parameter 'range' implicitly has an 'any' type.
+src/components/data-grid/data-grid-filter-menu.tsx(781,24): error TS7006: Parameter 'date' implicitly has an 'any' type.
+src/components/data-grid/data-grid-keyboard-shortcuts.tsx(3,30): error TS2307: Cannot find module '@radix-ui/react-direction' or its corresponding type declarations.
+src/components/data-grid/data-grid-keyboard-shortcuts.tsx(16,31): error TS2307: Cannot find module '@/components/ui/kbd' or its corresponding type declarations.
+src/components/data-grid/data-grid-paste-dialog.tsx(14,26): error TS2307: Cannot find module '@/hooks/use-as-ref' or its corresponding type declarations.
+src/components/data-grid/data-grid-row.tsx(9,34): error TS2307: Cannot find module '@tanstack/react-virtual' or its corresponding type declarations.
+src/components/data-grid/data-grid-row.tsx(12,33): error TS2307: Cannot find module '@/lib/compose-refs' or its corresponding type declarations.
+src/components/data-grid/data-grid-row.tsx(19,8): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/components/data-grid/data-grid-search.tsx(7,26): error TS2307: Cannot find module '@/hooks/use-as-ref' or its corresponding type declarations.
+src/components/data-grid/data-grid-search.tsx(8,38): error TS2307: Cannot find module '@/hooks/use-debounced-callback' or its corresponding type declarations.
+src/components/data-grid/data-grid-sort-menu.tsx(3,30): error TS2307: Cannot find module '@radix-ui/react-direction' or its corresponding type declarations.
+src/components/data-grid/data-grid-sort-menu.tsx(41,8): error TS2307: Cannot find module '@/components/ui/sortable' or its corresponding type declarations.
+src/components/data-grid/data-grid-sort-menu.tsx(173,22): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/data-grid/data-grid-view-menu.tsx(3,30): error TS2307: Cannot find module '@radix-ui/react-direction' or its corresponding type declarations.
+src/components/data-grid/data-grid.tsx(10,26): error TS2307: Cannot find module '@/hooks/use-as-ref' or its corresponding type declarations.
+src/components/data-grid/data-grid.tsx(11,34): error TS2307: Cannot find module '@/hooks/use-data-grid' or its corresponding type declarations.
+src/components/data-grid/data-grid.tsx(16,8): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/components/data-grid/data-grid.tsx(128,41): error TS7006: Parameter 'headerGroup' implicitly has an 'any' type.
+src/components/data-grid/data-grid.tsx(128,54): error TS7006: Parameter 'rowIndex' implicitly has an 'any' type.
+src/components/data-grid/data-grid.tsx(137,41): error TS7006: Parameter 'header' implicitly has an 'any' type.
+src/components/data-grid/data-grid.tsx(137,49): error TS7006: Parameter 'colIndex' implicitly has an 'any' type.
+src/components/data-grid/data-grid.tsx(140,20): error TS7006: Parameter 'sort' implicitly has an 'any' type.
+src/components/data-grid/data-grid.tsx(209,30): error TS7006: Parameter 'virtualItem' implicitly has an 'any' type.
+src/components/data-table/data-table-date-filter.tsx(6,32): error TS2307: Cannot find module 'react-day-picker' or its corresponding type declarations.
+src/components/data-table/data-table-date-filter.tsx(9,26): error TS2307: Cannot find module '@/components/ui/calendar' or its corresponding type declarations.
+src/components/data-table/data-table-date-filter.tsx(16,28): error TS2307: Cannot find module '@/lib/format' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(12,50): error TS2307: Cannot find module 'nuqs' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(18,26): error TS2307: Cannot find module '@/components/ui/calendar' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(37,8): error TS2307: Cannot find module '@/components/ui/faceted' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(57,8): error TS2307: Cannot find module '@/components/ui/sortable' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(58,33): error TS2307: Cannot find module '@/config/data-table' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(59,38): error TS2307: Cannot find module '@/hooks/use-debounced-callback' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(60,62): error TS2307: Cannot find module '@/lib/data-table' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(61,28): error TS2307: Cannot find module '@/lib/format' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(62,28): error TS2307: Cannot find module '@/lib/id' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(63,39): error TS2307: Cannot find module '@/lib/parsers' or its corresponding type declarations.
+src/components/data-table/data-table-filter-list.tsx(149,28): error TS7006: Parameter 'prevFilters' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(150,49): error TS7006: Parameter 'filter' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(165,10): error TS7006: Parameter 'filter' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(222,22): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(273,31): error TS7006: Parameter 'filter' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(273,39): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(361,53): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(378,31): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(382,14): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(393,33): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(422,53): error TS7006: Parameter 'joinOperator' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(465,47): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(467,27): error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-list.tsx(496,25): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(498,35): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(499,15): error TS2353: Object literal may only specify known properties, and 'operator' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-list.tsx(503,28): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(513,48): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(517,35): error TS7006: Parameter 'operator' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(544,48): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(578,14): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(578,47): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(584,18): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(592,18): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(597,17): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(597,47): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(598,16): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(611,16): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(611,47): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(616,46): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(623,27): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(623,55): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(626,35): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(627,15): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-list.tsx(635,32): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(643,25): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(645,35): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(646,15): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-list.tsx(657,46): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(671,31): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(673,32): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(674,20): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(676,25): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(677,20): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(685,27): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(686,35): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(687,15): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-list.tsx(740,46): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(741,18): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(742,19): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(742,33): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(755,16): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(772,25): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(784,21): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(801,28): error TS7006: Parameter 'date' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(802,41): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(803,21): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-list.tsx(821,28): error TS7006: Parameter 'date' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-list.tsx(822,41): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-list.tsx(823,21): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-menu.tsx(12,31): error TS2307: Cannot find module 'nuqs' or its corresponding type declarations.
+src/components/data-table/data-table-filter-menu.tsx(17,26): error TS2307: Cannot find module '@/components/ui/calendar' or its corresponding type declarations.
+src/components/data-table/data-table-filter-menu.tsx(39,38): error TS2307: Cannot find module '@/hooks/use-debounced-callback' or its corresponding type declarations.
+src/components/data-table/data-table-filter-menu.tsx(40,62): error TS2307: Cannot find module '@/lib/data-table' or its corresponding type declarations.
+src/components/data-table/data-table-filter-menu.tsx(41,28): error TS2307: Cannot find module '@/lib/format' or its corresponding type declarations.
+src/components/data-table/data-table-filter-menu.tsx(42,28): error TS2307: Cannot find module '@/lib/id' or its corresponding type declarations.
+src/components/data-table/data-table-filter-menu.tsx(43,39): error TS2307: Cannot find module '@/lib/parsers' or its corresponding type declarations.
+src/components/data-table/data-table-filter-menu.tsx(132,9): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(154,10): error TS7006: Parameter 'filter' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(169,28): error TS7006: Parameter 'prevFilters' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(170,49): error TS7006: Parameter 'filter' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(226,21): error TS7006: Parameter 'filter' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(355,55): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(372,33): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(376,16): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(388,21): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(418,47): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(420,27): error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-menu.tsx(452,25): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(454,35): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(455,15): error TS2353: Object literal may only specify known properties, and 'operator' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-menu.tsx(459,28): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(467,46): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(470,35): error TS7006: Parameter 'operator' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(494,48): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(559,22): error TS7006: Parameter 'date' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(609,14): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(609,47): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(615,18): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(623,18): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(628,17): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(628,47): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(629,16): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(643,16): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(643,47): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(652,39): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(652,67): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(654,35): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(654,47): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-menu.tsx(667,32): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(667,60): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(669,35): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(669,47): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-menu.tsx(677,46): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(692,51): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(693,18): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(694,19): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(711,24): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(755,34): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(757,56): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(760,47): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(760,59): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-menu.tsx(765,31): error TS2339: Property 'variant' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(789,46): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(790,18): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(791,19): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(791,33): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(804,16): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(820,25): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(832,21): error TS2339: Property 'operator' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(848,28): error TS7006: Parameter 'date' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(849,41): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(850,21): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-filter-menu.tsx(867,28): error TS7006: Parameter 'date' implicitly has an 'any' type.
+src/components/data-table/data-table-filter-menu.tsx(868,41): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-filter-menu.tsx(869,21): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-range-filter.tsx(54,30): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(54,52): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(55,32): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(56,14): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(61,50): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(62,18): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(75,31): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(76,11): error TS2353: Object literal may only specify known properties, and 'value' does not exist in type 'Partial<Omit<ExtendedColumnFilter<TData>, "filterId">>'.
+src/components/data-table/data-table-range-filter.tsx(80,13): error TS2339: Property 'filterId' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-range-filter.tsx(80,30): error TS2339: Property 'value' does not exist on type 'ExtendedColumnFilter<TData>'.
+src/components/data-table/data-table-slider-filter.tsx(15,24): error TS2307: Cannot find module '@/components/ui/slider' or its corresponding type declarations.
+src/components/data-table/data-table-sort-list.tsx(40,8): error TS2307: Cannot find module '@/components/ui/sortable' or its corresponding type declarations.
+src/components/data-table/data-table-sort-list.tsx(41,33): error TS2307: Cannot find module '@/config/data-table' or its corresponding type declarations.
+src/components/data-table/data-table-sort-list.tsx(167,22): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/data-table/data-table-sort-list.tsx(377,46): error TS7006: Parameter 'order' implicitly has an 'any' type.
+src/components/data-table/data-table.tsx(13,39): error TS2307: Cannot find module '@/lib/data-table' or its corresponding type declarations.
+src/components/ui/animated-tabs.tsx(80,9): error TS2322: Type '{ children: Element; asChild: true; id?: string | undefined; type?: "button" | "reset" | "submit" | undefined; content?: string | undefined; custom?: any; values?: { [key: string]: MotionValue<number> | MotionValue<...>; } | undefined; ... 342 more ...; className: string | undefined; }' is not assignable to type 'IntrinsicAttributes & AttributesWithoutMotionProps<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>> & MotionProps & { ...; }'.
+  Property 'asChild' does not exist on type 'IntrinsicAttributes & AttributesWithoutMotionProps<DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>> & MotionProps & { ...; }'.
+src/components/ui/animated-tabs.tsx(131,6): error TS2322: Type '{ children: Element[]; defaultValue: string; value: string | undefined; onValueChange: ((value: string) => void) | undefined; className: string | undefined; }' is not assignable to type 'IntrinsicAttributes & TabsProps<string>'.
+  Types of property 'value' are incompatible.
+    Type 'string | undefined' is not assignable to type 'undefined'.
+      Type 'string' is not assignable to type 'undefined'.
+src/lib/hooks/test/use-data-grid.test.tsx(2,33): error TS2307: Cannot find module '@testing-library/react' or its corresponding type declarations.
+src/lib/hooks/test/use-data-grid.test.tsx(4,65): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+src/lib/hooks/test/use-data-grid.test.tsx(5,29): error TS2307: Cannot find module '@/hooks/use-data-grid' or its corresponding type declarations.
+src/lib/hooks/test/use-data-grid.test.tsx(63,67): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+src/lib/hooks/test/use-data-grid.test.tsx(1989,40): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/lib/hooks/use-as-ref.ts(3,43): error TS2307: Cannot find module '@/hooks/use-isomorphic-layout-effect' or its corresponding type declarations.
+src/lib/hooks/use-data-grid-undo-redo.ts(4,26): error TS2307: Cannot find module '@/hooks/use-as-ref' or its corresponding type declarations.
+src/lib/hooks/use-data-grid-undo-redo.ts(5,28): error TS2307: Cannot find module '@/hooks/use-lazy-ref' or its corresponding type declarations.
+src/lib/hooks/use-data-grid-undo-redo.ts(6,32): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/lib/hooks/use-data-grid.ts(1,30): error TS2307: Cannot find module '@radix-ui/react-direction' or its corresponding type declarations.
+src/lib/hooks/use-data-grid.ts(17,50): error TS2307: Cannot find module '@tanstack/react-virtual' or its corresponding type declarations.
+src/lib/hooks/use-data-grid.ts(21,26): error TS2307: Cannot find module '@/hooks/use-as-ref' or its corresponding type declarations.
+src/lib/hooks/use-data-grid.ts(22,43): error TS2307: Cannot find module '@/hooks/use-isomorphic-layout-effect' or its corresponding type declarations.
+src/lib/hooks/use-data-grid.ts(23,28): error TS2307: Cannot find module '@/hooks/use-lazy-ref' or its corresponding type declarations.
+src/lib/hooks/use-data-grid.ts(34,8): error TS2307: Cannot find module '@/lib/data-grid' or its corresponding type declarations.
+src/lib/hooks/use-data-grid.ts(2210,10): error TS7006: Parameter 'element' implicitly has an 'any' type.
+src/lib/hooks/use-data-grid.ts(2226,15): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/lib/hooks/use-data-grid.ts(2231,18): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/lib/hooks/use-data-grid.ts(2232,18): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/lib/hooks/use-data-table.ts(27,8): error TS2307: Cannot find module 'nuqs' or its corresponding type declarations.
+src/lib/hooks/use-data-table.ts(30,38): error TS2307: Cannot find module '@/hooks/use-debounced-callback' or its corresponding type declarations.
+src/lib/hooks/use-data-table.ts(31,39): error TS2307: Cannot find module '@/lib/parsers' or its corresponding type declarations.
+src/lib/hooks/use-debounced-callback.ts(7,32): error TS2307: Cannot find module '@/hooks/use-callback-ref' or its corresponding type declarations.
+src/store/analyticsStore.ts(85,42): error TS2339: Property 'getMonthly' does not exist on type '{ getSummary: (params?: { timeframe: "custom" | "today" | "yesterday" | "this_week" | "this_month" | "last_30_days" | "last_90_days" | "all_time"; startDate?: string | undefined; endDate?: string | undefined; } | undefined) => Promise<...>; getDashboard: () => Promise<...>; getToday: () => Promise<...>; getWeekly: (...'.
+src/types/data-table.ts(2,38): error TS2307: Cannot find module '@/config/data-table' or its corresponding type declarations.
+src/types/data-table.ts(3,39): error TS2307: Cannot find module '@/lib/parsers' or its corresponding type declarations.

@@ -1,0 +1,180 @@
+<html class="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Syne:wght@700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#d4111b",
+            "background-light": "#f8f6f6",
+            "background-dark": "#080810",
+            "card-dark": "#141422",
+            "obsidian-neutral": "#1c1c2e",
+          },
+          fontFamily: {
+            "display": ["Manrope", "sans-serif"],
+            "heading": ["Syne", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"],
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header Section -->
+<header class="p-4 flex items-center justify-between sticky top-0 bg-background-dark/80 backdrop-blur-md z-10">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700" data-alt="Portrait of a professional man smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBDa3MreV4iRdLiSGFhiR9_D-YVQZfmMMz06MnFN7szdrcIUvpz-Eb7poBkSfBB4T3XJ24kTTCGbBR3DY1fKtF9pG_Ttv13ibhbCPF1nzjHP_gtoozpfxylW5WZe5w-6gq4LPfcRuPdjV1-jhHdcv0T0OUQPTyiGQY7CDiE01m2_PBAdOVni0JXHGXTGm8E61khj2mKmg-cQgCO_hNVv72zHpEQNeJ4u5L-w6CKyQ8-5FWzxPdKJTBqBuqoHzj3Bct10OWGry0_fN51')"></div>
+<div class="absolute -top-1 -right-1 w-4 h-4 bg-slate-500 rounded-full border-2 border-background-dark flex items-center justify-center">
+<span class="text-[8px] font-bold text-white">8</span>
+</div>
+</div>
+<div>
+<p class="text-xs text-slate-400 font-medium">Good morning,</p>
+<p class="text-sm font-bold">Ahmad</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-full bg-card-dark border border-slate-800 text-slate-400">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="p-2 rounded-full bg-card-dark border border-slate-800 text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Profile Hero -->
+<section class="px-4 py-6">
+<div class="flex flex-col gap-1">
+<h1 class="font-heading text-4xl text-slate-100 uppercase tracking-tight">Ahmad Razali</h1>
+<div class="flex items-center gap-2 mt-1">
+<span class="bg-primary/20 text-primary text-[10px] font-bold px-2 py-0.5 rounded tracking-widest">STAFF</span>
+<span class="text-slate-500 text-xs font-mono uppercase">ID: TZ-00192</span>
+</div>
+</div>
+</section>
+<!-- Quick Action Cards Grid -->
+<section class="px-4 grid grid-cols-2 gap-3">
+<div class="bg-card-dark border border-slate-800 p-4 rounded-xl flex flex-col gap-3">
+<div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+<span class="material-symbols-outlined">shield_person</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-slate-200 leading-tight">Verification Queue</h3>
+<p class="text-xs text-slate-500 mt-1">5 pending items</p>
+</div>
+</div>
+<div class="bg-card-dark border border-slate-800 p-4 rounded-xl flex flex-col gap-3">
+<div class="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+<span class="material-symbols-outlined">group_add</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-slate-200 leading-tight">My Leads</h3>
+<p class="text-xs text-slate-500 mt-1">12 active cases</p>
+</div>
+</div>
+</section>
+<!-- Amber Banner -->
+<section class="px-4 mt-6">
+<div class="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+<div>
+<p class="text-amber-200 text-sm font-bold">Pending Verifications</p>
+<p class="text-amber-500/70 text-[10px] uppercase font-bold tracking-wider">Requires Action Today</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-amber-500">chevron_right</span>
+</div>
+</section>
+<!-- Today's New Leads List -->
+<section class="mt-8 px-4">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold text-slate-200">Today's New Leads</h2>
+<a class="text-primary text-xs font-bold uppercase tracking-wider" href="#">View All</a>
+</div>
+<div class="space-y-3">
+<!-- Lead Item -->
+<div class="bg-card-dark border border-slate-800 p-4 rounded-xl flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-obsidian-neutral flex items-center justify-center font-bold text-slate-400">SR</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold">Siti Rahmah</h4>
+<p class="text-[10px] text-slate-500 font-mono">ENQUIRY: CRM-902</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-slate-400 font-mono">09:42 AM</p>
+<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">NEW</span>
+</div>
+</div>
+<!-- Lead Item -->
+<div class="bg-card-dark border border-slate-800 p-4 rounded-xl flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-obsidian-neutral flex items-center justify-center font-bold text-slate-400">KL</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold">Kevin Lim</h4>
+<p class="text-[10px] text-slate-500 font-mono">ENQUIRY: CRM-914</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] text-slate-400 font-mono">10:15 AM</p>
+<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">NEW</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Activity Timeline -->
+<section class="mt-8 px-4">
+<h2 class="text-lg font-bold text-slate-200 mb-4">Recent Activity</h2>
+<div class="space-y-6 relative ml-2">
+<div class="absolute left-0 top-1 bottom-1 w-[1px] bg-slate-800"></div>
+<div class="relative pl-6">
+<div class="absolute left-[-4px] top-1.5 w-2 h-2 rounded-full bg-emerald-500"></div>
+<p class="text-xs font-mono text-slate-500 uppercase">11:30 AM</p>
+<p class="text-sm text-slate-300 mt-0.5">Verified document for <span class="text-white font-bold">Zulhelmi</span></p>
+</div>
+<div class="relative pl-6">
+<div class="absolute left-[-4px] top-1.5 w-2 h-2 rounded-full bg-primary"></div>
+<p class="text-xs font-mono text-slate-500 uppercase">10:45 AM</p>
+<p class="text-sm text-slate-300 mt-0.5">Call missed from <span class="text-white font-bold">Farah Ann</span></p>
+</div>
+<div class="relative pl-6">
+<div class="absolute left-[-4px] top-1.5 w-2 h-2 rounded-full bg-blue-500"></div>
+<p class="text-xs font-mono text-slate-500 uppercase">09:00 AM</p>
+<p class="text-sm text-slate-300 mt-0.5">Logged in to <span class="text-white font-bold">Terminal 04</span></p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full bg-background-dark border-t border-slate-800 pb-6 pt-2 px-4 flex justify-between items-center z-20">
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-500" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 flex-1 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px] fill-[1]">task_alt</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Tasks</span>
+</a>
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-500" href="#">
+<span class="material-symbols-outlined text-[24px]">group</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Leads</span>
+</a>
+<a class="flex flex-col items-center gap-1 flex-1 text-slate-500" href="#">
+<span class="material-symbols-outlined text-[24px]">account_circle</span>
+<span class="text-[10px] font-medium uppercase tracking-tighter">Profile</span>
+</a>
+</nav>
+</body></html>

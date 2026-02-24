@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mobile User Profile Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e61927",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#080810",
+                        "card-dark": "#141422",
+                    },
+                    fontFamily: {
+                        "display": ["DM Sans", "Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+        .ios-toggle {
+            appearance: none;
+            width: 44px;
+            height: 24px;
+            background: #2d2d3d;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .ios-toggle:checked {
+            background: #e61927;
+        }
+        .ios-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        .ios-toggle:checked::before {
+            transform: translateX(20px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 sticky top-0 z-10 border-b border-slate-200 dark:border-primary/10">
+<button class="text-slate-900 dark:text-slate-100 flex size-10 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight flex-1 text-center pr-10">Profile</h2>
+</div>
+<!-- Hero Section -->
+<div class="flex p-6 flex-col items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-24 w-24 border-2 border-primary" data-alt="Professional headshot of Sarah Lim" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBz1yvy9XYdryrU8n15p7wNbPAOpj1FtdRN8tWrQplyHOZGxxm-yQ11ZbDmf7zgMLD-_DuaWFyXteC-5RqNeI-YweN4t_rvg4_bqhpoymFubdZL7y6hL7FLjI9pLiheZXLTl5Rb4HH854p6AZ3dpvk-_DjGCgmveXvipTfhYDinZgkBxyV8rXcig8fJ2PsJVjP9fE_xf09WCetBZjMnIeHzk-tyGz4xHdAvu65nmy0MReJb6k4iGfcVuEKKq_ICbi1br-2KZuVE2nqf");'>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary p-1.5 rounded-full border-2 border-background-dark flex items-center justify-center cursor-pointer shadow-lg">
+<span class="material-symbols-outlined text-white text-sm">photo_camera</span>
+</div>
+</div>
+<div class="mt-4 flex flex-col items-center">
+<div class="flex items-center gap-2">
+<h1 class="text-2xl font-bold">Sarah Lim</h1>
+<span class="px-2 py-0.5 bg-primary/20 text-primary text-[10px] font-bold tracking-wider rounded uppercase">Owner</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm mt-1">sarah.lim@titanjournal.com</p>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 space-y-6 pb-24 px-4">
+<!-- Account Section -->
+<section>
+<h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 mb-2">Account</h3>
+<div class="bg-white dark:bg-card-dark rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-primary/5">
+<div class="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-primary/5 cursor-pointer transition-colors group">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-9">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<p class="text-sm font-medium flex-1">Edit Profile</p>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-primary/5 cursor-pointer transition-colors group">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-9">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<p class="text-sm font-medium flex-1">Change Password</p>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-primary/5 cursor-pointer transition-colors group">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-9">
+<span class="material-symbols-outlined text-[20px]">devices</span>
+</div>
+<p class="text-sm font-medium flex-1">Active Sessions</p>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Notifications Section -->
+<section>
+<h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 mb-2">Notifications</h3>
+<div class="bg-white dark:bg-card-dark rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-primary/5">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-9">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</div>
+<p class="text-sm font-medium">Push Notifications</p>
+</div>
+<input checked="" class="ios-toggle" type="checkbox"/>
+</div>
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-9">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<p class="text-sm font-medium">Email Alerts</p>
+</div>
+<input class="ios-toggle" type="checkbox"/>
+</div>
+</div>
+</section>
+<!-- Preferences Section -->
+<section>
+<h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 mb-2">Preferences</h3>
+<div class="bg-white dark:bg-card-dark rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-primary/5">
+<div class="flex items-center gap-4 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-9">
+<span class="material-symbols-outlined text-[20px]">dark_mode</span>
+</div>
+<p class="text-sm font-medium flex-1">Theme</p>
+<span class="text-xs text-slate-400 font-medium">Dark Mode</span>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<div class="text-primary flex items-center justify-center rounded-lg bg-primary/10 shrink-0 size-9">
+<span class="material-symbols-outlined text-[20px]">language</span>
+</div>
+<p class="text-sm font-medium flex-1">Language</p>
+<span class="text-xs text-slate-400 font-medium">English</span>
+<span class="material-symbols-outlined text-slate-400 group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Sign Out Button -->
+<div class="pt-4 flex flex-col items-center gap-4">
+<button class="w-full py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all active:scale-[0.98]">
+                    Sign Out
+                </button>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-[0.2em]">Titan Journal v1.0.0</p>
+</div>
+</div>
+<!-- Bottom Nav Bar -->
+<div class="fixed bottom-0 left-0 right-0 flex gap-2 border-t border-slate-200 dark:border-primary/20 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-4 pb-6 pt-2">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-bold uppercase tracking-tight">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">group</span>
+<p class="text-[10px] font-bold uppercase tracking-tight">Leads</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<p class="text-[10px] font-bold uppercase tracking-tight">Journal</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill-[1]">person</span>
+<p class="text-[10px] font-bold uppercase tracking-tight">Profile</p>
+</a>
+</div>
+</div>
+</body></html>

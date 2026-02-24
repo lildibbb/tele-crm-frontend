@@ -1,0 +1,4927 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["App"]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "description": "Authenticates with email + password. Sets an HTTP-Only refresh token cookie scoped to /api/v1/auth.",
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "summary": "Email/password login",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "description": "Reads the refresh_token HTTP-Only cookie and issues a new short-lived access token.",
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Token refreshed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "accessToken": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Refresh access token",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "Revokes current session and clears the refresh cookie.",
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Logged out successfully"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Logout current session",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/tma-login": {
+      "post": {
+        "description": "Validates Telegram WebApp initData HMAC signature and logs in the linked CRM user.",
+        "operationId": "AuthController_tmaLogin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TmaLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TMA login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "summary": "Telegram Mini App login",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/setup-account": {
+      "post": {
+        "description": "Completes onboarding for an invited user: validates invitation token + Telegram initData, creates user, sets session.",
+        "operationId": "AuthController_setupAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created and logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "summary": "Setup invited account",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/sessions": {
+      "get": {
+        "description": "Returns all non-revoked, non-expired sessions for the authenticated user.",
+        "operationId": "AuthController_getSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SessionResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List active sessions",
+        "tags": ["auth"]
+      },
+      "delete": {
+        "description": "Revokes ALL sessions for the current user and clears the refresh cookie.",
+        "operationId": "AuthController_revokeAllSessions",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "All sessions revoked"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Logout everywhere",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/sessions/{sessionId}": {
+      "delete": {
+        "description": "Remote-wipe a specific session by UUID (sign out a device).",
+        "operationId": "AuthController_revokeSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "description": "Session ID to revoke",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session revoked"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke a session",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/users": {
+      "post": {
+        "description": "Directly creates a CRM user without an invitation (SUPERADMIN only).",
+        "operationId": "AuthController_createUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create system user",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "description": "Sends a 4-digit OTP to the provided email. Always returns 200 to prevent email enumeration. Rate-limited to 3 requests per 15 minutes.",
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent (or silently ignored if email not found)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "If this email is registered, a reset code has been sent"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "summary": "Request password reset",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "description": "Validates the 4-digit OTP and sets a new password. Max 3 failed attempts — the code is invalidated after 3 failures or on success.",
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Password has been reset. Please log in."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request – invalid input or business rule violation"
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "summary": "Reset password with OTP",
+        "tags": ["auth"]
+      }
+    },
+    "/auth/change-own-password": {
+      "patch": {
+        "description": "Authenticated users can change their own password by providing their current password. All sessions are revoked on success.",
+        "operationId": "AuthController_changeOwnPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeOwnPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password changed — all sessions revoked"
+          },
+          "400": {
+            "description": "Bad request – invalid input or business rule violation"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change own password",
+        "tags": ["auth"]
+      }
+    },
+    "/users": {
+      "get": {
+        "description": "Returns all CRM system users. Requires ADMIN role or higher.",
+        "operationId": "UsersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Users retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all users",
+        "tags": ["users"]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "description": "Returns the authenticated user's profile.",
+        "operationId": "UsersController_getMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Profile retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get own profile",
+        "tags": ["users"]
+      }
+    },
+    "/users/invitations": {
+      "get": {
+        "description": "Returns all pending and accepted invitations.",
+        "operationId": "UsersController_listInvitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Invitations retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InvitationResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List invitations",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "UsersController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get user by ID",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/deactivate": {
+      "patch": {
+        "description": "Deactivates the user and instantly revokes all their sessions (SUPERADMIN only).",
+        "operationId": "UsersController_deactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deactivated and all sessions revoked"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate user",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/change-password": {
+      "patch": {
+        "description": "Resets a user's password and revokes all their sessions (SUPERADMIN only).",
+        "operationId": "UsersController_changePassword",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password changed and all sessions revoked"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Force password change",
+        "tags": ["users"]
+      }
+    },
+    "/users/invite": {
+      "post": {
+        "description": "Creates an invitation with a Telegram deep link for onboarding a new CRM user.",
+        "operationId": "UsersController_invite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/InvitationResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invite a team member",
+        "tags": ["users"]
+      }
+    },
+    "/users/invitations/{id}": {
+      "delete": {
+        "description": "Permanently deletes an unused invitation.",
+        "operationId": "UsersController_deleteInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Invitation UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Invitation deleted"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete invitation",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/reactivate": {
+      "patch": {
+        "description": "Re-enables a deactivated user and clears their Redis block, restoring access (SUPERADMIN only).",
+        "operationId": "UsersController_reactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User reactivated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reactivate user",
+        "tags": ["users"]
+      }
+    },
+    "/users/{id}/role": {
+      "patch": {
+        "description": "Updates a user's role. Cannot change own role (SUPERADMIN only).",
+        "operationId": "UsersController_changeRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request – invalid input or business rule violation"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change user role",
+        "tags": ["users"]
+      }
+    },
+    "/superadmin/users": {
+      "post": {
+        "description": "Directly creates a CRM user without an invitation (SUPERADMIN only).",
+        "operationId": "SuperadminUsersController_createUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create system user",
+        "tags": ["superadmin"]
+      },
+      "get": {
+        "description": "Returns all CRM system users. Requires SUPERADMIN role.",
+        "operationId": "SuperadminUsersController_findAllUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Users retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all users",
+        "tags": ["superadmin"]
+      }
+    },
+    "/superadmin/users/{id}": {
+      "get": {
+        "description": "Returns a specific user by UUID (SUPERADMIN only).",
+        "operationId": "SuperadminUsersController_findUserById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get user by ID",
+        "tags": ["superadmin"]
+      },
+      "delete": {
+        "description": "Deactivates the user and instantly revokes all their sessions (SUPERADMIN only).",
+        "operationId": "SuperadminUsersController_deactivateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deactivated successfully"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deactivate user",
+        "tags": ["superadmin"]
+      }
+    },
+    "/superadmin/users/{id}/change-password": {
+      "patch": {
+        "description": "Resets a user's password and revokes all their sessions (SUPERADMIN only).",
+        "operationId": "SuperadminUsersController_forcePasswordChange",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password changed successfully"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Force password change",
+        "tags": ["superadmin"]
+      }
+    },
+    "/superadmin/users/{id}/reactivate": {
+      "patch": {
+        "description": "Re-enables a deactivated user and clears their Redis block, restoring access (SUPERADMIN only).",
+        "operationId": "SuperadminUsersController_reactivateUser",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User reactivated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reactivate user",
+        "tags": ["superadmin"]
+      }
+    },
+    "/superadmin/users/{id}/role": {
+      "patch": {
+        "description": "Updates a user's role. Cannot change own role (SUPERADMIN only).",
+        "operationId": "SuperadminUsersController_changeUserRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change user role",
+        "tags": ["superadmin"]
+      }
+    },
+    "/leads/submit-info": {
+      "post": {
+        "description": "Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bot.",
+        "operationId": "LeadsController_submitInfo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitLeadInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lead info updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Submit lead info (public)",
+        "tags": ["leads"]
+      }
+    },
+    "/leads": {
+      "get": {
+        "description": "Paginated list of all leads with optional status filter. All roles can view leads (flat access model).",
+        "operationId": "LeadsController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by lead status",
+            "schema": {
+              "enum": [
+                "NEW",
+                "CONTACTED",
+                "REGISTERED",
+                "DEPOSIT_REPORTED",
+                "DEPOSIT_CONFIRMED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset",
+            "schema": {
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "Page size (default 20)",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leads retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LeadResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List leads",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/{id}": {
+      "get": {
+        "description": "Returns a lead and its full interaction history.",
+        "operationId": "LeadsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lead retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get lead by ID",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/{id}/status": {
+      "patch": {
+        "operationId": "LeadsController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLeadStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lead status updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update lead status",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/{id}/handover": {
+      "patch": {
+        "description": "Enables/disables human handover mode for a lead. Instantly synced to Redis for bot awareness.",
+        "operationId": "LeadsController_setHandover",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHandoverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Handover mode updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle handover mode",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/{id}/verify": {
+      "patch": {
+        "description": "Owner manually verifies the registration/deposit proof. Sets verifiedAt timestamp.",
+        "operationId": "LeadsController_verifyLead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lead verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Verify lead",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/leaderboard": {
+      "get": {
+        "description": "Leads ordered by aiScore DESC. Tier: hot≥70, warm≥40, cold<40.",
+        "operationId": "LeadsController_leaderboard",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tier",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["hot", "warm", "cold"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "AI score leaderboard",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/export": {
+      "get": {
+        "description": "Streams a CSV file of all leads matching optional filters.",
+        "operationId": "LeadsController_exportCsv",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "NEW",
+                "CONTACTED",
+                "REGISTERED",
+                "DEPOSIT_REPORTED",
+                "DEPOSIT_CONFIRMED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 start date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 end date",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file stream",
+            "content": {
+              "text/csv": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export leads as CSV",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/{id}/interactions": {
+      "get": {
+        "operationId": "LeadsController_getInteractions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "MESSAGE_RECEIVED",
+                "AUTO_REPLY_SENT",
+                "MANUAL_REPLY_SENT",
+                "SYSTEM_STATUS_CHANGE"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Interactions retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Paginated interaction timeline for a lead",
+        "tags": ["leads"]
+      }
+    },
+    "/knowledge-base": {
+      "get": {
+        "operationId": "KnowledgeBaseController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Entries retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/KbResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all KB entries",
+        "tags": ["knowledge-base"]
+      },
+      "post": {
+        "description": "Use POST /text or POST /upload instead.",
+        "operationId": "KnowledgeBaseController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKbDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create KB entry (legacy)",
+        "tags": ["knowledge-base"]
+      }
+    },
+    "/knowledge-base/active": {
+      "get": {
+        "operationId": "KnowledgeBaseController_findActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Active entries retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/KbResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List active KB entries (RAG-ready)",
+        "tags": ["knowledge-base"]
+      }
+    },
+    "/knowledge-base/status": {
+      "get": {
+        "description": "Subscribe with ?kbId=<id> to receive real-time processing updates.",
+        "operationId": "KnowledgeBaseController_getProcessingStatus",
+        "parameters": [
+          {
+            "name": "kbId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream of { status, progress, kbId?, error? }"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "SSE stream for KB file processing status",
+        "tags": ["knowledge-base"]
+      }
+    },
+    "/knowledge-base/{id}": {
+      "get": {
+        "operationId": "KnowledgeBaseController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get KB entry by ID",
+        "tags": ["knowledge-base"]
+      },
+      "patch": {
+        "operationId": "KnowledgeBaseController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKbDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update KB entry",
+        "tags": ["knowledge-base"]
+      },
+      "delete": {
+        "operationId": "KnowledgeBaseController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entry deleted"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete KB entry",
+        "tags": ["knowledge-base"]
+      }
+    },
+    "/knowledge-base/text": {
+      "post": {
+        "description": "Embedding generated immediately in background.",
+        "operationId": "KnowledgeBaseController_createText",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKbDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create text/link KB entry",
+        "tags": ["knowledge-base"]
+      }
+    },
+    "/knowledge-base/upload": {
+      "post": {
+        "description": "File is processed asynchronously. Subscribe to GET /knowledge-base/status?kbId=<id> for real-time progress.",
+        "operationId": "KnowledgeBaseController_uploadFile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file", "title"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Upload accepted, processing started"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload file to KB (PDF, DOCX, image)",
+        "tags": ["knowledge-base"]
+      }
+    },
+    "/command-menu": {
+      "get": {
+        "description": "Returns all command menus ordered by display order.",
+        "operationId": "CommandMenuController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Command menus retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommandMenuResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all command menu entries",
+        "tags": ["command-menu"]
+      },
+      "post": {
+        "description": "Creates a new command menu with Tiptap rich content. Embedding generated asynchronously.",
+        "operationId": "CommandMenuController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommandMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Command menu created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CommandMenuResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create command menu",
+        "tags": ["command-menu"]
+      }
+    },
+    "/command-menu/{id}": {
+      "get": {
+        "operationId": "CommandMenuController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "CommandMenu UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Command menu retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CommandMenuResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get command menu by ID",
+        "tags": ["command-menu"]
+      },
+      "patch": {
+        "description": "Updates label, description, content, order, or isActive. Re-generates embedding if content changes.",
+        "operationId": "CommandMenuController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "CommandMenu UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommandMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Command menu updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CommandMenuResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update command menu",
+        "tags": ["command-menu"]
+      },
+      "delete": {
+        "operationId": "CommandMenuController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "CommandMenu UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Command menu deleted"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete command menu (SUPERADMIN only)",
+        "tags": ["command-menu"]
+      }
+    },
+    "/command-menu/reorder": {
+      "patch": {
+        "description": "Accepts array of { id, order } to update display positions.",
+        "operationId": "CommandMenuController_reorder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderCommandMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reorder applied"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bulk reorder command menus",
+        "tags": ["command-menu"]
+      }
+    },
+    "/bot/status": {
+      "get": {
+        "operationId": "BotStatusController_getStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Bot status"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Telegram bot health & webhook info (SUPERADMIN)",
+        "tags": ["bot"]
+      }
+    },
+    "/attachments": {
+      "get": {
+        "description": "Returns all uploaded receipts/screenshots for the given lead UUID.",
+        "operationId": "AttachmentsController_findByLead",
+        "parameters": [
+          {
+            "name": "leadId",
+            "required": true,
+            "in": "query",
+            "description": "Lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attachments retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AttachmentResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List attachments for a lead",
+        "tags": ["attachments"]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": ["status"],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "System health check",
+        "tags": ["health"]
+      }
+    },
+    "/analytics/summary": {
+      "get": {
+        "description": "Returns consolidated KPI cards, funnel metrics, and trend series data based on a given timeframe.",
+        "operationId": "AnalyticsController_getSummary",
+        "parameters": [
+          {
+            "name": "timeframe",
+            "required": false,
+            "in": "query",
+            "description": "The predefined timeframe for the analytics.",
+            "schema": {
+              "default": "last_30_days",
+              "type": "string",
+              "enum": [
+                "today",
+                "yesterday",
+                "this_week",
+                "this_month",
+                "last_30_days",
+                "last_90_days",
+                "all_time",
+                "custom"
+              ]
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Required if timeframe is custom (ISO 8601 date string)",
+            "schema": {
+              "example": "2026-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "Required if timeframe is custom (ISO 8601 date string)",
+            "schema": {
+              "example": "2026-01-31",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics summary retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AnalyticsSummaryResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consolidated Analytics Summary",
+        "tags": ["analytics"]
+      }
+    },
+    "/analytics/dashboard": {
+      "get": {
+        "deprecated": true,
+        "description": "Returns lead funnel counts. Use /analytics/summary instead.",
+        "operationId": "AnalyticsController_getDashboardStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AnalyticsDashboardResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dashboard stats (Deprecated)",
+        "tags": ["analytics"]
+      }
+    },
+    "/analytics/stats": {
+      "get": {
+        "description": "Returns today's aggregated stats. Returns null if daily stats haven't been computed yet.",
+        "operationId": "AnalyticsController_getTodayStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Today's stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DailyStatsResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Today's stats",
+        "tags": ["analytics"]
+      }
+    },
+    "/analytics/weekly": {
+      "get": {
+        "description": "Returns new leads, registered leads, and deposits grouped by ISO week. Default: last 8 weeks.",
+        "operationId": "AnalyticsController_getWeeklyStats",
+        "parameters": [
+          {
+            "name": "weeks",
+            "required": false,
+            "in": "query",
+            "description": "Number of past weeks to include (default 8)",
+            "schema": {
+              "example": 8,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Weekly stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WeeklyStatsResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Weekly stats",
+        "tags": ["analytics"]
+      }
+    },
+    "/analytics/rag-stats": {
+      "get": {
+        "description": "Hit rate, avg chunks, zero-hit count, token usage from last N auto-reply interactions.",
+        "operationId": "AnalyticsController_getRagStats",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of recent replies to analyse (default 500)",
+            "schema": {
+              "example": 500,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RAG stats retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "RAG quality stats (SUPERADMIN)",
+        "tags": ["analytics"]
+      }
+    },
+    "/follow-ups": {
+      "get": {
+        "operationId": "FollowUpController_findAll",
+        "parameters": [
+          {
+            "name": "leadId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["pending", "sent", "cancelled"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Follow-ups retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List scheduled follow-up messages",
+        "tags": ["follow-ups"]
+      }
+    },
+    "/follow-ups/{id}": {
+      "delete": {
+        "operationId": "FollowUpController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Follow-up cancelled"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel a scheduled follow-up by ID",
+        "tags": ["follow-ups"]
+      }
+    },
+    "/system-config/allowlist": {
+      "get": {
+        "operationId": "SystemConfigController_getAllowlist",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Allowlist returned"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List allowed config keys",
+        "tags": ["system-config"]
+      }
+    },
+    "/system-config": {
+      "get": {
+        "operationId": "SystemConfigController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Config entries retrieved"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all system config entries",
+        "tags": ["system-config"]
+      }
+    },
+    "/system-config/{key}": {
+      "get": {
+        "operationId": "SystemConfigController_findOne",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "ai.similarityThreshold",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Config entry retrieved"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a single config entry by key",
+        "tags": ["system-config"]
+      },
+      "patch": {
+        "operationId": "SystemConfigController_upsert",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "ai.rateLimitPerMinute",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertSystemConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Config updated"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upsert a config value (validated against allowlist)",
+        "tags": ["system-config"]
+      },
+      "delete": {
+        "operationId": "SystemConfigController_remove",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "ai.similarityThreshold",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Config reset to default"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reset config key to env default (delete DB override)",
+        "tags": ["system-config"]
+      }
+    },
+    "/audit-logs": {
+      "get": {
+        "operationId": "AuditLogController_findMany",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "USER_CREATED",
+                "USER_DEACTIVATED",
+                "USER_REACTIVATED",
+                "USER_ROLE_CHANGED",
+                "PASSWORD_CHANGED",
+                "LEAD_STATUS_CHANGED",
+                "LEAD_VERIFIED",
+                "KB_CREATED",
+                "KB_UPDATED",
+                "KB_DELETED",
+                "COMMAND_MENU_CREATED",
+                "COMMAND_MENU_UPDATED",
+                "COMMAND_MENU_DELETED",
+                "SYSTEM_CONFIG_CHANGED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "resourceType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit log entries"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Query audit log entries (SUPERADMIN only)",
+        "tags": ["audit-logs"]
+      }
+    },
+    "/activity/stream": {
+      "get": {
+        "description": "Server-Sent Events stream. Connect with EventSource. Keepalive ping every 30s.",
+        "operationId": "ActivityController_stream",
+        "parameters": [
+          {
+            "name": "token",
+            "required": false,
+            "in": "query",
+            "description": "Bearer token (alternative to Authorization header for EventSource)",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "text/event-stream"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Real-time activity feed (SSE)",
+        "tags": ["activity"]
+      }
+    },
+    "/ai/feedback": {
+      "post": {
+        "operationId": "FeedbackController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Feedback recorded"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit conversation feedback (rate a bot reply)",
+        "tags": ["ai-feedback"]
+      },
+      "get": {
+        "operationId": "FeedbackController_findMany",
+        "parameters": [
+          {
+            "name": "rating",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [1, 5],
+              "type": "number"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Feedback entries retrieved"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List feedback entries (SUPERADMIN)",
+        "tags": ["ai-feedback"]
+      }
+    },
+    "/ai/feedback/{id}/few-shot": {
+      "patch": {
+        "operationId": "FeedbackController_toggleFewShot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enable",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Few-shot flag updated"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Toggle usedAsFewShot on a feedback entry (SUPERADMIN)",
+        "tags": ["ai-feedback"]
+      }
+    }
+  },
+  "info": {
+    "title": "Titan Journal CRM API",
+    "description": "**Titan Journal** — Enterprise Telegram IB CRM REST API",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local Development"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      },
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "refresh_token"
+      }
+    },
+    "schemas": {
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "description": "User UUID"
+          },
+          "email": {
+            "type": "string",
+            "example": "admin@crm.com",
+            "description": "User email address"
+          },
+          "role": {
+            "type": "string",
+            "example": "ADMIN",
+            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "description": "RBAC role"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether this account is active and can log in"
+          },
+          "telegramId": {
+            "type": "object",
+            "example": "987654321",
+            "nullable": true,
+            "description": "Telegram user ID linked for TMA login. Null if not linked."
+          },
+          "lastLoginAt": {
+            "type": "object",
+            "example": "2026-02-24T08:30:00.000Z",
+            "nullable": true,
+            "description": "Timestamp of last successful login"
+          },
+          "lastIpAddress": {
+            "type": "object",
+            "example": "103.10.20.5",
+            "nullable": true,
+            "description": "IP address from the last login"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-01-15T10:00:00.000Z",
+            "description": "Account creation timestamp"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T08:30:00.000Z",
+            "description": "Last profile update timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "isActive",
+          "telegramId",
+          "lastLoginAt",
+          "lastIpAddress",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AuthResponseDto": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "description": "Short-lived JWT access token (15 min). Send as Authorization: Bearer <token>"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          }
+        },
+        "required": ["accessToken", "user"]
+      },
+      "SessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "description": "Session UUID"
+          },
+          "deviceId": {
+            "type": "object",
+            "example": "device-uuid-v4",
+            "nullable": true,
+            "description": "Unique device identifier"
+          },
+          "userAgent": {
+            "type": "object",
+            "example": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)",
+            "nullable": true,
+            "description": "Browser/app user agent string"
+          },
+          "ipAddress": {
+            "type": "object",
+            "example": "103.10.20.5",
+            "nullable": true,
+            "description": "Last known IP address for this session"
+          },
+          "lastActiveAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T09:00:00.000Z",
+            "description": "Timestamp of last API activity"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T08:00:00.000Z",
+            "description": "When this session was created"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-03T08:00:00.000Z",
+            "description": "When the refresh token expires (7 days from creation)"
+          },
+          "isRevoked": {
+            "type": "boolean",
+            "example": false,
+            "description": "True if this session has been manually revoked"
+          }
+        },
+        "required": [
+          "id",
+          "deviceId",
+          "userAgent",
+          "ipAddress",
+          "lastActiveAt",
+          "createdAt",
+          "expiresAt",
+          "isRevoked"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@crm.com",
+            "description": "User email address"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ssw0rd!",
+            "minLength": 8,
+            "description": "User password"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "TmaLoginDto": {
+        "type": "object",
+        "properties": {
+          "initData": {
+            "type": "string",
+            "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData",
+            "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
+          },
+          "deviceId": {
+            "type": "string",
+            "example": "device-uuid-v4",
+            "description": "Unique device identifier"
+          },
+          "userAgent": {
+            "type": "string",
+            "example": "Mozilla/5.0..."
+          },
+          "ipAddress": {
+            "type": "string",
+            "example": "192.168.1.1"
+          }
+        },
+        "required": ["initData", "deviceId"]
+      },
+      "SetupAccountDto": {
+        "type": "object",
+        "properties": {
+          "invitationToken": {
+            "type": "string",
+            "description": "Invitation token starting with inv_ received via Telegram deep link",
+            "example": "inv_abc123"
+          },
+          "initData": {
+            "type": "string",
+            "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData",
+            "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
+          },
+          "email": {
+            "type": "string",
+            "example": "newuser@crm.com",
+            "description": "Email to set for this new account"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ssw0rd!",
+            "minLength": 8,
+            "description": "Password to set (min 8 characters)"
+          },
+          "deviceId": {
+            "type": "string",
+            "example": "device-uuid-v4",
+            "description": "Unique device identifier for session tracking"
+          },
+          "userAgent": {
+            "type": "string",
+            "example": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0)",
+            "description": "Device user agent string"
+          }
+        },
+        "required": ["invitationToken", "initData", "email", "password"]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "staff@crm.com",
+            "description": "Email address for login"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ssw0rd!",
+            "minLength": 8,
+            "description": "Initial password (min 8 characters)"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "example": "STAFF",
+            "description": "RBAC role to assign to this user"
+          }
+        },
+        "required": ["email", "password", "role"]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@crm.com",
+            "description": "Account email address"
+          }
+        },
+        "required": ["email"]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@crm.com",
+            "description": "Account email address"
+          },
+          "code": {
+            "type": "string",
+            "example": "4821",
+            "description": "4-digit OTP sent to your email",
+            "minLength": 4,
+            "maxLength": 4
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "N3wP@ssword!",
+            "minLength": 8,
+            "description": "New password (min 8 characters)"
+          }
+        },
+        "required": ["email", "code", "newPassword"]
+      },
+      "ChangeOwnPasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Your current password",
+            "example": "P@ssw0rd!"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "N3wP@ssword!",
+            "minLength": 8,
+            "description": "New password (min 8 characters)"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "description": "Repeat new password — must match newPassword",
+            "example": "N3wP@ssword!"
+          }
+        },
+        "required": ["currentPassword", "newPassword", "confirmPassword"]
+      },
+      "InvitationResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "description": "Invitation UUID"
+          },
+          "role": {
+            "type": "string",
+            "example": "STAFF",
+            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "description": "Role that will be assigned upon account setup"
+          },
+          "email": {
+            "type": "object",
+            "example": "newstaff@crm.com",
+            "nullable": true,
+            "description": "Pre-filled email (if provided during invite creation)"
+          },
+          "telegramDeepLink": {
+            "type": "string",
+            "example": "https://t.me/YourBot?start=inv_abc123",
+            "description": "Telegram deep link the invited user must open. Embeds the invitation token."
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-31T10:00:00.000Z",
+            "description": "Invitation expires 7 days after creation. Invalid after this timestamp."
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "email",
+          "telegramDeepLink",
+          "expiresAt",
+          "createdAt"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "newPassword": {
+            "type": "string"
+          }
+        },
+        "required": ["newPassword"]
+      },
+      "InviteUserDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "example": "STAFF",
+            "description": "Role to assign to the invited user"
+          },
+          "email": {
+            "type": "string",
+            "example": "newstaff@crm.com",
+            "description": "Pre-fill email for the invited user (optional). They can set it during setup."
+          }
+        },
+        "required": ["role"]
+      },
+      "ChangeRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "example": "ADMIN",
+            "description": "New role to assign to the user"
+          }
+        },
+        "required": ["role"]
+      },
+      "LeadResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "description": "Lead UUID"
+          },
+          "telegramUserId": {
+            "type": "string",
+            "example": "123456789",
+            "description": "Telegram user ID (serialised as string due to BigInt)"
+          },
+          "username": {
+            "type": "object",
+            "example": "john_doe",
+            "nullable": true,
+            "description": "Telegram @username without @"
+          },
+          "displayName": {
+            "type": "object",
+            "example": "John Doe",
+            "nullable": true,
+            "description": "Telegram display name"
+          },
+          "status": {
+            "type": "string",
+            "example": "NEW",
+            "enum": [
+              "NEW",
+              "CONTACTED",
+              "REGISTERED",
+              "DEPOSIT_REPORTED",
+              "DEPOSIT_CONFIRMED",
+              "REJECTED"
+            ],
+            "description": "Current CRM lead status"
+          },
+          "hfmBrokerId": {
+            "type": "object",
+            "example": "HFM-123456",
+            "nullable": true,
+            "description": "HFM broker account ID submitted by the lead"
+          },
+          "email": {
+            "type": "object",
+            "example": "lead@example.com",
+            "nullable": true,
+            "description": "Email address submitted by the lead"
+          },
+          "phoneNumber": {
+            "type": "object",
+            "example": "+60123456789",
+            "nullable": true,
+            "description": "Phone number submitted by the lead"
+          },
+          "depositBalance": {
+            "type": "object",
+            "example": "500.00",
+            "nullable": true,
+            "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
+          },
+          "registeredAt": {
+            "type": "object",
+            "example": "2026-02-20T10:00:00.000Z",
+            "nullable": true,
+            "description": "When the lead submitted registration proof"
+          },
+          "verifiedAt": {
+            "type": "object",
+            "example": "2026-02-21T12:00:00.000Z",
+            "nullable": true,
+            "description": "When an Owner/Admin verified the lead"
+          },
+          "handoverMode": {
+            "type": "boolean",
+            "example": false,
+            "description": "When true the bot hands off to a human agent; bot stops auto-replying"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-18T08:00:00.000Z",
+            "description": "When the lead first messaged the bot"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T09:00:00.000Z",
+            "description": "Last time any lead field was updated"
+          }
+        },
+        "required": [
+          "id",
+          "telegramUserId",
+          "username",
+          "displayName",
+          "status",
+          "hfmBrokerId",
+          "email",
+          "phoneNumber",
+          "depositBalance",
+          "registeredAt",
+          "verifiedAt",
+          "handoverMode",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "SubmitLeadInfoDto": {
+        "type": "object",
+        "properties": {
+          "telegramUserId": {
+            "type": "number",
+            "example": 123456789,
+            "description": "Telegram user ID of the lead"
+          },
+          "email": {
+            "type": "string",
+            "example": "lead@example.com"
+          },
+          "hfmBrokerId": {
+            "type": "string",
+            "example": "HFM-123456",
+            "description": "HFM broker account ID"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "+60123456789",
+            "description": "Lead's phone number (No. Fon)"
+          },
+          "depositBalance": {
+            "type": "string",
+            "example": "500.00",
+            "description": "Deposit or balance amount (decimal string)"
+          },
+          "registeredAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-22T10:00:00Z",
+            "description": "When the lead submitted their registration"
+          }
+        },
+        "required": ["telegramUserId"]
+      },
+      "UpdateLeadStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "CONTACTED",
+              "REGISTERED",
+              "DEPOSIT_REPORTED",
+              "DEPOSIT_CONFIRMED"
+            ],
+            "example": "CONTACTED",
+            "description": "New lead status"
+          }
+        },
+        "required": ["status"]
+      },
+      "UpdateHandoverDto": {
+        "type": "object",
+        "properties": {
+          "handoverMode": {
+            "type": "boolean",
+            "example": true,
+            "description": "Enable (true) or disable (false) handover mode"
+          }
+        },
+        "required": ["handoverMode"]
+      },
+      "KbResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "description": "Knowledge base entry UUID"
+          },
+          "title": {
+            "type": "string",
+            "example": "How to Register on HFM",
+            "description": "Entry title shown in the CRM and used as RAG context heading"
+          },
+          "content": {
+            "type": "string",
+            "example": "To register a new trading account, visit https://hfm.com and click...",
+            "description": "Full text content (used for vector embedding)"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "example": "TEXT",
+            "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
+          },
+          "fileType": {
+            "type": "string",
+            "enum": [
+              "TEXT_MANUAL",
+              "PDF",
+              "DOCX",
+              "IMAGE",
+              "VIDEO_LINK",
+              "EXTERNAL_LINK"
+            ],
+            "example": "TEXT_MANUAL",
+            "description": "How the content was ingested"
+          },
+          "url": {
+            "type": "object",
+            "example": "https://drive.google.com/file/d/xyz",
+            "nullable": true,
+            "description": "External URL for LINK or TEMPLATE entries"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+            "example": "READY",
+            "description": "Processing status — only READY entries are used by the RAG pipeline"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "description": "Inactive entries are excluded from vector search"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-20T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T08:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "type",
+          "fileType",
+          "status",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateKbDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Tutorial Register",
+            "minLength": 3
+          },
+          "content": {
+            "type": "string",
+            "example": "To register a new trading account, visit...",
+            "minLength": 10
+          },
+          "type": {
+            "type": "string",
+            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "default": "TEXT",
+            "description": "Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://drive.google.com/file/d/...",
+            "description": "External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)"
+          }
+        },
+        "required": ["title", "content"]
+      },
+      "UpdateKbDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Updated Title",
+            "minLength": 3
+          },
+          "content": {
+            "type": "string",
+            "example": "Updated content here...",
+            "minLength": 10
+          },
+          "type": {
+            "type": "string",
+            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "description": "Entry type"
+          },
+          "url": {
+            "type": "string",
+            "example": "https://drive.google.com/...",
+            "description": "External URL for LINK/TEMPLATE entries"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "description": "Activate or deactivate this entry"
+          }
+        }
+      },
+      "CommandMenuResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clxyz123abc456",
+            "description": "Command menu record UUID"
+          },
+          "command": {
+            "type": "string",
+            "example": "tutorial-register",
+            "description": "URL-safe slug, also used as Telegram /command"
+          },
+          "label": {
+            "type": "string",
+            "example": "📖 Tutorial Register",
+            "description": "Button label shown in Telegram inline keyboard"
+          },
+          "description": {
+            "type": "object",
+            "example": "Step-by-step guide to register your HFM account",
+            "nullable": true,
+            "description": "Short description shown in Telegram command list"
+          },
+          "content": {
+            "type": "object",
+            "description": "Tiptap JSON document — rendered as Telegram message blocks",
+            "example": {
+              "type": "doc",
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Follow these steps..."
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true,
+            "description": "Inactive menus are hidden from the Telegram /menu keyboard"
+          },
+          "order": {
+            "type": "number",
+            "example": 0,
+            "description": "Display order in the Telegram menu (ascending)"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-20T10:00:00.000Z"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T08:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "command",
+          "label",
+          "content",
+          "isActive",
+          "order",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateCommandMenuDto": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "example": "tutorial-register",
+            "description": "URL-safe slug. Used as Telegram bot command (e.g. /tutorial-register)."
+          },
+          "label": {
+            "type": "string",
+            "example": "📖 Tutorial Register",
+            "description": "Button display label shown in Telegram inline keyboard."
+          },
+          "description": {
+            "type": "string",
+            "example": "Step-by-step guide to register your account",
+            "description": "Short description shown in Telegram bot commands list."
+          },
+          "content": {
+            "type": "object",
+            "description": "Tiptap JSON document (block-based rich content)",
+            "example": {
+              "type": "doc",
+              "content": [
+                {
+                  "type": "heading",
+                  "attrs": {
+                    "level": 2
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "How to Register"
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Follow these steps..."
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "order": {
+            "type": "number",
+            "example": 0,
+            "description": "Display order in the Telegram menu (ascending)."
+          }
+        },
+        "required": ["command", "label", "content"]
+      },
+      "CommandMenuOrderItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "clxyz123"
+          },
+          "order": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": ["id", "order"]
+      },
+      "ReorderCommandMenuDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommandMenuOrderItem"
+            }
+          }
+        },
+        "required": ["items"]
+      },
+      "UpdateCommandMenuDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "📖 Tutorial Register"
+          },
+          "description": {
+            "type": "string",
+            "example": "Step-by-step guide to register your account"
+          },
+          "content": {
+            "type": "object",
+            "description": "Tiptap JSON document. Re-generates embedding on save."
+          },
+          "order": {
+            "type": "number",
+            "example": 1
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "AttachmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "leadId": {
+            "type": "string"
+          },
+          "telegramFileId": {
+            "type": "object",
+            "nullable": true
+          },
+          "fileKey": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "object",
+            "nullable": true
+          },
+          "size": {
+            "type": "object",
+            "nullable": true
+          },
+          "uploadedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "leadId",
+          "telegramFileId",
+          "fileKey",
+          "fileUrl",
+          "mimeType",
+          "size",
+          "uploadedAt"
+        ]
+      },
+      "DailyStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "description": "DailyStats record UUID"
+          },
+          "date": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T00:00:00.000Z",
+            "description": "The UTC date this snapshot covers (midnight)"
+          },
+          "newLeads": {
+            "type": "number",
+            "example": 5,
+            "description": "New leads that first messaged the bot on this date"
+          },
+          "registeredLeads": {
+            "type": "number",
+            "example": 3,
+            "description": "Leads that moved to REGISTERED status on this date"
+          },
+          "depositReported": {
+            "type": "number",
+            "example": 2,
+            "description": "Leads that reported a deposit on this date"
+          },
+          "conversions": {
+            "type": "number",
+            "example": 1,
+            "description": "Deposits confirmed by an Owner/Admin on this date"
+          },
+          "tokensUsed": {
+            "type": "number",
+            "example": 4820,
+            "description": "Total OpenAI tokens consumed on this date"
+          },
+          "totalLeads": {
+            "type": "number",
+            "example": 432,
+            "description": "Running total of all leads at end of this date"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T01:00:00.000Z",
+            "description": "Record creation timestamp (usually 1 AM cron)"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-02-24T01:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "newLeads",
+          "registeredLeads",
+          "depositReported",
+          "conversions",
+          "tokensUsed",
+          "totalLeads",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "AnalyticsDashboardResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalLeads": {
+            "type": "number",
+            "example": 432,
+            "description": "Total number of leads in the CRM"
+          },
+          "newLeads": {
+            "type": "number",
+            "example": 12,
+            "description": "Leads in NEW status"
+          },
+          "registeredLeads": {
+            "type": "number",
+            "example": 85,
+            "description": "Leads who have submitted registration proof"
+          },
+          "depositReported": {
+            "type": "number",
+            "example": 34,
+            "description": "Leads who reported a deposit (DEPOSIT_REPORTED status)"
+          },
+          "depositConfirmed": {
+            "type": "number",
+            "example": 21,
+            "description": "Leads whose deposit was confirmed by an Owner/Admin (DEPOSIT_CONFIRMED status)"
+          },
+          "recentStats": {
+            "description": "Last 7 days of daily snapshot stats",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DailyStatsResponseDto"
+            }
+          }
+        },
+        "required": [
+          "totalLeads",
+          "newLeads",
+          "registeredLeads",
+          "depositReported",
+          "depositConfirmed",
+          "recentStats"
+        ]
+      },
+      "WeeklyStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "weekStart": {
+            "type": "string",
+            "example": "2026-02-17",
+            "description": "Monday of the ISO week (YYYY-MM-DD)"
+          },
+          "newLeads": {
+            "type": "number",
+            "example": 18,
+            "description": "New leads that joined during this week"
+          },
+          "registeredLeads": {
+            "type": "number",
+            "example": 9,
+            "description": "Leads that moved to REGISTERED during this week"
+          },
+          "depositReported": {
+            "type": "number",
+            "example": 5,
+            "description": "Deposits reported during this week"
+          },
+          "depositConfirmed": {
+            "type": "number",
+            "example": 3,
+            "description": "Deposits confirmed during this week"
+          }
+        },
+        "required": [
+          "weekStart",
+          "newLeads",
+          "registeredLeads",
+          "depositReported",
+          "depositConfirmed"
+        ]
+      },
+      "MonthlyStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "monthStart": {
+            "type": "string",
+            "example": "2026-02-01",
+            "description": "First day of the calendar month (YYYY-MM-DD)"
+          },
+          "newLeads": {
+            "type": "number",
+            "example": 74,
+            "description": "New leads that joined during this month"
+          },
+          "registeredLeads": {
+            "type": "number",
+            "example": 38,
+            "description": "Leads that moved to REGISTERED during this month"
+          },
+          "depositReported": {
+            "type": "number",
+            "example": 20,
+            "description": "Deposits reported during this month"
+          },
+          "depositConfirmed": {
+            "type": "number",
+            "example": 14,
+            "description": "Deposits confirmed during this month"
+          }
+        },
+        "required": [
+          "monthStart",
+          "newLeads",
+          "registeredLeads",
+          "depositReported",
+          "depositConfirmed"
+        ]
+      },
+      "KpiStatDto": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "number",
+            "example": 74,
+            "description": "Value for the current period"
+          },
+          "previous": {
+            "type": "number",
+            "example": 58,
+            "description": "Value for the previous comparable period"
+          },
+          "changePercentage": {
+            "type": "number",
+            "example": 27.6,
+            "description": "Percentage change from previous to current period. Positive = growth."
+          },
+          "trend": {
+            "type": "string",
+            "enum": ["up", "down", "neutral"],
+            "example": "up",
+            "description": "Direction of change"
+          }
+        },
+        "required": ["current", "previous", "changePercentage", "trend"]
+      },
+      "AnalyticsKpiDto": {
+        "type": "object",
+        "properties": {
+          "totalLeads": {
+            "$ref": "#/components/schemas/KpiStatDto"
+          },
+          "registeredAccounts": {
+            "$ref": "#/components/schemas/KpiStatDto"
+          },
+          "depositingClients": {
+            "$ref": "#/components/schemas/KpiStatDto"
+          },
+          "pendingVerifications": {
+            "$ref": "#/components/schemas/KpiStatDto"
+          }
+        },
+        "required": [
+          "totalLeads",
+          "registeredAccounts",
+          "depositingClients",
+          "pendingVerifications"
+        ]
+      },
+      "FunnelConversionRatesDto": {
+        "type": "object",
+        "properties": {
+          "newToRegistered": {
+            "type": "number",
+            "example": 51.4,
+            "description": "Percentage of NEW leads that became REGISTERED"
+          },
+          "registeredToReported": {
+            "type": "number",
+            "example": 52.6,
+            "description": "Percentage of REGISTERED leads that reported a deposit"
+          },
+          "reportedToConfirmed": {
+            "type": "number",
+            "example": 70,
+            "description": "Percentage of DEPOSIT_REPORTED leads that were confirmed"
+          },
+          "overall": {
+            "type": "number",
+            "example": 18.9,
+            "description": "End-to-end conversion: NEW → DEPOSIT_CONFIRMED"
+          }
+        },
+        "required": [
+          "newToRegistered",
+          "registeredToReported",
+          "reportedToConfirmed",
+          "overall"
+        ]
+      },
+      "AnalyticsFunnelDto": {
+        "type": "object",
+        "properties": {
+          "new": {
+            "type": "number",
+            "example": 144,
+            "description": "Leads in NEW status during the period"
+          },
+          "registered": {
+            "type": "number",
+            "example": 74,
+            "description": "Leads in REGISTERED status during the period"
+          },
+          "depositReported": {
+            "type": "number",
+            "example": 39,
+            "description": "Leads in DEPOSIT_REPORTED status during the period"
+          },
+          "depositConfirmed": {
+            "type": "number",
+            "example": 27,
+            "description": "Leads in DEPOSIT_CONFIRMED status during the period"
+          },
+          "conversionRates": {
+            "$ref": "#/components/schemas/FunnelConversionRatesDto"
+          }
+        },
+        "required": [
+          "new",
+          "registered",
+          "depositReported",
+          "depositConfirmed",
+          "conversionRates"
+        ]
+      },
+      "TrendSeriesDataDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-02-17",
+            "description": "Date or week start (YYYY-MM-DD) depending on timeframe granularity"
+          },
+          "newLeads": {
+            "type": "number",
+            "example": 18,
+            "description": "New leads for this data point"
+          },
+          "registered": {
+            "type": "number",
+            "example": 9,
+            "description": "Registered leads for this data point"
+          },
+          "confirmed": {
+            "type": "number",
+            "example": 3,
+            "description": "Deposit-confirmed leads for this data point"
+          }
+        },
+        "required": ["date", "newLeads", "registered", "confirmed"]
+      },
+      "AnalyticsSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "kpi": {
+            "$ref": "#/components/schemas/AnalyticsKpiDto"
+          },
+          "funnel": {
+            "$ref": "#/components/schemas/AnalyticsFunnelDto"
+          },
+          "trendSeries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrendSeriesDataDto"
+            }
+          }
+        },
+        "required": ["kpi", "funnel", "trendSeries"]
+      },
+      "UpsertSystemConfigDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Config value (raw string)",
+            "example": "0.7"
+          }
+        },
+        "required": ["value"]
+      },
+      "CreateFeedbackDto": {
+        "type": "object",
+        "properties": {
+          "leadId": {
+            "type": "string",
+            "description": "Lead UUID this conversation belongs to"
+          },
+          "userMessage": {
+            "type": "string",
+            "description": "The user message being rated"
+          },
+          "botReply": {
+            "type": "string",
+            "description": "The bot reply being rated"
+          },
+          "rating": {
+            "type": "number",
+            "description": "1 = bad, 5 = good",
+            "enum": [1, 5]
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional notes about why this is good/bad"
+          }
+        },
+        "required": ["leadId", "userMessage", "botReply", "rating"]
+      }
+    }
+  },
+  "x-tagGroups": [
+    {
+      "name": "🔐 System Administration (Superadmin)",
+      "tags": ["auth", "superadmin", "users", "health"]
+    },
+    {
+      "name": "📊 CRM Operations (Owner / Admin / Staff)",
+      "tags": ["leads", "analytics", "attachments", "activity", "audit-logs"]
+    },
+    {
+      "name": "🤖 Bot & AI",
+      "tags": [
+        "bot",
+        "ai-feedback",
+        "follow-ups",
+        "knowledge-base",
+        "command-menu"
+      ]
+    },
+    {
+      "name": "⚙️ Configuration (Owner / Superadmin)",
+      "tags": ["system-config"]
+    }
+  ]
+}

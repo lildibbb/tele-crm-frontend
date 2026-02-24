@@ -1,0 +1,25 @@
+import { Metadata } from "next";
+import { SettingsTabs } from "./_components/settings-tabs";
+
+export const metadata: Metadata = {
+  title: "Settings | Titan Journal CRM",
+  description: "Configure your CRM, bot behavior, and team",
+};
+
+export default function SettingsPage() {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="animate-in-up">
+        <h1 className="font-display font-extrabold text-3xl text-text-primary">
+          Settings
+        </h1>
+        <p className="text-text-secondary text-sm font-sans mt-1">
+          Configure your CRM, bot behavior, and team
+        </p>
+      </div>
+
+      <SettingsTabs />
+    </div>
+  );
+}

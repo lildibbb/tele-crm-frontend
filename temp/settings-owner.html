@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1337ec",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#080810",
+                        "card-dark": "#141422",
+                    },
+                    fontFamily: {
+                        "display": ["DM Sans", "Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .ios-divider {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-left: 3.5rem;
+        }
+        .last-item .ios-divider {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden pb-24">
+<!-- Header -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 pb-2 justify-between">
+<div class="text-primary flex size-10 shrink-0 items-center cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Settings</h2>
+</div>
+<!-- Scrollable Content -->
+<div class="flex flex-col gap-6 px-4 pt-4">
+<!-- Profile Preview (Optional but fits iOS style) -->
+<div class="flex items-center gap-4 bg-card-dark p-4 rounded-xl">
+<div class="size-14 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">account_circle</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-slate-100">Alex Thompson</h3>
+<p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Owner Role</p>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+<!-- SECTION: BOT CONFIGURATION -->
+<div>
+<h3 class="text-slate-500 text-xs font-bold leading-tight tracking-widest uppercase px-1 pb-2">Bot Configuration</h3>
+<div class="bg-card-dark rounded-xl overflow-hidden">
+<!-- Bot Config -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer">
+<div class="bg-primary/10 text-primary p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="text-base font-medium">Bot Config</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+<div class="ios-divider"></div>
+<!-- Knowledge Base -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer">
+<div class="bg-primary/10 text-primary p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">database</span>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="text-base font-medium">Knowledge Base</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+<div class="ios-divider"></div>
+<!-- Command Menu -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer last-item">
+<div class="bg-primary/10 text-primary p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">terminal</span>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="text-base font-medium">Command Menu</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- SECTION: TEAM (OWNER ONLY) -->
+<div>
+<div class="flex items-center justify-between px-1 pb-2">
+<h3 class="text-slate-500 text-xs font-bold leading-tight tracking-widest uppercase">Team Management</h3>
+<span class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold">OWNER</span>
+</div>
+<div class="bg-card-dark rounded-xl overflow-hidden">
+<!-- Team Members -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer">
+<div class="bg-primary/10 text-primary p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">group</span>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="text-base font-medium">Team Members</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+<div class="ios-divider"></div>
+<!-- Active Sessions -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer last-item">
+<div class="bg-primary/10 text-primary p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">devices</span>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="text-base font-medium">Active Sessions</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- SECTION: APPEARANCE -->
+<div>
+<h3 class="text-slate-500 text-xs font-bold leading-tight tracking-widest uppercase px-1 pb-2">Appearance</h3>
+<div class="bg-card-dark rounded-xl overflow-hidden">
+<!-- Theme -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer">
+<div class="bg-slate-500/10 text-slate-300 p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<div class="flex-1">
+<span class="text-base font-medium">Theme</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-slate-400 text-sm">Dark</span>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+</div>
+<div class="ios-divider"></div>
+<!-- Language -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer last-item">
+<div class="bg-slate-500/10 text-slate-300 p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">translate</span>
+</div>
+<div class="flex-1">
+<span class="text-base font-medium">Language</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-slate-400 text-sm">English</span>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION: ACCOUNT -->
+<div>
+<h3 class="text-slate-500 text-xs font-bold leading-tight tracking-widest uppercase px-1 pb-2">Account</h3>
+<div class="bg-card-dark rounded-xl overflow-hidden">
+<!-- Password -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer">
+<div class="bg-slate-500/10 text-slate-300 p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div class="flex-1">
+<span class="text-base font-medium">Password</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+<div class="ios-divider"></div>
+<!-- Security -->
+<div class="flex items-center gap-4 px-4 py-3 active:bg-white/5 transition-colors cursor-pointer last-item">
+<div class="bg-slate-500/10 text-slate-300 p-2 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div class="flex-1">
+<span class="text-base font-medium">Security</span>
+</div>
+<span class="material-symbols-outlined text-slate-500">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Sign Out Button -->
+<button class="w-full mt-4 py-4 px-4 bg-transparent border border-rose-500/30 text-rose-500 rounded-xl font-bold flex items-center justify-center gap-2 active:bg-rose-500/10 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+                Sign Out
+            </button>
+</div>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-20 max-w-md mx-auto">
+<div class="flex gap-2 border-t border-white/5 bg-background-dark/90 backdrop-blur-xl px-4 pb-8 pt-2">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium leading-normal">Home</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">description</span>
+<p class="text-[10px] font-medium leading-normal">Journal</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">diversity_3</span>
+<p class="text-[10px] font-medium leading-normal">CRM</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">settings</span>
+<p class="text-[10px] font-medium leading-normal">Settings</p>
+</a>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mobile Analytics Dashboard Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Syne:wght@700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#db143c",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#080810", // Obsidian background
+                        "card-dark": "#141422",
+                    },
+                    fontFamily: {
+                        "display": ["DM Sans", "sans-serif"],
+                        "numbers": ["Syne", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-syne { font-family: 'Syne', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Main Container -->
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto border-x border-slate-200 dark:border-white/5">
+<!-- Header -->
+<header class="sticky top-0 z-20 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-slate-200 dark:border-white/5">
+<div class="flex items-center gap-3">
+<div class="text-primary flex size-10 items-center justify-center rounded-lg bg-primary/10">
+<span class="material-symbols-outlined">bar_chart</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Analytics</h1>
+</div>
+<div class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-green-500">Live</span>
+</div>
+</header>
+<!-- Segmented Control -->
+<div class="px-4 py-4 bg-background-light dark:bg-background-dark">
+<div class="flex h-11 items-center justify-center rounded-xl bg-slate-200/50 dark:bg-card-dark p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-primary has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400 has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-sm font-semibold transition-all">
+<span>1D</span>
+<input class="hidden" name="timeframe" type="radio" value="1D"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-primary has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400 has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-sm font-semibold transition-all">
+<span>7D</span>
+<input checked="" class="hidden" name="timeframe" type="radio" value="7D"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-primary has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400 has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-sm font-semibold transition-all">
+<span>1M</span>
+<input class="hidden" name="timeframe" type="radio" value="1M"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-primary has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400 has-[:checked]:text-slate-900 dark:has-[:checked]:text-white text-sm font-semibold transition-all">
+<span>1Y</span>
+<input class="hidden" name="timeframe" type="radio" value="1Y"/>
+</label>
+</div>
+</div>
+<!-- Horizontal KPI Strip -->
+<div class="flex overflow-x-auto gap-3 px-4 pb-6 no-scrollbar">
+<div class="flex min-w-[120px] flex-col gap-1 rounded-xl p-4 bg-card-dark border border-white/5">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Leads</p>
+<p class="font-syne text-xl text-white">1,240</p>
+</div>
+<div class="flex min-w-[120px] flex-col gap-1 rounded-xl p-4 bg-card-dark border border-white/5">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">FTDs</p>
+<p class="font-syne text-xl text-white">84</p>
+</div>
+<div class="flex min-w-[120px] flex-col gap-1 rounded-xl p-4 bg-card-dark border border-white/5">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Conv %</p>
+<p class="font-syne text-xl text-white">6.7%</p>
+</div>
+<div class="flex min-w-[120px] flex-col gap-1 rounded-xl p-4 bg-card-dark border border-white/5">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">AUM</p>
+<p class="font-syne text-xl text-white">2.4M</p>
+</div>
+</div>
+<!-- Scrollable Feed Area -->
+<div class="flex-1 space-y-4 px-4 pb-24">
+<!-- Card 1: Lead Flow Grouped Bar Chart -->
+<div class="rounded-2xl bg-card-dark p-5 border border-white/5">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-bold text-lg">Lead Flow</h3>
+<span class="material-symbols-outlined text-slate-500">more_horiz</span>
+</div>
+<div class="flex items-end justify-between h-40 gap-2 mb-2">
+<!-- Day Group 1 -->
+<div class="flex flex-1 flex-col items-center gap-1 h-full justify-end">
+<div class="flex items-end gap-0.5 h-full w-full">
+<div class="w-full bg-primary rounded-t-sm" style="height: 60%"></div>
+<div class="w-full bg-blue-500 rounded-t-sm" style="height: 40%"></div>
+<div class="w-full bg-green-500 rounded-t-sm" style="height: 25%"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">MON</span>
+</div>
+<!-- Day Group 2 -->
+<div class="flex flex-1 flex-col items-center gap-1 h-full justify-end">
+<div class="flex items-end gap-0.5 h-full w-full">
+<div class="w-full bg-primary rounded-t-sm" style="height: 80%"></div>
+<div class="w-full bg-blue-500 rounded-t-sm" style="height: 55%"></div>
+<div class="w-full bg-green-500 rounded-t-sm" style="height: 45%"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">TUE</span>
+</div>
+<!-- Day Group 3 -->
+<div class="flex flex-1 flex-col items-center gap-1 h-full justify-end">
+<div class="flex items-end gap-0.5 h-full w-full">
+<div class="w-full bg-primary rounded-t-sm" style="height: 100%"></div>
+<div class="w-full bg-blue-500 rounded-t-sm" style="height: 70%"></div>
+<div class="w-full bg-green-500 rounded-t-sm" style="height: 60%"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">WED</span>
+</div>
+<!-- Day Group 4 -->
+<div class="flex flex-1 flex-col items-center gap-1 h-full justify-end">
+<div class="flex items-end gap-0.5 h-full w-full">
+<div class="w-full bg-primary rounded-t-sm" style="height: 75%"></div>
+<div class="w-full bg-blue-500 rounded-t-sm" style="height: 65%"></div>
+<div class="w-full bg-green-500 rounded-t-sm" style="height: 30%"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">THU</span>
+</div>
+<!-- Day Group 5 -->
+<div class="flex flex-1 flex-col items-center gap-1 h-full justify-end">
+<div class="flex items-end gap-0.5 h-full w-full">
+<div class="w-full bg-primary rounded-t-sm" style="height: 90%"></div>
+<div class="w-full bg-blue-500 rounded-t-sm" style="height: 80%"></div>
+<div class="w-full bg-green-500 rounded-t-sm" style="height: 65%"></div>
+</div>
+<span class="text-[10px] text-slate-500 font-bold">FRI</span>
+</div>
+</div>
+<div class="flex justify-center gap-4 pt-4 border-t border-white/5">
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-primary"></div><span class="text-[10px] text-slate-400">Direct</span></div>
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-blue-500"></div><span class="text-[10px] text-slate-400">Affiliate</span></div>
+<div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-green-500"></div><span class="text-[10px] text-slate-400">Social</span></div>
+</div>
+</div>
+<!-- Card 2: Conversion Funnel -->
+<div class="rounded-2xl bg-card-dark p-5 border border-white/5">
+<h3 class="font-bold text-lg mb-6">Conversion Funnel</h3>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">Total Leads</span>
+<span class="font-bold">12,400</span>
+</div>
+<div class="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">Qualified</span>
+<div class="flex gap-2 items-center">
+<span class="text-[10px] text-primary">78%</span>
+<span class="font-bold">9,672</span>
+</div>
+</div>
+<div class="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary/70" style="width: 78%"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-sm">
+<span class="text-slate-400">Deposited (FTDs)</span>
+<div class="flex gap-2 items-center">
+<span class="text-[10px] text-primary">6.7%</span>
+<span class="font-bold">831</span>
+</div>
+</div>
+<div class="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-primary/40" style="width: 6.7%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3: AUM Balance Area Chart -->
+<div class="rounded-2xl bg-card-dark p-5 border border-white/5">
+<div class="flex items-start justify-between mb-4">
+<div>
+<h3 class="font-bold text-lg">AUM Balance</h3>
+<p class="font-syne text-2xl text-white mt-1">$2,482,900.00</p>
+</div>
+<div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-green-500/10 text-green-500">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">+20.1%</span>
+</div>
+</div>
+<div class="relative h-40 w-full mt-6">
+<svg class="w-full h-full overflow-visible" viewbox="0 0 400 100">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#E8B94F" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#E8B94F" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,80 Q50,70 100,85 T200,40 T300,60 T400,20 V100 H0 Z" fill="url(#chartGradient)"></path>
+<path d="M0,80 Q50,70 100,85 T200,40 T300,60 T400,20" fill="none" stroke="#E8B94F" stroke-linecap="round" stroke-width="3"></path>
+<circle cx="400" cy="20" fill="#E8B94F" r="4"></circle>
+<circle cx="400" cy="20" fill="#E8B94F" fill-opacity="0.2" r="8"></circle>
+</svg>
+<div class="absolute inset-0 flex items-end justify-between px-1 pointer-events-none">
+<span class="text-[10px] text-slate-600">Jan</span>
+<span class="text-[10px] text-slate-600">Feb</span>
+<span class="text-[10px] text-slate-600">Mar</span>
+<span class="text-[10px] text-slate-600">Apr</span>
+<span class="text-[10px] text-slate-600">May</span>
+</div>
+</div>
+</div>
+<!-- Card 4: Top Performers -->
+<div class="rounded-2xl bg-card-dark border border-white/5 overflow-hidden">
+<div class="p-5 border-b border-white/5">
+<h3 class="font-bold text-lg">Top Performers</h3>
+</div>
+<div class="divide-y divide-white/5">
+<div class="flex items-center gap-4 p-4">
+<div class="relative">
+<img alt="Staff Member 1" class="size-10 rounded-full bg-slate-800" data-alt="Corporate headshot of a male staff member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2203Rs6TbAxlje79xLIFJtUHs0N8sM1aCH5Zm2jc163wijGW8ufqR1Z1UttlsbmPtTa4rtsnive712OQGBkEcm27FeLkbihVha8s0J6BhjCbf1aIksVGvainQp1RxiT18A3HyM-i6jrZ844Cyfx2VIFekLN-DVzpWcCqLaRXZ89IEoWkDuhkdUdWgIx0CJK1ohrzAYwyGKXwYuSuvcxKfl4CixJQDcA3gMYVeQaiWXklSc4EnGpExMpn-D2Z3fxC4dUzT0RxpPWc0"/>
+<div class="absolute -top-1 -right-1 size-5 rounded-full bg-yellow-500 flex items-center justify-center border-2 border-card-dark">
+<span class="text-[10px] font-bold text-slate-900">1</span>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-bold text-sm">Alex Thompson</p>
+<p class="text-xs text-slate-500">Senior Account Executive</p>
+</div>
+<div class="text-right">
+<p class="font-syne text-sm text-white">$420k</p>
+<p class="text-[10px] text-green-500 font-bold">+12%</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4">
+<div class="relative">
+<img alt="Staff Member 2" class="size-10 rounded-full bg-slate-800" data-alt="Corporate headshot of a female staff member" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAmXpckfO7iyNMRpItAxTyPeOsGbLyzqdVADDUhyxYuDNAepAnam4HqwUR89jdCypYe1nW9El9uq29X4bETW-DS28tXRluZlryZntQu8Xvl_CP_pvrKueu8IWcVIvTW3fMqTXlPnaq3xwMIFSdPUk_RVfHD39OzIZ1Wo64miShIEpiRn8FUbpctvbgyZcaSvJLQbs04F0TQ-0lPQxB2hbRm69noSJK_cBXcQZcpC75idi06-zv_mj9QxIxIAUUjDNZjvC_HtwnmMB4"/>
+<div class="absolute -top-1 -right-1 size-5 rounded-full bg-slate-400 flex items-center justify-center border-2 border-card-dark">
+<span class="text-[10px] font-bold text-slate-900">2</span>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-bold text-sm">Sarah Jenkins</p>
+<p class="text-xs text-slate-500">Lead Closer</p>
+</div>
+<div class="text-right">
+<p class="font-syne text-sm text-white">$385k</p>
+<p class="text-[10px] text-green-500 font-bold">+8%</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4">
+<div class="relative">
+<img alt="Staff Member 3" class="size-10 rounded-full bg-slate-800" data-alt="Corporate headshot of a male manager" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArlGC0AAfrywqJGxvOxjtxHyttsdygqePxe6E3Yc74i-SL6blQoSgZLQjYmmSOaoOHxWJ9Npv7J9iV11KNKWX37te4wsZqtSBMuBrWyh98sKNXW0XbCjsR4OBIP5hwsEnXpieG7Xori2cAqRG2f4977XBt16Ynntsi5EPZ4ilaixJ0qlSlrallMSTI3V-b_MEVV4FI6Mx4YfiVo_v3y2KbuhwouTZ9fNcvYnW-4ZX7N3r8Ui6TpD_iZJHa04phik0d94qgTfs5s8-S"/>
+<div class="absolute -top-1 -right-1 size-5 rounded-full bg-amber-700 flex items-center justify-center border-2 border-card-dark">
+<span class="text-[10px] font-bold text-slate-900">3</span>
+</div>
+</div>
+<div class="flex-1">
+<p class="font-bold text-sm">Michael Chen</p>
+<p class="text-xs text-slate-500">Market Specialist</p>
+</div>
+<div class="text-right">
+<p class="font-syne text-sm text-white">$310k</p>
+<p class="text-[10px] text-slate-500 font-bold">0%</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Nav Bar -->
+<nav class="fixed bottom-0 left-0 right-0 z-30 flex max-w-md mx-auto items-center justify-around border-t border-white/10 bg-background-dark/90 backdrop-blur-xl px-4 py-3">
+<a class="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-white" href="#">
+<span class="material-symbols-outlined text-2xl">grid_view</span>
+<p class="text-[10px] font-medium uppercase tracking-widest">Dash</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-white" href="#">
+<span class="material-symbols-outlined text-2xl">group</span>
+<p class="text-[10px] font-medium uppercase tracking-widest">Leads</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1">analytics</span>
+<p class="text-[10px] font-medium uppercase tracking-widest">Report</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-white" href="#">
+<span class="material-symbols-outlined text-2xl">hub</span>
+<p class="text-[10px] font-medium uppercase tracking-widest">Teams</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500 transition-colors hover:text-white" href="#">
+<span class="material-symbols-outlined text-2xl">settings</span>
+<p class="text-[10px] font-medium uppercase tracking-widest">Config</p>
+</a>
+</nav>
+</div>
+</body></html>

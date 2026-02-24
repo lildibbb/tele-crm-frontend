@@ -1,0 +1,124 @@
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+import { leadsApi } from "@/lib/api/leads";
+import type { Lead, UpdateLeadStatusInput } from "@/lib/schemas/lead.schema";
+import { LeadStatus } from "@/types/enums";
+
+// Re-export for convenience
+export type { Lead };
+export { LeadStatus };
+
+// ── State & Actions ────────────────────────────────────────────────────────
+
+interface LeadsState {
+  leads: Lead[];
+  total: number;
+  isLoading: boolean;
+  error: string | null;
+  pageCount: number;
+}
+
+interface LeadsActions {
+  // Async API actions
+  fetchLeads: (params: { skip: number; take: number; status?: string }) => Promise<void>;
+  updateStatus: (id: string, data: UpdateLeadStatusInput) => Promise<void>;
+  setHandover: (id: string, mode: boolean) => Promise<void>;
+  verifyLead: (id: string) => Promise<void>;
+}
+
+// ── Store ──────────────────────────────────────────────────────────────────
+
+export const useLeadsStore = create<LeadsState & LeadsActions>()(
+  devtools(
+    (set, _get) => ({
+      leads: [],
+      total: 0,
+      isLoading: false,
+      error: null,
+      pageCount: 1,
+
+      fetchLeads: async ({ skip, take, status }) => {
+        set({ isLoading: true, error: null }, false, "fetchLeads/pending");
+        try {
+          const res = await leadsApi.list({
+            skip,
+            take,
+            status: status as LeadStatus | undefined,
+          });
+          const data = res.data.data;
+          const total = res.data.total ?? data.length;
+          set(
+            {
+              leads: data,
+              total,
+              pageCount: Math.max(1, Math.ceil(total / take)),
+              isLoading: false,
+            },
+            false,
+            "fetchLeads/success",
+          );
+        } catch (err: unknown) {
+          const message =
+            (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message ?? "Failed to load leads.";
+          set({ isLoading: false, error: message }, false, "fetchLeads/error");
+        }
+      },
+
+      updateStatus: async (id: string, data: UpdateLeadStatusInput) => {
+        try {
+          const res = await leadsApi.updateStatus(id, data);
+          const updated = res.data.data;
+          set(
+            (s) => ({ leads: s.leads.map((l) => (l.id === id ? updated : l)) }),
+            false,
+            "updateStatus/success",
+          );
+        } catch (err: unknown) {
+          const message =
+            (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message ?? "Failed to update lead status.";
+          set({ error: message }, false, "updateStatus/error");
+          throw err;
+        }
+      },
+
+      setHandover: async (id: string, mode: boolean) => {
+        try {
+          const res = await leadsApi.setHandover(id, { handoverMode: mode });
+          const updated = res.data.data;
+          set(
+            (s) => ({ leads: s.leads.map((l) => (l.id === id ? updated : l)) }),
+            false,
+            "setHandover/success",
+          );
+        } catch (err: unknown) {
+          const message =
+            (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message ?? "Failed to update handover mode.";
+          set({ error: message }, false, "setHandover/error");
+          throw err;
+        }
+      },
+
+      verifyLead: async (id: string) => {
+        try {
+          const res = await leadsApi.verify(id);
+          const updated = res.data.data;
+          set(
+            (s) => ({ leads: s.leads.map((l) => (l.id === id ? updated : l)) }),
+            false,
+            "verifyLead/success",
+          );
+        } catch (err: unknown) {
+          const message =
+            (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message ?? "Failed to verify lead.";
+          set({ error: message }, false, "verifyLead/error");
+          throw err;
+        }
+      },
+    }),
+    { name: "leads-store" },
+  ),
+);

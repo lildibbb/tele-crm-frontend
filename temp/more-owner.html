@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mobile More Menu - Owner Role</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e90c1f",
+                        "background-light": "#f8f5f6",
+                        "background-dark": "#141422",
+                    },
+                    fontFamily: {
+                        "display": ["DM Sans", "Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "20px",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+        .bottom-sheet-gradient {
+            background: linear-gradient(to bottom, rgba(20, 20, 34, 0.8), rgba(20, 20, 34, 1));
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-slate-900 flex items-end justify-center min-h-screen overflow-hidden">
+<!-- Mobile Viewport Mockup -->
+<div class="relative w-full max-w-[430px] h-[932px] bg-background-dark shadow-2xl overflow-hidden flex flex-col justify-end border-x border-slate-800">
+<!-- Background Content (Simulated Dashboard) -->
+<div class="absolute inset-0 p-6 opacity-20 pointer-events-none">
+<div class="h-8 w-32 bg-slate-700 rounded mb-8"></div>
+<div class="grid grid-cols-2 gap-4 mb-8">
+<div class="h-32 bg-slate-800 rounded-lg"></div>
+<div class="h-32 bg-slate-800 rounded-lg"></div>
+</div>
+<div class="h-64 bg-slate-800 rounded-lg mb-4"></div>
+<div class="h-40 bg-slate-800 rounded-lg"></div>
+</div>
+<!-- Bottom Sheet Wrapper -->
+<div class="relative flex h-auto w-full flex-col bg-background-dark rounded-t-lg shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/5">
+<!-- BottomSheetHandle -->
+<button class="flex h-6 w-full items-center justify-center pt-2 pb-1">
+<div class="h-1.5 w-12 rounded-full bg-slate-700"></div>
+</button>
+<!-- Profile Header Section -->
+<div class="flex p-6 items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-16 w-16 border-2 border-primary/20" data-alt="Professional portrait of Sarah Lim smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWy_6n5oelFMDyG9yvUAlq5dz15JscaWlryiFV02M4zaT_89PJed0dToxpeBrgfD9Rg2BQA4TFJo-S1fl7GJsaOeokQ2kNzlLgGSfS1vd8RXDiYtgS3T2nQJWGU9TenlnZYzx6q8gRw8ByqoWg6KBmP1fkOhfiEZ68Dy4tgF9qzJvEV0SIa23FtbGFfyqCLpQANmq6eobEZWVb8LRuI36Rbsg-mChs0chcMhIrycjO-xo3Q86TxS4ihej8vpXr1saSR-3py3WPAe6p");'>
+</div>
+<div class="absolute bottom-0 right-0 h-4 w-4 bg-green-500 border-2 border-background-dark rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-100 text-xl font-bold leading-tight tracking-tight">Sarah Lim</p>
+<div class="flex items-center mt-1">
+<div class="flex h-6 items-center justify-center gap-1.5 rounded-full bg-primary/10 px-2.5 border border-primary/20">
+<span class="material-symbols-outlined text-primary !text-[14px]">diamond</span>
+<p class="text-primary text-xs font-bold uppercase tracking-wider">Owner</p>
+</div>
+</div>
+</div>
+</div>
+<button class="text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">edit_note</span>
+</button>
+</div>
+<!-- Divider -->
+<div class="mx-6 border-t border-slate-800"></div>
+<!-- Navigation List -->
+<div class="flex flex-col py-2">
+<!-- Analytics Row -->
+<div class="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-500 shrink-0 size-10">
+<span class="material-symbols-outlined">bar_chart</span>
+</div>
+<p class="text-slate-200 text-base font-medium flex-1">Analytics</p>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-slate-400 transition-colors">chevron_right</span>
+</div>
+<!-- Settings Row -->
+<div class="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center justify-center rounded-xl bg-slate-500/10 text-slate-400 shrink-0 size-10">
+<span class="material-symbols-outlined">settings_input_component</span>
+</div>
+<p class="text-slate-200 text-base font-medium flex-1">Settings</p>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-slate-400 transition-colors">chevron_right</span>
+</div>
+<!-- Notifications Row -->
+<div class="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 shrink-0 size-10">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<p class="text-slate-200 text-base font-medium flex-1">Notifications</p>
+<div class="flex items-center gap-2">
+<span class="flex h-5 min-w-[20px] px-1.5 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">5</span>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-slate-400 transition-colors">chevron_right</span>
+</div>
+</div>
+<!-- Profile Row -->
+<div class="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors cursor-pointer group">
+<div class="flex items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 shrink-0 size-10">
+<span class="material-symbols-outlined">person</span>
+</div>
+<p class="text-slate-200 text-base font-medium flex-1">Account Profile</p>
+<span class="material-symbols-outlined text-slate-600 group-hover:text-slate-400 transition-colors">chevron_right</span>
+</div>
+</div>
+<!-- Divider -->
+<div class="mx-6 border-t border-slate-800"></div>
+<!-- Footer Section -->
+<div class="px-6 py-6 flex flex-col gap-6">
+<!-- Language Toggle -->
+<div class="flex items-center justify-between bg-slate-800/40 p-3 rounded-xl border border-slate-800">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">language</span>
+<span class="text-slate-300 text-sm font-medium">Language</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-slate-100 text-sm font-semibold">English (US)</span>
+<span class="material-symbols-outlined text-slate-500 text-sm">unfold_more</span>
+</div>
+</div>
+<!-- Sign Out Action -->
+<button class="w-full h-14 bg-primary text-white rounded-xl font-bold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined">logout</span>
+                    Sign Out
+                </button>
+</div>
+<!-- iOS Home Indicator Space -->
+<div class="h-8 w-full bg-transparent"></div>
+</div>
+<!-- Simulated Tab Bar -->
+<div class="absolute bottom-0 w-full h-20 bg-background-dark/80 backdrop-blur-xl border-t border-slate-800 flex items-center justify-around px-6 z-50">
+<div class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px]">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[10px]">Search</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-[10px]">Create</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined !fill-1">grid_view</span>
+<span class="text-[10px] font-bold">More</span>
+</div>
+</div>
+</div>
+</body></html>

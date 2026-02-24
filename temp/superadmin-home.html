@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Titan Journal CRM - Superadmin Mobile Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Syne:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#eac04d", // Gold accent
+                        "background-light": "#f8f7f6",
+                        "background-dark": "#080810", // Obsidian background
+                        "crimson": "#C4232D",
+                        "surface": "#141422",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "syne": ["Syne", "sans-serif"],
+                        "mono": ["monospace"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .custom-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display selection:bg-primary/30">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 pt-6 pb-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="bg-primary/10 p-2 rounded-lg border border-primary/20">
+<span class="material-symbols-outlined text-primary fill-1">crown</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-lg font-extrabold tracking-tight dark:text-slate-100">Platform Overview</h1>
+<div class="flex items-center gap-1">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-crimson opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-crimson"></span>
+</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-crimson">Live</span>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="size-10 rounded-full border-2 border-primary overflow-hidden">
+<img alt="Superadmin Avatar" data-alt="Close up professional portrait of a business executive avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcC87B3KkxzhFO9gOJ7TtmmQ4jOBbm867lq1lwvO1CTZW30DA49zt3WE1K-eJdWx8E_D5jp4PayNDNV05yFVj1PSecO_MCzSxtDTLfVaxlvHRqhtveh1byE6VOf9oRLTp6sm1xjZMcdbxVAzQ7Z-mNKdssdBJKqgYjKUab51AACHEaVgCbWVD88tRkz7ED73VEeEj1HLYupA6UbhMxcEergnuRPB0FJ_4YxZjzoQvNIYj1G1dI-Rki0Wlns8o5JsCcFBuDLvyFd4-F"/>
+</div>
+</div>
+</header>
+<!-- KPI Strip -->
+<section class="mt-4 px-4">
+<div class="flex gap-3 overflow-x-auto custom-scrollbar py-2">
+<div class="flex flex-col min-w-[120px] bg-surface dark:bg-surface p-3 rounded-xl border border-slate-800">
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Orgs</span>
+<span class="font-syne text-2xl text-slate-100">14</span>
+</div>
+<div class="flex flex-col min-w-[120px] bg-surface dark:bg-surface p-3 rounded-xl border border-slate-800">
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Leads</span>
+<span class="font-syne text-2xl text-slate-100">8,421</span>
+</div>
+<div class="flex flex-col min-w-[120px] bg-surface dark:bg-surface p-3 rounded-xl border border-slate-800">
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">AUM</span>
+<span class="font-syne text-2xl text-primary">$2.1M</span>
+</div>
+<div class="flex flex-col min-w-[120px] bg-surface dark:bg-surface p-3 rounded-xl border border-slate-800">
+<span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active</span>
+<span class="font-syne text-2xl text-slate-100">156</span>
+</div>
+</div>
+</section>
+<!-- Funnel Section -->
+<section class="mt-6 px-4">
+<div class="bg-surface border border-slate-800 rounded-2xl p-5 shadow-xl">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="text-xl font-bold tracking-tight">Platform Funnel</h2>
+<p class="text-xs text-slate-400">Aggregated conversion performance</p>
+</div>
+<span class="material-symbols-outlined text-slate-500">trending_up</span>
+</div>
+<div class="relative h-48 w-full bg-slate-900/50 rounded-lg overflow-hidden">
+<!-- Stacked Chart Placeholder -->
+<div class="absolute inset-0 flex items-end">
+<div class="h-[60%] w-full bg-gradient-to-t from-crimson/30 to-transparent border-t-2 border-crimson/50" style="clip-path: polygon(0 40%, 20% 20%, 40% 50%, 60% 30%, 80% 60%, 100% 40%, 100% 100%, 0 100%);"></div>
+</div>
+<div class="absolute inset-0 flex items-end">
+<div class="h-[45%] w-full bg-gradient-to-t from-blue-600/30 to-transparent border-t-2 border-blue-500/50" style="clip-path: polygon(0 50%, 25% 40%, 50% 60%, 75% 30%, 100% 55%, 100% 100%, 0 100%);"></div>
+</div>
+<div class="absolute inset-0 flex items-end">
+<div class="h-[30%] w-full bg-gradient-to-t from-green-500/30 to-transparent border-t-2 border-green-500/50" style="clip-path: polygon(0 70%, 30% 60%, 60% 80%, 100% 65%, 100% 100%, 0 100%);"></div>
+</div>
+<!-- Chart Grids -->
+<div class="absolute inset-0 flex flex-col justify-between p-2">
+<div class="w-full border-t border-slate-700/30 border-dashed"></div>
+<div class="w-full border-t border-slate-700/30 border-dashed"></div>
+<div class="w-full border-t border-slate-700/30 border-dashed"></div>
+</div>
+</div>
+<div class="flex justify-between mt-4">
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-crimson"></div>
+<span class="text-[10px] text-slate-400">Leads</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-blue-500"></div>
+<span class="text-[10px] text-slate-400">Opportunities</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="size-2 rounded-full bg-green-500"></div>
+<span class="text-[10px] text-slate-400">Deals</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Top Organizations -->
+<section class="mt-8 px-4">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-lg font-bold">Recent Organizations</h2>
+<button class="text-primary text-xs font-bold flex items-center gap-1">View All <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
+</div>
+<div class="space-y-3 mb-8">
+<!-- Org Card 1 -->
+<div class="bg-surface border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-slate-800 flex items-center justify-center font-syne text-primary text-sm border border-primary/20">
+                            AZ
+                        </div>
+<div>
+<h3 class="text-sm font-bold text-slate-100">Apex Zen Ltd.</h3>
+<p class="text-[10px] text-slate-500">Owner: James Wilson</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-syne text-primary text-sm">$840K</div>
+<div class="text-[10px] text-slate-500">242 Leads</div>
+</div>
+</div>
+<!-- Org Card 2 -->
+<div class="bg-surface border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-slate-800 flex items-center justify-center font-syne text-blue-400 text-sm border border-blue-400/20">
+                            NL
+                        </div>
+<div>
+<h3 class="text-sm font-bold text-slate-100">Nova Logic</h3>
+<p class="text-[10px] text-slate-500">Owner: Sarah Chen</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-syne text-primary text-sm">$1.2M</div>
+<div class="text-[10px] text-slate-500">512 Leads</div>
+</div>
+</div>
+<!-- Org Card 3 -->
+<div class="bg-surface border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-slate-800 flex items-center justify-center font-syne text-crimson text-sm border border-crimson/20">
+                            TC
+                        </div>
+<div>
+<h3 class="text-sm font-bold text-slate-100">Titan Corp</h3>
+<p class="text-[10px] text-slate-500">Owner: Marcus Vane</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-syne text-primary text-sm">$95K</div>
+<div class="text-[10px] text-slate-500">89 Leads</div>
+</div>
+</div>
+</div>
+</section>
+<!-- System Alerts -->
+<section class="mt-4 px-4 pb-32">
+<h2 class="text-lg font-bold mb-4">System Alerts</h2>
+<div class="space-y-2">
+<div class="flex items-start gap-3 p-3 bg-crimson/5 border border-crimson/20 rounded-lg">
+<span class="material-symbols-outlined text-crimson text-lg">error</span>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<h4 class="text-xs font-bold text-crimson">Critical Sync Error</h4>
+<span class="font-mono text-[9px] text-slate-500 uppercase">10:42:15 AM</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">Org "Titan Corp" failed to sync with Stripe API. Retrying in 5m.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+<span class="material-symbols-outlined text-primary text-lg">warning</span>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<h4 class="text-xs font-bold text-primary">High Load Warning</h4>
+<span class="font-mono text-[9px] text-slate-500 uppercase">09:15:22 AM</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">CPU usage exceeded 85% on node-2 during morning export.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg">
+<span class="material-symbols-outlined text-blue-500 text-lg">info</span>
+<div class="flex-1">
+<div class="flex justify-between items-center">
+<h4 class="text-xs font-bold text-blue-500">System Update</h4>
+<span class="font-mono text-[9px] text-slate-500 uppercase">08:00:00 AM</span>
+</div>
+<p class="text-[11px] text-slate-400 mt-1">Weekly maintenance scheduled for Sunday at 02:00 UTC.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto z-50">
+<div class="flex gap-2 border-t border-slate-800 bg-surface/95 backdrop-blur-lg px-4 pb-6 pt-3">
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px] fill-1">dashboard</span>
+</div>
+<p class="text-primary text-[10px] font-bold uppercase leading-normal tracking-wider">Overview</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">corporate_fare</span>
+</div>
+<p class="text-slate-500 text-[10px] font-bold uppercase leading-normal tracking-wider">Orgs</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">group</span>
+</div>
+<p class="text-slate-500 text-[10px] font-bold uppercase leading-normal tracking-wider">Leads</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-end gap-1 text-slate-500" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+</div>
+<p class="text-slate-500 text-[10px] font-bold uppercase leading-normal tracking-wider">Settings</p>
+</a>
+</div>
+</div>
+</div>
+</body></html>
