@@ -172,17 +172,20 @@ interface KpiTileProps {
   loading?: boolean;
 }
 
-const ACCENT_COLORS: Record<string, { bg: string; text: string }> = {
-  info: { bg: "bg-info/10", text: "text-info" },
-  success: { bg: "bg-success/10", text: "text-success" },
-  gold: { bg: "bg-[--gold]/10", text: "text-[--gold]" },
-  crimson: { bg: "bg-[--crimson]/10", text: "text-[--crimson]" },
+const ACCENT_COLORS: Record<string, { bg: string; text: string; grad: string }> = {
+  info:    { bg: "bg-info/10",        text: "text-info",        grad: "rgba(96,165,250,0.09)"  },
+  success: { bg: "bg-success/10",     text: "text-success",     grad: "rgba(34,211,160,0.09)"  },
+  gold:    { bg: "bg-[--gold]/10",    text: "text-[--gold]",    grad: "rgba(232,185,79,0.09)"  },
+  crimson: { bg: "bg-[--crimson]/10", text: "text-[--crimson]", grad: "rgba(196,35,45,0.09)"   },
 };
 
 function KpiTile({ icon: Icon, label, value, sub, accent, loading }: KpiTileProps) {
-  const { bg, text } = ACCENT_COLORS[accent];
+  const { bg, text, grad } = ACCENT_COLORS[accent];
   return (
-    <div className="kpi-tile bg-bg-elevated rounded-xl p-5">
+    <div
+      className="kpi-tile bg-elevated rounded-xl p-5"
+      style={{ backgroundImage: `linear-gradient(135deg, ${grad} 0%, transparent 65%)` }}
+    >
       {loading ? (
         <div className="space-y-2">
           <Skeleton className="h-4 w-24" />
@@ -762,8 +765,8 @@ export default function AdminPage() {
         </div>
 
         {/* ── Users Table ── */}
-        <div className="page-panel bg-bg-elevated rounded-xl overflow-hidden">
-          <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="page-panel bg-elevated rounded-xl overflow-hidden">
+          <div className="px-5 py-4 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                 <Users size={16} weight="duotone" className="text-info" />
@@ -803,8 +806,8 @@ export default function AdminPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
           {/* Audit Log — 2 cols */}
-          <div className="page-panel xl:col-span-2 bg-bg-elevated rounded-xl overflow-hidden">
-            <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="page-panel xl:col-span-2 bg-elevated rounded-xl overflow-hidden">
+            <div className="px-5 py-4 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                   <Database size={16} weight="duotone" className="text-warning" />
@@ -838,7 +841,10 @@ export default function AdminPage() {
 
           {/* RAG AI Stats — 1 col */}
           {ragStats ? (
-            <div className="page-panel bg-bg-elevated rounded-xl p-5">
+            <div
+              className="page-panel bg-elevated rounded-xl p-5"
+              style={{ backgroundImage: "linear-gradient(135deg, rgba(232,185,79,0.07) 0%, transparent 60%)" }}
+            >
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-5">
                 <Brain size={16} weight="duotone" className="text-[--gold]" />
                 AI / RAG Performance
@@ -861,7 +867,7 @@ export default function AdminPage() {
               </div>
             </div>
           ) : (
-            <div className="page-panel bg-bg-elevated rounded-xl p-5">
+            <div className="page-panel bg-elevated rounded-xl p-5">
               <div className="space-y-3">
                 <Skeleton className="h-4 w-32" />
                 {Array.from({ length: 4 }).map((_, i) => (
