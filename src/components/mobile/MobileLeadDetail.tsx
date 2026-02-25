@@ -1,20 +1,23 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
+import React, { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   CaretLeft,
   DotsThree,
   CurrencyDollar,
+  UserSwitch,
+  CheckCircle,
+  XCircle,
 } from "@phosphor-icons/react";
 import type { Lead } from "@/store/leadsStore";
-import { UserRole } from "@/types/enums";
+import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadDetailProps {
   readonly lead?: Partial<Lead>;
-  readonly role?: UserRole;
+  readonly isLoading?: boolean;
   readonly onVerify?: () => void;
   readonly onReject?: () => void;
   readonly onUpdateStatus?: () => void;
@@ -34,43 +37,10 @@ interface TimelineEntry {
   time: string;
 }
 
-// ── Mock data ──────────────────────────────────────────────────────────────────
-const MOCK_LEAD: Partial<Lead> = {
-  id: "TJ-1284",
-  displayName: "Muhammad Hafiz Bin Ahmad",
-  telegramUserId: "987654321",
-  hfmBrokerId: "1029384",
-  email: "hafiz@gmail.com",
-  status: "DEPOSIT_REPORTED",
-  depositBalance: "$500.00",
-  handoverMode: true,
-  createdAt: new Date("2026-01-20").toISOString(),
-};
-
-const TIMELINE: TimelineEntry[] = [
-  {
-    id: "t1",
-    color: "#60A5FA",
-    description: "Lead created via Telegram bot",
-    time: "Jan 20, 14:30",
-  },
-  {
-    id: "t2",
-    color: "#A855F7",
-    description: "Account registered on HFM (ID: 1029384)",
-    time: "Jan 21, 09:00",
-  },
-  {
-    id: "t3",
-    color: "#F59E0B",
-    description: "Deposit proof submitted — $500.00",
-    time: "Jan 21, 11:32",
-  },
-];
-
 // ── Status helpers ─────────────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
   NEW: "var(--info)",
+  CONTACTED: "var(--info)",
   REGISTERED: "#A855F7",
   DEPOSIT_REPORTED: "var(--warning)",
   DEPOSIT_CONFIRMED: "var(--success)",
@@ -79,6 +49,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 const STATUS_LABEL: Record<string, string> = {
   NEW: "NEW",
+  CONTACTED: "CONTACTED",
   REGISTERED: "REGISTERED",
   DEPOSIT_REPORTED: "DEPOSIT REPORTED",
   DEPOSIT_CONFIRMED: "DEPOSIT CONFIRMED",
@@ -92,6 +63,25 @@ function getInitials(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+function fmt(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function fmtTime(dateStr: string | null | undefined): string {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 // ── Info cell ──────────────────────────────────────────────────────────────────
@@ -113,37 +103,112 @@ function InfoCell({ cell }: { cell: InfoCell }) {
   );
 }
 
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+function LoadingSkeleton() {
+  return (
+    <div className="flex flex-col min-h-screen bg-void text-text-primary font-sans">
+      <div className="pt-[env(safe-area-inset-top)]" />
+      <header className="flex items-center justify-between px-4 h-[52px] bg-base border-b border-border-subtle">
+        <div className="w-16 h-6 rounded bg-elevated animate-pulse" />
+        <div className="w-24 h-5 rounded bg-elevated animate-pulse" />
+        <div className="w-8 h-8 rounded bg-elevated animate-pulse" />
+      </header>
+      <main className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+        <div className="rounded-2xl p-5 bg-elevated animate-pulse h-36" />
+        <div className="grid grid-cols-2 gap-2">
+          {[1,2,3,4,5,6].map((i) => (
+            <div key={i} className="h-16 rounded-[10px] bg-card border border-border-subtle animate-pulse" />
+          ))}
+        </div>
+        <div className="h-28 rounded-xl bg-card border border-border-subtle animate-pulse" />
+      </main>
+    </div>
+  );
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileLeadDetail({
   lead,
-  role = "OWNER",
+  isLoading = false,
   onVerify,
   onReject,
   onUpdateStatus,
   onBack,
 }: MobileLeadDetailProps) {
-  const l = lead ?? MOCK_LEAD;
-  const status = l.status ?? "NEW";
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const role = user?.role ?? "STAFF";
+
+  const handleBack = useCallback(() => {
+    if (onBack) { onBack(); return; }
+    router.back();
+  }, [onBack, router]);
+
+  if (isLoading || !lead) return <LoadingSkeleton />;
+
+  const status = lead.status ?? "NEW";
   const accentColor = STATUS_COLOR[status] ?? "#8888AA";
-  const initials = getInitials(l.displayName ?? "Unknown");
+  const name = lead.displayName ?? lead.username ?? "Unknown";
+  const initials = getInitials(name);
+
+  // Build timeline from real data
+  const timeline: TimelineEntry[] = [];
+  if (lead.createdAt) {
+    timeline.push({
+      id: "created",
+      color: "var(--info)",
+      description: "Lead created via Telegram bot",
+      time: fmtTime(lead.createdAt),
+    });
+  }
+  if (lead.registeredAt) {
+    timeline.push({
+      id: "registered",
+      color: "#A855F7",
+      description: `Account registered on HFM${lead.hfmBrokerId ? ` (ID: ${lead.hfmBrokerId})` : ""}`,
+      time: fmtTime(lead.registeredAt),
+    });
+  }
+  if (lead.depositBalance && status !== "NEW") {
+    timeline.push({
+      id: "deposit",
+      color: "var(--warning)",
+      description: `Deposit proof submitted — ${lead.depositBalance}`,
+      time: fmtTime(lead.updatedAt),
+    });
+  }
+  if (lead.verifiedAt) {
+    timeline.push({
+      id: "verified",
+      color: "var(--success)",
+      description: "Deposit verified by team",
+      time: fmtTime(lead.verifiedAt),
+    });
+  }
+  if (status === "REJECTED") {
+    timeline.push({
+      id: "rejected",
+      color: "var(--danger)",
+      description: "Lead status set to Rejected",
+      time: fmtTime(lead.updatedAt),
+    });
+  }
 
   const infoCells: InfoCell[] = [
-    { label: "Lead ID", value: `#TJ-${l.id?.slice(-4) ?? "0000"}`, mono: true },
-    { label: "HFM ID", value: l.hfmBrokerId ?? "—", mono: true },
-    { label: "Telegram", value: l.telegramUserId ?? "—", mono: true },
+    { label: "Lead ID", value: `#${lead.id?.slice(-8) ?? "—"}`, mono: true },
+    { label: "HFM ID", value: lead.hfmBrokerId ?? "—", mono: true },
+    { label: "Telegram ID", value: lead.telegramUserId ?? "—", mono: true },
     {
       label: "Registered",
-      value: l.createdAt
-        ? new Date(l.createdAt).toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
-        : "—",
+      value: lead.registeredAt ? fmt(lead.registeredAt) : "Not yet",
     },
-    { label: "Assigned To", value: "Ahmad Razali" },
-    { label: "Handover", value: l.handoverMode ? "ON" : "OFF" },
+    { label: "Email", value: lead.email ?? "—" },
+    { label: "Phone", value: lead.phoneNumber ?? "—" },
   ];
+
+  const canVerify =
+    status === "DEPOSIT_REPORTED" &&
+    (role === "OWNER" || role === "ADMIN" || role === "STAFF");
 
   return (
     <div className="flex flex-col min-h-screen bg-void text-text-primary font-sans">
@@ -152,7 +217,7 @@ export default function MobileLeadDetail({
       {/* Header */}
       <header className="flex items-center justify-between px-4 h-[52px] bg-base border-b border-border-subtle">
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center gap-1 min-w-[44px] min-h-[44px] text-crimson"
         >
           <CaretLeft size={20} weight="bold" />
@@ -169,7 +234,7 @@ export default function MobileLeadDetail({
       {/* Content */}
       <main
         className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4"
-        style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom))" }}
+        style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
       >
         {/* Hero card */}
         <div className="rounded-2xl p-5 flex flex-col items-center gap-2 bg-elevated">
@@ -181,17 +246,27 @@ export default function MobileLeadDetail({
               {STATUS_LABEL[status] ?? status}
             </span>
             <span className="font-mono text-[11px] text-text-muted">
-              {l.createdAt ? new Date(l.createdAt).toLocaleDateString("en-GB") : "—"}
+              {fmt(lead.createdAt)}
             </span>
           </div>
           <div className="w-14 h-14 rounded-full flex items-center justify-center bg-card">
             <span className="font-display font-bold text-[24px] text-text-primary">{initials}</span>
           </div>
           <div className="text-center">
-            <div className="font-display font-bold text-[20px] text-text-primary">{l.displayName ?? "—"}</div>
-            {l.telegramUserId && (
-              <div className="font-mono text-[13px] text-text-secondary mt-0.5">@{l.telegramUserId}</div>
+            <div className="font-display font-bold text-[20px] text-text-primary">{name}</div>
+            {lead.username && (
+              <div className="font-mono text-[13px] text-text-secondary mt-0.5">@{lead.username}</div>
             )}
+          </div>
+          {/* Handover badge */}
+          <div className={cn(
+            "flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium",
+            lead.handoverMode
+              ? "bg-[color-mix(in_srgb,var(--success)_15%,transparent)] text-success"
+              : "bg-elevated text-text-muted"
+          )}>
+            <UserSwitch size={12} />
+            {lead.handoverMode ? "Handover ON" : "Handover OFF"}
           </div>
         </div>
 
@@ -201,7 +276,7 @@ export default function MobileLeadDetail({
         </div>
 
         {/* Deposit section */}
-        {(status === "DEPOSIT_REPORTED" || status === "DEPOSIT_CONFIRMED") && (
+        {(status === "DEPOSIT_REPORTED" || status === "DEPOSIT_CONFIRMED") && lead.depositBalance && (
           <div className="rounded-xl p-4 flex flex-col items-center gap-2 bg-card border border-border-subtle">
             <div className="flex items-center gap-2 w-full">
               <CurrencyDollar size={18} className="text-gold" weight="fill" />
@@ -210,74 +285,77 @@ export default function MobileLeadDetail({
               </span>
             </div>
             <span className="font-display font-bold text-[32px] text-gold">
-              {l.depositBalance ?? "$0.00"}
+              {lead.depositBalance}
             </span>
             <span className="font-sans text-[13px] text-text-secondary">
-              Reported {l.createdAt ? new Date(l.createdAt).toLocaleDateString("en-GB") : "—"}
+              {status === "DEPOSIT_CONFIRMED" ? "Verified" : "Pending verification"}
             </span>
-            <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-elevated">
-              <span className="font-sans text-[10px] text-text-muted text-center leading-tight">Receipt</span>
-            </div>
           </div>
         )}
 
         {/* Activity timeline */}
-        <div>
-          <h2 className="font-sans font-semibold text-[14px] text-text-primary mb-3">
-            Activity History
-          </h2>
-          <div className="relative flex flex-col gap-0">
-            {TIMELINE.map((entry, idx) => (
-              <div key={entry.id} className="flex items-start gap-3 pb-4">
-                <div className="relative flex flex-col items-center">
-                  <span
-                    className="w-3 h-3 rounded-full shrink-0 mt-0.5"
-                    style={{ background: entry.color }}
-                  />
-                  {idx < TIMELINE.length - 1 && (
-                    <span className="w-px flex-1 bg-border-subtle mt-1" style={{ minHeight: 28 }} />
-                  )}
+        {timeline.length > 0 && (
+          <div>
+            <h2 className="font-sans font-semibold text-[14px] text-text-primary mb-3">
+              Activity History
+            </h2>
+            <div className="relative flex flex-col gap-0">
+              {timeline.map((entry, idx) => (
+                <div key={entry.id} className="flex items-start gap-3 pb-4">
+                  <div className="relative flex flex-col items-center">
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0 mt-0.5"
+                      style={{ background: entry.color }}
+                    />
+                    {idx < timeline.length - 1 && (
+                      <span className="w-px flex-1 bg-border-subtle mt-1" style={{ minHeight: 28 }} />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0.5 pb-1">
+                    <span className="font-sans text-[13px] text-text-secondary leading-snug">
+                      {entry.description}
+                    </span>
+                    <span className="font-mono text-[11px] text-text-muted">{entry.time}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-0.5 pb-1">
-                  <span className="font-sans text-[13px] text-text-secondary leading-snug">
-                    {entry.description}
-                  </span>
-                  <span className="font-mono text-[11px] text-text-muted">{entry.time}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* Sticky action buttons */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 flex gap-3 px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] border-t border-border-subtle bg-void"
-      >
-        {status === "DEPOSIT_REPORTED" ? (
-          <>
-            <button
-              onClick={onVerify}
-              className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] bg-success text-void active:scale-[0.97] transition-transform"
-            >
-              Verify Deposit
-            </button>
-            <button
-              onClick={onReject}
-              className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] border border-danger text-danger active:scale-[0.97] transition-transform"
-            >
-              Reject
-            </button>
-          </>
-        ) : (
+      {canVerify ? (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 flex gap-3 px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] border-t border-border-subtle bg-void"
+        >
+          <button
+            onClick={onVerify}
+            className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] bg-success text-white flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
+          >
+            <CheckCircle size={18} weight="bold" />
+            Verify Deposit
+          </button>
+          <button
+            onClick={onReject}
+            className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] border border-danger text-danger flex items-center justify-center gap-2 active:scale-[0.97] transition-transform"
+          >
+            <XCircle size={18} weight="bold" />
+            Reject
+          </button>
+        </div>
+      ) : onUpdateStatus ? (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] border-t border-border-subtle bg-void"
+        >
           <button
             onClick={onUpdateStatus}
             className="w-full h-[52px] rounded-xl font-sans font-semibold text-[15px] text-white bg-crimson active:scale-[0.97] transition-transform"
           >
             Update Status
           </button>
-        )}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }

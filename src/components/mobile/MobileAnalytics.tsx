@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import MobileShell from "./MobileShell";
 import { LiveDot } from "./MobileShell";
+import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +50,7 @@ function SectionCard({
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
   const [range, setRange] = useState<DateRange>("7D");
+  const [moreOpen, setMoreOpen] = useState(false);
   const { summary, isLoading, fetchSummary } = useAnalyticsStore();
 
   useEffect(() => {
@@ -92,12 +94,15 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
   ];
 
   return (
-    <MobileShell
-      activeTab="home"
-      pageTitle="Analytics"
-      showLiveDot
-      onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
-    >
+    <>
+      <MobileShell
+        activeTab="home"
+        pageTitle="Analytics"
+        showLiveDot
+        onTabChange={(tab) => {
+          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
+        }}
+      >
       <div className="pb-6">
         {/* Date range control */}
         <div className="flex gap-2 px-4 pt-4">
@@ -206,6 +211,8 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
           )}
         </SectionCard>
       </div>
-    </MobileShell>
+      </MobileShell>
+      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
+    </>
   );
 }

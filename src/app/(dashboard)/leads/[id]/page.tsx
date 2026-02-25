@@ -321,6 +321,7 @@ export default function LeadDetailPage({
     return (
       <MobileLeadDetail
         lead={lead}
+        isLoading={isLoading}
         onVerify={() =>
           lead &&
           updateStatus(lead.id, { status: LeadStatus.DEPOSIT_CONFIRMED })

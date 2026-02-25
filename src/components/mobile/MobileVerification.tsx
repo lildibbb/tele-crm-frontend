@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { ShieldCheck, CheckCircle } from "@phosphor-icons/react";
 import gsap from "gsap";
 import MobileShell from "./MobileShell";
+import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useLeadsStore } from "@/store/leadsStore";
 import type { Lead } from "@/store/leadsStore";
 import { cn } from "@/lib/utils";
@@ -220,6 +221,7 @@ export default function MobileVerification({
   onReject,
 }: MobileVerificationProps) {
   const { leads, isLoading, fetchLeads, verifyLead, updateStatus } = useLeadsStore();
+  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     fetchLeads({ skip: 0, take: 50, status: "DEPOSIT_REPORTED", orderBy: "createdAt", order: "desc" });
@@ -266,13 +268,16 @@ export default function MobileVerification({
   const backItem = queue[1];
 
   return (
-    <MobileShell
-      activeTab="verify"
-      pageTitle="Verification Queue"
-      verifyBadgeCount={queue.length}
-      showLiveDot
-      onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
-    >
+    <>
+      <MobileShell
+        activeTab="verify"
+        pageTitle="Verification Queue"
+        verifyBadgeCount={queue.length}
+        showLiveDot
+        onTabChange={(tab) => {
+          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
+        }}
+      >
       <div className="pb-6">
         {/* Stats bar */}
         <div className="flex items-center gap-4 px-4 py-3 border-b border-border-subtle">
@@ -352,6 +357,8 @@ export default function MobileVerification({
           </button>
         </div>
       )}
-    </MobileShell>
+      </MobileShell>
+      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
+    </>
   );
 }

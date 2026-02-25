@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { MagnifyingGlass, Plus, SortAscending } from "@phosphor-icons/react";
 import MobileShell from "./MobileShell";
+import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useLeadsStore } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
 import type { Lead } from "@/store/leadsStore";
@@ -104,6 +105,7 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [search, setSearch] = useState("");
   const [skip, setSkip] = useState(0);
+  const [moreOpen, setMoreOpen] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(null);
 
   const load = useCallback(
@@ -146,11 +148,14 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
   };
 
   return (
-    <MobileShell
-      activeTab="leads"
-      pageTitle="Lead Intelligence"
-      onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
-    >
+    <>
+      <MobileShell
+        activeTab="leads"
+        pageTitle="Lead Intelligence"
+        onTabChange={(tab) => {
+          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
+        }}
+      >
       <div className="pb-6">
         {/* Search bar */}
         <div className="mx-4 mt-4">
@@ -236,6 +241,8 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
       >
         <Plus size={24} color="white" weight="bold" />
       </button>
-    </MobileShell>
+      </MobileShell>
+      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
+    </>
   );
 }

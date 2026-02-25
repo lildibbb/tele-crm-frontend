@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Shield,
@@ -17,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authApi } from "@/lib/api/auth";
 import type { Session } from "@/lib/schemas/auth.schema";
 import { toast } from "sonner";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 const SETTINGS_TABS = [
   { label: "Bot Config", href: "/settings" },
@@ -42,10 +44,17 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export default function SessionsPage() {
+  const router = useRouter();
+  const isMobile = useIsMobile();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [revokeId, setRevokeId] = useState<string | null>(null);
   const [revoking, setRevoking] = useState(false);
+
+  // Redirect mobile users back to the settings mobile shell
+  useEffect(() => {
+    if (isMobile) router.replace("/settings");
+  }, [isMobile, router]);
 
   useEffect(() => {
     authApi.getSessions()
