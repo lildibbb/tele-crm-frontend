@@ -52,21 +52,21 @@ const BOT_ITEMS: SettingsItem[] = [
   {
     id: "bot-config",
     Icon: Robot,
-    iconColor: "#60A5FA",
+    iconColor: "var(--info)",
     label: "Bot Config",
     href: "/settings",
   },
   {
     id: "knowledge",
     Icon: Brain,
-    iconColor: "#8888AA",
+    iconColor: "var(--text-secondary)",
     label: "Knowledge Base",
     href: "/settings/knowledge-base",
   },
   {
     id: "commands",
     Icon: ListBullets,
-    iconColor: "#8888AA",
+    iconColor: "var(--text-secondary)",
     label: "Command Menu",
     href: "/settings/commands",
   },
@@ -76,14 +76,14 @@ const TEAM_ITEMS_OWNER: SettingsItem[] = [
   {
     id: "team",
     Icon: Users,
-    iconColor: "#60A5FA",
+    iconColor: "var(--info)",
     label: "Team Members",
     href: "/settings/team",
   },
   {
     id: "sessions",
     Icon: Key,
-    iconColor: "#8888AA",
+    iconColor: "var(--text-secondary)",
     label: "Active Sessions",
     href: "/settings/sessions",
   },
@@ -93,7 +93,7 @@ const TEAM_ITEMS_ADMIN: SettingsItem[] = [
   {
     id: "team",
     Icon: Users,
-    iconColor: "#555570",
+    iconColor: "var(--text-muted)",
     label: "Team Members",
     disabled: true,
     lockedReason: "Owner access required",
@@ -104,14 +104,14 @@ const APPEARANCE_ITEMS: SettingsItem[] = [
   {
     id: "theme",
     Icon: Sun,
-    iconColor: "#8888AA",
+    iconColor: "var(--text-secondary)",
     label: "Theme",
     value: "Dark",
   },
   {
     id: "language",
     Icon: Globe,
-    iconColor: "#8888AA",
+    iconColor: "var(--text-secondary)",
     label: "Language",
     value: "English",
   },
@@ -121,14 +121,14 @@ const ACCOUNT_ITEMS: SettingsItem[] = [
   {
     id: "password",
     Icon: LockKey,
-    iconColor: "#8888AA",
+    iconColor: "var(--text-secondary)",
     label: "Change Password",
     href: "/profile/password",
   },
   {
     id: "security",
     Icon: ShieldCheck,
-    iconColor: "#8888AA",
+    iconColor: "var(--text-secondary)",
     label: "Security",
     href: "/settings/sessions",
   },
@@ -142,7 +142,7 @@ function Row({ item }: { item: SettingsItem }) {
         "flex items-center gap-4 w-full p-4",
         item.disabled
           ? "opacity-50"
-          : "active:bg-[#1C1C2E] transition-colors group",
+          : "active:bg-elevated transition-colors group",
       )}
     >
       <span
@@ -151,23 +151,23 @@ function Row({ item }: { item: SettingsItem }) {
       >
         <item.Icon size={20} style={{ color: item.iconColor }} weight="fill" />
       </span>
-      <span className="flex-1 font-sans font-medium text-[14px] text-[#F0F0FF] text-left">
+      <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">
         {item.label}
       </span>
       {item.lockedReason ? (
-        <span className="flex items-center gap-1 font-sans text-[11px] text-[#555570]">
+        <span className="flex items-center gap-1 font-sans text-[11px] text-text-muted">
           <Lock size={12} />
           {item.lockedReason}
         </span>
       ) : item.value ? (
-        <span className="font-sans text-[12px] font-medium text-[#8888AA]">
+        <span className="font-sans text-[12px] font-medium text-text-secondary">
           {item.value}
         </span>
       ) : null}
       {!item.disabled && (
         <CaretRight
           size={16}
-          className="text-[#555570] shrink-0 group-hover:translate-x-1 transition-transform"
+          className="text-text-muted shrink-0 group-hover:translate-x-1 transition-transform"
         />
       )}
     </div>
@@ -189,10 +189,10 @@ function SettingsGroup({
   if (group.ownerOnly && role !== "OWNER") return null;
   return (
     <div className="mx-4 mt-6">
-      <h3 className="text-[11px] font-bold text-[#8888AA] uppercase tracking-[0.1em] px-2 mb-2">
+      <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
         {group.header}
       </h3>
-      <div className="rounded-xl bg-[#141422] border border-[#2A2A42] overflow-hidden divide-y divide-[#2A2A42]">
+      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
         {group.items.map((item) => (
           <Row key={item.id} item={item} />
         ))}
@@ -223,18 +223,18 @@ export default function MobileSettings({
   const showAdminTeamSection = role === "ADMIN";
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#080810] text-[#F0F0FF] font-sans">
+    <div className="flex flex-col min-h-screen bg-void text-text-primary font-sans">
       <div className="pt-[env(safe-area-inset-top)]" />
 
       {/* Header */}
-      <header className="flex items-center h-[52px] px-4 bg-[#0E0E1A] border-b border-[#2A2A42]">
+      <header className="flex items-center h-[52px] px-4 bg-base border-b border-border-subtle">
         <button
           onClick={onBack}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[#C4232D]"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-crimson"
         >
           <CaretLeft size={22} weight="bold" />
         </button>
-        <span className="flex-1 text-center font-sans font-semibold text-[17px] text-[#F0F0FF]">
+        <span className="flex-1 text-center font-sans font-semibold text-[17px] text-text-primary">
           Settings
         </span>
         <div className="min-w-[44px]" />
@@ -248,10 +248,10 @@ export default function MobileSettings({
 
         {showAdminTeamSection && (
           <div className="mx-4 mt-6">
-            <h3 className="text-[11px] font-bold text-[#8888AA] uppercase tracking-[0.1em] px-2 mb-2">
+            <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
               Team
             </h3>
-            <div className="rounded-xl bg-[#141422] border border-[#2A2A42] overflow-hidden divide-y divide-[#2A2A42]">
+            <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
               {TEAM_ITEMS_ADMIN.map((item) => (
                 <Row key={item.id} item={item} />
               ))}
@@ -263,8 +263,8 @@ export default function MobileSettings({
         <div className="mx-4 mt-8 pb-8 flex flex-col items-center gap-4">
           <button
             onClick={onSignOut}
-            className="w-full py-3.5 border-2 border-[#C4232D] text-[#C4232D] font-bold rounded-xl
-                       hover:bg-[#C4232D] hover:text-[#F0F0FF] transition-all active:scale-[0.98]
+            className="w-full py-3.5 border-2 border-crimson text-crimson font-bold rounded-xl
+                       hover:bg-crimson hover:text-text-primary transition-all active:scale-[0.98]
                        flex items-center justify-center gap-2"
           >
             <SignOut size={18} weight="bold" />
@@ -275,3 +275,4 @@ export default function MobileSettings({
     </div>
   );
 }
+

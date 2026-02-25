@@ -20,9 +20,22 @@ interface LeadsState {
 
 interface LeadsActions {
   // Async API actions
-  fetchLeads: (params: { skip: number; take: number; status?: string }) => Promise<void>;
+  fetchLeads: (params: {
+    skip: number;
+    take: number;
+    status?: string;
+    search?: string;
+    orderBy?: string;
+    order?: "asc" | "desc";
+    contactId?: string;
+    registered?: boolean;
+    balanceMin?: number;
+    balanceMax?: number;
+  }) => Promise<void>;
+  fetchLead: (id: string) => Promise<void>;
   updateStatus: (id: string, data: UpdateLeadStatusInput) => Promise<void>;
   setHandover: (id: string, mode: boolean) => Promise<void>;
+  bulkSetHandover: (mode: boolean) => Promise<void>;
   verifyLead: (id: string) => Promise<void>;
 }
 
@@ -30,20 +43,38 @@ interface LeadsActions {
 
 export const useLeadsStore = create<LeadsState & LeadsActions>()(
   devtools(
-    (set, _get) => ({
+    (set, get) => ({
       leads: [],
       total: 0,
       isLoading: false,
       error: null,
       pageCount: 1,
 
-      fetchLeads: async ({ skip, take, status }) => {
+      fetchLeads: async ({
+        skip,
+        take,
+        status,
+        search,
+        orderBy,
+        order,
+        contactId,
+        registered,
+        balanceMin,
+        balanceMax,
+      }) => {
         set({ isLoading: true, error: null }, false, "fetchLeads/pending");
         try {
           const res = await leadsApi.list({
             skip,
             take,
             status: status as LeadStatus | undefined,
+            search,
+            orderBy,
+            order,
+            contactId,
+            registered,
+            balanceMin,
+            balanceMax,
           });
           const data = res.data.data;
           const total = res.data.total ?? data.length;
@@ -62,6 +93,32 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
             (err as { response?: { data?: { message?: string } } })?.response
               ?.data?.message ?? "Failed to load leads.";
           set({ isLoading: false, error: message }, false, "fetchLeads/error");
+        }
+      },
+
+      fetchLead: async (id: string) => {
+        set({ isLoading: true, error: null }, false, "fetchLead/pending");
+        try {
+          const res = await leadsApi.findOne(id);
+          const data = res.data.data;
+          set(
+            (s) => {
+              const exists = s.leads.some((l) => l.id === id);
+              return {
+                leads: exists
+                  ? s.leads.map((l) => (l.id === id ? data : l))
+                  : [...s.leads, data],
+                isLoading: false,
+              };
+            },
+            false,
+            "fetchLead/success",
+          );
+        } catch (err: unknown) {
+          const message =
+            (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message ?? "Failed to load lead.";
+          set({ isLoading: false, error: message }, false, "fetchLead/error");
         }
       },
 
@@ -98,6 +155,25 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
               ?.data?.message ?? "Failed to update handover mode.";
           set({ error: message }, false, "setHandover/error");
           throw err;
+        }
+      },
+
+      bulkSetHandover: async (mode: boolean) => {
+        const leads = get().leads;
+        // Optimistically update all leads in store
+        set(
+          (s) => ({
+            leads: s.leads.map((l) => ({ ...l, handoverMode: mode })),
+          }),
+          false,
+          "bulkSetHandover/optimistic",
+        );
+        try {
+          await leadsApi.setBulkHandover({
+            handoverMode: mode,
+          });
+        } catch (err: unknown) {
+          console.error("Failed to set bulk handover", err);
         }
       },
 

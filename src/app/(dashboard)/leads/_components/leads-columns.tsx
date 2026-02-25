@@ -12,6 +12,13 @@ import {
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
 import type { Lead } from "@/store/leadsStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const BADGE_MAP: Record<string, { label: string; cls: string }> = {
   NEW: { label: "New", cls: "badge-new" },
@@ -23,12 +30,10 @@ const BADGE_MAP: Record<string, { label: string; cls: string }> = {
 
 interface LeadsColumnsProps {
   onHandoverToggle: (id: string, current: boolean) => void;
-  onApprove: (id: string) => void;
 }
 
 export function getLeadsColumns({
   onHandoverToggle,
-  onApprove,
 }: LeadsColumnsProps): ColumnDef<Lead>[] {
   return [
     {
@@ -51,9 +56,14 @@ export function getLeadsColumns({
         return (
           <Link href={`/leads/${lead.id}`} className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-9 h-9 rounded-full bg-elevated border border-border-subtle flex items-center justify-center text-text-primary font-display font-medium text-sm flex-shrink-0">
-                {initials}
-              </div>
+              <Avatar>
+                <AvatarImage
+                  src="https://github.com/shadcn.png"
+                  alt="@shadcn"
+                  className="grayscale"
+                />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-card" />
             </div>
             <div className="flex flex-col min-w-0">
@@ -82,7 +92,16 @@ export function getLeadsColumns({
                 className="h-3.5 w-3.5 text-info/80"
                 weight="fill"
               />
-              <span className="data-mono">{lead.telegramUserId}</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="data-mono">@{lead.username}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Telegram ID: {lead.telegramUserId}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <div className="flex items-center gap-1.5 text-text-muted text-[11px]">
               <Hash className="h-3 w-3" />
@@ -172,41 +191,30 @@ export function getLeadsColumns({
         const lead = row.original;
         return (
           <div className="flex items-center justify-end gap-2">
-            {lead.status === "DEPOSIT_REPORTED" ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onApprove(lead.id)}
-                className="h-8 text-[11px] uppercase font-bold text-crimson border-crimson hover:bg-crimson/10 px-4 tracking-wider"
+            <div className="flex items-center gap-2 mr-1">
+              <span className="text-[9.5px] uppercase font-bold text-text-muted tracking-wider">
+                Handover
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  onHandoverToggle(lead.id, lead.handoverMode ?? false)
+                }
+                className="cursor-pointer flex items-center"
               >
-                Approve
-              </Button>
-            ) : (
-              <div className="flex items-center gap-2 mr-1">
-                <span className="text-[9.5px] uppercase font-bold text-text-muted tracking-wider">
-                  Handover
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    onHandoverToggle(lead.id, lead.handoverMode ?? false)
-                  }
-                  className="cursor-pointer flex items-center"
-                >
-                  {lead.handoverMode ? (
-                    <ToggleRight
-                      className="h-7 w-7 text-crimson transition-colors"
-                      weight="fill"
-                    />
-                  ) : (
-                    <ToggleLeft
-                      className="h-7 w-7 text-text-muted transition-colors border-current rounded-full"
-                      weight="fill"
-                    />
-                  )}
-                </button>
-              </div>
-            )}
+                {lead.handoverMode ? (
+                  <ToggleRight
+                    className="h-7 w-7 text-crimson transition-colors"
+                    weight="fill"
+                  />
+                ) : (
+                  <ToggleLeft
+                    className="h-7 w-7 text-text-muted transition-colors border-current rounded-full"
+                    weight="fill"
+                  />
+                )}
+              </button>
+            </div>
             <Link href={`/leads/${lead.id}`}>
               <Button
                 variant="ghost"

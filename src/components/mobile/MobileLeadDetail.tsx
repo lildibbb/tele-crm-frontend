@@ -6,7 +6,6 @@ import {
   CaretLeft,
   DotsThree,
   CurrencyDollar,
-  CheckCircle,
 } from "@phosphor-icons/react";
 import type { Lead } from "@/store/leadsStore";
 import { UserRole } from "@/types/enums";
@@ -71,11 +70,11 @@ const TIMELINE: TimelineEntry[] = [
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
-  NEW: "#60A5FA",
+  NEW: "var(--info)",
   REGISTERED: "#A855F7",
-  DEPOSIT_REPORTED: "#F59E0B",
-  DEPOSIT_CONFIRMED: "#22D3A0",
-  REJECTED: "#EF4444",
+  DEPOSIT_REPORTED: "var(--warning)",
+  DEPOSIT_CONFIRMED: "var(--success)",
+  REJECTED: "var(--danger)",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -98,13 +97,13 @@ function getInitials(name: string): string {
 // ── Info cell ──────────────────────────────────────────────────────────────────
 function InfoCell({ cell }: { cell: InfoCell }) {
   return (
-    <div className="flex flex-col gap-1 p-3 rounded-[10px] bg-[#141422] border border-[#2A2A42]">
-      <span className="font-sans text-[11px] text-[#8888AA] uppercase tracking-wide">
+    <div className="flex flex-col gap-1 p-3 rounded-[10px] bg-card border border-border-subtle">
+      <span className="font-sans text-[11px] text-text-secondary uppercase tracking-wide">
         {cell.label}
       </span>
       <span
         className={cn(
-          "text-[13px] text-[#F0F0FF] truncate",
+          "text-[13px] text-text-primary truncate",
           cell.mono ? "font-mono" : "font-sans font-medium",
         )}
       >
@@ -147,22 +146,22 @@ export default function MobileLeadDetail({
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#080810] text-[#F0F0FF] font-sans">
+    <div className="flex flex-col min-h-screen bg-void text-text-primary font-sans">
       <div className="pt-[env(safe-area-inset-top)]" />
 
       {/* Header */}
-      <header className="flex items-center justify-between px-4 h-[52px] bg-[#0E0E1A] border-b border-[#2A2A42]">
+      <header className="flex items-center justify-between px-4 h-[52px] bg-base border-b border-border-subtle">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 min-w-[44px] min-h-[44px] text-[#C4232D]"
+          className="flex items-center gap-1 min-w-[44px] min-h-[44px] text-crimson"
         >
           <CaretLeft size={20} weight="bold" />
           <span className="font-sans text-[14px] font-medium">Leads</span>
         </button>
-        <span className="font-sans font-semibold text-[17px] text-[#F0F0FF]">
+        <span className="font-sans font-semibold text-[17px] text-text-primary">
           Lead Detail
         </span>
-        <button className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[#8888AA]">
+        <button className="min-w-[44px] min-h-[44px] flex items-center justify-center text-text-secondary">
           <DotsThree size={22} weight="bold" />
         </button>
       </header>
@@ -173,87 +172,58 @@ export default function MobileLeadDetail({
         style={{ paddingBottom: "calc(72px + env(safe-area-inset-bottom))" }}
       >
         {/* Hero card */}
-        <div
-          className="rounded-2xl p-5 flex flex-col items-center gap-2"
-          style={{ background: "#1C1C2E" }}
-        >
+        <div className="rounded-2xl p-5 flex flex-col items-center gap-2 bg-elevated">
           <div className="flex items-center justify-between w-full">
             <span
               className="rounded-full px-2 py-0.5 text-[11px] font-medium"
-              style={{ background: `${accentColor}22`, color: accentColor }}
+              style={{ background: `color-mix(in srgb, ${accentColor} 15%, transparent)`, color: accentColor }}
             >
               {STATUS_LABEL[status] ?? status}
             </span>
-            <span className="font-mono text-[11px] text-[#555570]">
-              {l.createdAt
-                ? new Date(l.createdAt).toLocaleDateString("en-GB")
-                : "—"}
+            <span className="font-mono text-[11px] text-text-muted">
+              {l.createdAt ? new Date(l.createdAt).toLocaleDateString("en-GB") : "—"}
             </span>
           </div>
-          <div
-            className="w-14 h-14 rounded-full flex items-center justify-center"
-            style={{ background: "#141422" }}
-          >
-            <span className="font-display font-bold text-[24px] text-[#F0F0FF]">
-              {initials}
-            </span>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center bg-card">
+            <span className="font-display font-bold text-[24px] text-text-primary">{initials}</span>
           </div>
           <div className="text-center">
-            <div className="font-display font-bold text-[20px] text-[#F0F0FF]">
-              {l.displayName ?? "—"}
-            </div>
+            <div className="font-display font-bold text-[20px] text-text-primary">{l.displayName ?? "—"}</div>
             {l.telegramUserId && (
-              <div className="font-mono text-[13px] text-[#8888AA] mt-0.5">
-                @{l.telegramUserId}
-              </div>
+              <div className="font-mono text-[13px] text-text-secondary mt-0.5">@{l.telegramUserId}</div>
             )}
           </div>
         </div>
 
         {/* Info grid */}
         <div className="grid grid-cols-2 gap-2">
-          {infoCells.map((cell) => (
-            <InfoCell key={cell.label} cell={cell} />
-          ))}
+          {infoCells.map((cell) => <InfoCell key={cell.label} cell={cell} />)}
         </div>
 
         {/* Deposit section */}
         {(status === "DEPOSIT_REPORTED" || status === "DEPOSIT_CONFIRMED") && (
-          <div
-            className="rounded-xl p-4 flex flex-col items-center gap-2 border"
-            style={{ background: "#141422", borderColor: "#E8B94F30" }}
-          >
+          <div className="rounded-xl p-4 flex flex-col items-center gap-2 bg-card border border-border-subtle">
             <div className="flex items-center gap-2 w-full">
-              <CurrencyDollar
-                size={18}
-                className="text-[#E8B94F]"
-                weight="fill"
-              />
-              <span className="font-sans font-semibold text-[14px] text-[#F0F0FF]">
+              <CurrencyDollar size={18} className="text-gold" weight="fill" />
+              <span className="font-sans font-semibold text-[14px] text-text-primary">
                 Deposit Information
               </span>
             </div>
-            <span className="font-display font-bold text-[32px] text-[#E8B94F]">
+            <span className="font-display font-bold text-[32px] text-gold">
               {l.depositBalance ?? "$0.00"}
             </span>
-            <span className="font-sans text-[13px] text-[#8888AA]">
-              Reported Jan 21, 2026
+            <span className="font-sans text-[13px] text-text-secondary">
+              Reported {l.createdAt ? new Date(l.createdAt).toLocaleDateString("en-GB") : "—"}
             </span>
-            {/* Receipt placeholder */}
-            <div
-              className="w-20 h-20 rounded-xl flex items-center justify-center"
-              style={{ background: "#1C1C2E" }}
-            >
-              <span className="font-sans text-[10px] text-[#555570] text-center leading-tight">
-                Receipt
-              </span>
+            <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-elevated">
+              <span className="font-sans text-[10px] text-text-muted text-center leading-tight">Receipt</span>
             </div>
           </div>
         )}
 
         {/* Activity timeline */}
         <div>
-          <h2 className="font-sans font-semibold text-[14px] text-[#F0F0FF] mb-3">
+          <h2 className="font-sans font-semibold text-[14px] text-text-primary mb-3">
             Activity History
           </h2>
           <div className="relative flex flex-col gap-0">
@@ -265,19 +235,14 @@ export default function MobileLeadDetail({
                     style={{ background: entry.color }}
                   />
                   {idx < TIMELINE.length - 1 && (
-                    <span
-                      className="w-px flex-1 bg-[#2A2A42] mt-1"
-                      style={{ minHeight: 28 }}
-                    />
+                    <span className="w-px flex-1 bg-border-subtle mt-1" style={{ minHeight: 28 }} />
                   )}
                 </div>
                 <div className="flex flex-col gap-0.5 pb-1">
-                  <span className="font-sans text-[13px] text-[#8888AA] leading-snug">
+                  <span className="font-sans text-[13px] text-text-secondary leading-snug">
                     {entry.description}
                   </span>
-                  <span className="font-mono text-[11px] text-[#555570]">
-                    {entry.time}
-                  </span>
+                  <span className="font-mono text-[11px] text-text-muted">{entry.time}</span>
                 </div>
               </div>
             ))}
@@ -287,23 +252,19 @@ export default function MobileLeadDetail({
 
       {/* Sticky action buttons */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-40 flex gap-3 px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] border-t border-[#2A2A42]"
-        style={{ background: "#080810" }}
+        className="fixed bottom-0 left-0 right-0 z-40 flex gap-3 px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] border-t border-border-subtle bg-void"
       >
         {status === "DEPOSIT_REPORTED" ? (
           <>
             <button
               onClick={onVerify}
-              className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px]
-                         active:scale-[0.97] transition-transform text-[#080810]"
-              style={{ background: "#22D3A0" }}
+              className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] bg-success text-void active:scale-[0.97] transition-transform"
             >
               Verify Deposit
             </button>
             <button
               onClick={onReject}
-              className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px]
-                         border border-[#EF4444] text-[#EF4444] active:scale-[0.97] transition-transform"
+              className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] border border-danger text-danger active:scale-[0.97] transition-transform"
             >
               Reject
             </button>
@@ -311,9 +272,7 @@ export default function MobileLeadDetail({
         ) : (
           <button
             onClick={onUpdateStatus}
-            className="w-full h-[52px] rounded-xl font-sans font-semibold text-[15px] text-white
-                       active:scale-[0.97] transition-transform"
-            style={{ background: "#C4232D" }}
+            className="w-full h-[52px] rounded-xl font-sans font-semibold text-[15px] text-white bg-crimson active:scale-[0.97] transition-transform"
           >
             Update Status
           </button>

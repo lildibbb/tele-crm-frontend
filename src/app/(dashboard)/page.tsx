@@ -16,12 +16,14 @@ import {
   Wallet,
   TrendUp,
   ArrowUpRight,
+  ArrowDownRight,
   Clock,
   ArrowCounterClockwise,
   Warning,
   ArrowsLeftRight,
   Pulse,
   CaretRight,
+  CaretDown,
   SpinnerGap,
 } from "@phosphor-icons/react";
 import {
@@ -38,22 +40,14 @@ import {
   Cell,
 } from "recharts";
 import { useT } from "@/i18n";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu as PeriodDropdown,
+  DropdownMenuContent as PeriodDropdownContent,
+  DropdownMenuItem as PeriodDropdownItem,
+  DropdownMenuTrigger as PeriodDropdownTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip as UITooltip,
@@ -66,6 +60,22 @@ import { toast } from "sonner";
 
 gsap.registerPlugin(useGSAP);
 
+// ── Period options ──────────────────────────────────────────────
+const PERIODS = [
+  { value: "yesterday", label: "Yesterday" },
+  { value: "today", label: "Today" },
+  { value: "this_week", label: "Weekly" },
+  { value: "this_month", label: "Monthly" },
+  { value: "last_30_days", label: "30 Days" },
+  { value: "last_90_days", label: "90 Days" },
+  { value: "all_time", label: "All Time" },
+] as const;
+
+type PeriodValue = (typeof PERIODS)[number]["value"];
+const PERIOD_LABEL: Record<PeriodValue, string> = Object.fromEntries(
+  PERIODS.map((p) => [p.value, p.label]),
+) as Record<PeriodValue, string>;
+
 // ── Types ──────────────────────────────────────────────────────
 interface KpiCardProps {
   icon: React.ElementType;
@@ -74,8 +84,6 @@ interface KpiCardProps {
   delta: string;
   deltaPositive?: boolean;
   goldValue?: boolean;
-  financialAccent?: boolean;
-  delay?: number;
 }
 
 interface ActivityRow {
@@ -209,11 +217,11 @@ function FunnelTooltip({
   const item = payload[0];
   return (
     <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
-      <p className="text-[12px] text-text-secondary font-sans mb-1">
+      <p className="text-[11px] text-text-secondary mb-1 font-sans">
         {item.name}
       </p>
       <p
-        className="font-display font-bold text-[18px] leading-tight"
+        className="font-bold text-[18px] leading-tight data-mono"
         style={{ color: item.payload.color }}
       >
         {item.value.toLocaleString()}
@@ -230,7 +238,6 @@ function KpiCard({
   delta,
   deltaPositive = true,
   goldValue = false,
-  financialAccent = false,
 }: KpiCardProps) {
   const numericTarget = parseInt(value.replace(/[^0-9]/g, ""), 10) || 0;
   const prefix = value.match(/[^0-9,]+(?=[0-9])/)?.[0] ?? "";
@@ -239,38 +246,35 @@ function KpiCard({
   const displayValue = prefix + count.toLocaleString() + suffix;
 
   return (
-    <Card className="kpi-stat-card kpi-card overflow-hidden relative">
-      {financialAccent && (
-        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-gold to-gold/30 rounded-r" />
-      )}
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-3.5">
-          <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider leading-tight pr-2">
-            {label}
-          </p>
-          <div
-            className={`ios-icon ${financialAccent ? "bg-gold-subtle" : "bg-crimson-subtle"}`}
-          >
-            <Icon
-              size={20}
-              weight="duotone"
-              className={financialAccent ? "text-gold" : "text-crimson"}
-            />
-          </div>
-        </div>
-        <p
-          className={`font-display font-extrabold text-[30px] sm:text-[34px] tracking-tight leading-none mb-2 ${goldValue ? "text-gold" : "text-text-primary"}`}
+    <div className="kpi-stat-card bg-elevated rounded-xl p-5">
+      <div className="flex items-start justify-between mb-4">
+        <Icon size={22} weight="duotone" />
+        <span
+          className={`flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+            deltaPositive
+              ? "bg-success/10 text-success"
+              : "bg-danger/10 text-danger"
+          }`}
         >
-          {displayValue}
-        </p>
-        <p
-          className={`text-xs font-sans flex items-center gap-1 ${deltaPositive ? "text-success" : "text-danger"}`}
-        >
-          <ArrowUpRight size={13} weight="bold" className="flex-shrink-0" />
+          {deltaPositive ? (
+            <ArrowUpRight size={12} weight="regular" />
+          ) : (
+            <ArrowDownRight size={12} weight="regular" />
+          )}
           {delta}
-        </p>
-      </CardContent>
-    </Card>
+        </span>
+      </div>
+      <p
+        className={`text-2xl font-bold data-mono leading-none mb-1.5 tracking-tight ${
+          goldValue ? "text-gold" : "text-text-primary"
+        }`}
+      >
+        {displayValue}
+      </p>
+      <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
+        {label}
+      </p>
+    </div>
   );
 }
 
@@ -279,9 +283,7 @@ export default function DashboardPage() {
   const t = useT();
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
-  const [period, setPeriod] = useState<
-    "today" | "this_week" | "last_30_days" | "this_month"
-  >("last_30_days");
+  const [period, setPeriod] = useState<PeriodValue>("last_30_days");
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
@@ -468,7 +470,7 @@ export default function DashboardPage() {
   if (isMobile) {
     if (user?.role === UserRole.SUPERADMIN) return <SuperadminHome />;
     if (user?.role === UserRole.STAFF)
-      return <StaffHome staffName={user?.email?.split("@")[0]} />;
+      return <StaffHome />;
     return <OwnerHome />;
   }
 
@@ -542,7 +544,7 @@ export default function DashboardPage() {
                   size="sm"
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border border-white/10 text-white/80 hover:bg-white/20 hover:text-white/90 disabled:cursor-not-allowed h-[30px] px-3 text-xs font-medium"
+                  className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border-transparent text-white/80 hover:bg-white/20 hover:text-white/90 disabled:cursor-not-allowed h-[30px] px-3 text-xs font-medium"
                 >
                   {refreshing ? (
                     <SpinnerGap
@@ -555,23 +557,44 @@ export default function DashboardPage() {
                   )}
                   {refreshing ? t("common.loading") : t("dashboard.refresh")}
                 </Button>
-                <Select
-                  value={period}
-                  onValueChange={(val: any) => setPeriod(val)}
-                >
-                  <SelectTrigger className="h-[30px] px-3 text-xs bg-white/10 backdrop-blur-sm border-white/10 text-white/80 hover:bg-white/20 w-auto min-w-[110px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yesterday">Yesterday</SelectItem>
-                    <SelectItem value="today">Today</SelectItem>
-                    <SelectItem value="this_week">Weekly</SelectItem>
-                    <SelectItem value="this_month">Monthly</SelectItem>
-                    <SelectItem value="last_30_days">30 Days</SelectItem>
-                    <SelectItem value="last_90_days">90 Days</SelectItem>
-                    <SelectItem value="all_time">All Time</SelectItem>
-                  </SelectContent>
-                </Select>
+                <PeriodDropdown>
+                  <PeriodDropdownTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border-transparent  text-white/80 hover:bg-white/20 hover:text-white/90 h-[30px] px-3 text-xs font-medium"
+                    >
+                      {PERIOD_LABEL[period]}
+                      <CaretDown
+                        size={11}
+                        weight="bold"
+                        className="opacity-70"
+                      />
+                    </Button>
+                  </PeriodDropdownTrigger>
+                  <PeriodDropdownContent
+                    align="end"
+                    sideOffset={6}
+                    className="min-w-[140px] border-transparent"
+                  >
+                    {PERIODS.map((p) => (
+                      <PeriodDropdownItem
+                        key={p.value}
+                        onClick={() => setPeriod(p.value)}
+                        className="gap-2 cursor-pointer text-xs"
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-opacity ${
+                            period === p.value
+                              ? "bg-crimson opacity-100"
+                              : "opacity-0"
+                          }`}
+                        />
+                        {p.label}
+                      </PeriodDropdownItem>
+                    ))}
+                  </PeriodDropdownContent>
+                </PeriodDropdown>
               </div>
             </div>
           </div>
@@ -590,7 +613,7 @@ export default function DashboardPage() {
                   icon={Users}
                   label={t("dashboard.totalLeads")}
                   value={String(totalLeads)}
-                  delta={`${summary?.kpi.totalLeads.changePercentage ?? 0}% ${period === "today" ? "since yesterday" : "since last period"}`}
+                  delta={`${summary?.kpi.totalLeads.changePercentage ?? 0}%`}
                   deltaPositive={
                     (summary?.kpi.totalLeads.changePercentage ?? 0) >= 0
                   }
@@ -599,7 +622,7 @@ export default function DashboardPage() {
                   icon={UserCheck}
                   label={t("dashboard.registered")}
                   value={String(registeredLeads)}
-                  delta={`${summary?.kpi.registeredAccounts.changePercentage ?? 0}% ${period === "today" ? "since yesterday" : "since last period"}`}
+                  delta={`${summary?.kpi.registeredAccounts.changePercentage ?? 0}%`}
                   deltaPositive={
                     (summary?.kpi.registeredAccounts.changePercentage ?? 0) >= 0
                   }
@@ -608,24 +631,21 @@ export default function DashboardPage() {
                   icon={Wallet}
                   label={t("dashboard.depositClients")}
                   value={String(depositConfirmed)}
-                  delta={`${summary?.kpi.depositingClients.changePercentage ?? 0}% ${period === "today" ? "since yesterday" : "since last period"}`}
+                  delta={`${summary?.kpi.depositingClients.changePercentage ?? 0}%`}
                   deltaPositive={
                     (summary?.kpi.depositingClients.changePercentage ?? 0) >= 0
                   }
                   goldValue
-                  financialAccent
                 />
                 <KpiCard
                   icon={TrendUp}
                   label={t("dashboard.pendingVerifications")}
                   value={String(pendingVerifications)}
-                  delta={`${summary?.kpi.pendingVerifications.changePercentage ?? 0}% ${period === "today" ? "since yesterday" : "since last period"}`}
+                  delta={`${summary?.kpi.pendingVerifications.changePercentage ?? 0}%`}
                   deltaPositive={
                     (summary?.kpi.pendingVerifications.changePercentage ?? 0) >=
                     0
                   }
-                  goldValue
-                  financialAccent
                 />
               </>
             )}
@@ -646,16 +666,13 @@ export default function DashboardPage() {
 
           {/* ── Funnel Donut + Live Activity ── */}
           <div className="page-section grid grid-cols-1 xl:grid-cols-7 gap-3 md:gap-4">
-            {/* Funnel Donut Chart — always-dark chart-card */}
-            <div className="xl:col-span-4 chart-card p-5">
+            {/* Funnel Donut Chart */}
+            <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle">
               <div className="flex items-center justify-between mb-1">
-                <h2 className="font-sans font-semibold text-[15px] text-white">
+                <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   {t("dashboard.funnelOverview")}
                 </h2>
-                <span
-                  className="text-xs font-sans"
-                  style={{ color: "rgba(255,255,255,0.3)" }}
-                >
+                <span className="text-xs font-sans text-text-muted">
                   {period === "today"
                     ? "Daily"
                     : period === "this_week"
@@ -663,10 +680,7 @@ export default function DashboardPage() {
                       : "Last 30 Days"}
                 </span>
               </div>
-              <p
-                className="text-xs font-sans mb-5"
-                style={{ color: "rgba(255,255,255,0.35)" }}
-              >
+              <p className="text-xs font-sans mb-5 text-text-muted">
                 {t("dashboard.funnelSubtitle")}
               </p>
 
@@ -689,17 +703,19 @@ export default function DashboardPage() {
                           <Cell key={i} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip content={<FunnelTooltip />} />
+                      <Tooltip
+                        content={<FunnelTooltip />}
+                        offset={12}
+                        isAnimationActive={false}
+                        wrapperStyle={{ pointerEvents: "none" }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="font-display font-extrabold text-[22px] text-white leading-none">
+                    <span className="text-xl font-bold data-mono text-text-primary leading-none">
                       {totalLeads.toLocaleString()}
                     </span>
-                    <span
-                      className="text-[11px] mt-0.5"
-                      style={{ color: "rgba(255,255,255,0.35)" }}
-                    >
+                    <span className="text-[11px] mt-0.5 text-text-muted">
                       {t("dashboard.totalLeads")}
                     </span>
                   </div>
@@ -719,25 +735,19 @@ export default function DashboardPage() {
                             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                             style={{ background: item.color }}
                           />
-                          <span
-                            className="text-[13px] font-sans flex-1"
-                            style={{ color: "rgba(255,255,255,0.6)" }}
-                          >
+                          <span className="text-[13px] font-sans flex-1 text-text-secondary">
                             {item.name}
                           </span>
-                          <span className="font-mono text-[13px] text-white">
+                          <span className="data-mono text-[13px] text-text-primary">
                             {item.value.toLocaleString()}
                           </span>
-                          <span
-                            className="text-[11px] w-9 text-right"
-                            style={{ color: "rgba(255,255,255,0.3)" }}
-                          >
+                          <span className="text-[11px] w-9 text-right text-text-muted">
                             {pct}%
                           </span>
                         </div>
                         <div
                           className="h-1.5 rounded-full overflow-hidden"
-                          style={{ background: "rgba(255,255,255,0.07)" }}
+                          style={{ background: "var(--border-subtle)" }}
                         >
                           <div
                             className="funnel-bar h-full rounded-full"
@@ -756,27 +766,27 @@ export default function DashboardPage() {
             </div>
 
             {/* Live Activity Feed */}
-            <Card className="xl:col-span-3 flex flex-col">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 px-5 pt-5">
-                <CardTitle className="font-sans font-semibold text-[15px] text-text-primary">
+            <div className="xl:col-span-3 bg-elevated rounded-[20px] border border-border-subtle flex flex-col overflow-hidden">
+              <div className="flex flex-row items-center justify-between px-5 py-4 bg-card">
+                <span className="font-sans font-semibold text-[15px] text-text-primary">
                   {t("dashboard.liveActivity")}
-                </CardTitle>
+                </span>
                 <Badge className="badge badge-live flex items-center gap-1.5">
                   <span className="live-dot !w-1.5 !h-1.5" />
                   LIVE
                 </Badge>
-              </CardHeader>
-              <CardContent className="p-0 flex-1">
-                <div className="space-y-0.5 px-3">
+              </div>
+              <div className="flex-1 p-0">
+                <div className="space-y-0.5 px-3 py-2">
                   {recentActivity.map((row) => {
                     const badge = BADGE_MAP[row.status];
                     return (
                       <Link
                         key={row.id}
                         href={`/leads/${row.id}`}
-                        className="activity-row flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-elevated transition-colors group"
+                        className="activity-row flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-void/40 transition-colors group"
                       >
-                        <div className="w-8 h-8 rounded-full bg-crimson/15 border border-crimson/20 flex items-center justify-center text-crimson font-display font-bold text-[10px] flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-crimson/15 border border-crimson/20 flex items-center justify-center text-crimson font-bold text-[10px] flex-shrink-0">
                           {row.name
                             .split(" ")
                             .map((n) => n[0])
@@ -807,8 +817,8 @@ export default function DashboardPage() {
                     );
                   })}
                 </div>
-              </CardContent>
-              <CardFooter className="px-5 py-3 border-t border-border-subtle">
+              </div>
+              <div className="px-5 py-3 border-t border-border-subtle">
                 <Button
                   variant="link"
                   asChild
@@ -819,83 +829,77 @@ export default function DashboardPage() {
                     <ArrowUpRight size={12} weight="bold" className="ml-1" />
                   </Link>
                 </Button>
-              </CardFooter>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* ── Action Strip ── */}
-          <Card className="page-section overflow-hidden">
-            <CardContent className="p-0">
-              <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border-subtle">
-                <Button
-                  variant="ghost"
-                  asChild
-                  className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-elevated/60 gap-3"
-                >
-                  <Link href="/verification">
-                    <div className="ios-icon-sm bg-warning/12 flex-shrink-0">
-                      <Warning
-                        size={16}
-                        weight="duotone"
-                        className="text-warning"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <span className="font-sans font-semibold text-[13px] text-text-primary">
-                        {t("dashboard.pendingVerifications")}
-                      </span>
-                      <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
-                        · {t("dashboard.awaitingReview")}
-                      </span>
-                    </div>
-                    <span className="flex items-center gap-0.5 text-warning text-[12px] font-medium flex-shrink-0 group-hover:gap-1.5 transition-all whitespace-nowrap">
-                      {t("common.review")}{" "}
-                      <CaretRight size={13} weight="bold" />
+          <div className="page-section bg-elevated rounded-xl overflow-hidden border border-border-subtle">
+            <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border-subtle">
+              <Button
+                variant="ghost"
+                asChild
+                className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-void/40 gap-3"
+              >
+                <Link href="/verification">
+                  <div className="flex-shrink-0">
+                    <Warning
+                      size={16}
+                      weight="duotone"
+                      className="text-warning"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <span className="font-sans font-semibold text-[13px] text-text-primary">
+                      {t("dashboard.pendingVerifications")}
                     </span>
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  asChild
-                  className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-elevated/60 gap-3"
-                >
-                  <Link href="/leads?handover=true">
-                    <div className="ios-icon-sm bg-info/12 flex-shrink-0">
-                      <ArrowsLeftRight
-                        size={16}
-                        weight="duotone"
-                        className="text-info"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <span className="font-sans font-semibold text-[13px] text-text-primary">
-                        {t("dashboard.handoverLeads")}
-                      </span>
-                      <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
-                        · {t("dashboard.manualReplies")}
-                      </span>
-                    </div>
-                    <span className="flex items-center gap-0.5 text-info text-[12px] font-medium flex-shrink-0 group-hover:gap-1.5 transition-all whitespace-nowrap">
-                      {t("common.view")} <CaretRight size={13} weight="bold" />
+                    <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
+                      · {t("dashboard.awaitingReview")}
                     </span>
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  </div>
+                  <span className="flex items-center gap-0.5 text-warning text-[12px] font-medium flex-shrink-0 group-hover:gap-1.5 transition-all whitespace-nowrap">
+                    {t("common.review")} <CaretRight size={13} weight="bold" />
+                  </span>
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                asChild
+                className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-void/40 gap-3"
+              >
+                <Link href="/leads?handover=true">
+                  <div className="flex-shrink-0">
+                    <ArrowsLeftRight
+                      size={16}
+                      weight="duotone"
+                      className="text-info"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <span className="font-sans font-semibold text-[13px] text-text-primary">
+                      {t("dashboard.handoverLeads")}
+                    </span>
+                    <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
+                      · {t("dashboard.manualReplies")}
+                    </span>
+                  </div>
+                  <span className="flex items-center gap-0.5 text-info text-[12px] font-medium flex-shrink-0 group-hover:gap-1.5 transition-all whitespace-nowrap">
+                    {t("common.view")} <CaretRight size={13} weight="bold" />
+                  </span>
+                </Link>
+              </Button>
+            </div>
+          </div>
 
           {/* ── Trend + Weekly Charts ── */}
           <div className="page-section grid grid-cols-1 xl:grid-cols-5 gap-3 md:gap-4">
             {/* Area Chart — Lead Acquisition Trend */}
-            <div className="xl:col-span-3 chart-card p-5">
+            <div className="xl:col-span-3 bg-elevated rounded-[20px] p-5 border border-border-subtle">
               <div className="flex items-center justify-between mb-1">
-                <h2 className="font-sans font-semibold text-[15px] text-white">
+                <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   {t("dashboard.acquisitionTrend")}
                 </h2>
-                <span
-                  className="flex items-center gap-1.5 text-xs"
-                  style={{ color: "rgba(255,255,255,0.3)" }}
-                >
+                <span className="flex items-center gap-1.5 text-xs text-text-muted">
                   <Pulse size={13} weight="regular" />
                   {period === "today"
                     ? "Daily"
@@ -904,10 +908,7 @@ export default function DashboardPage() {
                       : "Last 30 Days"}
                 </span>
               </div>
-              <p
-                className="text-xs font-sans mb-5"
-                style={{ color: "rgba(255,255,255,0.35)" }}
-              >
+              <p className="text-xs font-sans mb-5 text-text-muted">
                 {t("dashboard.trendSubtitle")}
               </p>
 
@@ -958,15 +959,20 @@ export default function DashboardPage() {
                     dataKey="date"
                     tick={{
                       fontSize: 11,
-                      fill: "rgba(255,255,255,0.3)",
+                      fill: "var(--text-muted)",
                       fontFamily: "inherit",
                     }}
                     axisLine={false}
                     tickLine={false}
-                    interval={2}
+                    minTickGap={20}
                   />
                   <YAxis hide />
-                  <Tooltip content={<ChartTooltip />} />
+                  <Tooltip
+                    content={<ChartTooltip />}
+                    offset={12}
+                    isAnimationActive={false}
+                    wrapperStyle={{ pointerEvents: "none" }}
+                  />
                   <Area
                     type="monotone"
                     dataKey="Leads"
@@ -991,10 +997,7 @@ export default function DashboardPage() {
                 </AreaChart>
               </ResponsiveContainer>
 
-              <div
-                className="flex items-center gap-5 mt-4 pt-3.5 border-t"
-                style={{ borderColor: "rgba(255,255,255,0.06)" }}
-              >
+              <div className="flex items-center gap-5 mt-4 pt-3.5 border-t border-border-subtle">
                 {(
                   [
                     ["#C4232D", "Leads"],
@@ -1007,34 +1010,21 @@ export default function DashboardPage() {
                       className="w-2 h-2 rounded-full"
                       style={{ background: color }}
                     />
-                    <span
-                      className="text-[11px]"
-                      style={{ color: "rgba(255,255,255,0.38)" }}
-                    >
-                      {label}
-                    </span>
+                    <span className="text-[11px] text-text-muted">{label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Bar Chart — Weekly Deposits */}
-            <div className="xl:col-span-2 chart-card p-5">
+            {/* Bar Chart — Deposits Trend */}
+            <div className="xl:col-span-2 bg-elevated rounded-[20px] p-5 border border-border-subtle">
               <div className="flex items-center justify-between mb-1">
-                <h2 className="font-sans font-semibold text-[15px] text-white">
+                <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   Deposits Trend
                 </h2>
-                <span
-                  className="text-xs font-sans"
-                  style={{ color: "rgba(255,255,255,0.3)" }}
-                >
-                  Count
-                </span>
+                <span className="text-xs font-sans text-text-muted">Count</span>
               </div>
-              <p
-                className="text-xs font-sans mb-5"
-                style={{ color: "rgba(255,255,255,0.35)" }}
-              >
+              <p className="text-xs font-sans mb-5 text-text-muted">
                 Confirmed deposits per period
               </p>
 
@@ -1042,7 +1032,7 @@ export default function DashboardPage() {
                 <BarChart
                   data={depositsData}
                   margin={{ top: 0, right: 0, left: -22, bottom: 0 }}
-                  barSize={32}
+                  maxBarSize={32}
                 >
                   <defs>
                     <linearGradient id="gradBar" x1="0" y1="0" x2="0" y2="1">
@@ -1058,14 +1048,20 @@ export default function DashboardPage() {
                     dataKey="label"
                     tick={{
                       fontSize: 11,
-                      fill: "rgba(255,255,255,0.3)",
+                      fill: "var(--text-muted)",
                       fontFamily: "inherit",
                     }}
                     axisLine={false}
                     tickLine={false}
+                    minTickGap={20}
                   />
                   <YAxis hide />
-                  <Tooltip content={<BarTooltip />} />
+                  <Tooltip
+                    content={<BarTooltip />}
+                    offset={12}
+                    isAnimationActive={false}
+                    wrapperStyle={{ pointerEvents: "none" }}
+                  />
                   <Bar
                     dataKey="Deposits"
                     fill="url(#gradBar)"
@@ -1074,29 +1070,16 @@ export default function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
 
-              <div
-                className="mt-4 pt-3.5 border-t flex items-center justify-between"
-                style={{ borderColor: "rgba(255,255,255,0.06)" }}
-              >
+              <div className="mt-4 pt-3.5 border-t border-border-subtle flex items-center justify-between">
                 <div>
-                  <p
-                    className="text-[11px]"
-                    style={{ color: "rgba(255,255,255,0.3)" }}
-                  >
-                    Average
-                  </p>
-                  <p className="font-display font-bold text-xl text-[#E8B94F] leading-tight">
+                  <p className="text-[11px] text-text-muted">Average</p>
+                  <p className="data-mono text-xl text-gold leading-tight">
                     {avgDeposits}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p
-                    className="text-[11px]"
-                    style={{ color: "rgba(255,255,255,0.3)" }}
-                  >
-                    Best
-                  </p>
-                  <p className="font-display font-bold text-xl text-white leading-tight">
+                  <p className="text-[11px] text-text-muted">Best</p>
+                  <p className="data-mono text-xl text-text-primary leading-tight">
                     {bestDeposits}
                   </p>
                 </div>

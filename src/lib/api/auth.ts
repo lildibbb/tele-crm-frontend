@@ -1,7 +1,6 @@
 import { apiClient } from "./apiClient";
 import type {
   LoginInput,
-  TmaLoginInput,
   SetupAccountInput,
   ForgotPasswordInput,
   ResetPasswordInput,
@@ -32,12 +31,6 @@ export const authApi = {
   logout: () => apiClient.post<ApiResponse<void>>("/auth/logout"),
 
   /**
-   * Validates Telegram WebApp initData HMAC signature and logs in the linked CRM user.
-   */
-  tmaLogin: (data: TmaLoginInput) =>
-    apiClient.post<ApiResponse<AuthResponse>>("/auth/tma-login", data),
-
-  /**
    * Completes onboarding for an invited user: validates invitation token + Telegram initData.
    */
   setupAccount: (data: SetupAccountInput) =>
@@ -46,8 +39,7 @@ export const authApi = {
   /**
    * Returns all non-revoked, non-expired sessions for the authenticated user.
    */
-  getSessions: () =>
-    apiClient.get<ApiResponse<Session[]>>("/auth/sessions"),
+  getSessions: () => apiClient.get<ApiResponse<Session[]>>("/auth/sessions"),
 
   /**
    * Remote-wipe a specific session by UUID (sign out a device).

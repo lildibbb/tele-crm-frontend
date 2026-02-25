@@ -6,7 +6,11 @@ import axios, {
 
 // Create a configured Axios instance
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1",
+  baseURL:
+    process.env.NEXT_PUBLIC_API_URL ||
+    (typeof window !== "undefined"
+      ? "/api/v1"
+      : "http://localhost:3001/api/v1"),
   timeout: 15000,
   withCredentials: true, // sends HTTP-Only refresh_token cookie automatically
   headers: {
@@ -67,12 +71,18 @@ apiClient.interceptors.response.use(
       // Don't redirect if we're already on a public route
       // This prevents infinite redirect loops on login/forgot-password pages
       if (typeof window !== "undefined") {
-        const publicRoutes = ["/login", "/forgot-password", "/reset-password", "/setup-account"];
+        const publicRoutes = [
+          "/login",
+          "/forgot-password",
+          "/reset-password",
+          "/setup-account",
+        ];
         const currentPath = window.location.pathname;
         const isPublicRoute = publicRoutes.some(
-          (route) => currentPath === route || currentPath.startsWith(route + "/")
+          (route) =>
+            currentPath === route || currentPath.startsWith(route + "/"),
         );
-        
+
         if (!isPublicRoute) {
           try {
             // eslint-disable-next-line @typescript-eslint/no-require-imports

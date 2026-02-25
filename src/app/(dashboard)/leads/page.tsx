@@ -11,29 +11,34 @@ import {
   CheckCircle,
   SpinnerGap,
   Plus,
+  UserSwitch,
+  Robot,
+  MagnifyingGlass,
+  X,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useLeadsStore, type LeadStatus } from "@/store/leadsStore";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { useDataTable } from "@/lib/hooks/use-data-table";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { getLeadsColumns } from "./_components/leads-columns";
+import { Input } from "@/components/ui/input";
 
 gsap.registerPlugin(useGSAP);
 
@@ -48,7 +53,7 @@ export default function LeadsPage() {
     isLoading,
     fetchLeads,
     setHandover,
-    verifyLead,
+    bulkSetHandover,
     pageCount,
   } = useLeadsStore();
 
@@ -57,6 +62,24 @@ export default function LeadsPage() {
     "idle",
   );
   const [showImportModal, setShowImportModal] = useState(false);
+  const [bulkHandoverPending, setBulkHandoverPending] = useState(false);
+  const [searchRaw, setSearchRaw] = useState("");
+  const [searchValue, setSearchValue] = useState("");
+
+  // Derived tri-state for global handover
+  const handoverCount = leads.filter((l) => l.handoverMode).length;
+  const globalHandoverOn = handoverCount > 0 && handoverCount === leads.length;
+  const globalHandoverPartial =
+    handoverCount > 0 && handoverCount < leads.length;
+
+  const handleBulkHandover = useCallback(
+    async (checked: boolean) => {
+      setBulkHandoverPending(true);
+      await bulkSetHandover(checked).catch(() => {});
+      setBulkHandoverPending(false);
+    },
+    [bulkSetHandover],
+  );
 
   const onHandoverToggle = useCallback(
     (id: string, current: boolean) => {
@@ -65,16 +88,9 @@ export default function LeadsPage() {
     [setHandover],
   );
 
-  const onApprove = useCallback(
-    (id: string) => {
-      void verifyLead(id);
-    },
-    [verifyLead],
-  );
-
   const columns = useMemo(
-    () => getLeadsColumns({ onHandoverToggle, onApprove }),
-    [onHandoverToggle, onApprove],
+    () => getLeadsColumns({ onHandoverToggle }),
+    [onHandoverToggle],
   );
 
   const { table } = useDataTable({
@@ -86,13 +102,59 @@ export default function LeadsPage() {
 
   const { pageIndex, pageSize } = table.getState().pagination;
 
+  // Map TanStack column IDs to backend orderBy field names
+  const ORDER_BY_MAP: Record<string, string> = {
+    lead: "displayName",
+    registeredAt: "registeredAt",
+    depositBalance: "depositBalance",
+  };
+  const firstSort = table.getState().sorting[0];
+  const orderBy = firstSort
+    ? (ORDER_BY_MAP[firstSort.id] ?? firstSort.id)
+    : undefined;
+  const order = firstSort
+    ? ((firstSort.desc ? "desc" : "asc") as "asc" | "desc")
+    : undefined;
+
+  const debouncedSetSearch = useDebouncedCallback((val: string) => {
+    setSearchValue(val);
+    table.setPageIndex(0);
+  }, 400);
+
+  const handleSearch = useCallback(
+    (val: string) => {
+      setSearchRaw(val);
+      debouncedSetSearch(val);
+    },
+    [debouncedSetSearch],
+  );
+
+  const clearSearch = useCallback(() => {
+    setSearchRaw("");
+    setSearchValue("");
+    table.setPageIndex(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     void fetchLeads({
       skip: pageIndex * pageSize,
       take: pageSize,
       status: statusFilter === "ALL" ? undefined : statusFilter,
+      search: searchValue || undefined,
+      orderBy,
+      order,
     });
-  }, [pageIndex, pageSize, statusFilter, fetchLeads]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    pageIndex,
+    pageSize,
+    statusFilter,
+    searchValue,
+    orderBy,
+    order,
+    fetchLeads,
+  ]);
 
   useGSAP(
     () => {
@@ -117,7 +179,7 @@ export default function LeadsPage() {
   );
 
   if (isMobile) {
-    return <MobileLeadsList leads={leads} totalCount={total} />;
+    return <MobileLeadsList />;
   }
 
   const TAB_FILTERS = [
@@ -177,19 +239,76 @@ export default function LeadsPage() {
   };
 
   return (
-    <>
-      <div className="space-y-4 animate-in-up">
-        <Card>
-          <CardHeader>
+    <TooltipProvider>
+      <>
+        <div className="space-y-4 animate-in-up">
+          {/* ── Page Header ── */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <CardTitle className="font-display font-extrabold text-2xl text-text-primary">
+              <h1 className="text-2xl font-bold text-text-primary">
                 {t("nav.leadIntelligence")}
-              </CardTitle>
-              <CardDescription className="mt-0.5">
+              </h1>
+              <p className="text-sm text-text-secondary font-sans mt-0.5">
                 {total.toLocaleString()} total leads
-              </CardDescription>
+              </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {/* ── Global Handover Switch ── */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`flex items-center gap-2 px-3 h-8 rounded-lg border transition-colors cursor-pointer select-none ${
+                      globalHandoverOn
+                        ? "bg-crimson/10 border-crimson/30"
+                        : globalHandoverPartial
+                          ? "bg-warning/10 border-warning/30"
+                          : "bg-elevated border-border-default"
+                    }`}
+                    onClick={() =>
+                      !bulkHandoverPending &&
+                      void handleBulkHandover(!globalHandoverOn)
+                    }
+                  >
+                    {globalHandoverOn ? (
+                      <UserSwitch className="h-3.5 w-3.5 text-crimson flex-shrink-0" />
+                    ) : (
+                      <Robot className="h-3.5 w-3.5 text-text-muted flex-shrink-0" />
+                    )}
+                    <span
+                      className={`text-xs font-sans font-medium whitespace-nowrap ${
+                        globalHandoverOn
+                          ? "text-crimson"
+                          : globalHandoverPartial
+                            ? "text-warning"
+                            : "text-text-secondary"
+                      }`}
+                    >
+                      {globalHandoverPartial
+                        ? `Handover (${handoverCount})`
+                        : globalHandoverOn
+                          ? "All Handover"
+                          : "Global Handover"}
+                    </span>
+                    <Switch
+                      size="sm"
+                      checked={globalHandoverOn}
+                      disabled={bulkHandoverPending}
+                      className={`pointer-events-none flex-shrink-0 ${globalHandoverOn ? "data-[state=checked]:bg-crimson" : ""}`}
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  className="text-xs max-w-[180px] text-center"
+                >
+                  {globalHandoverOn
+                    ? "Click to return all leads to bot mode"
+                    : globalHandoverPartial
+                      ? `${handoverCount} leads in human mode — click to toggle all`
+                      : "Click to put all leads into human handover mode"}
+                </TooltipContent>
+              </Tooltip>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -220,91 +339,129 @@ export default function LeadsPage() {
               </Button>
               <Button
                 size="sm"
-                className="h-8 gap-1.5 text-xs bg-crimson hover:bg-crimson-hover text-white sm:ml-2 font-medium"
+                className="h-8 gap-1.5 text-xs bg-crimson hover:bg-crimson-hover text-white font-medium"
               >
                 <Plus className="h-3.5 w-3.5 font-bold" /> Add Lead
               </Button>
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="p-0">
-            <Tabs value={statusFilter} onValueChange={handleStatusChange}>
-              <div className="px-5 pt-3 border-b border-border-subtle">
-                <TabsList
-                  variant="line"
-                  className="h-auto flex-wrap gap-6 p-0 w-auto bg-transparent justify-start"
-                >
-                  {TAB_FILTERS.map((f) => (
-                    <TabsTrigger
-                      key={f.key}
-                      value={f.key}
-                      className="flex-none h-auto rounded-none text-sm px-0 py-3 font-sans font-medium whitespace-nowrap border-b-2 border-transparent data-[state=active]:text-text-primary data-[state=active]:border-crimson data-[state=inactive]:text-text-secondary data-[state=inactive]:border-transparent hover:text-text-primary transition-colors focus:outline-none"
+          {/* ── Main Panel ── */}
+          <div className="bg-elevated rounded-xl overflow-hidden">
+            {/* Panel header: tabs + search */}
+            <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between gap-3 flex-wrap">
+              <div
+                className="bg-elevated p-1 flex items-center gap-0.5 rounded-xl overflow-x-auto scrollbar-none"
+                role="tablist"
+                aria-label="Lead status filter"
+              >
+                {TAB_FILTERS.map((f) => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={statusFilter === f.key}
+                    onClick={() => handleStatusChange(f.key)}
+                    className={
+                      "px-3.5 py-1.5 rounded-lg text-xs font-sans font-medium transition-all cursor-pointer whitespace-nowrap flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 " +
+                      (statusFilter === f.key
+                        ? "bg-crimson text-white"
+                        : "text-text-secondary hover:text-text-primary")
+                    }
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search bar */}
+              <div className="relative flex-shrink-0 w-full sm:w-[320px]">
+                <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-muted pointer-events-none" />
+                <Input
+                  type="text"
+                  value={searchRaw}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search name, @username, email, HFM ID…"
+                  className="pl-9 pr-12 h-9 w-full bg-elevated/50 hover:bg-elevated border-border-default/50 hover:border-border-default text-sm shadow-none transition-all placeholder:text-text-muted rounded-xl focus-visible:bg-background focus-visible:border-crimson/50 focus-visible:ring-[3px] focus-visible:ring-crimson/10"
+                />
+                <div className="absolute inset-y-0 right-1.5 flex items-center justify-center">
+                  {searchRaw ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={clearSearch}
+                      className="h-6 w-6 text-text-muted hover:text-text-primary hover:bg-border-subtle rounded-lg transition-colors"
                     >
-                      {f.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  ) : (
+                    <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-[6px] border border-border-subtle bg-background px-1.5 font-mono text-[10px] font-medium text-text-muted">
+                      <span className="text-xs">⌘</span>K
+                    </kbd>
+                  )}
+                </div>
               </div>
-
-              <div className="px-4 pt-3 pb-4" ref={tableRef}>
-                {isLoading ? (
-                  <DataTableSkeleton columnCount={6} rowCount={20} shrinkZero />
-                ) : (
-                  <DataTable table={table} className="border-transparent">
-                    <DataTableToolbar table={table} />
-                  </DataTable>
-                )}
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-display font-bold text-xl text-text-primary">
-              {t("leads.import.title")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="border-2 border-dashed border-border-default hover:border-crimson/40 rounded-xl p-8 flex flex-col items-center gap-3 transition-colors cursor-pointer group">
-            <div className="w-12 h-12 rounded-xl bg-crimson/10 flex items-center justify-center group-hover:bg-crimson/15 transition-colors">
-              <UploadSimple className="h-6 w-6 text-crimson" />
             </div>
-            <p className="font-sans font-medium text-text-primary text-sm">
-              {t("leads.import.drop")}
-            </p>
-            <p className="font-sans text-xs text-text-muted">
-              {t("leads.import.or")}{" "}
-              <span className="text-crimson cursor-pointer">
-                {t("leads.import.browse")}
-              </span>{" "}
-              &middot; {t("leads.import.size")}
-            </p>
+
+            <div className="px-4 pt-3 pb-4" ref={tableRef}>
+              {isLoading ? (
+                <DataTableSkeleton columnCount={6} rowCount={20} shrinkZero />
+              ) : (
+                <DataTable table={table} className="border-transparent">
+                  <DataTableToolbar table={table} />
+                </DataTable>
+              )}
+            </div>
           </div>
-          <p className="text-xs font-sans text-text-muted">
-            {t("leads.import.required")}{" "}
-            <span className="font-mono text-text-secondary">
-              telegram_id, name, phone, hfm_id, status
-            </span>
-          </p>
-          <div className="flex gap-3 pt-1">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setShowImportModal(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              className="flex-1 gap-2 bg-crimson hover:bg-crimson/90 text-white"
-              onClick={() => setShowImportModal(false)}
-            >
-              <UploadSimple className="h-4 w-4" /> {t("leads.import.title")}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+
+        <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="font-bold text-xl text-text-primary">
+                {t("leads.import.title")}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="border-2 border-dashed border-border-default hover:border-crimson/40 rounded-xl p-8 flex flex-col items-center gap-3 transition-colors cursor-pointer group">
+              <div className="w-12 h-12 rounded-xl bg-crimson/10 flex items-center justify-center group-hover:bg-crimson/15 transition-colors">
+                <UploadSimple className="h-6 w-6 text-crimson" />
+              </div>
+              <p className="font-sans font-medium text-text-primary text-sm">
+                {t("leads.import.drop")}
+              </p>
+              <p className="font-sans text-xs text-text-muted">
+                {t("leads.import.or")}{" "}
+                <span className="text-crimson cursor-pointer">
+                  {t("leads.import.browse")}
+                </span>{" "}
+                &middot; {t("leads.import.size")}
+              </p>
+            </div>
+            <p className="text-xs font-sans text-text-muted">
+              {t("leads.import.required")}{" "}
+              <span className="font-mono text-text-secondary">
+                telegram_id, name, phone, hfm_id, status
+              </span>
+            </p>
+            <div className="flex gap-3 pt-1">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowImportModal(false)}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button
+                className="flex-1 gap-2 bg-crimson hover:bg-crimson/90 text-white"
+                onClick={() => setShowImportModal(false)}
+              >
+                <UploadSimple className="h-4 w-4" /> {t("leads.import.title")}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    </TooltipProvider>
   );
 }

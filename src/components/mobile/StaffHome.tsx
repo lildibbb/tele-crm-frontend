@@ -1,76 +1,54 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { ShieldCheck, Users, ArrowRight } from "@phosphor-icons/react";
 import MobileShell from "./MobileShell";
+import { useLeadsStore } from "@/store/leadsStore";
+import { useAuthStore } from "@/store/authStore";
+import { useAnalyticsStore } from "@/store/analyticsStore";
+import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface StaffHomeProps {
-  readonly staffName?: string;
   readonly onMoreOpen?: () => void;
   readonly onVerificationQueue?: () => void;
   readonly onMyLeads?: () => void;
 }
 
-interface AssignedLead {
-  id: string;
-  name: string;
-  status: "NEW" | "REGISTERED";
-  timeAgo: string;
-}
+const STATUS_COLOR: Record<string, string> = {
+  NEW:               "var(--info)",
+  REGISTERED:        "#A855F7",
+  DEPOSIT_REPORTED:  "var(--warning)",
+  DEPOSIT_CONFIRMED: "var(--success)",
+  REJECTED:          "var(--danger)",
+};
 
-interface ActivityItem {
-  id: string;
-  color: string;
-  text: string;
-  time: string;
-}
-
-// ── Mock data ──────────────────────────────────────────────────────────────────
-const ASSIGNED_LEADS: AssignedLead[] = [
-  { id: "1", name: "Ahmad Farouk", status: "NEW", timeAgo: "1h ago" },
-  { id: "2", name: "Nurul Huda", status: "REGISTERED", timeAgo: "3h ago" },
-  { id: "3", name: "Chen Wei Liang", status: "NEW", timeAgo: "5h ago" },
-];
-
-const ACTIVITY: ActivityItem[] = [
-  {
-    id: "a1",
-    color: "#22D3A0",
-    text: "Lead #TJ-1284 verified successfully",
-    time: "1h ago",
-  },
-  {
-    id: "a2",
-    color: "#F59E0B",
-    text: "Siti Aminah submitted deposit receipt",
-    time: "3h ago",
-  },
-  {
-    id: "a3",
-    color: "#60A5FA",
-    text: "New lead Ahmad Farouk assigned to you",
-    time: "5h ago",
-  },
-  {
-    id: "a4",
-    color: "#8888AA",
-    text: "Staff meeting: bot script templates updated",
-    time: "Yesterday",
-  },
-];
-
-const STATUS_COLORS = { NEW: "#60A5FA", REGISTERED: "#A855F7" } as const;
+const STATUS_LABEL: Record<string, string> = {
+  NEW:               "NEW",
+  REGISTERED:        "REGISTERED",
+  DEPOSIT_REPORTED:  "PROOF PENDING",
+  DEPOSIT_CONFIRMED: "CONFIRMED",
+};
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function StaffHome({
-  staffName = "Ahmad Razali",
   onMoreOpen,
   onVerificationQueue,
   onMyLeads,
 }: StaffHomeProps) {
-  const firstName = staffName.split(" ")[0];
+  const { user } = useAuthStore();
+  const { leads, total, isLoading, fetchLeads } = useLeadsStore();
+  const { summary, fetchSummary } = useAnalyticsStore();
+
+  useEffect(() => {
+    fetchLeads({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
+    fetchSummary();
+  }, [fetchLeads, fetchSummary]);
+
+  const firstName = user?.email?.split("@")[0] ?? "Staff";
+  const pendingCount = summary?.kpi?.pendingVerifications?.current ?? 0;
+
   const today = new Date().toLocaleDateString("en-MY", {
     weekday: "long",
     day: "numeric",
@@ -82,34 +60,22 @@ export default function StaffHome({
     <MobileShell
       role="STAFF"
       activeTab="home"
-      pageTitle={`Good morning, ${firstName}`}
-      notificationCount={2}
-      verifyBadgeCount={5}
-      userInitials={staffName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .slice(0, 2)}
-      showLiveDot={false}
+      pageTitle={`Hi, ${firstName}`}
+      verifyBadgeCount={pendingCount}
       onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
     >
       <div className="px-4 pb-6 pt-4">
         {/* Greeting */}
         <div className="mb-5">
-          <p className="font-sans text-[13px] text-[#555570]">Welcome back</p>
-          <h1 className="font-display font-bold text-[24px] text-[#F0F0FF] mt-0.5">
-            {staffName}
+          <p className="font-sans text-[13px] text-text-muted">Welcome back</p>
+          <h1 className="font-display font-bold text-[24px] text-text-primary mt-0.5">
+            {user?.email ?? "Staff"}
           </h1>
           <div className="flex items-center gap-2 mt-1">
-            <span
-              className="rounded-full px-2 py-0.5 font-sans font-medium text-[11px] text-[#8888AA]"
-              style={{ background: "#1C1C2E" }}
-            >
+            <span className="rounded-full px-2 py-0.5 bg-elevated font-sans font-medium text-[11px] text-text-secondary">
               STAFF
             </span>
-            <span className="font-sans text-[12px] text-[#555570]">
-              {today}
-            </span>
+            <span className="font-sans text-[12px] text-text-muted">{today}</span>
           </div>
         </div>
 
@@ -117,122 +83,106 @@ export default function StaffHome({
         <div className="grid grid-cols-2 gap-2 mb-5">
           <button
             onClick={onVerificationQueue}
-            className="flex flex-col gap-2 p-4 rounded-xl bg-[#141422] border border-[#2A2A42]
-                       active:scale-[0.97] transition-transform text-left min-h-[100px]"
+            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px]"
           >
-            <ShieldCheck size={28} className="text-[#C4232D]" weight="fill" />
-            <span className="font-sans font-semibold text-[14px] text-[#F0F0FF]">
+            <ShieldCheck size={28} className="text-crimson" weight="fill" />
+            <span className="font-sans font-semibold text-[14px] text-text-primary">
               Verification Queue
             </span>
             <div className="flex items-center justify-between">
-              <span
-                className="rounded-full px-2 py-0.5 font-sans text-[11px] font-medium text-[#F59E0B]"
-                style={{ background: "#F59E0B1A" }}
-              >
-                5 pending
+              <span className="rounded-full px-2 py-0.5 bg-[color-mix(in_srgb,var(--warning)_15%,transparent)] font-sans text-[11px] font-medium text-warning">
+                {pendingCount > 0 ? `${pendingCount} pending` : "All clear"}
               </span>
-              <ArrowRight size={14} className="text-[#C4232D]" />
+              <ArrowRight size={14} className="text-crimson" />
             </div>
           </button>
 
           <button
             onClick={onMyLeads}
-            className="flex flex-col gap-2 p-4 rounded-xl bg-[#141422] border border-[#2A2A42]
-                       active:scale-[0.97] transition-transform text-left min-h-[100px]"
+            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px]"
           >
-            <Users size={28} className="text-[#60A5FA]" weight="fill" />
-            <span className="font-sans font-semibold text-[14px] text-[#F0F0FF]">
+            <Users size={28} className="text-info" weight="fill" />
+            <span className="font-sans font-semibold text-[14px] text-text-primary">
               My Leads
             </span>
             <div className="flex items-center justify-between">
-              <span
-                className="rounded-full px-2 py-0.5 font-sans text-[11px] font-medium text-[#60A5FA]"
-                style={{ background: "#60A5FA1A" }}
-              >
-                12 assigned
+              <span className="rounded-full px-2 py-0.5 bg-[color-mix(in_srgb,var(--info)_15%,transparent)] font-sans text-[11px] font-medium text-info">
+                {isLoading ? "…" : `${total} leads`}
               </span>
-              <ArrowRight size={14} className="text-[#60A5FA]" />
+              <ArrowRight size={14} className="text-info" />
             </div>
           </button>
         </div>
 
-        {/* Today's assignments */}
+        {/* Today's leads */}
         <div className="mb-5">
-          <h2 className="font-sans font-semibold text-[14px] text-[#F0F0FF] mb-3">
-            Today&apos;s New Leads
+          <h2 className="font-sans font-semibold text-[14px] text-text-primary mb-3">
+            Recent Leads
           </h2>
-          <div className="flex flex-col gap-2">
-            {ASSIGNED_LEADS.map((lead) => {
-              const color = STATUS_COLORS[lead.status];
-              return (
-                <Link key={lead.id} href={`/leads/${lead.id}`}>
-                  <div
-                    className="flex items-center gap-3 p-3 rounded-xl bg-[#141422] border border-[#2A2A42]
-                               active:scale-[0.97] transition-transform"
-                    style={{ borderLeft: `3px solid ${color}` }}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <span className="font-sans font-semibold text-[14px] text-[#F0F0FF]">
-                        {lead.name}
+          {isLoading ? (
+            <div className="flex flex-col gap-2">
+              {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-card animate-pulse" />)}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {leads.slice(0, 5).map((lead) => {
+                const color = STATUS_COLOR[lead.status] ?? "var(--text-muted)";
+                return (
+                  <Link key={lead.id} href={`/leads/${lead.id}`}>
+                    <div
+                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform"
+                      style={{ borderLeft: `3px solid ${color}` }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <span className="font-sans font-semibold text-[14px] text-text-primary truncate block">
+                          {lead.displayName ?? "—"}
+                        </span>
+                        <span className="font-mono text-[12px] text-text-muted">
+                          HFM: {lead.hfmBrokerId ?? "—"}
+                        </span>
+                      </div>
+                      <span
+                        className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
+                        style={{
+                          background: `color-mix(in srgb, ${color} 15%, transparent)`,
+                          color,
+                        }}
+                      >
+                        {STATUS_LABEL[lead.status] ?? lead.status}
                       </span>
                     </div>
-                    <span
-                      className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-                      style={{ background: `${color}22`, color }}
-                    >
-                      {lead.status}
-                    </span>
-                    <span className="font-mono text-[11px] text-[#555570] shrink-0">
-                      {lead.timeAgo}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          <button className="mt-2 font-sans text-[13px] text-[#C4232D]">
-            View all 12 assigned leads →
-          </button>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+          {total > 5 && (
+            <button
+              onClick={onMyLeads}
+              className="mt-2 font-sans text-[13px] text-crimson"
+            >
+              View all {total} leads →
+            </button>
+          )}
         </div>
 
         {/* Verification banner */}
-        <button
-          onClick={onVerificationQueue}
-          className="w-full flex flex-col gap-1 p-4 rounded-xl border border-[#F59E0B]
-                     active:scale-[0.97] transition-transform text-left mb-5"
-          style={{ background: "#F59E0B1A" }}
-        >
-          <span className="font-sans font-semibold text-[14px] text-[#F0F0FF]">
-            3 deposits awaiting your review
-          </span>
-          <span className="font-sans text-[12px] text-[#8888AA]">
-            Tap to open Verification Queue →
-          </span>
-        </button>
-
-        {/* Recent activity */}
-        <div>
-          <h2 className="font-sans font-semibold text-[14px] text-[#F0F0FF] mb-3">
-            Recent Activity
-          </h2>
-          <div className="flex flex-col gap-3">
-            {ACTIVITY.map((item) => (
-              <div key={item.id} className="flex items-start gap-3">
-                <span
-                  className="mt-1.5 w-2 h-2 rounded-full shrink-0"
-                  style={{ background: item.color }}
-                />
-                <span className="font-sans text-[13px] text-[#8888AA] flex-1 leading-snug">
-                  {item.text}
-                </span>
-                <span className="font-mono text-[11px] text-[#555570] shrink-0">
-                  {item.time}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        {pendingCount > 0 && (
+          <button
+            onClick={onVerificationQueue}
+            className="w-full flex flex-col gap-1 p-4 rounded-xl border border-warning active:scale-[0.97] transition-transform text-left mb-5"
+            style={{ background: "color-mix(in srgb, var(--warning) 10%, transparent)" }}
+          >
+            <span className="font-sans font-semibold text-[14px] text-text-primary">
+              {pendingCount} deposits awaiting your review
+            </span>
+            <span className="font-sans text-[12px] text-text-secondary">
+              Tap to open Verification Queue →
+            </span>
+          </button>
+        )}
       </div>
     </MobileShell>
   );
 }
+

@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Bot, BookOpen, Terminal, Users, Shield } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -19,26 +20,31 @@ const SETTINGS_TABS = [
   {
     name: "Bot Config",
     value: "bot-config",
+    icon: Bot,
     content: <BotConfigTab />,
   },
   {
     name: "Knowledge Base",
     value: "knowledge-base",
+    icon: BookOpen,
     content: <KnowledgeBaseTab />,
   },
   {
-    name: "Command Menu",
+    name: "Commands",
     value: "commands",
+    icon: Terminal,
     content: <CommandsTab />,
   },
   {
     name: "Team",
     value: "team",
+    icon: Users,
     content: <TeamTab />,
   },
   {
     name: "Sessions",
     value: "sessions",
+    icon: Shield,
     content: <SessionsTab />,
   },
 ];
@@ -48,7 +54,6 @@ export function SettingsTabs() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // Read tab from URL or default to bot-config
   const tabQuery = searchParams.get("tab");
   const defaultTab = SETTINGS_TABS.some((t) => t.value === tabQuery)
     ? tabQuery
@@ -56,7 +61,6 @@ export function SettingsTabs() {
 
   const [activeTab, setActiveTab] = useState(defaultTab as string);
 
-  // Sync URL with active tab state
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     const params = new URLSearchParams(searchParams);
@@ -71,7 +75,6 @@ export function SettingsTabs() {
     router.push(newUrl, { scroll: false });
   };
 
-  // Keep state in sync if URL changes externally
   useEffect(() => {
     const currentTab = searchParams.get("tab") || "bot-config";
     if (
@@ -89,18 +92,24 @@ export function SettingsTabs() {
         onValueChange={handleTabChange}
         className="gap-6 animate-in-up"
       >
-        <TabsList className="flex items-center bg-transparent overflow-x-auto pb-2">
+        {/* Pill segment tab bar */}
+        <TabsList
+          className="bg-elevated rounded-xl p-1 w-full sm:w-auto overflow-x-auto scrollbar-none flex-nowrap"
+          activeClassName="bg-card rounded-lg shadow-sm"
+        >
           {SETTINGS_TABS.map((tab) => (
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="px-4 py-3 text-sm font-sans font-medium text-text-secondary hover:text-text-primary data-[active=true]:text-text-primary data-[active=true]:bg-slate-500/10 whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-text-secondary data-[state=active]:text-crimson whitespace-nowrap rounded-lg transition-colors"
             >
+              <tab.icon size={15} strokeWidth={1.8} />
               {tab.name}
             </TabsTrigger>
           ))}
         </TabsList>
-        <div className="flex flex-col mt-4 pb-2 relative overflow-hidden">
+
+        <div className="flex flex-col pb-2 relative overflow-hidden">
           <TabsContents className="min-h-[500px]">
             {SETTINGS_TABS.map((tab) => (
               <TabsContent
@@ -117,3 +126,4 @@ export function SettingsTabs() {
     </div>
   );
 }
+

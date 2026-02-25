@@ -46,6 +46,12 @@ export const UpdateHandoverSchema = z.object({
 
 export type UpdateHandoverInput = z.infer<typeof UpdateHandoverSchema>;
 
+export const BulkUpdateHandoverSchema = z.object({
+  handoverMode: z.boolean(),
+});
+
+export type BulkUpdateHandoverInput = z.infer<typeof BulkUpdateHandoverSchema>;
+
 export const SubmitLeadInfoSchema = z.object({
   telegramUserId: z.number(),
   email: z.string().email().optional(),
@@ -59,8 +65,15 @@ export type SubmitLeadInfoInput = z.infer<typeof SubmitLeadInfoSchema>;
 
 export const ListLeadsParamsSchema = z.object({
   status: LeadStatusSchema.optional(),
+  contactId: z.string().optional(),
+  registered: z.boolean().optional(),
+  balanceMin: z.number().optional(),
+  balanceMax: z.number().optional(),
+  search: z.string().optional(),
+  orderBy: z.string().optional(),
+  order: z.enum(["asc", "desc"]).optional(),
   skip: z.number().int().min(0).optional(),
-  take: z.number().int().min(1).max(100).optional(),
+  take: z.number().int().min(1).max(200).optional(),
 });
 
 export type ListLeadsParams = z.infer<typeof ListLeadsParamsSchema>;

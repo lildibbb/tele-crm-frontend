@@ -6,7 +6,15 @@ import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
 // Public routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/forgot-password", "/reset-password", "/setup-account"];
+const PUBLIC_ROUTES = [
+  "/login",
+  "/forgot-password",
+  "/reset-password",
+  "/setup-account",
+  "/register",
+  "/deposit",
+  "/status",
+];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -15,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check if current route is public
   const isPublicRoute = useMemo(() => {
     return PUBLIC_ROUTES.some(
-      (route) => pathname === route || pathname.startsWith(route + "/")
+      (route) => pathname === route || pathname.startsWith(route + "/"),
     );
   }, [pathname]);
 
@@ -35,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isInitialized || isPublicRoute) {
       return;
     }
-    
+
     // If not authenticated and trying to access protected route, redirect to login
     // Note: This handles cases where the user has no valid session
   }, [isInitialized, isPublicRoute, pathname]);

@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileSettings } from "@/components/mobile";
 
@@ -37,7 +36,7 @@ export function BotConfigTab() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display font-bold text-2xl text-text-primary">
+          <h2 className="text-xl font-bold text-text-primary">
             Bot Configuration
           </h2>
           <p className="text-text-secondary text-sm font-sans mt-1">
@@ -52,11 +51,13 @@ export function BotConfigTab() {
 
       <div className="grid gap-5 md:grid-cols-2">
         {/* General Settings */}
-        <Card className="md:col-span-2 lg:col-span-1">
-          <CardHeader className="border-transparent">
-            <CardTitle>General Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-0">
+        <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
+          <div className="px-5 py-4 bg-card rounded-t-xl">
+            <h3 className="font-sans font-semibold text-[14px] text-text-primary">
+              General Settings
+            </h3>
+          </div>
+          <div className="px-5 pb-5 pt-4 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="bot-name">Bot Name</Label>
               <Input
@@ -64,6 +65,7 @@ export function BotConfigTab() {
                 value={config.name}
                 onChange={(e) => setConfig({ ...config, name: e.target.value })}
                 placeholder="e.g. Sales Assistant"
+                className="text-sm"
               />
             </div>
             <div className="space-y-1.5">
@@ -82,21 +84,21 @@ export function BotConfigTab() {
                 This is the first message the bot sends to new WhatsApp leads.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* AI Behavior */}
-        <Card className="md:col-span-2 lg:col-span-1">
-          <CardHeader className="border-transparent">
-            <div className="flex items-center justify-between">
-              <CardTitle>AI Behavior</CardTitle>
-              <Switch
-                checked={config.active}
-                onCheckedChange={(c) => setConfig({ ...config, active: c })}
-              />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-0">
+        <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
+          <div className="px-5 py-4 bg-card rounded-t-xl flex items-center justify-between">
+            <h3 className="font-sans font-semibold text-[14px] text-text-primary">
+              AI Behavior
+            </h3>
+            <Switch
+              checked={config.active}
+              onCheckedChange={(c) => setConfig({ ...config, active: c })}
+            />
+          </div>
+          <div className="px-5 pb-5 pt-4 space-y-4">
             <div className="space-y-1.5">
               <Label>System Prompt</Label>
               <Textarea
@@ -112,8 +114,8 @@ export function BotConfigTab() {
                 Define the bot&apos;s personality, expertise, and boundaries.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

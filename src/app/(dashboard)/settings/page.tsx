@@ -11,9 +11,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="animate-in-up">
-        <h1 className="font-display font-extrabold text-3xl text-text-primary">
-          Settings
-        </h1>
+        <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
         <p className="text-text-secondary text-sm font-sans mt-1">
           Configure your CRM, bot behavior, and team
         </p>

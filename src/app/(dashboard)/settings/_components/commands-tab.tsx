@@ -10,12 +10,12 @@ import {
   Trash2,
   Info,
   Save,
-  ChevronRight,
+  PencilLine,
+  Eye,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Card } from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { TelegramPreview } from "@/components/ui/telegram-preview";
 import { useCommandMenuStore } from "@/store/commandMenuStore";
 import {
   CreateCommandMenuSchema,
@@ -42,6 +44,7 @@ import { toast } from "sonner";
 export function CommandsTab() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [activePane, setActivePane] = useState<"edit" | "preview">("edit");
 
   const { items, isLoading, error, fetchAll, create, update, remove } =
     useCommandMenuStore();
@@ -138,7 +141,7 @@ export function CommandsTab() {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-display font-bold text-2xl text-text-primary">
+          <h2 className="text-xl font-bold text-text-primary">
             Telegram Command Menu
           </h2>
           <p className="text-text-secondary text-sm font-sans mt-1">
@@ -157,7 +160,7 @@ export function CommandsTab() {
         </p>
       </div>
       {/* Command list */}
-      <Card className="overflow-hidden">
+      <div className="bg-elevated rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <div className="grid grid-cols-[32px_48px_160px_1fr_200px_80px_88px] gap-4 px-4 py-3 bg-elevated/50 border-b border-border-subtle min-w-[700px]">
             {[
@@ -252,7 +255,7 @@ export function CommandsTab() {
             </div>
           )}
         </div>
-      </Card>
+      </div>
       {/* Slide-out drawer */}
       <Sheet
         open={drawerOpen}
@@ -260,18 +263,49 @@ export function CommandsTab() {
           if (!open) {
             setDrawerOpen(false);
             setEditId(null);
+            setActivePane("edit");
             form.reset();
           }
         }}
       >
         <SheetContent
           side="right"
-          className="w-full max-w-[480px] flex flex-col p-0"
+          className="w-full sm:max-w-[640px] lg:max-w-[920px] flex flex-col p-0"
         >
-          <SheetHeader className="px-6 py-5 border-b border-border-subtle">
-            <SheetTitle className="font-display font-bold text-xl text-text-primary">
-              {editId ? "Edit Command" : "New Command"}
-            </SheetTitle>
+          {/* Header: title + mobile edit/preview toggle */}
+          <SheetHeader className="px-6 py-4 border-b border-border-subtle flex-shrink-0">
+            <div className="flex items-center justify-between gap-3">
+              <SheetTitle className="font-bold text-xl text-text-primary">
+                {editId ? "Edit Command" : "New Command"}
+              </SheetTitle>
+              {/* Edit/Preview pill — visible only on < lg */}
+              <div className="lg:hidden flex items-center gap-0.5 bg-elevated p-1 rounded-xl flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setActivePane("edit")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                    activePane === "edit"
+                      ? "bg-card text-text-primary shadow-sm"
+                      : "text-text-muted hover:text-text-secondary",
+                  )}
+                >
+                  <PencilLine className="h-3.5 w-3.5" /> Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivePane("preview")}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                    activePane === "preview"
+                      ? "bg-card text-text-primary shadow-sm"
+                      : "text-text-muted hover:text-text-secondary",
+                  )}
+                >
+                  <Eye className="h-3.5 w-3.5" /> Preview
+                </button>
+              </div>
+            </div>
           </SheetHeader>
 
           <Form {...form}>
@@ -279,102 +313,116 @@ export function CommandsTab() {
               onSubmit={form.handleSubmit(onSubmit)}
               className="flex flex-col flex-1 overflow-hidden"
             >
-              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-                <FormField
-                  control={form.control}
-                  name="command"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-text-secondary">
-                        Command Slug
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="register"
-                          className="font-mono text-sm"
-                          disabled={!!editId}
-                          {...field}
-                        />
-                      </FormControl>
-                      <p className="text-[11px] font-sans text-text-muted">
-                        Lowercase, no slash (will be prefixed automatically)
-                      </p>
-                      <FormMessage />
-                    </FormItem>
+              {/* ── Two-column body ── */}
+              <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+                {/* Left / Edit pane */}
+                <div
+                  className={cn(
+                    "flex-1 flex flex-col overflow-hidden",
+                    activePane === "preview" ? "hidden lg:flex" : "flex",
                   )}
-                />
-                <FormField
-                  control={form.control}
-                  name="label"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-text-secondary">
-                        Button Label
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Shown in Telegram command list"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-text-secondary">
-                        Description
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="Internal note" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormItem>
-                  <FormLabel className="text-text-secondary">Content</FormLabel>
-                  <p className="text-[11px] font-sans text-text-muted">
-                    What the bot sends when this command is triggered
-                  </p>
-                  <Textarea
-                    value={textContent}
-                    onChange={(e) =>
-                      form.setValue("content", { text: e.target.value })
-                    }
-                    placeholder="Enter the message content…"
-                    rows={8}
-                    className="resize-none font-sans text-sm"
-                  />
-                  <p className="data-mono text-[11px] mt-1 text-right">
-                    {textContent.length} chars
-                  </p>
-                </FormItem>
+                >
+                  {/* Compact metadata strip */}
+                  <div className="px-6 pt-5 pb-3 flex-shrink-0 space-y-3 border-b border-border-subtle/50">
+                    <div className="grid grid-cols-2 gap-3">
+                      <FormField
+                        control={form.control}
+                        name="command"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-text-secondary">
+                              Command Slug
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. register"
+                                className="font-mono text-sm h-8"
+                                disabled={!!editId}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="label"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-text-secondary">
+                              Button Label
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Shown in Telegram menu"
+                                className="h-8"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs text-text-secondary">
+                            Description
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Internal note (not visible to users)"
+                              className="h-8"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                {textContent && (
-                  <div>
-                    <p className="text-[11px] font-sans font-medium text-text-secondary mb-2 flex items-center gap-1">
-                      <ChevronRight className="h-3 w-3" /> Preview in Telegram
-                    </p>
-                    <div className="bg-[#17212B] rounded-xl p-4 border border-[#2B3847]">
-                      <div className="bg-[#2B5278] rounded-2xl rounded-tl-sm px-4 py-3 inline-block max-w-[85%]">
-                        <p className="text-white text-sm font-sans whitespace-pre-wrap leading-relaxed">
-                          {textContent}
-                        </p>
-                      </div>
-                      <p className="text-[#6C7883] text-[10px] font-sans mt-1 font-mono">
-                        Titan Journal CRM · just now
+                  {/* Editor fills remaining space */}
+                  <div className="flex flex-col flex-1 overflow-hidden px-6 py-4">
+                    <div className="flex-shrink-0 mb-2">
+                      <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
+                        Message Content
+                      </p>
+                      <p className="text-[11px] font-sans text-text-muted mt-0.5">
+                        What the bot sends when this command is triggered
                       </p>
                     </div>
+                    <RichTextEditor
+                      value={textContent}
+                      onChange={(val) =>
+                        form.setValue("content", { text: val })
+                      }
+                      placeholder="Enter the message content…"
+                      fillHeight
+                    />
                   </div>
-                )}
+                </div>
+
+                {/* Right / Preview pane */}
+                <div
+                  className={cn(
+                    "lg:w-[280px] lg:flex-shrink-0 lg:border-l border-border-subtle bg-card/40 flex-col overflow-y-auto",
+                    activePane === "edit" ? "hidden lg:flex" : "flex px-6 py-5 lg:px-4 lg:py-4",
+                  )}
+                >
+                  <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider mb-3">
+                    Live Preview
+                  </p>
+                  <TelegramPreview markdown={textContent} />
+                </div>
               </div>
 
-              <div className="flex gap-3 px-6 py-5 border-t border-border-subtle">
+              {/* ── Footer buttons ── */}
+              <div className="flex gap-3 px-6 py-5 border-t border-border-subtle flex-shrink-0">
                 <Button
                   type="button"
                   variant="outline"

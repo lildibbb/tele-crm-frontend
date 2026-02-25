@@ -30,12 +30,12 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -54,13 +54,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -87,6 +80,7 @@ import {
   X,
   ChatText,
   DotsThreeVertical,
+  CaretDown,
 } from "@phosphor-icons/react";
 
 import type { UserResponse } from "@/lib/schemas/user.schema";
@@ -173,10 +167,10 @@ interface KpiTileProps {
 }
 
 const ACCENT_COLORS: Record<string, { bg: string; text: string; grad: string }> = {
-  info:    { bg: "bg-info/10",        text: "text-info",        grad: "rgba(96,165,250,0.09)"  },
-  success: { bg: "bg-success/10",     text: "text-success",     grad: "rgba(34,211,160,0.09)"  },
-  gold:    { bg: "bg-[--gold]/10",    text: "text-[--gold]",    grad: "rgba(232,185,79,0.09)"  },
-  crimson: { bg: "bg-[--crimson]/10", text: "text-[--crimson]", grad: "rgba(196,35,45,0.09)"   },
+  info:    { bg: "bg-info/10",        text: "text-info",        grad: "color-mix(in srgb, var(--color-info) 9%, transparent)"    },
+  success: { bg: "bg-success/10",     text: "text-success",     grad: "color-mix(in srgb, var(--color-success) 9%, transparent)" },
+  gold:    { bg: "bg-[--gold]/10",    text: "text-[--gold]",    grad: "color-mix(in srgb, var(--color-gold) 9%, transparent)"    },
+  crimson: { bg: "bg-[--crimson]/10", text: "text-[--crimson]", grad: "color-mix(in srgb, var(--color-crimson) 9%, transparent)" },
 };
 
 function KpiTile({ icon: Icon, label, value, sub, accent, loading }: KpiTileProps) {
@@ -407,6 +401,59 @@ function getAuditColumns(): ColumnDef<AuditLog>[] {
   ];
 }
 
+// ─── Role Selector ────────────────────────────────────────────────────────────
+
+const ROLE_OPTIONS = [
+  { value: UserRole.STAFF, label: "Staff",  dot: "bg-text-muted"  },
+  { value: UserRole.ADMIN, label: "Admin",  dot: "bg-info"        },
+  { value: UserRole.OWNER, label: "Owner",  dot: "bg-gold"        },
+] as const;
+
+function RoleDropdown({
+  value,
+  onChange,
+}: {
+  value: UserRole;
+  onChange: (r: UserRole) => void;
+}) {
+  const current = ROLE_OPTIONS.find((r) => r.value === value)!;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="w-full flex items-center justify-between h-9 px-3 rounded-md border border-input bg-transparent text-sm text-text-primary hover:bg-elevated/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40"
+        >
+          <span className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${current.dot}`} />
+            {current.label}
+          </span>
+          <CaretDown size={13} className="opacity-50 flex-shrink-0" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={4}
+        className="min-w-[var(--radix-dropdown-menu-trigger-width,180px)]"
+      >
+        {ROLE_OPTIONS.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className="gap-2 cursor-pointer items-center"
+          >
+            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${opt.dot}`} />
+            <span className="flex-1 text-sm">{opt.label}</span>
+            {value === opt.value && (
+              <CheckCircle size={14} className="text-crimson flex-shrink-0" />
+            )}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 // ─── Create User Modal ────────────────────────────────────────────────────────
 
 function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -448,14 +495,7 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
           </div>
           <div className="space-y-1.5">
             <Label>Role</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={UserRole.STAFF}>Staff</SelectItem>
-                <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                <SelectItem value={UserRole.OWNER}>Owner</SelectItem>
-              </SelectContent>
-            </Select>
+            <RoleDropdown value={role} onChange={setRole} />
           </div>
           {error && <p className="text-xs text-danger">{error}</p>}
           <DialogFooter>
@@ -548,14 +588,7 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
             <Label>New Role</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={UserRole.STAFF}>Staff</SelectItem>
-                <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                <SelectItem value={UserRole.OWNER}>Owner</SelectItem>
-              </SelectContent>
-            </Select>
+            <RoleDropdown value={role} onChange={(v) => setRole(v)} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
@@ -695,7 +728,7 @@ export default function AdminPage() {
 
   return (
     <TooltipProvider>
-      <div ref={containerRef} className="space-y-6 p-4 md:p-6">
+      <div ref={containerRef} className="space-y-6">
 
         {/* ── Modals ── */}
         <CreateUserModal open={showCreate} onClose={() => setShowCreate(false)} />
@@ -843,7 +876,7 @@ export default function AdminPage() {
           {ragStats ? (
             <div
               className="page-panel bg-elevated rounded-xl p-5"
-              style={{ backgroundImage: "linear-gradient(135deg, rgba(232,185,79,0.07) 0%, transparent 60%)" }}
+              style={{ backgroundImage: "linear-gradient(135deg, color-mix(in srgb, var(--color-gold) 7%, transparent) 0%, transparent 60%)" }}
             >
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-5">
                 <Brain size={16} weight="duotone" className="text-[--gold]" />

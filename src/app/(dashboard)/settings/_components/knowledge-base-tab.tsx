@@ -16,11 +16,13 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
+  PencilLine,
+  Eye,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +37,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { TelegramPreview } from "@/components/ui/telegram-preview";
 import { useKbStore } from "@/store/kbStore";
 import { CreateKbSchema, type CreateKbInput } from "@/lib/schemas/kb.schema";
 import { KbType, KbStatus } from "@/types/enums";
@@ -102,6 +107,7 @@ export function KnowledgeBaseTab() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>("text");
+  const [kbPane, setKbPane] = useState<"edit" | "preview">("edit");
 
   const { entries, isLoading, error, fetchAll, createText, update, remove } =
     useKbStore();
@@ -172,7 +178,7 @@ export function KnowledgeBaseTab() {
       {/* Page header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="font-display font-bold text-2xl text-text-primary">
+          <h2 className="text-xl font-bold text-text-primary">
             Knowledge Base
           </h2>
           <p className="text-text-secondary text-sm font-sans mt-1">
@@ -215,7 +221,7 @@ export function KnowledgeBaseTab() {
             <Skeleton key={i} className="h-[100px] rounded-xl" />
           ))
         ) : displayed.length === 0 ? (
-          <div className="surface-card p-12 text-center">
+          <div className="bg-elevated rounded-xl p-12 text-center">
             <div className="w-12 h-12 rounded-full bg-text-muted/10 flex items-center justify-center mx-auto mb-3">
               <Search className="h-5 w-5 text-text-muted" />
             </div>
@@ -248,7 +254,7 @@ export function KnowledgeBaseTab() {
             return (
               <div
                 key={entry.id}
-                className={`surface-card p-5 transition-all duration-200 animate-in-up ${entry.status === KbStatus.FAILED ? "border-danger/30" : ""}`}
+                className={`bg-elevated rounded-xl p-5 transition-all duration-200 animate-in-up`}
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <div className="flex items-start gap-4">
@@ -350,13 +356,14 @@ export function KnowledgeBaseTab() {
         onOpenChange={(open) => {
           if (!open) {
             setShowModal(false);
+            setKbPane("edit");
             form.reset();
           }
         }}
       >
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-full sm:max-w-[640px] lg:max-w-[880px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-display font-bold text-xl text-text-primary">
+            <DialogTitle className="font-bold text-xl text-text-primary">
               Add Knowledge Base Content
             </DialogTitle>
           </DialogHeader>
@@ -399,26 +406,76 @@ export function KnowledgeBaseTab() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xs font-medium text-text-secondary">
-                        Content
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Paste your guide, FAQ, or template here…"
-                          rows={6}
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
+                {/* Edit/Preview toggle — visible only on < lg */}
+                <div className="lg:hidden flex items-center gap-0.5 bg-elevated p-1 rounded-xl w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setKbPane("edit")}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                      kbPane === "edit"
+                        ? "bg-card text-text-primary shadow-sm"
+                        : "text-text-muted hover:text-text-secondary",
+                    )}
+                  >
+                    <PencilLine className="h-3.5 w-3.5" /> Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setKbPane("preview")}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                      kbPane === "preview"
+                        ? "bg-card text-text-primary shadow-sm"
+                        : "text-text-muted hover:text-text-secondary",
+                    )}
+                  >
+                    <Eye className="h-3.5 w-3.5" /> Preview
+                  </button>
+                </div>
+
+                {/* Split-panel: editor + preview */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                  <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem
+                        className={cn(
+                          kbPane === "preview" ? "hidden lg:block" : "block",
+                        )}
+                      >
+                        <FormLabel className="text-xs font-medium text-text-secondary">
+                          Content
+                        </FormLabel>
+                        <FormControl>
+                          <RichTextEditor
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            placeholder="Paste your guide, FAQ, or template here…"
+                            minHeight={240}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "space-y-2",
+                      kbPane === "edit" ? "hidden lg:block" : "block",
+                    )}
+                  >
+                    <p className="text-xs font-medium text-text-secondary">
+                      Telegram Preview
+                    </p>
+                    <TelegramPreview
+                      markdown={form.watch("content") ?? ""}
+                    />
+                  </div>
+                </div>
+
                 <div className="flex gap-3 pt-1">
                   <Button
                     type="button"

@@ -86,24 +86,38 @@ A clean, minimal light mode is preserved for TMA (Telegram Mini App) screens and
 
 | Role | Font | Weights | Use |
 |---|---|---|---|
-| **Display / Hero** | `Syne` | 700, 800 | Page titles, KPI metric numbers, empty states |
+| **Display / Heading** | `Space Grotesk` | 500, 600, 700 | Page titles, section headings, dialog titles |
 | **Body / UI** | `DM Sans` | 400, 500, 600 | All body copy, form labels, nav links, descriptions |
-| **Data / Mono** | `JetBrains Mono` | 400, 500 | IDs (Telegram ID, Lead ID), balances, timestamps, code values |
+| **Data / Mono** | `JetBrains Mono` | 400, 500 | KPI numeric values, IDs, balances, timestamps, code values |
 
-### Import (Google Fonts CDN)
+> ⚠️ **Space Grotesk replaced Syne** (v3.1). Syne was editorial — wrong for data-dense dashboards. Space Grotesk has sharp geometric numerics ideal for fintech UIs.
+
+### Import (Next.js Font)
+```ts
+Space_Grotesk: 500, 600, 700  // --font-syne CSS var (backwards compat)
+DM_Sans: 400, 500, 600
+JetBrains_Mono: 400, 500
 ```
-Syne: 700, 800
-DM Sans: 400, 500, 600
-JetBrains Mono: 400, 500
-```
+
+### Typography Standard — Desktop Dashboard (canonical reference: `admin/page.tsx`)
+
+| Element | Class | Notes |
+|---|---|---|
+| Page h1 | `text-2xl font-bold text-text-primary` | NO `font-display font-extrabold` |
+| Section heading (panel) | `text-sm font-semibold text-text-secondary uppercase tracking-wider` | — |
+| Tab sub-heading | `text-xl font-semibold text-text-primary` | — |
+| KPI numeric value | `text-2xl font-bold data-mono [accent]` | JetBrains Mono via `data-mono` |
+| KPI label | `text-xs text-text-secondary` | — |
+| Body | `text-sm text-text-secondary font-sans` | — |
+| Caption | `text-xs text-text-muted` | — |
+| Dialog/Sheet title | `font-bold text-xl text-text-primary` | — |
 
 ### Scale
 
 | Token | Size | Line Height | Font | Use |
 |---|---|---|---|---|
-| `display-2xl` | 48px | 1.1 | Syne 800 | Hero metric numbers on dashboard |
-| `display-xl` | 36px | 1.2 | Syne 700 | Page headings |
-| `display-lg` | 28px | 1.3 | Syne 700 | Section headings |
+| `display-xl` | 32px | 1.2 | Space Grotesk 700 | Page headings (h1) |
+| `display-lg` | 24px | 1.3 | Space Grotesk 700 | Section headings, dialog titles |
 | `heading-md` | 20px | 1.4 | DM Sans 600 | Card titles, table headers |
 | `heading-sm` | 16px | 1.5 | DM Sans 600 | Sub-section headings |
 | `body-lg` | 15px | 1.6 | DM Sans 400 | Primary body text |
@@ -826,7 +840,102 @@ Never use `transition: all` on mobile — always target specific properties.
 
 ---
 
-### 11I. Profile Page Design (`/profile`)
+## 12. Flat Panel Pattern (Light & Dark Mode Friendly)
+
+This is the canonical pattern for all page sections, replacing `<Card>` and `.surface-card` components which have borders and theme-specific shadows.
+
+### Core Rule
+
+> No borders, no left-color stripes. Every surface is a flat `bg-elevated` div with a `bg-card` header strip for 2-tone depth.
+
+### Panel Anatomy
+
+```jsx
+<div className="bg-elevated rounded-xl overflow-hidden">
+  {/* Header strip — creates 2-tone depth */}
+  <div className="px-5 py-4 bg-card rounded-t-xl flex items-center justify-between">
+    <h3 className="font-sans font-semibold text-[14px] text-text-primary">Section Title</h3>
+    {/* optional action */}
+  </div>
+  {/* Body */}
+  <div className="px-5 pb-5 pt-4">
+    {/* content */}
+  </div>
+</div>
+```
+
+### Why it Works in Both Modes
+
+| Mode | `--elevated` | `--card` | Effect |
+|---|---|---|---|
+| **Dark** | `#1c1c2e` | `#141422` | Header strip is *darker* than body → recessed feel |
+| **Light** | `#F5F5FC` | `#FFFFFF` | Header strip is *lighter* (white) than body → raised feel |
+
+The visual relationship inverts naturally between modes — both look intentional.
+
+### KPI Tile Gradient
+
+Use `color-mix()` with CSS variables for accent gradients so they adapt to the theme:
+
+```ts
+// ✅ Theme-adaptive (light AND dark mode correct)
+grad: "color-mix(in srgb, var(--color-gold) 9%, transparent)"
+
+// ❌ Hardcoded dark-mode hex (breaks in light mode)
+grad: "rgba(232,185,79,0.09)"
+```
+
+Applied as a `backgroundImage`:
+```tsx
+style={{ backgroundImage: `linear-gradient(135deg, ${grad} 0%, transparent 65%)` }}
+```
+
+### Chart Tooltip Pattern
+
+All recharts tooltips must use CSS variables, not hardcoded dark hex:
+
+```tsx
+<div style={{
+  background: "var(--elevated)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: 12,
+  padding: "10px 14px",
+}}>
+  <p style={{ color: "var(--text-muted)", fontSize: 11 }}>{label}</p>
+  <span style={{ color: "var(--text-primary)" }}>{value}</span>
+</div>
+```
+
+### Chart Axis Ticks
+
+```tsx
+tick={{ fontSize: 11, fill: "var(--text-muted)", fontFamily: "inherit" }}
+```
+
+### Icon Container (no border)
+
+```tsx
+// ✅ Uses overlay bg — no border needed
+<div className="w-10 h-10 rounded-xl flex items-center justify-center bg-overlay">
+  <Icon className="text-text-secondary" />
+</div>
+
+// ❌ Avoid — has border
+<div className="bg-elevated border border-border-default">
+```
+
+### Inline Color References — Forbidden List
+
+| Bad (hardcoded dark) | Good (CSS var) |
+|---|---|
+| `rgba(255,255,255,0.35)` | `var(--text-muted)` |
+| `rgba(255,255,255,0.55)` | `var(--text-secondary)` |
+| `#fff` / `text-white` | `var(--text-primary)` |
+| `#0e0e1a` / `#0f0f1c` | `var(--elevated)` |
+| `#2a2a42` | `var(--border-subtle)` |
+| `rgba(232,185,79,0.09)` | `color-mix(in srgb, var(--color-gold) 9%, transparent)` |
+| `rgba(196,35,45,0.12)` | `color-mix(in srgb, var(--color-crimson) 12%, transparent)` |
+
 
 Accessible via avatar tap in header or More drawer.
 

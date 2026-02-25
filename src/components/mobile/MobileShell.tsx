@@ -15,12 +15,13 @@ import {
 } from "@phosphor-icons/react";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type MobileTab = "home" | "leads" | "verify" | "more";
 
 export interface MobileShellProps {
-  readonly role: UserRole;
+  readonly role?: UserRole;
   readonly children: ReactNode;
   readonly activeTab: MobileTab;
   readonly pageTitle: string;
@@ -28,7 +29,7 @@ export interface MobileShellProps {
   readonly notificationCount?: number;
   /** Badge count on Verify tab */
   readonly verifyBadgeCount?: number;
-  /** User initials for avatar */
+  /** Override user initials (defaults to auth user email initial) */
   readonly userInitials?: string;
   readonly onTabChange?: (tab: MobileTab) => void;
   readonly onNotificationsClick?: () => void;
@@ -39,12 +40,12 @@ export interface MobileShellProps {
 // ── Role badge config ──────────────────────────────────────────────────────────
 const ROLE_CONFIG: Record<
   UserRole,
-  { color: string; Icon: React.ElementType; label: string }
+  { Icon: React.ElementType; label: string; iconClass: string }
 > = {
-  SUPERADMIN: { color: "#E8B94F", Icon: Crown, label: "Superadmin" },
-  OWNER: { color: "#C4232D", Icon: DiamondsFour, label: "Owner" },
-  ADMIN: { color: "#60A5FA", Icon: ShieldCheck, label: "Admin" },
-  STAFF: { color: "#8888AA", Icon: Circle, label: "Staff" },
+  SUPERADMIN: { Icon: Crown,         label: "Superadmin", iconClass: "text-gold" },
+  OWNER:      { Icon: DiamondsFour,  label: "Owner",      iconClass: "text-crimson" },
+  ADMIN:      { Icon: ShieldCheck,   label: "Admin",      iconClass: "text-info" },
+  STAFF:      { Icon: Circle,        label: "Staff",      iconClass: "text-text-secondary" },
 };
 
 // ── Tab config per role ────────────────────────────────────────────────────────
@@ -58,10 +59,10 @@ interface TabItem {
 function getTabsForRole(role: UserRole): TabItem[] {
   if (role === "SUPERADMIN") {
     return [
-      { id: "home", label: "Overview", Icon: SquaresFour, href: "/" },
-      { id: "leads", label: "Orgs", Icon: Users, href: "/admin/orgs" },
-      { id: "verify", label: "Admin", Icon: Crown, href: "/admin" },
-      { id: "more", label: "More", Icon: DotsThreeOutline, href: "#more" },
+      { id: "home",   label: "Overview", Icon: SquaresFour,     href: "/" },
+      { id: "leads",  label: "Orgs",     Icon: Users,           href: "/admin/orgs" },
+      { id: "verify", label: "Admin",    Icon: Crown,           href: "/admin" },
+      { id: "more",   label: "More",     Icon: DotsThreeOutline, href: "#more" },
     ];
   }
   return [
@@ -71,21 +72,17 @@ function getTabsForRole(role: UserRole): TabItem[] {
       Icon: SquaresFour,
       href: "/",
     },
-    { id: "leads", label: "Leads", Icon: Users, href: "/leads" },
-    { id: "verify", label: "Verify", Icon: ShieldCheck, href: "/verification" },
-    { id: "more", label: "More", Icon: DotsThreeOutline, href: "#more" },
+    { id: "leads",  label: "Leads",  Icon: Users,            href: "/leads" },
+    { id: "verify", label: "Verify", Icon: ShieldCheck,      href: "/verification" },
+    { id: "more",   label: "More",   Icon: DotsThreeOutline, href: "#more" },
   ];
 }
 
-// ── Badge ──────────────────────────────────────────────────────────────────────
+// ── Sub-components ─────────────────────────────────────────────────────────────
 function TabBadge({ count }: { count: number }) {
-  const label = count >= 10 ? "9+" : String(count);
   return (
-    <span
-      className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#C4232D]
-                 flex items-center justify-center font-mono text-[9px] text-white leading-none"
-    >
-      {label}
+    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-crimson flex items-center justify-center font-mono text-[9px] text-white leading-none">
+      {count >= 10 ? "9+" : count}
     </span>
   );
 }
@@ -93,24 +90,20 @@ function TabBadge({ count }: { count: number }) {
 function BellBadge({ count }: { count: number }) {
   if (count <= 0) return null;
   return (
-    <span
-      className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#C4232D]
-                 flex items-center justify-center font-mono text-[9px] text-white leading-none"
-    >
+    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-crimson flex items-center justify-center font-mono text-[9px] text-white leading-none">
       {count >= 10 ? "9+" : count}
     </span>
   );
 }
 
-// ── LIVE dot ──────────────────────────────────────────────────────────────────
 function LiveDot() {
   return (
     <span className="flex items-center gap-1">
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF3B47] opacity-75" />
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF3B47]" />
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-live opacity-75" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-live" />
       </span>
-      <span className="font-sans text-[11px] font-medium text-[#C4232D] tracking-wide">
+      <span className="font-sans text-[11px] font-medium text-crimson tracking-wide">
         LIVE
       </span>
     </span>
@@ -119,41 +112,43 @@ function LiveDot() {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function MobileShell({
-  role,
+  role: roleProp,
   children,
   activeTab,
   pageTitle,
   notificationCount = 0,
   verifyBadgeCount = 0,
-  userInitials = "TJ",
+  userInitials: userInitialsProp,
   onTabChange,
   onNotificationsClick,
   onAvatarClick,
   showLiveDot = false,
 }: MobileShellProps) {
   const pathname = usePathname();
+  const { user } = useAuthStore();
+
+  const role = roleProp ?? (user?.role as UserRole) ?? "STAFF";
   const roleConfig = ROLE_CONFIG[role];
   const tabs = getTabsForRole(role);
 
+  // Derive initials from auth user email if not provided
+  const initials =
+    userInitialsProp ??
+    (user?.email ? user.email[0].toUpperCase() : "TJ");
+
   return (
-    <div className="flex flex-col min-h-screen bg-[#080810] text-[#F0F0FF] font-sans">
+    <div className="flex flex-col min-h-screen bg-background text-text-primary font-sans">
       {/* ── Safe area top ─────────────────────────────────── */}
       <div className="pt-[env(safe-area-inset-top)]" />
 
       {/* ── Header ────────────────────────────────────────── */}
-      <header
-        className="sticky top-0 z-40 flex items-center gap-2 px-4 h-[52px]
-                   bg-[#0E0E1A] border-b border-[#2A2A42]"
-      >
-        {/* Role badge + title */}
+      <header className="sticky top-0 z-40 flex items-center gap-2 px-4 h-[52px] bg-base border-b border-border-subtle">
+        {/* Role icon + title */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span
-            className="flex items-center justify-center w-6 h-6 rounded-full shrink-0"
-            style={{ color: roleConfig.color }}
-          >
+          <span className={cn("flex items-center justify-center w-6 h-6 rounded-full shrink-0", roleConfig.iconClass)}>
             <roleConfig.Icon size={18} weight="fill" />
           </span>
-          <span className="font-sans font-semibold text-[17px] text-[#F0F0FF] truncate">
+          <span className="font-sans font-semibold text-[17px] text-text-primary truncate">
             {pageTitle}
           </span>
           {showLiveDot && <LiveDot />}
@@ -166,17 +161,15 @@ export default function MobileShell({
             className="relative min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Notifications"
           >
-            <Bell size={22} className="text-[#8888AA]" />
+            <Bell size={22} className="text-text-secondary" />
             <BellBadge count={notificationCount} />
           </button>
           <button
             onClick={onAvatarClick}
-            className="w-8 h-8 rounded-full bg-[#1C1C2E] flex items-center justify-center
-                       min-w-[44px] min-h-[44px] font-sans font-semibold text-[14px] text-[#F0F0FF]
-                       border border-[#2A2A42]"
+            className="w-8 h-8 rounded-full bg-elevated flex items-center justify-center min-w-[44px] min-h-[44px] font-sans font-semibold text-[14px] text-text-primary border border-border-subtle"
             aria-label="Profile"
           >
-            {userInitials}
+            {initials}
           </button>
         </div>
       </header>
@@ -191,9 +184,9 @@ export default function MobileShell({
 
       {/* ── Bottom tab bar ────────────────────────────────── */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#2A2A42]"
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-subtle"
         style={{
-          background: "rgba(14, 14, 26, 0.95)",
+          background: "color-mix(in srgb, var(--base) 95%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           paddingBottom: "env(safe-area-inset-bottom)",
@@ -202,31 +195,28 @@ export default function MobileShell({
         <div className="flex items-center justify-around h-14">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
-            const isMostlyLink = tab.href !== "#more";
-            // Show verify badge
+            const isLink = tab.href !== "#more";
             const showBadge = tab.id === "verify" && verifyBadgeCount > 0;
 
             const inner = (
               <div
                 className={cn(
                   "relative flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-full min-h-[44px] transition-all",
-                  isActive ? "bg-[#C4232D1A]" : "bg-transparent",
+                  isActive ? "bg-crimson-subtle" : "bg-transparent",
                 )}
               >
                 <span className="relative">
                   <tab.Icon
                     size={22}
                     weight={isActive ? "fill" : "regular"}
-                    style={{ color: isActive ? "#C4232D" : "#555570" }}
+                    className={isActive ? "text-crimson" : "text-text-muted"}
                   />
                   {showBadge && <TabBadge count={verifyBadgeCount} />}
                 </span>
                 <span
                   className={cn(
                     "font-sans text-[11px] leading-tight",
-                    isActive
-                      ? "font-semibold text-[#F0F0FF]"
-                      : "font-normal text-[#555570]",
+                    isActive ? "font-semibold text-text-primary" : "font-normal text-text-muted",
                   )}
                 >
                   {tab.label}
@@ -234,7 +224,7 @@ export default function MobileShell({
               </div>
             );
 
-            if (isMostlyLink) {
+            if (isLink) {
               return (
                 <Link
                   key={tab.id}
@@ -264,3 +254,4 @@ export default function MobileShell({
 }
 
 export { LiveDot };
+

@@ -1,14 +1,47 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { ShieldCheck, CheckCircle } from "@phosphor-icons/react";
-import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import MobileShell from "./MobileShell";
-import { UserRole } from "@/types/enums";
+import { useLeadsStore } from "@/store/leadsStore";
+import type { Lead } from "@/store/leadsStore";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
+export interface MobileVerificationProps {
+  readonly onMoreOpen?: () => void;
+  readonly onApprove?: (id: string) => void;
+  readonly onReject?: (id: string) => void;
+}
+
+// ── Derive VerificationItem from Lead ──────────────────────────────────────────
+function toVerificationItem(lead: Lead) {
+  return {
+    id: lead.id,
+    leadName: lead.displayName ?? "Unknown",
+    leadId: `#TJ-${lead.id.slice(-4)}`,
+    hfmId: lead.hfmBrokerId ?? "—",
+    depositAmount: lead.depositBalance ?? "$0.00",
+    submittedAt: lead.createdAt
+      ? timeAgoShort(lead.createdAt)
+      : "—",
+    initials: (lead.displayName ?? "??")
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase(),
+  };
+}
+
+function timeAgoShort(iso: string): string {
+  const hrs = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
+  if (hrs < 1) return "Just now";
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 export interface VerificationItem {
   id: string;
   leadName: string;
@@ -19,50 +52,8 @@ export interface VerificationItem {
   initials: string;
 }
 
-export interface MobileVerificationProps {
-  readonly role?: UserRole;
-  readonly items?: VerificationItem[];
-  readonly pendingCount?: number;
-  readonly todayCount?: number;
-  readonly weekCount?: number;
-  readonly onMoreOpen?: () => void;
-  readonly onApprove?: (id: string) => void;
-  readonly onReject?: (id: string) => void;
-}
-
-// ── Mock data ──────────────────────────────────────────────────────────────────
-const MOCK_ITEMS: VerificationItem[] = [
-  {
-    id: "v1",
-    leadName: "Muhammad Hafiz",
-    leadId: "#TJ-1284",
-    hfmId: "1029384",
-    depositAmount: "$500.00",
-    submittedAt: "2h ago",
-    initials: "MH",
-  },
-  {
-    id: "v2",
-    leadName: "Siti Aminah",
-    leadId: "#TJ-1283",
-    hfmId: "HFM-77332",
-    depositAmount: "$1,200.00",
-    submittedAt: "4h ago",
-    initials: "SA",
-  },
-  {
-    id: "v3",
-    leadName: "Daniel Kumar",
-    leadId: "#TJ-1281",
-    hfmId: "HFM-55231",
-    depositAmount: "$350.00",
-    submittedAt: "6h ago",
-    initials: "DK",
-  },
-];
-
 // ── Swipe card ─────────────────────────────────────────────────────────────────
-const SWIPE_THRESHOLD = 0.4; // 40% of card width
+const SWIPE_THRESHOLD = 0.4;
 
 interface SwipeCardProps {
   item: VerificationItem;
@@ -136,8 +127,8 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
   return (
     <div
       ref={cardRef}
-      className="relative rounded-2xl border border-[#2A2A42] cursor-grab active:cursor-grabbing select-none"
-      style={{ background: "#141422", touchAction: "none" }}
+      className="relative rounded-2xl border border-border-subtle cursor-grab active:cursor-grabbing select-none bg-card"
+      style={{ touchAction: "none" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -147,12 +138,12 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
       <div
         className="absolute inset-0 rounded-2xl flex items-start justify-start p-6 pointer-events-none"
         style={{
-          background: `rgba(34,211,160,${approveOpacity * 0.35})`,
+          background: `color-mix(in srgb, var(--success) ${Math.round(approveOpacity * 35)}%, transparent)`,
           opacity: approveOpacity,
         }}
       >
         <span
-          className="font-sans font-bold text-[24px] text-[#22D3A0] border-4 border-[#22D3A0] rounded-lg px-2 py-0.5"
+          className="font-sans font-bold text-[24px] text-success border-4 border-success rounded-lg px-2 py-0.5"
           style={{ transform: "rotate(-10deg)" }}
         >
           ✓ APPROVE
@@ -163,12 +154,12 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
       <div
         className="absolute inset-0 rounded-2xl flex items-start justify-end p-6 pointer-events-none"
         style={{
-          background: `rgba(239,68,68,${rejectOpacity * 0.35})`,
+          background: `color-mix(in srgb, var(--danger) ${Math.round(rejectOpacity * 35)}%, transparent)`,
           opacity: rejectOpacity,
         }}
       >
         <span
-          className="font-sans font-bold text-[24px] text-[#EF4444] border-4 border-[#EF4444] rounded-lg px-2 py-0.5"
+          className="font-sans font-bold text-[24px] text-danger border-4 border-danger rounded-lg px-2 py-0.5"
           style={{ transform: "rotate(10deg)" }}
         >
           ✗ REJECT
@@ -178,55 +169,30 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
       {/* Card content */}
       <div className="flex flex-col items-center gap-3 p-6">
         <div className="flex items-center justify-between w-full">
-          <span className="font-mono text-[12px] text-[#555570]">
-            {item.leadId}
-          </span>
-          <span className="font-mono text-[11px] text-[#555570]">
-            {item.submittedAt}
-          </span>
+          <span className="font-mono text-[12px] text-text-muted">{item.leadId}</span>
+          <span className="font-mono text-[11px] text-text-muted">{item.submittedAt}</span>
         </div>
 
-        {/* Avatar */}
-        <div
-          className="w-[52px] h-[52px] rounded-full flex items-center justify-center"
-          style={{ background: "#C4232D22" }}
-        >
-          <span className="font-display font-bold text-[20px] text-[#F0F0FF]">
-            {item.initials}
-          </span>
+        <div className="w-[52px] h-[52px] rounded-full flex items-center justify-center bg-crimson-subtle">
+          <span className="font-display font-bold text-[20px] text-text-primary">{item.initials}</span>
         </div>
 
         <div className="text-center">
-          <div className="font-display font-bold text-[18px] text-[#F0F0FF]">
-            {item.leadName}
-          </div>
-          <div className="font-mono text-[13px] text-[#8888AA] mt-0.5">
-            HFM: {item.hfmId}
-          </div>
+          <div className="font-display font-bold text-[18px] text-text-primary">{item.leadName}</div>
+          <div className="font-mono text-[13px] text-text-secondary mt-0.5">HFM: {item.hfmId}</div>
         </div>
 
-        <div className="w-full border-t border-[#2A2A42] my-1" />
+        <div className="w-full border-t border-border-subtle my-1" />
 
         <div className="flex flex-col items-center gap-1">
-          <span className="font-display font-bold text-[28px] text-[#E8B94F]">
-            {item.depositAmount}
-          </span>
-          <span
-            className="font-sans font-medium text-[11px] uppercase tracking-wider"
-            style={{ color: "#F59E0B" }}
-          >
+          <span className="font-display font-bold text-[28px] text-gold">{item.depositAmount}</span>
+          <span className="font-sans font-medium text-[11px] uppercase tracking-wider text-warning">
             DEPOSIT REPORTED
           </span>
         </div>
 
-        {/* Receipt placeholder */}
-        <div
-          className="w-20 h-20 rounded-xl flex items-center justify-center"
-          style={{ background: "#1C1C2E" }}
-        >
-          <span className="font-sans text-[10px] text-[#555570]">
-            📄 Receipt
-          </span>
+        <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-elevated">
+          <span className="font-sans text-[10px] text-text-muted">📄 Receipt</span>
         </div>
       </div>
     </div>
@@ -237,14 +203,10 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
 function EmptyState({ todayCount }: { todayCount: number }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <CheckCircle size={64} className="text-[#22D3A0]" weight="fill" />
-      <span className="font-display font-bold text-[24px] text-[#F0F0FF]">
-        All done!
-      </span>
-      <span className="font-sans text-[14px] text-[#8888AA]">
-        No pending verifications
-      </span>
-      <span className="font-sans font-medium text-[13px] text-[#22D3A0]">
+      <CheckCircle size={64} className="text-success" weight="fill" />
+      <span className="font-display font-bold text-[24px] text-text-primary">All done!</span>
+      <span className="font-sans text-[14px] text-text-secondary">No pending verifications</span>
+      <span className="font-sans font-medium text-[13px] text-success">
         {todayCount} verified today
       </span>
     </div>
@@ -253,39 +215,49 @@ function EmptyState({ todayCount }: { todayCount: number }) {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileVerification({
-  role = "OWNER",
-  items,
-  pendingCount = 5,
-  todayCount = 8,
-  weekCount = 23,
   onMoreOpen,
   onApprove,
   onReject,
 }: MobileVerificationProps) {
-  const [queue, setQueue] = useState<VerificationItem[]>(items ?? MOCK_ITEMS);
-  const [toast, setToast] = useState<{
-    msg: string;
-    type: "approve" | "reject";
-  } | null>(null);
+  const { leads, isLoading, fetchLeads, verifyLead, updateStatus } = useLeadsStore();
+
+  useEffect(() => {
+    fetchLeads({ skip: 0, take: 50, status: "DEPOSIT_REPORTED", orderBy: "createdAt", order: "desc" });
+  }, [fetchLeads]);
+
+  const pendingLeads = leads.filter((l) => l.status === "DEPOSIT_REPORTED");
+  const [queue, setQueue] = useState<VerificationItem[]>([]);
+  const [todayCount, setTodayCount] = useState(0);
+
+  useEffect(() => {
+    if (pendingLeads.length > 0) {
+      setQueue(pendingLeads.map(toVerificationItem));
+    }
+  }, [pendingLeads.length]);
+
+  const [toast, setToast] = useState<{ msg: string; type: "approve" | "reject" } | null>(null);
 
   const handleApprove = useCallback(
-    (id: string) => {
+    async (id: string) => {
       setQueue((prev) => prev.filter((i) => i.id !== id));
+      setTodayCount((c) => c + 1);
       setToast({ msg: "✓ Lead approved", type: "approve" });
       onApprove?.(id);
+      try { await verifyLead(id); } catch {}
       setTimeout(() => setToast(null), 4000);
     },
-    [onApprove],
+    [onApprove, verifyLead],
   );
 
   const handleReject = useCallback(
-    (id: string) => {
+    async (id: string) => {
       setQueue((prev) => prev.filter((i) => i.id !== id));
       setToast({ msg: "✗ Lead rejected", type: "reject" });
       onReject?.(id);
+      try { await updateStatus(id, { status: "REJECTED" }); } catch {}
       setTimeout(() => setToast(null), 4000);
     },
-    [onReject],
+    [onReject, updateStatus],
   );
 
   const currentItem = queue[0];
@@ -293,63 +265,50 @@ export default function MobileVerification({
 
   return (
     <MobileShell
-      role={role}
       activeTab="verify"
       pageTitle="Verification Queue"
-      notificationCount={0}
       verifyBadgeCount={queue.length}
-      userInitials="TJ"
       showLiveDot
       onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
     >
       <div className="pb-6">
         {/* Stats bar */}
-        <div className="flex items-center gap-4 px-4 py-3 border-b border-[#2A2A42]">
+        <div className="flex items-center gap-4 px-4 py-3 border-b border-border-subtle">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
-            <span className="font-sans font-semibold text-[14px] text-[#F0F0FF]">
-              {queue.length} Pending
+            <span className="w-2 h-2 rounded-full bg-warning" />
+            <span className="font-sans font-semibold text-[14px] text-text-primary">
+              {isLoading ? "…" : `${queue.length} Pending`}
             </span>
           </span>
-          <span className="w-px h-4 bg-[#2A2A42]" />
+          <span className="w-px h-4 bg-border-subtle" />
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#22D3A0]" />
-            <span className="font-sans text-[13px] text-[#8888AA]">
-              {todayCount} Today
-            </span>
-          </span>
-          <span className="w-px h-4 bg-[#2A2A42]" />
-          <span className="font-sans text-[13px] text-[#8888AA]">
-            {weekCount} This Week
+            <span className="w-2 h-2 rounded-full bg-success" />
+            <span className="font-sans text-[13px] text-text-secondary">{todayCount} Today</span>
           </span>
         </div>
 
-        {queue.length === 0 ? (
+        {isLoading && queue.length === 0 ? (
+          <div className="px-4 pt-4">
+            <div className="h-64 rounded-2xl bg-card animate-pulse" />
+          </div>
+        ) : queue.length === 0 ? (
           <EmptyState todayCount={todayCount} />
         ) : (
           <div className="px-4 pt-4 flex flex-col gap-4">
             {/* Card stack */}
             <div className="relative">
-              {/* Back card peek */}
-              {backItem && (
+              {queue[1] && (
                 <div
-                  className="absolute inset-x-0 rounded-2xl border border-[#2A2A42] h-32"
-                  style={{
-                    background: "#1C1C2E",
-                    transform: "scale(0.96) translateY(8px)",
-                    opacity: 0.6,
-                    zIndex: 0,
-                    top: "8px",
-                  }}
+                  className="absolute inset-x-0 rounded-2xl border border-border-subtle h-32 bg-elevated"
+                  style={{ transform: "scale(0.96) translateY(8px)", opacity: 0.6, zIndex: 0, top: "8px" }}
                 />
               )}
-              {/* Front card */}
-              {currentItem && (
+              {queue[0] && (
                 <div className="relative z-10">
                   <SwipeCard
-                    item={currentItem}
-                    onApprove={() => handleApprove(currentItem.id)}
-                    onReject={() => handleReject(currentItem.id)}
+                    item={queue[0]}
+                    onApprove={() => handleApprove(queue[0].id)}
+                    onReject={() => handleReject(queue[0].id)}
                   />
                 </div>
               )}
@@ -357,35 +316,26 @@ export default function MobileVerification({
 
             {/* Swipe hints */}
             <div className="flex items-center justify-center gap-4">
-              <span
-                className="flex items-center gap-1 rounded-full px-3 h-8 font-sans text-[13px] font-medium text-[#EF4444]"
-                style={{ background: "#EF44441A" }}
-              >
+              <span className="flex items-center gap-1 rounded-full px-3 h-8 font-sans text-[13px] font-medium text-danger bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]">
                 ← Reject
               </span>
-              <span
-                className="flex items-center gap-1 rounded-full px-3 h-8 font-sans text-[13px] font-medium text-[#22D3A0]"
-                style={{ background: "#22D3A01A" }}
-              >
+              <span className="flex items-center gap-1 rounded-full px-3 h-8 font-sans text-[13px] font-medium text-success bg-[color-mix(in_srgb,var(--success)_10%,transparent)]">
                 Approve →
               </span>
             </div>
 
             {/* Manual buttons */}
-            {currentItem && (
+            {queue[0] && (
               <div className="flex gap-3">
                 <button
-                  onClick={() => handleReject(currentItem.id)}
-                  className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px]
-                             border border-[#EF4444] text-[#EF4444] active:scale-[0.97] transition-transform"
+                  onClick={() => handleReject(queue[0].id)}
+                  className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] border border-danger text-danger active:scale-[0.97] transition-transform"
                 >
                   Reject
                 </button>
                 <button
-                  onClick={() => handleApprove(currentItem.id)}
-                  className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] text-[#080810]
-                             active:scale-[0.97] transition-transform"
-                  style={{ background: "#22D3A0" }}
+                  onClick={() => handleApprove(queue[0].id)}
+                  className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] bg-success text-void active:scale-[0.97] transition-transform"
                 >
                   Approve
                 </button>
@@ -399,19 +349,13 @@ export default function MobileVerification({
       {toast && (
         <div
           className={cn(
-            "fixed left-4 right-4 z-50 flex items-center justify-between gap-3 px-4 py-3 rounded-xl",
-            "font-sans font-medium text-[14px] text-white shadow-2xl",
+            "fixed left-4 right-4 z-50 flex items-center justify-between gap-3 px-4 py-3 rounded-xl font-sans font-medium text-[14px] shadow-2xl",
+            toast.type === "approve" ? "bg-success text-void" : "bg-danger text-white",
           )}
-          style={{
-            bottom: "calc(56px + env(safe-area-inset-bottom) + 16px)",
-            background: toast.type === "approve" ? "#22D3A0" : "#EF4444",
-          }}
+          style={{ bottom: "calc(56px + env(safe-area-inset-bottom) + 16px)" }}
         >
           <span>{toast.msg}</span>
-          <button
-            className="text-white text-[13px] font-semibold underline"
-            onClick={() => setToast(null)}
-          >
+          <button className="text-[13px] font-semibold underline opacity-80" onClick={() => setToast(null)}>
             Undo
           </button>
         </div>

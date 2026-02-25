@@ -25,24 +25,30 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-export const NAV_ITEMS = [
-  { href: "/", icon: SquaresFour, labelKey: "nav.commandCenter" },
-  { href: "/leads", icon: Users, labelKey: "nav.leadIntelligence" },
-  {
-    href: "/verification",
-    icon: ShieldCheck,
-    labelKey: "nav.verificationQueue",
-  },
-  { href: "/analytics", icon: ChartBar, labelKey: "nav.analytics" },
-  { href: "/settings", icon: Sliders, labelKey: "nav.settings" },
-  { href: "/admin", icon: Crown, labelKey: "nav.superAdmin" },
+// All possible nav items
+const ALL_NAV_ITEMS = [
+  { href: "/",            icon: SquaresFour, labelKey: "nav.commandCenter",   roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
+  { href: "/leads",       icon: Users,       labelKey: "nav.leadIntelligence", roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
+  { href: "/verification",icon: ShieldCheck, labelKey: "nav.verificationQueue",roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
+  { href: "/analytics",  icon: ChartBar,    labelKey: "nav.analytics",        roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
+  { href: "/settings",   icon: Sliders,     labelKey: "nav.settings",         roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
+  { href: "/admin",      icon: Crown,       labelKey: "nav.superAdmin",       roles: [UserRole.SUPERADMIN] },
 ];
+
+export const NAV_ITEMS = ALL_NAV_ITEMS;
 
 export function AppSidebar() {
   const pathname = usePathname();
   const t = useT();
   const { user, logout } = useAuthStore();
   const { setOpenMobile } = useSidebar();
+
+  const role = user?.role as UserRole | undefined;
+
+  // Filter nav items by current user's role
+  const visibleItems = ALL_NAV_ITEMS.filter((item) =>
+    role ? item.roles.includes(role) : false,
+  );
 
   return (
     <Sidebar
@@ -66,7 +72,7 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2.5 py-4 overflow-y-auto bg-transparent scrollbar-none group-data-[collapsible=icon]:px-2">
         <SidebarMenu className="space-y-1">
-          {NAV_ITEMS.map(({ href, icon: Icon, labelKey }) => {
+          {visibleItems.map(({ href, icon: Icon, labelKey }) => {
             const label = t(labelKey);
             const isActive =
               href === "/"
@@ -112,7 +118,7 @@ export function AppSidebar() {
               {user?.email ?? "—"}
             </p>
             <span
-              className={`badge ${user?.role === UserRole.OWNER ? "badge-owner" : user?.role === UserRole.ADMIN ? "badge-admin" : "badge-staff"} text-[9px] px-1.5 py-px mt-0.5 inline-block`}
+              className={`badge ${user?.role === UserRole.OWNER ? "badge-owner" : user?.role === UserRole.ADMIN ? "badge-admin" : user?.role === UserRole.SUPERADMIN ? "badge-owner" : "badge-staff"} text-[9px] px-1.5 py-px mt-0.5 inline-block`}
             >
               {user?.role?.toUpperCase() ?? "—"}
             </span>

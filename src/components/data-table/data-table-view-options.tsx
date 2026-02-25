@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-interface DataTableViewOptionsProps<TData>
-  extends React.ComponentProps<typeof PopoverContent> {
+interface DataTableViewOptionsProps<TData> extends React.ComponentProps<
+  typeof PopoverContent
+> {
   table: Table<TData>;
   disabled?: boolean;
 }
@@ -43,7 +44,7 @@ export function DataTableViewOptions<TData>({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild className="border-border-default">
         <Button
           aria-label="Toggle columns"
           role="combobox"
@@ -56,10 +57,10 @@ export function DataTableViewOptions<TData>({
           View
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-44 p-0" {...props}>
+      <PopoverContent className="w-44 p-0 border-transparent" {...props}>
         <Command>
           <CommandInput placeholder="Search columns..." />
-          <CommandList>
+          <CommandList className="border-transparent">
             <CommandEmpty>No columns found.</CommandEmpty>
             <CommandGroup>
               {columns.map((column) => (
@@ -69,7 +70,7 @@ export function DataTableViewOptions<TData>({
                     column.toggleVisibility(!column.getIsVisible())
                   }
                 >
-                  <span className="truncate">
+                  <span className="truncate text-text-secondary ">
                     {column.columnDef.meta?.label ?? column.id}
                   </span>
                   <Check

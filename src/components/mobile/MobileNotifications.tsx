@@ -40,8 +40,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: false,
     category: "leads",
     Icon: UserPlus,
-    iconColor: "#60A5FA",
-    iconBg: "#60A5FA1A",
+    iconColor: "var(--info)",
+    iconBg: "color-mix(in srgb, var(--info) 15%, transparent)",
     title: "New lead registered",
     body: "Muhammad Hafiz registered via Telegram",
     time: "2h ago",
@@ -51,8 +51,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: false,
     category: "verification",
     Icon: CurrencyDollar,
-    iconColor: "#F59E0B",
-    iconBg: "#F59E0B1A",
+    iconColor: "var(--warning)",
+    iconBg: "color-mix(in srgb, var(--warning) 15%, transparent)",
     title: "Deposit reported",
     body: "Siti Aminah submitted $800 deposit receipt",
     time: "4h ago",
@@ -62,8 +62,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: false,
     category: "verification",
     Icon: ShieldCheck,
-    iconColor: "#22D3A0",
-    iconBg: "#22D3A01A",
+    iconColor: "var(--success)",
+    iconBg: "color-mix(in srgb, var(--success) 15%, transparent)",
     title: "Verification approved",
     body: "Lead #TJ-1279 deposit confirmed",
     time: "5h ago",
@@ -73,8 +73,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: true,
     category: "verification",
     Icon: XCircle,
-    iconColor: "#EF4444",
-    iconBg: "#EF44441A",
+    iconColor: "var(--danger)",
+    iconBg: "color-mix(in srgb, var(--danger) 15%, transparent)",
     title: "Deposit rejected",
     body: "Lead #TJ-1277 rejected — poor image quality",
     time: "Yesterday",
@@ -84,8 +84,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: true,
     category: "leads",
     Icon: Users,
-    iconColor: "#8888AA",
-    iconBg: "#8888AA1A",
+    iconColor: "var(--text-secondary)",
+    iconBg: "color-mix(in srgb, var(--text-secondary) 15%, transparent)",
     title: "New team member",
     body: "Ahmad Razali added as Staff",
     time: "Jan 20",
@@ -95,8 +95,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: true,
     category: "system",
     Icon: Database,
-    iconColor: "#60A5FA",
-    iconBg: "#60A5FA1A",
+    iconColor: "var(--info)",
+    iconBg: "color-mix(in srgb, var(--info) 15%, transparent)",
     title: "KB processing complete",
     body: "knowledge-base-jan.pdf indexed",
     time: "Jan 19",
@@ -124,8 +124,8 @@ function NotifRow({
       className={cn(
         "flex items-start gap-3 w-full min-h-[64px] px-4 py-3 text-left transition-colors",
         notif.read
-          ? "bg-[#141422]"
-          : "bg-[#1C1C2E] border-l-[3px] border-l-[#C4232D]",
+          ? "bg-card"
+          : "bg-elevated border-l-[3px] border-l-crimson",
       )}
     >
       <span
@@ -139,14 +139,14 @@ function NotifRow({
         />
       </span>
       <div className="flex-1 min-w-0">
-        <div className="font-sans font-semibold text-[14px] text-[#F0F0FF] leading-snug">
+        <div className="font-sans font-semibold text-[14px] text-text-primary leading-snug">
           {notif.title}
         </div>
-        <div className="font-sans text-[13px] text-[#8888AA] mt-0.5 line-clamp-2 leading-snug">
+        <div className="font-sans text-[13px] text-text-secondary mt-0.5 line-clamp-2 leading-snug">
           {notif.body}
         </div>
       </div>
-      <span className="font-mono text-[11px] text-[#555570] shrink-0 mt-1">
+      <span className="font-mono text-[11px] text-text-muted shrink-0 mt-1">
         {notif.time}
       </span>
     </button>
@@ -157,11 +157,11 @@ function NotifRow({
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-20 text-center px-8">
-      <Bell size={64} weight="fill" className="text-[#555570]" />
-      <span className="font-display font-bold text-[20px] text-[#F0F0FF]">
+      <Bell size={64} weight="fill" className="text-text-muted" />
+      <span className="font-display font-bold text-[20px] text-text-primary">
         All caught up!
       </span>
-      <span className="font-sans text-[14px] text-[#555570]">
+      <span className="font-sans text-[14px] text-text-muted">
         No new notifications
       </span>
     </div>
@@ -197,21 +197,21 @@ export default function MobileNotifications({
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#080810] text-[#F0F0FF] font-sans">
+    <div className="flex flex-col min-h-screen bg-void text-text-primary font-sans">
       <div className="pt-[env(safe-area-inset-top)]" />
 
       {/* Header */}
-      <header className="flex items-center justify-between px-4 h-[52px] bg-[#0E0E1A] border-b border-[#2A2A42]">
+      <header className="flex items-center justify-between px-4 h-[52px] bg-base border-b border-border-subtle">
         <div className="flex items-center gap-2">
-          <Bell size={20} className="text-[#F0F0FF]" />
-          <span className="font-sans font-semibold text-[17px] text-[#F0F0FF]">
+          <Bell size={20} className="text-text-primary" />
+          <span className="font-sans font-semibold text-[17px] text-text-primary">
             Notifications
           </span>
         </div>
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAll}
-            className="font-sans text-[13px] text-[#C4232D] min-h-[44px] px-2"
+            className="font-sans text-[13px] text-crimson min-h-[44px] px-2"
           >
             Mark all read
           </button>
@@ -234,13 +234,13 @@ export default function MobileNotifications({
               className={cn(
                 "shrink-0 flex items-center gap-1 rounded-full h-7 px-3 font-sans text-[12px] font-medium transition-colors",
                 isActive
-                  ? "bg-[#C4232D1A] text-[#C4232D]"
-                  : "bg-[#141422] text-[#8888AA] border border-[#2A2A42]",
+                  ? "bg-crimson-subtle text-crimson"
+                  : "bg-card text-text-secondary border border-border-subtle",
               )}
             >
               {tab.label}
               {badgeCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-[#C4232D] font-mono text-[9px] text-white flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-crimson font-mono text-[9px] text-white flex items-center justify-center">
                   {badgeCount}
                 </span>
               )}
@@ -257,7 +257,7 @@ export default function MobileNotifications({
           <div>
             {todayItems.length > 0 && (
               <div>
-                <div className="px-4 py-2 font-sans font-semibold text-[11px] text-[#555570] uppercase tracking-wider">
+                <div className="px-4 py-2 font-sans font-semibold text-[11px] text-text-muted uppercase tracking-wider">
                   Today
                 </div>
                 {todayItems.map((notif, idx) => (
@@ -274,7 +274,7 @@ export default function MobileNotifications({
                       }}
                     />
                     {idx < todayItems.length - 1 && (
-                      <div className="ml-[56px] border-b border-[#2A2A42]" />
+                      <div className="ml-[56px] border-b border-border-subtle" />
                     )}
                   </React.Fragment>
                 ))}
@@ -282,7 +282,7 @@ export default function MobileNotifications({
             )}
             {earlierItems.length > 0 && (
               <div>
-                <div className="px-4 py-2 font-sans font-semibold text-[11px] text-[#555570] uppercase tracking-wider mt-2">
+                <div className="px-4 py-2 font-sans font-semibold text-[11px] text-text-muted uppercase tracking-wider mt-2">
                   Earlier
                 </div>
                 {earlierItems.map((notif, idx) => (
@@ -299,7 +299,7 @@ export default function MobileNotifications({
                       }}
                     />
                     {idx < earlierItems.length - 1 && (
-                      <div className="ml-[56px] border-b border-[#2A2A42]" />
+                      <div className="ml-[56px] border-b border-border-subtle" />
                     )}
                   </React.Fragment>
                 ))}
@@ -311,3 +311,4 @@ export default function MobileNotifications({
     </div>
   );
 }
+

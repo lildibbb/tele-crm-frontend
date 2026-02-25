@@ -2,7 +2,14 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { Eye, EyeOff, Loader2, CheckCircle2, Shield, UserIcon } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  CheckCircle2,
+  Shield,
+  UserIcon,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { Button } from "@/components/ui/button";
@@ -15,7 +22,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { SetupAccountSchema, type SetupAccountInput } from "@/lib/schemas/auth.schema";
+import {
+  SetupAccountSchema,
+  type SetupAccountInput,
+} from "@/lib/schemas/auth.schema";
 import { authApi } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
 
@@ -45,8 +55,8 @@ function SetupAccountContent() {
       initData: "",
       email: emailFromUrl,
       password: "",
-      deviceId: crypto.randomUUID(),
-      userAgent: navigator.userAgent,
+      deviceId: "",
+      userAgent: "",
     },
   });
 
@@ -54,6 +64,16 @@ function SetupAccountContent() {
   useEffect(() => {
     const initData = window.Telegram?.WebApp?.initData ?? "";
     form.setValue("initData", initData);
+
+    if (typeof crypto !== "undefined" && crypto.randomUUID) {
+      form.setValue("deviceId", crypto.randomUUID());
+    } else {
+      form.setValue("deviceId", Math.random().toString(36).substring(2, 15));
+    }
+
+    if (typeof navigator !== "undefined") {
+      form.setValue("userAgent", navigator.userAgent);
+    }
   }, [form]);
 
   const email = form.watch("email");
@@ -66,8 +86,8 @@ function SetupAccountContent() {
       setStep(2);
     } catch (err: unknown) {
       const message =
-        (err as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message ?? "Setup failed. Please check your invitation link.";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Setup failed. Please check your invitation link.";
       form.setError("root", { message });
     }
   };
@@ -78,7 +98,9 @@ function SetupAccountContent() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full opacity-[0.05]"
-          style={{ background: "radial-gradient(circle, #E8B94F 0%, transparent 70%)" }}
+          style={{
+            background: "radial-gradient(circle, #E8B94F 0%, transparent 70%)",
+          }}
         />
       </div>
 
@@ -88,7 +110,9 @@ function SetupAccountContent() {
           <h1 className="font-display font-extrabold text-2xl text-text-primary tracking-tight">
             TITAN <span className="text-crimson">JOURNAL</span>
           </h1>
-          <p className="text-text-secondary text-xs font-sans mt-1">Account Setup</p>
+          <p className="text-text-secondary text-xs font-sans mt-1">
+            Account Setup
+          </p>
         </div>
 
         <div className="surface-card p-7 sm:p-8">
@@ -97,7 +121,9 @@ function SetupAccountContent() {
             {STEPS.map((label, i) => (
               <div key={label} className="flex items-center gap-2 flex-1">
                 {i > 0 && (
-                  <div className={`h-px flex-1 ${i <= step ? "bg-crimson" : "bg-border-subtle"}`} />
+                  <div
+                    className={`h-px flex-1 ${i <= step ? "bg-crimson" : "bg-border-subtle"}`}
+                  />
                 )}
                 <div
                   className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono font-bold transition-colors ${i < step ? "bg-success text-[#0D3D2B]" : i === step ? "bg-crimson text-white" : "bg-elevated text-text-muted border border-border-default"}`}
@@ -111,7 +137,8 @@ function SetupAccountContent() {
           {/* Missing token warning */}
           {!invitationToken && step < 2 && (
             <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30 text-danger text-xs font-sans">
-              No invitation token found. Please use the link from your invitation email.
+              No invitation token found. Please use the link from your
+              invitation email.
             </div>
           )}
 
@@ -122,8 +149,12 @@ function SetupAccountContent() {
                 <Shield className="h-4 w-4 text-crimson" />
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-sans font-medium text-text-secondary">Invited as</p>
-                <p className="text-[13px] font-mono text-text-primary truncate">{emailFromUrl}</p>
+                <p className="text-xs font-sans font-medium text-text-secondary">
+                  Invited as
+                </p>
+                <p className="text-[13px] font-mono text-text-primary truncate">
+                  {emailFromUrl}
+                </p>
               </div>
             </div>
           )}
@@ -173,7 +204,9 @@ function SetupAccountContent() {
                   </div>
                   <Button
                     type="button"
-                    onClick={() => { if (email) setStep(1); }}
+                    onClick={() => {
+                      if (email) setStep(1);
+                    }}
                     disabled={!email || !invitationToken}
                     className="w-full mt-6"
                     size="lg"
@@ -217,7 +250,11 @@ function SetupAccountContent() {
                               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-text-muted hover:text-text-secondary"
                               onClick={() => setShowPass(!showPass)}
                             >
-                              {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {showPass ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
                             </Button>
                           </div>
                         </FormControl>
@@ -237,12 +274,17 @@ function SetupAccountContent() {
                     </Button>
                     <Button
                       type="submit"
-                      disabled={form.formState.isSubmitting || password.length < 8}
+                      disabled={
+                        form.formState.isSubmitting || password.length < 8
+                      }
                       className="flex-1"
                       size="lg"
                     >
                       {form.formState.isSubmitting ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Setting up…</>
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Setting
+                          up…
+                        </>
                       ) : (
                         "Complete Setup"
                       )}
@@ -269,7 +311,11 @@ function SetupAccountContent() {
                 <UserIcon className="h-3 w-3" />
                 <span className="data-mono">{emailFromUrl || email}</span>
               </div>
-              <Button onClick={() => router.push("/")} className="w-full" size="lg">
+              <Button
+                onClick={() => router.push("/")}
+                className="w-full"
+                size="lg"
+              >
                 Go to Command Center →
               </Button>
             </div>
@@ -282,13 +328,14 @@ function SetupAccountContent() {
 
 export default function SetupAccountPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-svh bg-void flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-text-muted" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-svh bg-void flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-text-muted" />
+        </div>
+      }
+    >
       <SetupAccountContent />
     </Suspense>
   );
 }
-

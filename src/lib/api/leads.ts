@@ -4,6 +4,7 @@ import type {
   ListLeadsParams,
   UpdateLeadStatusInput,
   UpdateHandoverInput,
+  BulkUpdateHandoverInput,
   SubmitLeadInfoInput,
   LeaderboardParams,
   ExportLeadsParams,
@@ -28,8 +29,7 @@ export const leadsApi = {
   /**
    * Returns a lead and its full interaction history.
    */
-  findOne: (id: string) =>
-    apiClient.get<ApiResponse<Lead>>(`/leads/${id}`),
+  findOne: (id: string) => apiClient.get<ApiResponse<Lead>>(`/leads/${id}`),
 
   /**
    * Update lead status.
@@ -42,6 +42,15 @@ export const leadsApi = {
    */
   setHandover: (id: string, data: UpdateHandoverInput) =>
     apiClient.patch<ApiResponse<Lead>>(`/leads/${id}/handover`, data),
+
+  /**
+   * Enable/disable human handover mode for multiple leads.
+   */
+  setBulkHandover: (data: BulkUpdateHandoverInput) =>
+    apiClient.patch<ApiResponse<{ count: number }>>(
+      `/leads/bulk/handover`,
+      data,
+    ),
 
   /**
    * Owner manually verifies the registration/deposit proof.
@@ -59,7 +68,7 @@ export const leadsApi = {
    * Streams a CSV file of all leads matching optional filters.
    */
   exportCsv: (params?: ExportLeadsParams) =>
-    apiClient.get("/leads/export", { 
+    apiClient.get("/leads/export", {
       params,
       responseType: "blob" as const,
     }),
@@ -68,5 +77,7 @@ export const leadsApi = {
    * Paginated interaction timeline for a lead.
    */
   getInteractions: (id: string, params?: ListInteractionsParams) =>
-    apiClient.get<ApiResponse<Interaction[]>>(`/leads/${id}/interactions`, { params }),
+    apiClient.get<ApiResponse<Interaction[]>>(`/leads/${id}/interactions`, {
+      params,
+    }),
 };

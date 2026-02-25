@@ -14,7 +14,8 @@ export const activityApi = {
    * Pass accessToken as query param since EventSource doesn't support custom headers.
    */
   stream: (accessToken: string): EventSource => {
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const base =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
     const url = `${base}/activity/stream?token=${encodeURIComponent(accessToken)}`;
     return new EventSource(url);
   },

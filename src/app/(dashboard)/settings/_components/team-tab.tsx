@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, Copy, Check, UserX, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -131,16 +130,14 @@ export function TeamTab() {
     <div className="space-y-5 animate-in-up">
       {/* Page header */}
       <div className="flex items-center justify-between gap-4">
-        <h2 className="font-display font-bold text-2xl text-text-primary">
-          Team Members
-        </h2>
+        <h2 className="text-xl font-bold text-text-primary">Team Members</h2>
         <Button onClick={() => setShowModal(true)} className="gap-1.5">
           <UserPlus className="h-4 w-4" /> Invite Member
         </Button>
       </div>
 
       {/* Members table */}
-      <Card>
+      <div className="bg-elevated rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="p-4 space-y-3">
@@ -179,7 +176,7 @@ export function TeamTab() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-[11px] flex-shrink-0 ${m.role === UserRole.OWNER ? "bg-gold/20 border border-gold/40 text-gold" : "bg-crimson/20 border border-crimson/30 text-crimson"}`}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${m.role === UserRole.OWNER ? "bg-gold/20 border border-gold/40 text-gold" : "bg-crimson/20 border border-crimson/30 text-crimson"}`}
                           >
                             {initials}
                           </div>
@@ -237,14 +234,16 @@ export function TeamTab() {
             </Table>
           )}
         </div>
-      </Card>
+      </div>
 
       {/* Pending Invitations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Invitations</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
+      <div className="bg-elevated rounded-xl overflow-hidden">
+        <div className="px-5 py-4 bg-card rounded-t-xl">
+          <h3 className="font-sans font-semibold text-[14px] text-text-primary">
+            Pending Invitations
+          </h3>
+        </div>
+        <div className="px-5 pb-5 pt-4">
           {invitations.length === 0 ? (
             <p className="text-sm font-sans text-text-secondary">
               No pending invitations.
@@ -280,8 +279,8 @@ export function TeamTab() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Invite Modal */}
       <Dialog
@@ -292,7 +291,7 @@ export function TeamTab() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display font-bold text-xl text-text-primary">
+            <DialogTitle className="font-bold text-xl text-text-primary">
               Invite Team Member
             </DialogTitle>
           </DialogHeader>

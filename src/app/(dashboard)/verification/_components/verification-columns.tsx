@@ -2,12 +2,27 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import { CheckCircle, XCircle, Chat, Eye, Clock } from "@phosphor-icons/react";
+import {
+  CheckCircle,
+  XCircle,
+  Chat,
+  Eye,
+  Clock,
+  Receipt,
+  CaretRight,
+} from "@phosphor-icons/react";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Lead } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function StatusBadge({ status }: { status: string }) {
   if (status === LeadStatus.DEPOSIT_CONFIRMED)
@@ -66,15 +81,32 @@ export function getVerificationColumns({
           .toUpperCase();
         return (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-crimson/12 border border-crimson/20 flex items-center justify-center text-crimson font-display font-bold flex-shrink-0 text-[13px]">
-              {initials}
-            </div>
+            <Avatar>
+              <AvatarImage
+                src="https://github.com/shadcn.png"
+                alt="@shadcn"
+                className="grayscale"
+              />
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
             <div className="flex flex-col min-w-0">
-              <p className="text-[13px] font-sans font-semibold text-text-primary truncate">
-                {lead.displayName ?? lead.username ?? "—"}
-              </p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="data-mono">{lead.displayName}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <span className="text-blue-500 text-[12px]">
+                      @{lead.username ?? "-"}
+                    </span>
+                    <p className="text-text-muted text-[12px]">
+                      Telegram ID: {lead.telegramUserId}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <p className="text-[11px] font-sans text-text-muted data-mono truncate">
-                {lead.telegramUserId}
+                {lead.email ?? "-"}
               </p>
             </div>
           </div>
@@ -171,27 +203,27 @@ export function getVerificationColumns({
                 <Button
                   size="sm"
                   onClick={() => onApprove(lead.id)}
-                  className="h-8 bg-success/10 text-success hover:bg-success/20 border border-success/25 rounded-[8px] gap-1 font-semibold text-[12px] px-2.5"
+                  className="h-8 bg-success/10 text-success hover:bg-success/20 border border-success/30 rounded-[8px] gap-1.5 font-semibold text-[13px] px-3 shadow-none transition-colors"
                 >
-                  <CheckCircle weight="duotone" size={13} />
+                  <CheckCircle weight="bold" size={15} />
                   Approve
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => onReject(lead.id)}
-                  className="h-8 border-danger/30 text-danger hover:bg-danger/10 hover:border-danger/50 rounded-[8px] gap-1 font-semibold text-[12px] px-2.5"
+                  className="h-8 bg-danger/5 text-danger hover:bg-danger/10 border-danger/30 hover:border-danger/50 rounded-[8px] gap-1.5 font-semibold text-[13px] px-3 shadow-none transition-colors"
                 >
-                  <XCircle weight="duotone" size={13} />
+                  <XCircle weight="bold" size={15} />
                   Reject
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
                   onClick={() => onAskMore(lead.id)}
-                  className="w-8 h-8 rounded-[8px] border border-border-subtle text-text-secondary hover:text-info hover:border-info/30"
+                  className="w-8 h-8 rounded-[8px] border border-border-default/60 bg-elevated/30 text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-default transition-all ml-1"
                 >
-                  <Chat weight="regular" size={13} />
+                  <Chat weight="duotone" size={15} />
                 </Button>
               </>
             )}
@@ -199,17 +231,19 @@ export function getVerificationColumns({
               size="icon"
               variant="ghost"
               onClick={() => onViewReceipt(lead.id)}
-              className="w-8 h-8 text-text-muted hover:text-text-primary"
+              className="w-8 h-8 text-text-muted hover:text-text-primary ml-0.5 rounded-lg"
+              title="View Receipt"
             >
-              <Eye className="h-4 w-4" />
+              <Receipt weight="duotone" className="h-[18px] w-[18px]" />
             </Button>
             <Link href={`/leads/${lead.id}`}>
               <Button
                 size="icon"
                 variant="ghost"
-                className="w-8 h-8 text-text-muted hover:text-text-primary"
+                className="w-8 h-8 text-text-muted hover:text-text-primary rounded-lg"
+                title="View Lead Details"
               >
-                <Eye className="h-3.5 w-3.5" />
+                <CaretRight weight="bold" className="h-[15px] w-[15px]" />
               </Button>
             </Link>
           </div>

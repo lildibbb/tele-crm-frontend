@@ -99,7 +99,7 @@ const ms: Record<string, string> = {
   "leads.filter.all":       "Semua Prospek",
   "leads.filter.new":       "Baru",
   "leads.filter.registered":"Didaftarkan",
-  "leads.filter.proof":     "Bukti Tertangguh",
+  "leads.filter.proof":     "Bukti Diserahkan",
   "leads.filter.confirmed": "Disahkan",
   "leads.col.lead":         "Prospek",
   "leads.col.telegram":     "ID Telegram",

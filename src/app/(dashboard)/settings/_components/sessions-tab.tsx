@@ -46,7 +46,7 @@ export function SessionsTab() {
   useEffect(() => {
     authApi
       .getSessions()
-      .then((res) => setSessions(res.data.data))
+      .then((res: { data: { data: Session[] } }) => setSessions(res.data.data))
       .catch(() => toast.error("Failed to load sessions"))
       .finally(() => setIsLoading(false));
   }, []);
@@ -83,7 +83,7 @@ export function SessionsTab() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display font-bold text-2xl text-text-primary">
+          <h2 className="text-xl font-bold text-text-primary">
             Active Sessions
           </h2>
           <p className="text-text-secondary text-sm font-sans mt-1">
@@ -120,7 +120,7 @@ export function SessionsTab() {
             <Skeleton key={i} className="h-[80px] rounded-xl" />
           ))
         ) : sessions.length === 0 ? (
-          <div className="surface-card p-6 text-center">
+          <div className="bg-elevated rounded-xl p-6 text-center">
             <div className="w-10 h-10 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto mb-3">
               <Shield className="h-5 w-5 text-success" />
             </div>
@@ -137,11 +137,11 @@ export function SessionsTab() {
             return (
               <div
                 key={session.id}
-                className="surface-card p-5 transition-all animate-in-up"
+                className="bg-elevated rounded-xl p-5 transition-all animate-in-up"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-elevated border border-border-default">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-overlay">
                     {deviceType === "mobile" ? (
                       <Smartphone className="h-5 w-5 text-text-secondary" />
                     ) : (
@@ -196,7 +196,7 @@ export function SessionsTab() {
             <div className="w-10 h-10 rounded-full bg-danger/20 border border-danger/30 flex items-center justify-center mb-2">
               <LogOut className="h-5 w-5 text-danger" />
             </div>
-            <DialogTitle className="font-display font-bold text-xl text-text-primary">
+            <DialogTitle className="font-bold text-xl text-text-primary">
               Revoke Session
             </DialogTitle>
           </DialogHeader>
