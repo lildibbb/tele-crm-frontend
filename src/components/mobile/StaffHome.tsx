@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShieldCheck, Users, ArrowRight } from "@phosphor-icons/react";
 import MobileShell from "./MobileShell";
+import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useLeadsStore } from "@/store/leadsStore";
 import { useAuthStore } from "@/store/authStore";
 import { useAnalyticsStore } from "@/store/analyticsStore";
@@ -37,6 +38,7 @@ export default function StaffHome({
   onVerificationQueue,
   onMyLeads,
 }: StaffHomeProps) {
+  const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuthStore();
   const { leads, total, isLoading, fetchLeads } = useLeadsStore();
   const { summary, fetchSummary } = useAnalyticsStore();
@@ -57,13 +59,16 @@ export default function StaffHome({
   });
 
   return (
-    <MobileShell
-      role="STAFF"
-      activeTab="home"
-      pageTitle={`Hi, ${firstName}`}
-      verifyBadgeCount={pendingCount}
-      onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
-    >
+    <>
+      <MobileShell
+        role="STAFF"
+        activeTab="home"
+        pageTitle={`Hi, ${firstName}`}
+        verifyBadgeCount={pendingCount}
+        onTabChange={(tab) => {
+          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
+        }}
+      >
       <div className="px-4 pb-6 pt-4">
         {/* Greeting */}
         <div className="mb-5">
@@ -182,7 +187,9 @@ export default function StaffHome({
           </button>
         )}
       </div>
-    </MobileShell>
+      </MobileShell>
+      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
+    </>
   );
 }
 

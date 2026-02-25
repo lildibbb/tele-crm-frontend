@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   CaretLeft,
   CaretRight,
@@ -20,10 +21,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileSettingsProps {
-  readonly role?: UserRole;
   readonly onBack?: () => void;
   readonly onSignOut?: () => void;
 }
@@ -203,10 +204,23 @@ function SettingsGroup({
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileSettings({
-  role = "OWNER",
   onBack,
   onSignOut,
 }: MobileSettingsProps) {
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+  const role = (user?.role as UserRole) ?? "STAFF";
+
+  const handleBack = () => {
+    if (onBack) { onBack(); return; }
+    router.back();
+  };
+
+  const handleSignOut = async () => {
+    if (onSignOut) { onSignOut(); return; }
+    await logout();
+    router.replace("/login");
+  };
   const groups: SettingsGroup[] = [
     { id: "bot", header: "Bot Configuration", items: BOT_ITEMS },
     {
@@ -229,7 +243,7 @@ export default function MobileSettings({
       {/* Header */}
       <header className="flex items-center h-[52px] px-4 bg-base border-b border-border-subtle">
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="min-w-[44px] min-h-[44px] flex items-center justify-center text-crimson"
         >
           <CaretLeft size={22} weight="bold" />
@@ -246,7 +260,7 @@ export default function MobileSettings({
           <SettingsGroup key={group.id} group={group} role={role} />
         ))}
 
-        {showAdminTeamSection && (
+        {role === "ADMIN" && (
           <div className="mx-4 mt-6">
             <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
               Team
@@ -262,9 +276,9 @@ export default function MobileSettings({
         {/* Danger zone */}
         <div className="mx-4 mt-8 pb-8 flex flex-col items-center gap-4">
           <button
-            onClick={onSignOut}
+            onClick={handleSignOut}
             className="w-full py-3.5 border-2 border-crimson text-crimson font-bold rounded-xl
-                       hover:bg-crimson hover:text-text-primary transition-all active:scale-[0.98]
+                       hover:bg-crimson hover:text-white transition-all active:scale-[0.98]
                        flex items-center justify-center gap-2"
           >
             <SignOut size={18} weight="bold" />

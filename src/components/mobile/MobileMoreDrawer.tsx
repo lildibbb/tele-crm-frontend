@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   ChartBar,
   Sliders,
@@ -8,30 +9,20 @@ import {
   User,
   Crown,
   SignOut,
-  X,
   CaretRight,
   GearSix,
-  Database,
 } from "@phosphor-icons/react";
 import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileMoreDrawerProps {
-  readonly role: UserRole;
   readonly open: boolean;
   readonly onClose: () => void;
-  readonly userName?: string;
-  readonly userInitials?: string;
   readonly notificationCount?: number;
-  readonly onAnalytics?: () => void;
-  readonly onSettings?: () => void;
-  readonly onNotifications?: () => void;
-  readonly onProfile?: () => void;
-  readonly onAdminPanel?: () => void;
-  readonly onSignOut?: () => void;
 }
 
 interface NavItemConfig {
@@ -39,7 +30,7 @@ interface NavItemConfig {
   iconClass: string;
   label: string;
   badge?: number;
-  action: string;
+  href: string;
 }
 
 // ── Role config ────────────────────────────────────────────────────────────────
@@ -52,22 +43,22 @@ const ROLE_CHIP_CONFIG: Record<UserRole, { label: string; textClass: string; bgC
 
 function getNavItems(role: UserRole, notifCount: number): NavItemConfig[] {
   const base: NavItemConfig[] = [
-    { Icon: Bell,  iconClass: "text-warning", label: "Notifications", badge: notifCount > 0 ? notifCount : undefined, action: "notifications" },
-    { Icon: User,  iconClass: "text-text-secondary", label: "Profile", action: "profile" },
+    { Icon: Bell, iconClass: "text-warning", label: "Notifications", badge: notifCount > 0 ? notifCount : undefined, href: "/notifications" },
+    { Icon: User, iconClass: "text-text-secondary", label: "Profile", href: "/profile" },
   ];
 
   if (role === "SUPERADMIN") {
     return [
-      { Icon: ChartBar, iconClass: "text-info",          label: "Analytics (All Orgs)", action: "analytics" },
-      { Icon: GearSix,  iconClass: "text-text-secondary", label: "System Config",        action: "settings" },
+      { Icon: ChartBar, iconClass: "text-info",           label: "Analytics",     href: "/analytics" },
+      { Icon: GearSix,  iconClass: "text-text-secondary", label: "System Config", href: "/settings" },
+      { Icon: Crown,    iconClass: "text-gold",            label: "Admin Panel",   href: "/admin" },
       ...base,
-      { Icon: Crown,    iconClass: "text-gold",           label: "Admin Panel",          action: "admin" },
     ];
   }
   if (role === "OWNER" || role === "ADMIN") {
     return [
-      { Icon: ChartBar, iconClass: "text-info",          label: "Analytics", action: "analytics" },
-      { Icon: Sliders,  iconClass: "text-text-secondary", label: "Settings",  action: "settings" },
+      { Icon: ChartBar, iconClass: "text-info",           label: "Analytics", href: "/analytics" },
+      { Icon: Sliders,  iconClass: "text-text-secondary", label: "Settings",  href: "/settings" },
       ...base,
     ];
   }
@@ -75,10 +66,10 @@ function getNavItems(role: UserRole, notifCount: number): NavItemConfig[] {
 }
 
 // ── Nav row ────────────────────────────────────────────────────────────────────
-function NavRow({ item, onAction }: { item: NavItemConfig; onAction: (action: string) => void }) {
+function NavRow({ item, onNavigate }: { item: NavItemConfig; onNavigate: (href: string) => void }) {
   return (
     <button
-      onClick={() => onAction(item.action)}
+      onClick={() => onNavigate(item.href)}
       className="flex items-center gap-4 w-full p-4 active:bg-elevated transition-colors group"
     >
       <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-card border border-border-subtle">
@@ -97,36 +88,29 @@ function NavRow({ item, onAction }: { item: NavItemConfig; onAction: (action: st
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileMoreDrawer({
-  role,
   open,
   onClose,
-  userName = "Sarah Lim",
-  userInitials = "SL",
   notificationCount = 0,
-  onAnalytics,
-  onSettings,
-  onNotifications,
-  onProfile,
-  onAdminPanel,
-  onSignOut,
 }: MobileMoreDrawerProps) {
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
+
+  const role = (user?.role as UserRole) ?? "STAFF";
+  const userName = user?.email?.split("@")[0] ?? "User";
+  const userInitials = userName[0]?.toUpperCase() ?? "U";
+
   const chip = ROLE_CHIP_CONFIG[role];
   const navItems = getNavItems(role, notificationCount);
 
-  const handleAction = (action: string) => {
+  const handleNavigate = (href: string) => {
     onClose();
-    switch (action) {
-      case "analytics":
-        return onAnalytics?.();
-      case "settings":
-        return onSettings?.();
-      case "notifications":
-        return onNotifications?.();
-      case "profile":
-        return onProfile?.();
-      case "admin":
-        return onAdminPanel?.();
-    }
+    router.push(href);
+  };
+
+  const handleSignOut = async () => {
+    onClose();
+    await logout();
+    router.replace("/login");
   };
 
   return (
@@ -143,7 +127,7 @@ export default function MobileMoreDrawer({
 
         {/* Profile row */}
         <button
-          onClick={() => { onClose(); onProfile?.(); }}
+          onClick={() => handleNavigate("/profile")}
           className="flex items-center gap-4 w-full px-5 py-3 active:bg-elevated transition-colors"
         >
           <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-sans font-semibold text-[14px] text-text-primary bg-elevated">
@@ -162,19 +146,15 @@ export default function MobileMoreDrawer({
 
         {/* Nav items */}
         <div className="py-2">
-          {navItems.map((item) => <NavRow key={item.action} item={item} onAction={handleAction} />)}
+          {navItems.map((item) => <NavRow key={item.href} item={item} onNavigate={handleNavigate} />)}
         </div>
 
         <Separator className="bg-border-subtle" />
 
-        {/* Bottom: Language + Sign Out */}
-        <div className="flex items-center justify-between px-5 py-4 gap-4">
-          <div className="flex items-center gap-1 rounded-full border border-border-subtle overflow-hidden">
-            <button className="px-3 py-1.5 font-sans font-semibold text-[12px] text-crimson bg-crimson-subtle">EN</button>
-            <button className="px-3 py-1.5 font-sans text-[12px] text-text-secondary">MY</button>
-          </div>
+        {/* Sign Out */}
+        <div className="flex items-center justify-end px-5 py-4">
           <button
-            onClick={() => { onClose(); onSignOut?.(); }}
+            onClick={handleSignOut}
             className="flex items-center gap-2 rounded-xl px-4 py-2 border-2 border-crimson text-crimson hover:bg-crimson hover:text-white transition-all active:scale-[0.97]"
           >
             <SignOut size={16} weight="bold" />

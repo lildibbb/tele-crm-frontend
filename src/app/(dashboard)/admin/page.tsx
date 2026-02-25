@@ -85,6 +85,8 @@ import {
 
 import type { UserResponse } from "@/lib/schemas/user.schema";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileAdminDashboard } from "@/components/mobile";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -605,9 +607,12 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
+  const isMobile = useIsMobile();
   const router = useRouter();
   const { user: authUser } = useAuthStore();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  if (isMobile) return <MobileAdminDashboard />;
 
   const {
     users,

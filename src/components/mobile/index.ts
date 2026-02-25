@@ -42,3 +42,6 @@ export type {
 
 export { default as MobileProfile } from "./MobileProfile";
 export type { MobileProfileProps } from "./MobileProfile";
+
+export { default as MobileAdminDashboard } from "./MobileAdminDashboard";
+export type { MobileAdminDashboardProps } from "./MobileAdminDashboard";

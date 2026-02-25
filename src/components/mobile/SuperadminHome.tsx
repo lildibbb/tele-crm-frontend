@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChartBar,
   Users,
@@ -12,6 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import { ResponsiveContainer, AreaChart, Area, Tooltip } from "recharts";
 import MobileShell, { LiveDot } from "./MobileShell";
+import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ export default function SuperadminHome({
   onMoreOpen,
   onOrgClick,
 }: SuperadminHomeProps) {
+  const [moreOpen, setMoreOpen] = useState(false);
   const { summary, isLoading, fetchSummary } = useAnalyticsStore();
 
   useEffect(() => {
@@ -74,13 +76,16 @@ export default function SuperadminHome({
   ];
 
   return (
-    <MobileShell
-      role="SUPERADMIN"
-      activeTab="home"
-      pageTitle="Platform Overview"
-      showLiveDot
-      onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
-    >
+    <>
+      <MobileShell
+        role="SUPERADMIN"
+        activeTab="home"
+        pageTitle="Platform Overview"
+        showLiveDot
+        onTabChange={(tab) => {
+          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
+        }}
+      >
       <div className="pb-6">
         {/* Stat strip */}
         <div className="px-4 pt-4">
@@ -183,7 +188,9 @@ export default function SuperadminHome({
           </div>
         </div>
       </div>
-    </MobileShell>
+      </MobileShell>
+      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
+    </>
   );
 }
 

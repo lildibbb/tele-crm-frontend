@@ -233,7 +233,7 @@ export default function MobileVerification({
     if (pendingLeads.length > 0) {
       setQueue(pendingLeads.map(toVerificationItem));
     }
-  }, [pendingLeads.length]);
+  }, [pendingLeads]);
 
   const [toast, setToast] = useState<{ msg: string; type: "approve" | "reject" } | null>(null);
 
@@ -243,6 +243,7 @@ export default function MobileVerification({
       setTodayCount((c) => c + 1);
       setToast({ msg: "✓ Lead approved", type: "approve" });
       onApprove?.(id);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([8, 40, 8]);
       try { await verifyLead(id); } catch {}
       setTimeout(() => setToast(null), 4000);
     },
@@ -254,6 +255,7 @@ export default function MobileVerification({
       setQueue((prev) => prev.filter((i) => i.id !== id));
       setToast({ msg: "✗ Lead rejected", type: "reject" });
       onReject?.(id);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
       try { await updateStatus(id, { status: "REJECTED" }); } catch {}
       setTimeout(() => setToast(null), 4000);
     },
@@ -314,30 +316,20 @@ export default function MobileVerification({
               )}
             </div>
 
-            {/* Swipe hints */}
-            <div className="flex items-center justify-center gap-4">
-              <span className="flex items-center gap-1 rounded-full px-3 h-8 font-sans text-[13px] font-medium text-danger bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]">
-                ← Reject
-              </span>
-              <span className="flex items-center gap-1 rounded-full px-3 h-8 font-sans text-[13px] font-medium text-success bg-[color-mix(in_srgb,var(--success)_10%,transparent)]">
-                Approve →
-              </span>
-            </div>
-
-            {/* Manual buttons */}
+            {/* Manual action buttons */}
             {queue[0] && (
               <div className="flex gap-3">
                 <button
                   onClick={() => handleReject(queue[0].id)}
                   className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] border border-danger text-danger active:scale-[0.97] transition-transform"
                 >
-                  Reject
+                  ✗ Reject
                 </button>
                 <button
                   onClick={() => handleApprove(queue[0].id)}
-                  className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] bg-success text-void active:scale-[0.97] transition-transform"
+                  className="flex-1 h-[52px] rounded-xl font-sans font-semibold text-[15px] bg-success text-white active:scale-[0.97] transition-transform"
                 >
-                  Approve
+                  ✓ Approve
                 </button>
               </div>
             )}

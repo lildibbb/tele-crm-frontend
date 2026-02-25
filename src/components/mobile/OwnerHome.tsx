@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from "recharts";
 import MobileShell from "./MobileShell";
+import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { useLeadsStore } from "@/store/leadsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -60,6 +61,7 @@ export default function OwnerHome({
   onViewAllLeads,
   onVerificationBanner,
 }: OwnerHomeProps) {
+  const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuthStore();
   const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
   const { leads, isLoading: leadsLoading, fetchLeads } = useLeadsStore();
@@ -114,13 +116,16 @@ export default function OwnerHome({
   ];
 
   return (
-    <MobileShell
-      activeTab="home"
-      pageTitle="Dashboard"
-      verifyBadgeCount={pendingCount}
-      showLiveDot
-      onTabChange={(tab) => tab === "more" && onMoreOpen?.()}
-    >
+    <>
+      <MobileShell
+        activeTab="home"
+        pageTitle="Dashboard"
+        verifyBadgeCount={pendingCount}
+        showLiveDot
+        onTabChange={(tab) => {
+          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
+        }}
+      >
       <div className="pb-6">
         {/* Section 1 — Stat strip */}
         <div className="px-4 pt-4">
@@ -271,7 +276,9 @@ export default function OwnerHome({
       >
         <Plus size={24} color="white" weight="bold" />
       </button>
-    </MobileShell>
+      </MobileShell>
+      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
+    </>
   );
 }
 
