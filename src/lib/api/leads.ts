@@ -5,6 +5,7 @@ import type {
   UpdateLeadStatusInput,
   UpdateHandoverInput,
   BulkUpdateHandoverInput,
+  BulkUpdateStatusInput,
   SubmitLeadInfoInput,
   LeaderboardParams,
   ExportLeadsParams,
@@ -80,6 +81,12 @@ export const leadsApi = {
     apiClient.get<ApiResponse<Interaction[]>>(`/leads/${id}/interactions`, {
       params,
     }),
+
+  /**
+   * Bulk update status for multiple leads.
+   */
+  bulkStatus: (data: BulkUpdateStatusInput) =>
+    apiClient.patch<ApiResponse<{ count: number }>>("/leads/bulk/status", data),
 
   /**
    * Send a manual reply to a lead via Telegram from the dashboard.

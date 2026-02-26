@@ -31,6 +31,7 @@ import {
 import { useT } from "@/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AnalyticsSummaryParams } from "@/lib/schemas/analytics.schema";
+import { analyticsApi } from "@/lib/api/analytics";
 
 gsap.registerPlugin(useGSAP);
 
@@ -351,11 +352,26 @@ export default function AnalyticsPage() {
   const isMobile = useIsMobile();
 
   const { summary, isLoading, fetchSummary } = useAnalyticsStore();
+  const [ragStats, setRagStats] = useState<import("@/lib/schemas/analytics.schema").RagStats | null>(null);
+  const [ragLoading, setRagLoading] = useState(false);
 
   // Fetch on mount and whenever timeframe changes
   useEffect(() => {
     fetchSummary({ timeframe });
   }, [fetchSummary, timeframe]);
+
+  // Fetch RAG stats (SUPERADMIN-only — silently no-ops for other roles)
+  useEffect(() => {
+    setRagLoading(true);
+    analyticsApi.getRagStats()
+      .then((res) => {
+        const d = (res.data as unknown as { data: import("@/lib/schemas/analytics.schema").RagStats }).data;
+        setRagStats(d ?? null);
+      })
+      .catch(() => { /* non-superadmin gets 403 — ignore */ })
+      .finally(() => setRagLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Derived data from summary API ──────────────────────────────
   const funnelData = useMemo(() => {
@@ -891,6 +907,39 @@ export default function AnalyticsPage() {
           </ChartInView>
         </div>
       </div>
+
+      {/* ── RAG Quality Stats (SUPERADMIN only) ── */}
+      {(ragLoading || ragStats) && (
+        <div className="mt-6 bg-elevated rounded-2xl border border-border-subtle p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Pulse size={16} className="text-accent" weight="duotone" />
+            <h3 className="font-sans font-semibold text-sm text-text-primary">RAG Quality</h3>
+            <span className="text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle ml-auto">SUPERADMIN</span>
+          </div>
+          {ragLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 rounded-xl" />
+              ))}
+            </div>
+          ) : ragStats ? (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { label: "Hit Rate", value: `${(ragStats.hitRate * 100).toFixed(1)}%`, color: "text-success" },
+                { label: "Avg Chunks", value: ragStats.averageChunks.toFixed(1), color: "text-accent" },
+                { label: "Zero Hits", value: ragStats.zeroHitCount.toString(), color: "text-danger" },
+                { label: "Total Tokens", value: ragStats.totalTokens.toLocaleString(), color: "text-text-primary" },
+                { label: "Analysed", value: ragStats.analyzedReplies.toLocaleString(), color: "text-text-primary" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="bg-card rounded-xl p-3 border border-border-subtle flex flex-col gap-1">
+                  <p className={`font-mono text-lg font-bold ${color}`}>{value}</p>
+                  <p className="font-sans text-[10px] text-text-muted uppercase tracking-wider">{label}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

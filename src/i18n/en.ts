@@ -7,6 +7,7 @@ const en: Record<string, string> = {
   "nav.verificationQueue":  "Verification Queue",
   "nav.broadcasts":         "Broadcasts",
   "nav.followUps":          "Follow-ups",
+  "nav.auditLogs":          "Audit Logs",
   "nav.analytics":          "Analytics",
   "nav.settings":           "Settings",
   "nav.superAdmin":         "Super Admin",

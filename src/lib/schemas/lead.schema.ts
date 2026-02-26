@@ -52,6 +52,13 @@ export const BulkUpdateHandoverSchema = z.object({
 
 export type BulkUpdateHandoverInput = z.infer<typeof BulkUpdateHandoverSchema>;
 
+export const BulkUpdateStatusSchema = z.object({
+  ids: z.array(z.string()),
+  status: LeadStatusSchema,
+});
+
+export type BulkUpdateStatusInput = z.infer<typeof BulkUpdateStatusSchema>;
+
 export const SubmitLeadInfoSchema = z.object({
   telegramUserId: z.number(),
   email: z.string().email().optional(),

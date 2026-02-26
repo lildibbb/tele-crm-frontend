@@ -257,6 +257,11 @@ export default function LeadDetailPage({
   const [replyText, setReplyText] = useState("");
   const [messages, setMessages] = useState<ReturnType<typeof mapToMessage>[]>([]);
   const [timeline, setTimeline] = useState<ReturnType<typeof mapToTimelineEvent>[]>([]);
+
+  // Auto-scroll to latest message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -269,6 +274,7 @@ export default function LeadDetailPage({
   const [mediaPreview, setMediaPreview] = useState<MediaItem | null>(null);
 
   const timelineRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const verifyRef = useRef<HTMLDivElement>(null);
   const rejectRef = useRef<HTMLDivElement>(null);
   const editRef = useRef<HTMLDivElement>(null);
@@ -737,7 +743,7 @@ export default function LeadDetailPage({
           {/* end left column */}
 
           {/* ════ RIGHT COLUMN — Chat ════ */}
-          <div className="bg-elevated rounded-xl overflow-hidden flex flex-col h-[640px] xl:h-auto min-h-[500px]">
+          <div className="bg-elevated rounded-xl overflow-hidden flex flex-col h-[640px] min-h-[500px]">
             {/* Handover control */}
             <div className="p-4 bg-card border-b border-border-subtle space-y-3">
               <p className="text-[11px] font-sans font-semibold text-text-muted uppercase tracking-wider">
@@ -788,7 +794,7 @@ export default function LeadDetailPage({
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="p-4 space-y-3">
                 {messages.map((msg, i) => {
                   if (msg.side === "system")
@@ -801,26 +807,27 @@ export default function LeadDetailPage({
                     );
                   const isUser = msg.side === "user";
                   const isAgent = msg.side === "agent";
+                  const isBot = msg.side === "bot";
                   return (
                     <div
                       key={i}
-                      className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+                      className={`flex ${isUser ? "justify-start" : "justify-end"}`}
                     >
                       <div
                         className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 ${
                           isUser
-                            ? "bg-crimson/10 border border-crimson/15"
+                            ? "bg-card border border-border-default"
                             : isAgent
-                              ? "bg-elevated border border-gold/15"
-                              : "bg-elevated border border-border-subtle"
+                              ? "bg-crimson/10 border border-crimson/20"
+                              : "bg-success/10 border border-success/20"
                         }`}
                       >
                         {isAgent && (
-                          <p className="text-[10px] font-sans font-semibold text-gold mb-1 uppercase tracking-wider">
+                          <p className="text-[10px] font-sans font-semibold text-crimson mb-1 uppercase tracking-wider">
                             Agent
                           </p>
                         )}
-                        {msg.side === "bot" && (
+                        {isBot && (
                           <p className="text-[10px] font-sans font-semibold text-success mb-1 uppercase tracking-wider">
                             Bot
                           </p>
@@ -835,6 +842,7 @@ export default function LeadDetailPage({
                     </div>
                   );
                 })}
+                <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 

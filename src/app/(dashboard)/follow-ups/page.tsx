@@ -7,6 +7,8 @@ import {
   Clock,
   Warning,
   ArrowCounterClockwise,
+  ArrowClockwise,
+  XCircle,
 } from "@phosphor-icons/react";
 import { followUpsApi } from "@/lib/api/followUps";
 import type { FollowUp } from "@/lib/schemas/followUp.schema";
@@ -51,7 +53,15 @@ function StatusBadge({ status }: { status: FollowUp["status"] }) {
 
 const PAGE_SIZE = 20;
 
+type FailedJob = {
+  id: string;
+  name: string;
+  failedReason?: string;
+  data?: Record<string, unknown>;
+};
+
 export default function FollowUpsPage() {
+  const [tab, setTab] = useState<"scheduled" | "failed">("scheduled");
   const [items, setItems] = useState<FollowUp[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -59,6 +69,11 @@ export default function FollowUpsPage() {
   const [error, setError] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<FollowUp | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Failed tab state
+  const [failedJobs, setFailedJobs] = useState<FailedJob[]>([]);
+  const [isLoadingFailed, setIsLoadingFailed] = useState(false);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
 
   const load = useCallback(async (skip: number) => {
     setIsLoading(true);
@@ -88,6 +103,35 @@ export default function FollowUpsPage() {
   useEffect(() => {
     void load(page * PAGE_SIZE);
   }, [page, load]);
+
+  const loadFailed = useCallback(async () => {
+    setIsLoadingFailed(true);
+    try {
+      const res = await followUpsApi.getFailed({ start: 0, end: 49 });
+      const jobs = (res.data as unknown as { data?: FailedJob[] }).data ?? [];
+      setFailedJobs(jobs);
+    } catch {
+      setError("Failed to load failed jobs");
+    } finally {
+      setIsLoadingFailed(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === "failed") void loadFailed();
+  }, [tab, loadFailed]);
+
+  const handleRetry = async (jobId: string) => {
+    setRetryingId(jobId);
+    try {
+      await followUpsApi.retryJob(jobId);
+      setFailedJobs((prev) => prev.filter((j) => j.id !== jobId));
+    } catch {
+      setError("Failed to retry job");
+    } finally {
+      setRetryingId(null);
+    }
+  };
 
   const handleCancel = async () => {
     if (!cancelTarget) return;
@@ -129,13 +173,33 @@ export default function FollowUpsPage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => void load(page * PAGE_SIZE)}
-          disabled={isLoading}
+          onClick={() => tab === "scheduled" ? void load(page * PAGE_SIZE) : void loadFailed()}
+          disabled={isLoading || isLoadingFailed}
           className="gap-1.5 text-xs text-text-muted"
         >
           <ArrowCounterClockwise className="h-3.5 w-3.5" />
           Refresh
         </Button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-card rounded-xl border border-border-subtle w-fit">
+        {(["scheduled", "failed"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-1.5 rounded-lg text-xs font-sans font-medium transition-colors ${
+              tab === t
+                ? "bg-elevated text-text-primary border border-border-subtle shadow-sm"
+                : "text-text-muted hover:text-text-primary"
+            }`}
+          >
+            {t === "scheduled" ? "Scheduled" : "Failed"}
+            {t === "failed" && failedJobs.length > 0 && (
+              <span className="ml-1.5 bg-danger text-white text-[9px] px-1.5 py-px rounded-full">{failedJobs.length}</span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Error */}
@@ -146,7 +210,59 @@ export default function FollowUpsPage() {
         </div>
       )}
 
-      {/* Table */}
+      {/* Failed jobs tab */}
+      {tab === "failed" && (
+        <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
+          <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between">
+            <h2 className="font-sans font-semibold text-sm text-text-primary">Failed Jobs</h2>
+            <span className="badge badge-new">{failedJobs.length} jobs</span>
+          </div>
+          {isLoadingFailed ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+            </div>
+          ) : failedJobs.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-12 text-text-muted">
+              <XCircle className="h-8 w-8 opacity-30" />
+              <p className="font-sans text-sm">No failed jobs — all clear!</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border-subtle">
+              {failedJobs.map((job) => (
+                <div key={job.id} className="px-5 py-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-danger/10 border border-danger/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <XCircle className="h-3.5 w-3.5 text-danger" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-sans text-sm font-medium text-text-primary">{job.name}</p>
+                    {job.failedReason && (
+                      <p className="font-mono text-[11px] text-danger mt-0.5 line-clamp-2">{job.failedReason}</p>
+                    )}
+                    <p className="font-mono text-[10px] text-text-muted mt-1">Job #{job.id}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void handleRetry(job.id)}
+                    disabled={retryingId === job.id}
+                    className="flex-shrink-0 h-7 text-xs gap-1.5"
+                  >
+                    {retryingId === job.id ? (
+                      <div className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
+                    ) : (
+                      <ArrowClockwise className="h-3 w-3" />
+                    )}
+                    Retry
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Scheduled messages tab */}
+      {tab === "scheduled" && (
       <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
         <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between">
           <h2 className="font-sans font-semibold text-sm text-text-primary">Scheduled Messages</h2>
@@ -236,6 +352,7 @@ export default function FollowUpsPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* Cancel Confirm Dialog */}
       <Dialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>

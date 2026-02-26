@@ -17,7 +17,8 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
-import { useLeadsStore, type LeadStatus } from "@/store/leadsStore";
+import { useLeadsStore, type LeadStatus, LeadStatus as LeadStatusEnum } from "@/store/leadsStore";
+import { leadsApi } from "@/lib/api/leads";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -26,6 +27,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Tooltip,
   TooltipContent,
@@ -65,6 +73,8 @@ export default function LeadsPage() {
   const [bulkHandoverPending, setBulkHandoverPending] = useState(false);
   const [searchRaw, setSearchRaw] = useState("");
   const [searchValue, setSearchValue] = useState("");
+  const [bulkStatusValue, setBulkStatusValue] = useState<LeadStatus>("NEW");
+  const [bulkStatusPending, setBulkStatusPending] = useState(false);
 
   // Derived tri-state for global handover
   const handoverCount = leads.filter((l) => l.handoverMode).length;
@@ -190,48 +200,48 @@ export default function LeadsPage() {
     { key: "DEPOSIT_CONFIRMED" as const, label: t("leads.filter.confirmed") },
   ];
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (exportStatus !== "idle") return;
     setExportStatus("loading");
-    const headers = [
-      "ID",
-      "Name",
-      "Telegram ID",
-      "HFM ID",
-      "Phone",
-      "Email",
-      "Status",
-      "Registered At",
-      "Balance",
-      "Handover",
-    ];
-    const rows = leads.map((l) => [
-      l.id,
-      l.displayName ?? "",
-      l.telegramUserId,
-      l.hfmBrokerId ?? "",
-      l.phoneNumber ?? "",
-      l.email ?? "",
-      l.status,
-      l.registeredAt ?? "",
-      l.depositBalance ?? "",
-      l.handoverMode ? "Yes" : "No",
-    ]);
-    const csv = [headers, ...rows]
-      .map((row) =>
-        row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","),
-      )
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `leads_export_${new Date().toISOString().split("T")[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setExportStatus("done");
+    try {
+      const res = await leadsApi.exportCsv(
+        statusFilter !== "ALL" ? { status: statusFilter } : undefined,
+      );
+      const blob = new Blob([res.data as BlobPart], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `leads_export_${new Date().toISOString().split("T")[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportStatus("done");
+    } catch {
+      setExportStatus("idle");
+    }
     setTimeout(() => setExportStatus("idle"), 3000);
   };
+
+  const handleBulkStatus = useCallback(async () => {
+    const selected = table.getSelectedRowModel().rows;
+    if (selected.length === 0 || bulkStatusPending) return;
+    setBulkStatusPending(true);
+    try {
+      const ids = selected.map((r) => r.original.id);
+      await leadsApi.bulkStatus({ ids, status: bulkStatusValue });
+      table.resetRowSelection();
+      await fetchLeads({
+        skip: pageIndex * pageSize,
+        take: pageSize,
+        status: statusFilter === "ALL" ? undefined : statusFilter,
+        search: searchValue || undefined,
+        orderBy,
+        order,
+      });
+    } catch { /* silent */ } finally {
+      setBulkStatusPending(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [table, bulkStatusValue, bulkStatusPending, pageIndex, pageSize, statusFilter, searchValue, orderBy, order, fetchLeads]);
 
   const handleStatusChange = (value: string) => {
     setStatusFilter(value as LeadStatus | "ALL");
@@ -320,7 +330,7 @@ export default function LeadsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleExport}
+                onClick={() => void handleExport()}
                 disabled={exportStatus === "loading"}
                 className="h-8 gap-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-elevated border-border-default"
               >
@@ -461,6 +471,52 @@ export default function LeadsPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* ── Bulk Status Floating Action Bar ── */}
+        {table.getSelectedRowModel().rows.length > 0 && (
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-card border border-border-default rounded-2xl shadow-xl px-4 py-2.5 animate-in slide-in-from-bottom-4 duration-200">
+            <span className="text-sm font-sans font-medium text-text-primary whitespace-nowrap">
+              {table.getSelectedRowModel().rows.length} selected
+            </span>
+            <div className="h-4 w-px bg-border-default" />
+            <Select
+              value={bulkStatusValue}
+              onValueChange={(v) => setBulkStatusValue(v as LeadStatus)}
+            >
+              <SelectTrigger className="h-8 w-[160px] text-xs border-border-default bg-elevated">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(LeadStatusEnum).map((s) => (
+                  <SelectItem key={s} value={s} className="text-xs">
+                    {s.replace(/_/g, " ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              className="h-8 text-xs bg-crimson hover:bg-crimson/90 text-white gap-1.5"
+              disabled={bulkStatusPending}
+              onClick={() => void handleBulkStatus()}
+            >
+              {bulkStatusPending ? (
+                <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CheckCircle className="h-3.5 w-3.5" />
+              )}
+              Apply
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-8 w-8 p-0 text-text-muted hover:text-text-primary"
+              onClick={() => table.resetRowSelection()}
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
       </>
     </TooltipProvider>
   );

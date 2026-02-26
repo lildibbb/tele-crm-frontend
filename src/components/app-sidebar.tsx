@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useEffect } from "react";
 import {
   SquaresFour,
   Users,
@@ -11,10 +12,12 @@ import {
   Crown,
   Megaphone,
   Timer,
+  ClipboardText,
   SignOut,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
+import { useBotStore } from "@/store/botStore";
 import { UserRole } from "@/types/enums";
 import {
   Sidebar,
@@ -33,6 +36,7 @@ const ALL_NAV_ITEMS = [
   { href: "/verification", icon: ShieldCheck, labelKey: "nav.verificationQueue", roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
   { href: "/broadcasts",   icon: Megaphone,   labelKey: "nav.broadcasts",        roles: [UserRole.OWNER, UserRole.ADMIN] },
   { href: "/follow-ups",   icon: Timer,       labelKey: "nav.followUps",         roles: [UserRole.OWNER, UserRole.ADMIN] },
+  { href: "/audit-logs",   icon: ClipboardText, labelKey: "nav.auditLogs",       roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN] },
   { href: "/analytics",    icon: ChartBar,    labelKey: "nav.analytics",         roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
   { href: "/settings",     icon: Sliders,     labelKey: "nav.settings",          roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
   { href: "/admin",        icon: Crown,       labelKey: "nav.superAdmin",        roles: [UserRole.SUPERADMIN] },
@@ -45,8 +49,16 @@ export function AppSidebar() {
   const t = useT();
   const { user, logout } = useAuthStore();
   const { setOpenMobile } = useSidebar();
+  const botOnline = useBotStore((s) => s.online);
+  const startPolling = useBotStore((s) => s.startPolling);
 
   const role = user?.role as UserRole | undefined;
+
+  // Start bot status polling when sidebar mounts
+  useEffect(() => {
+    const stop = startPolling();
+    return stop;
+  }, [startPolling]);
 
   // Filter nav items by current user's role
   const visibleItems = ALL_NAV_ITEMS.filter((item) =>
@@ -103,6 +115,18 @@ export function AppSidebar() {
                     <span className="font-medium ml-3 truncate transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
                       {label}
                     </span>
+                    {href === "/settings" && (
+                      <span
+                        className={`ml-auto w-2 h-2 rounded-full flex-shrink-0 transition-colors group-data-[collapsible=icon]:hidden ${
+                          botOnline === true
+                            ? "bg-success"
+                            : botOnline === false
+                              ? "bg-danger"
+                              : "bg-text-muted/40"
+                        }`}
+                        title={botOnline === true ? "Bot online" : botOnline === false ? "Bot offline" : "Checking..."}
+                      />
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

@@ -17,4 +17,16 @@ export const followUpsApi = {
    */
   cancel: (id: string) =>
     apiClient.delete<void>(`/follow-ups/${id}`),
+
+  /**
+   * List failed BullMQ follow-up jobs (SUPERADMIN).
+   */
+  getFailed: (params?: { start?: number; end?: number }) =>
+    apiClient.get<ApiResponse<unknown[]>>("/follow-ups/failed", { params }),
+
+  /**
+   * Retry a failed follow-up job by job ID.
+   */
+  retryJob: (jobId: string) =>
+    apiClient.post<ApiResponse<{ retried: boolean }>>(`/follow-ups/retry/${jobId}`),
 };

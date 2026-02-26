@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bot, BookOpen, Terminal, Users, Shield } from "lucide-react";
+import { Bot, BookOpen, Terminal, Users, Shield, Brain } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -15,6 +15,7 @@ import { KnowledgeBaseTab } from "./knowledge-base-tab";
 import { CommandsTab } from "./commands-tab";
 import { TeamTab } from "./team-tab";
 import { SessionsTab } from "./sessions-tab";
+import { AiFeedbackTab } from "./ai-feedback-tab";
 
 const SETTINGS_TABS = [
   {
@@ -46,6 +47,12 @@ const SETTINGS_TABS = [
     value: "sessions",
     icon: Shield,
     content: <SessionsTab />,
+  },
+  {
+    name: "AI Feedback",
+    value: "ai-feedback",
+    icon: Brain,
+    content: <AiFeedbackTab />,
   },
 ];
 
