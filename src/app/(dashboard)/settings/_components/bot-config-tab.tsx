@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,22 +9,45 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileSettings } from "@/components/mobile";
+import { useSystemConfigStore } from "@/store/systemConfigStore";
 
 export function BotConfigTab() {
-  const [config, setConfig] = useState({
-    name: "TitanBot",
-    systemPrompt: "You are a helpful assistant for Titan Journal...",
-    greeting: "Welcome to Titan Journal CRM! How can I help you today?",
-    active: true,
-  });
-  const [isSaving, setIsSaving] = useState(false);
+  const { entries, isLoading, isSaving, fetchAll, upsertMany } = useSystemConfigStore();
   const isMobile = useIsMobile();
 
+  // Local draft state (initialised from store once loaded)
+  const [draft, setDraft] = useState({
+    name: "",
+    systemPrompt: "",
+    greeting: "",
+    active: true,
+  });
+  const [initialised, setInitialised] = useState(false);
+
+  useEffect(() => {
+    void fetchAll();
+  }, [fetchAll]);
+
+  // Sync store → draft once
+  useEffect(() => {
+    if (initialised || isLoading) return;
+    if (Object.keys(entries).length === 0) return;
+    setDraft({
+      name: entries["persona.name"] ?? "TitanBot",
+      systemPrompt: entries["bot.systemPrompt"] ?? "",
+      greeting: entries["bot.welcomeMessage"] ?? "",
+      active: entries["bot.active"] !== "false",
+    });
+    setInitialised(true);
+  }, [entries, isLoading, initialised]);
+
   const handleSave = async () => {
-    setIsSaving(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 800));
-    setIsSaving(false);
+    await upsertMany({
+      "persona.name": draft.name,
+      "bot.systemPrompt": draft.systemPrompt,
+      "bot.welcomeMessage": draft.greeting,
+      "bot.active": String(draft.active),
+    });
   };
 
   if (isMobile) {
@@ -43,7 +66,7 @@ export function BotConfigTab() {
             Manage your AI assistant&apos;s behavior and tone
           </p>
         </div>
-        <Button onClick={handleSave} disabled={isSaving} className="gap-2">
+        <Button onClick={() => void handleSave()} disabled={isSaving || isLoading} className="gap-2">
           <Save className="h-4 w-4" />
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>
@@ -62,26 +85,26 @@ export function BotConfigTab() {
               <Label htmlFor="bot-name">Bot Name</Label>
               <Input
                 id="bot-name"
-                value={config.name}
-                onChange={(e) => setConfig({ ...config, name: e.target.value })}
+                value={draft.name}
+                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                 placeholder="e.g. Sales Assistant"
                 className="text-sm"
+                disabled={isLoading}
               />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="bot-greeting">Greeting Message</Label>
               <Textarea
                 id="bot-greeting"
-                value={config.greeting}
-                onChange={(e) =>
-                  setConfig({ ...config, greeting: e.target.value })
-                }
+                value={draft.greeting}
+                onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
                 placeholder="e.g. Hi there! How can I assist you today?"
                 rows={3}
                 className="resize-none"
+                disabled={isLoading}
               />
               <p className="text-[11px] text-text-muted mt-1 font-sans">
-                This is the first message the bot sends to new WhatsApp leads.
+                This is the first message the bot sends to new Telegram leads.
               </p>
             </div>
           </div>
@@ -94,21 +117,21 @@ export function BotConfigTab() {
               AI Behavior
             </h3>
             <Switch
-              checked={config.active}
-              onCheckedChange={(c) => setConfig({ ...config, active: c })}
+              checked={draft.active}
+              onCheckedChange={(c) => setDraft({ ...draft, active: c })}
+              disabled={isLoading}
             />
           </div>
           <div className="px-5 pb-5 pt-4 space-y-4">
             <div className="space-y-1.5">
               <Label>System Prompt</Label>
               <Textarea
-                value={config.systemPrompt}
-                onChange={(e) =>
-                  setConfig({ ...config, systemPrompt: e.target.value })
-                }
+                value={draft.systemPrompt}
+                onChange={(e) => setDraft({ ...draft, systemPrompt: e.target.value })}
                 placeholder="Instructions for the AI..."
                 rows={5}
                 className="resize-none font-mono text-xs"
+                disabled={isLoading}
               />
               <p className="text-[11px] text-text-muted mt-1 font-sans">
                 Define the bot&apos;s personality, expertise, and boundaries.

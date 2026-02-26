@@ -10,6 +10,7 @@ import {
   ChartBar,
   Crown,
   Megaphone,
+  Timer,
   SignOut,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
@@ -31,6 +32,7 @@ const ALL_NAV_ITEMS = [
   { href: "/leads",        icon: Users,       labelKey: "nav.leadIntelligence",  roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
   { href: "/verification", icon: ShieldCheck, labelKey: "nav.verificationQueue", roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
   { href: "/broadcasts",   icon: Megaphone,   labelKey: "nav.broadcasts",        roles: [UserRole.OWNER, UserRole.ADMIN] },
+  { href: "/follow-ups",   icon: Timer,       labelKey: "nav.followUps",         roles: [UserRole.OWNER, UserRole.ADMIN] },
   { href: "/analytics",    icon: ChartBar,    labelKey: "nav.analytics",         roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
   { href: "/settings",     icon: Sliders,     labelKey: "nav.settings",          roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
   { href: "/admin",        icon: Crown,       labelKey: "nav.superAdmin",        roles: [UserRole.SUPERADMIN] },

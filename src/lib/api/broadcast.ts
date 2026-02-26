@@ -1,6 +1,5 @@
 import { apiClient } from "./apiClient";
 import type { ApiResponse } from "@/lib/schemas/common";
-import type { Interaction } from "@/lib/schemas/lead.schema";
 
 export interface BroadcastInput {
   message: string;
@@ -9,20 +8,28 @@ export interface BroadcastInput {
 
 export interface BroadcastResult {
   enqueued: number;
+  logId: string;
+}
+
+export type BroadcastStatus = "QUEUED" | "SENDING" | "SENT" | "FAILED";
+
+export interface BroadcastLog {
+  id: string;
+  message: string;
+  photoUrl: string | null;
+  recipientCount: number;
+  status: BroadcastStatus;
+  sentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const broadcastApi = {
-  /**
-   * Enqueue a broadcast message to all leads with a Telegram account.
-   */
   send: (data: BroadcastInput) =>
     apiClient.post<ApiResponse<BroadcastResult>>("/broadcast", data),
 
-  /**
-   * Paginated history of past broadcast interactions.
-   */
   history: (params?: { page?: number; limit?: number }) =>
-    apiClient.get<ApiResponse<{ data: Interaction[]; total: number }>>(
+    apiClient.get<ApiResponse<{ data: BroadcastLog[]; total: number }>>(
       "/broadcast/history",
       { params },
     ),

@@ -7,8 +7,11 @@ import {
   CheckCircle,
   Clock,
   Warning,
+  Spinner,
+  Users,
 } from "@phosphor-icons/react";
 import { useBroadcastStore } from "@/store/broadcastStore";
+import type { BroadcastStatus } from "@/lib/api/broadcast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -21,7 +24,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("en-GB", {
@@ -33,7 +36,25 @@ function formatDate(iso: string) {
   });
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+function StatusBadge({ status }: { status: BroadcastStatus }) {
+  const map: Record<BroadcastStatus, { label: string; cls: string }> = {
+    QUEUED:  { label: "Queued",  cls: "bg-muted/30 text-text-secondary border-border-subtle" },
+    SENDING: { label: "Sending", cls: "bg-warning/10 text-warning border-warning/20" },
+    SENT:    { label: "Sent",    cls: "bg-success/10 text-success border-success/20" },
+    FAILED:  { label: "Failed",  cls: "bg-danger/10 text-danger border-danger/20" },
+  };
+  const { label, cls } = map[status] ?? map.QUEUED;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${cls}`}>
+      {(status === "QUEUED" || status === "SENDING") && (
+        <Spinner className="h-2.5 w-2.5 animate-spin" />
+      )}
+      {label}
+    </span>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function BroadcastsPage() {
   const {
@@ -49,6 +70,7 @@ export default function BroadcastsPage() {
     setPhotoUrl,
     send,
     fetchHistory,
+    stopPolling,
     reset,
   } = useBroadcastStore();
 
@@ -57,12 +79,13 @@ export default function BroadcastsPage() {
 
   useEffect(() => {
     void fetchHistory(historyPage);
-  }, [historyPage, fetchHistory]);
+    return () => stopPolling();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyPage]);
 
   const handleSend = async () => {
     setShowConfirm(false);
     await send();
-    void fetchHistory(1);
     setHistoryPage(1);
   };
 
@@ -189,19 +212,41 @@ export default function BroadcastsPage() {
         ) : (
           <div className="divide-y divide-border-subtle">
             {history.map((item) => (
-              <div key={item.id} className="px-5 py-3.5 flex items-start gap-3">
+              <div key={item.id} className="px-5 py-4 flex items-start gap-3">
+                {/* Icon */}
                 <div className="w-8 h-8 rounded-full bg-crimson/10 border border-crimson/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Megaphone className="h-3.5 w-3.5 text-crimson" />
                 </div>
-                <div className="flex-1 min-w-0">
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <StatusBadge status={item.status} />
+                    <div className="flex items-center gap-1 text-[11px] text-text-muted font-sans">
+                      <Users className="h-3 w-3" />
+                      <span>{item.recipientCount} recipients</span>
+                    </div>
+                    {item.photoUrl && (
+                      <span className="text-[10px] text-text-muted font-sans bg-card border border-border-subtle rounded px-1.5 py-0.5">
+                        📎 Photo
+                      </span>
+                    )}
+                  </div>
+
                   <p className="font-sans text-sm text-text-primary leading-relaxed line-clamp-2">
-                    {item.content ?? "(no content)"}
+                    {item.message}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-1">
+
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <Clock className="h-3 w-3 text-text-muted" />
                     <span className="font-mono text-[11px] text-text-muted">
                       {formatDate(item.createdAt)}
                     </span>
+                    {item.sentAt && (
+                      <span className="font-mono text-[11px] text-text-muted">
+                        · sent {formatDate(item.sentAt)}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
