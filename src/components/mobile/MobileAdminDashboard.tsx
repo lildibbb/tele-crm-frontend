@@ -78,9 +78,9 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
     {
       Icon: Database,
       iconBg: "bg-elevated",
-      value: String(ragStats?.analyzedReplies ?? "—"),
+      value: String(ragStats?.totalRequests ?? "—"),
       valueClass: "text-text-primary",
-      label: "AI Replies",
+      label: "AI Requests",
     },
   ];
 
@@ -132,10 +132,10 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                   <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Brain size={16} className="text-info" />
-                      <span className="font-sans text-[13px] text-text-primary">Analyzed Replies</span>
+                      <span className="font-sans text-[13px] text-text-primary">Total Requests</span>
                     </div>
                     <span className="font-display text-[13px] font-semibold text-info">
-                      {ragStats.analyzedReplies}
+                      {ragStats.totalRequests}
                     </span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-3">
@@ -144,7 +144,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                       <span className="font-sans text-[13px] text-text-primary">Hit Rate</span>
                     </div>
                     <span className="font-display text-[13px] font-semibold text-gold">
-                      {(ragStats.hitRate * 100).toFixed(1)}%
+                      {(ragStats.ragHitRate).toFixed(1)}%
                     </span>
                   </div>
                 </>

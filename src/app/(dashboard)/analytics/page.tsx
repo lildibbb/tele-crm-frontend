@@ -917,19 +917,21 @@ export default function AnalyticsPage() {
             <span className="text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle ml-auto">SUPERADMIN</span>
           </div>
           {ragLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {Array.from({ length: 5 }).map((_, i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-16 rounded-xl" />
               ))}
             </div>
           ) : ragStats ? (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: "Hit Rate", value: `${(ragStats.hitRate * 100).toFixed(1)}%`, color: "text-success" },
-                { label: "Avg Chunks", value: ragStats.averageChunks.toFixed(1), color: "text-accent" },
+                { label: "Hit Rate", value: `${ragStats.ragHitRate.toFixed(1)}%`, color: "text-success" },
+                { label: "Avg Chunks", value: ragStats.avgChunksPerRequest.toFixed(2), color: "text-accent" },
                 { label: "Zero Hits", value: ragStats.zeroHitCount.toString(), color: "text-danger" },
-                { label: "Total Tokens", value: ragStats.totalTokens.toLocaleString(), color: "text-text-primary" },
-                { label: "Analysed", value: ragStats.analyzedReplies.toLocaleString(), color: "text-text-primary" },
+                { label: "Total Requests", value: ragStats.totalRequests.toLocaleString(), color: "text-text-primary" },
+                { label: "Prompt Tokens", value: ragStats.totalPromptTokens.toLocaleString(), color: "text-text-primary" },
+                { label: "Completion Tokens", value: ragStats.totalCompletionTokens.toLocaleString(), color: "text-text-primary" },
+                { label: "RAG Hits", value: ragStats.ragHitCount.toLocaleString(), color: "text-text-primary" },
               ].map(({ label, value, color }) => (
                 <div key={label} className="bg-card rounded-xl p-3 border border-border-subtle flex flex-col gap-1">
                   <p className={`font-mono text-lg font-bold ${color}`}>{value}</p>

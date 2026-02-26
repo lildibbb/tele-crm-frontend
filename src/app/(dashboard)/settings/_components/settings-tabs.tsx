@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bot, BookOpen, Terminal, Users, Shield, Brain } from "lucide-react";
 import {
   Tabs,
@@ -16,43 +16,51 @@ import { CommandsTab } from "./commands-tab";
 import { TeamTab } from "./team-tab";
 import { SessionsTab } from "./sessions-tab";
 import { AiFeedbackTab } from "./ai-feedback-tab";
+import { useAuthStore } from "@/store/authStore";
+import { UserRole } from "@/types/enums";
 
-const SETTINGS_TABS = [
+const ALL_SETTINGS_TABS = [
   {
     name: "Bot Config",
     value: "bot-config",
     icon: Bot,
     content: <BotConfigTab />,
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN],
   },
   {
     name: "Knowledge Base",
     value: "knowledge-base",
     icon: BookOpen,
     content: <KnowledgeBaseTab />,
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
   },
   {
     name: "Commands",
     value: "commands",
     icon: Terminal,
     content: <CommandsTab />,
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
   },
   {
     name: "Team",
     value: "team",
     icon: Users,
     content: <TeamTab />,
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
   },
   {
     name: "Sessions",
     value: "sessions",
     icon: Shield,
     content: <SessionsTab />,
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN],
   },
   {
     name: "AI Feedback",
     value: "ai-feedback",
     icon: Brain,
     content: <AiFeedbackTab />,
+    roles: [UserRole.SUPERADMIN],
   },
 ];
 
@@ -60,6 +68,13 @@ export function SettingsTabs() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const { user } = useAuthStore();
+  const role = user?.role as UserRole | undefined;
+
+  const SETTINGS_TABS = useMemo(
+    () => ALL_SETTINGS_TABS.filter((t) => role && t.roles.includes(role)),
+    [role],
+  );
 
   const tabQuery = searchParams.get("tab");
   const defaultTab = SETTINGS_TABS.some((t) => t.value === tabQuery)
@@ -90,7 +105,7 @@ export function SettingsTabs() {
     ) {
       setActiveTab(currentTab);
     }
-  }, [searchParams, activeTab]);
+  }, [searchParams, activeTab, SETTINGS_TABS]);
 
   return (
     <div className="flex w-full flex-col">

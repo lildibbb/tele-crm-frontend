@@ -104,13 +104,15 @@ export const AnalyticsSummarySchema = z.object({
 
 export type AnalyticsSummary = z.infer<typeof AnalyticsSummarySchema>;
 
-// RAG Stats Response
+// RAG Stats Response — field names match analytics.service.ts return type
 export const RagStatsSchema = z.object({
-  hitRate: z.number(),
-  averageChunks: z.number(),
+  totalRequests: z.number(),
+  ragHitCount: z.number(),
+  ragHitRate: z.number(),
   zeroHitCount: z.number(),
-  totalTokens: z.number(),
-  analyzedReplies: z.number(),
+  avgChunksPerRequest: z.number(),
+  totalPromptTokens: z.number(),
+  totalCompletionTokens: z.number(),
 });
 
 export type RagStats = z.infer<typeof RagStatsSchema>;

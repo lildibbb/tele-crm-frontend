@@ -679,8 +679,8 @@ export default function AdminPage() {
 
   // ── Derived ────────────────────────────────────────────────────────
   const activeUsers = users.filter((u) => u.isActive).length;
-  const ragHitRate = ragStats ? `${(ragStats.hitRate ?? 0).toFixed(1)}%` : "—";
-  const ragTokens = ragStats ? `${((ragStats.totalTokens ?? 0) / 1000).toFixed(1)}k` : "—";
+  const ragHitRate = ragStats ? `${(ragStats.ragHitRate ?? 0).toFixed(1)}%` : "—";
+  const ragTokens = ragStats ? `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k` : "—";
 
   // ── Column defs ────────────────────────────────────────────────────
   const userColumns = useMemo(
@@ -794,11 +794,11 @@ export default function AdminPage() {
             sub="Currently enabled" accent="success" loading={isLoadingUsers} />
           <KpiTile icon={Brain} label="RAG Hit Rate"
             value={ragHitRate}
-            sub={ragStats ? `${ragStats.analyzedReplies ?? 0} replies analysed` : "Loading…"}
+            sub={ragStats ? `${ragStats.totalRequests ?? 0} total requests` : "Loading…"}
             accent="gold" loading={isLoadingRag} />
           <KpiTile icon={Lightning} label="AI Tokens Used"
             value={ragTokens}
-            sub={ragStats ? `Avg ${(ragStats.averageChunks ?? 0).toFixed(1)} chunks/reply` : "Loading…"}
+            sub={ragStats ? `Avg ${(ragStats.avgChunksPerRequest ?? 0).toFixed(1)} chunks/reply` : "Loading…"}
             accent="crimson" loading={isLoadingRag} />
         </div>
 
@@ -889,10 +889,10 @@ export default function AdminPage() {
               </h2>
               <div className="space-y-4">
                 {[
-                  { label: "Hit Rate", value: `${(ragStats.hitRate ?? 0).toFixed(1)}%`, sub: "Queries matched KB", color: "text-success" },
-                  { label: "Avg Chunks / Reply", value: (ragStats.averageChunks ?? 0).toFixed(2), sub: "Per reply retrieved", color: "text-info" },
+                  { label: "Hit Rate", value: `${(ragStats.ragHitRate ?? 0).toFixed(1)}%`, sub: "Queries matched KB", color: "text-success" },
+                  { label: "Avg Chunks / Reply", value: (ragStats.avgChunksPerRequest ?? 0).toFixed(2), sub: "Per reply retrieved", color: "text-info" },
                   { label: "Zero-Hit Queries", value: String(ragStats.zeroHitCount ?? 0), sub: "No KB match found", color: "text-danger" },
-                  { label: "Total AI Tokens", value: `${((ragStats.totalTokens ?? 0) / 1000).toFixed(1)}k`, sub: "Cumulative usage", color: "text-[--gold]" },
+                  { label: "Total AI Tokens", value: `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`, sub: "Cumulative usage", color: "text-[--gold]" },
                 ].map(({ label, value, sub, color }) => (
                   <div key={label} className="flex items-start justify-between gap-2">
                     <div>
