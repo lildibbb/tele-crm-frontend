@@ -17,3 +17,4 @@ export { auditLogsApi } from "./auditLogs";
 export { activityApi } from "./activity";
 export { aiFeedbackApi } from "./aiFeedback";
 export { healthApi, type HealthStatus } from "./health";
+export { broadcastApi, type BroadcastInput, type BroadcastResult } from "./broadcast";

@@ -9,6 +9,7 @@ import {
   Sliders,
   ChartBar,
   Crown,
+  Megaphone,
   SignOut,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
@@ -25,14 +26,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-// All possible nav items
 const ALL_NAV_ITEMS = [
-  { href: "/",            icon: SquaresFour, labelKey: "nav.commandCenter",   roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
-  { href: "/leads",       icon: Users,       labelKey: "nav.leadIntelligence", roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
-  { href: "/verification",icon: ShieldCheck, labelKey: "nav.verificationQueue",roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
-  { href: "/analytics",  icon: ChartBar,    labelKey: "nav.analytics",        roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
-  { href: "/settings",   icon: Sliders,     labelKey: "nav.settings",         roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
-  { href: "/admin",      icon: Crown,       labelKey: "nav.superAdmin",       roles: [UserRole.SUPERADMIN] },
+  { href: "/",             icon: SquaresFour, labelKey: "nav.commandCenter",    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
+  { href: "/leads",        icon: Users,       labelKey: "nav.leadIntelligence",  roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
+  { href: "/verification", icon: ShieldCheck, labelKey: "nav.verificationQueue", roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
+  { href: "/broadcasts",   icon: Megaphone,   labelKey: "nav.broadcasts",        roles: [UserRole.OWNER, UserRole.ADMIN] },
+  { href: "/analytics",    icon: ChartBar,    labelKey: "nav.analytics",         roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
+  { href: "/settings",     icon: Sliders,     labelKey: "nav.settings",          roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
+  { href: "/admin",        icon: Crown,       labelKey: "nav.superAdmin",        roles: [UserRole.SUPERADMIN] },
 ];
 
 export const NAV_ITEMS = ALL_NAV_ITEMS;

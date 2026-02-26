@@ -5,6 +5,7 @@ const ms: Record<string, string> = {
   "nav.commandCenter":      "Pusat Kawalan",
   "nav.leadIntelligence":   "Perisikan Prospek",
   "nav.verificationQueue":  "Baris Pengesahan",
+  "nav.broadcasts":         "Siaran",
   "nav.analytics":          "Analitik",
   "nav.settings":           "Tetapan",
   "nav.superAdmin":         "Super Admin",

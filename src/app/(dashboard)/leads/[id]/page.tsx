@@ -33,6 +33,8 @@ import {
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useLeadsStore } from "@/store/leadsStore";
+import { leadsApi } from "@/lib/api/leads";
+import type { Interaction } from "@/lib/schemas/lead.schema";
 import { LeadStatus } from "@/types/enums";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,59 +60,42 @@ import { Input } from "@/components/ui/input";
 
 gsap.registerPlugin(useGSAP);
 
-// ── Mock data ────────────────────────────────────────────────────────────────
+// ── Interaction → display mappings ───────────────────────────────────────────
 
-const INITIAL_TIMELINE = [
-  {
-    id: 1,
-    type: "AUTO_REPLY_SENT",
-    time: "Jan 20 14:32",
-    msg: "Bot sent welcome message",
-    Icon: Robot,
-    color: "text-text-muted",
-  },
-  {
-    id: 2,
-    type: "MESSAGE_RECEIVED",
-    time: "Jan 20 14:35",
-    msg: "User: Hi, how do I register?",
-    Icon: Chat,
-    color: "text-info",
-  },
-  {
-    id: 3,
-    type: "SYSTEM_STATUS_CHANGE",
-    time: "Jan 20 15:00",
-    msg: "Status changed to REGISTERED",
-    Icon: Lightning,
-    color: "text-success",
-  },
-  {
-    id: 4,
-    type: "MANUAL_REPLY_SENT",
-    time: "Jan 21 09:12",
-    msg: "Agent: Your account has been approved!",
-    Icon: UserCircle,
-    color: "text-crimson",
-  },
-];
+const INTERACTION_META = {
+  MESSAGE_RECEIVED:    { Icon: Chat,        color: "text-info" },
+  AUTO_REPLY_SENT:     { Icon: Robot,       color: "text-text-muted" },
+  MANUAL_REPLY_SENT:   { Icon: UserCircle,  color: "text-crimson" },
+  SYSTEM_STATUS_CHANGE:{ Icon: Lightning,   color: "text-success" },
+} as const;
 
-const INITIAL_MESSAGES = [
-  {
-    side: "bot",
-    time: "14:32",
-    content:
-      "Welcome to Titan Journal CRM! Please register your HFM account to get started.",
-  },
-  { side: "user", time: "14:35", content: "Hi, I want to register." },
-  { side: "system", time: "15:00", content: "Status changed to REGISTERED" },
-  {
-    side: "agent",
-    time: "09:12",
-    content:
-      "Your account has been approved! Please proceed to make your first deposit.",
-  },
-];
+function mapToMessage(ix: Interaction) {
+  const side =
+    ix.type === "MESSAGE_RECEIVED"  ? "user"   :
+    ix.type === "AUTO_REPLY_SENT"   ? "bot"    :
+    ix.type === "MANUAL_REPLY_SENT" ? "agent"  : "system";
+  return {
+    id: ix.id,
+    side,
+    time: new Date(ix.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    content: ix.content ?? "",
+  };
+}
+
+function mapToTimelineEvent(ix: Interaction, idx: number) {
+  const meta = INTERACTION_META[ix.type as keyof typeof INTERACTION_META]
+    ?? { Icon: Lightning, color: "text-text-muted" };
+  const dt = new Date(ix.createdAt);
+  return {
+    id: idx,
+    type: ix.type,
+    time: dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + " " +
+          dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    msg: ix.content ?? ix.type.replace(/_/g, " "),
+    Icon: meta.Icon,
+    color: meta.color,
+  };
+}
 
 // Mock deposit proof attachments — in production these come from API
 const MOCK_PROOFS = [
@@ -247,12 +232,31 @@ export default function LeadDetailPage({
       fetchLead(id);
     }
   }, [id, lead, isLoading, fetchLead]);
+
+  // Poll interaction history every 5 seconds
+  useEffect(() => {
+    let cancelled = false;
+    const loadInteractions = async () => {
+      try {
+        const res = await leadsApi.getInteractions(id, { skip: 0, take: 50 });
+        const items: Interaction[] = (res.data as unknown as { data: Interaction[] }).data ?? [];
+        const sorted = [...items].reverse(); // API returns newest-first; we show oldest-first
+        if (!cancelled) {
+          setMessages(sorted.map(mapToMessage));
+          setTimeline(sorted.map(mapToTimelineEvent));
+        }
+      } catch { /* silent */ }
+    };
+    void loadInteractions();
+    const interval = setInterval(() => void loadInteractions(), 5000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [id]);
   const isMobile = useIsMobile();
 
   const [handover, setHandover] = useState(lead?.handoverMode ?? false);
   const [replyText, setReplyText] = useState("");
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
-  const [timeline, setTimeline] = useState(INITIAL_TIMELINE);
+  const [messages, setMessages] = useState<ReturnType<typeof mapToMessage>[]>([]);
+  const [timeline, setTimeline] = useState<ReturnType<typeof mapToTimelineEvent>[]>([]);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -363,38 +367,25 @@ export default function LeadDetailPage({
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!replyText.trim()) return;
-    const now = new Date();
-    setMessages((prev) => [
-      ...prev,
-      {
-        side: "agent",
-        time: now.toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        content: replyText.trim(),
-      },
-    ]);
-    setTimeline((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        type: "MANUAL_REPLY_SENT",
-        time:
-          now.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) +
-          " " +
-          now.toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-        msg: `Agent: ${replyText.trim()}`,
-        Icon: UserCircle,
-        color: "text-crimson",
-      },
-    ]);
+    const text = replyText.trim();
     setReplyText("");
+    // Optimistic update
+    const now = new Date();
+    const optimisticMsg = {
+      id: `opt-${Date.now()}`,
+      side: "agent" as const,
+      time: now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+      content: text,
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+    try {
+      await leadsApi.reply(id, text);
+    } catch {
+      showToastMsg(t("lead.toast.sendFailed") === "lead.toast.sendFailed" ? "Failed to send message" : t("lead.toast.sendFailed"), "danger");
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+    }
   };
 
   if (isLoading && !lead) {
@@ -858,7 +849,7 @@ export default function LeadDetailPage({
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
-                      handleSend();
+                      void handleSend();
                     }
                   }}
                   placeholder={
@@ -872,7 +863,7 @@ export default function LeadDetailPage({
                   className="flex-1 resize-none text-sm"
                 />
                 <Button
-                  onClick={handleSend}
+                  onClick={() => void handleSend()}
                   disabled={!replyText.trim()}
                   size="icon"
                   className="bg-crimson hover:bg-crimson/90 text-white self-end flex-shrink-0 h-9 w-9"

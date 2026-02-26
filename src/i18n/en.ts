@@ -5,6 +5,7 @@ const en: Record<string, string> = {
   "nav.commandCenter":      "Command Center",
   "nav.leadIntelligence":   "Lead Intelligence",
   "nav.verificationQueue":  "Verification Queue",
+  "nav.broadcasts":         "Broadcasts",
   "nav.analytics":          "Analytics",
   "nav.settings":           "Settings",
   "nav.superAdmin":         "Super Admin",

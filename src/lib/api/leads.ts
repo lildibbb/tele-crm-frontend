@@ -80,4 +80,10 @@ export const leadsApi = {
     apiClient.get<ApiResponse<Interaction[]>>(`/leads/${id}/interactions`, {
       params,
     }),
+
+  /**
+   * Send a manual reply to a lead via Telegram from the dashboard.
+   */
+  reply: (id: string, message: string) =>
+    apiClient.post<ApiResponse<{ sent: boolean }>>(`/leads/${id}/reply`, { message }),
 };
