@@ -76,8 +76,9 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
             balanceMin,
             balanceMax,
           });
-          const data = res.data.data;
-          const apiTotal = res.data.total;
+          const payload = res.data.data as unknown as { data: Lead[]; meta?: { total?: number } };
+          const data = Array.isArray(payload) ? payload : (payload?.data ?? []);
+          const apiTotal = Array.isArray(payload) ? undefined : payload?.meta?.total;
           // When API doesn't return `total`, estimate from response size:
           //   partial page (< take items) → this is the last page → total = skip + count
           //   full page (= take items)   → more pages likely exist → assume at least 1 more
