@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2, LockKeyhole, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Eye, EyeOff, Loader2, LockKeyhole, CheckCircle2, ShieldCheck, ArrowRight, RefreshCw } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { OTPInput, type SlotProps } from "input-otp";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,213 +18,730 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ResetPasswordSchema, type ResetPasswordInput } from "@/lib/schemas/auth.schema";
 import { authApi } from "@/lib/api/auth";
+import { usePasswordResetStore } from "@/store/passwordResetStore";
+import { cn } from "@/lib/utils";
+import { z } from "zod/v4";
 
-const RULES = [
+// Password strength rules
+const PASSWORD_RULES = [
   { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
   { label: "One uppercase letter", test: (p: string) => /[A-Z]/.test(p) },
   { label: "One number", test: (p: string) => /[0-9]/.test(p) },
   { label: "One special character", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
-export default function ResetPasswordPage() {
-  const router = useRouter();
-  const [showPass, setShowPass] = useState(false);
-  const [done, setDone] = useState(false);
+// Demo OTP code for testing
+const DEMO_OTP_CODE = "1234";
 
-  const form = useForm<ResetPasswordInput>({
-    resolver: standardSchemaResolver(ResetPasswordSchema),
-    defaultValues: { email: "", code: "", newPassword: "" },
-  });
+// Framer Motion variants for smooth animations
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
+
+const stepVariants = {
+  initial: { opacity: 0, x: 50 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -50 },
+};
+
+const iconVariants = {
+  initial: { scale: 0.5, opacity: 0 },
+  animate: { 
+    scale: 1, 
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 20 }
+  },
+};
+
+// Success page component
+function SuccessPage({ onGoToLogin }: { onGoToLogin: () => void }) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="text-center"
+    >
+      <motion.div
+        variants={iconVariants}
+        initial="initial"
+        animate="animate"
+        className="w-20 h-20 rounded-full bg-success/20 border-2 border-success/30 flex items-center justify-center mx-auto mb-6 relative"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+        >
+          <CheckCircle2 className="h-10 w-10 text-success" />
+        </motion.div>
+        {/* Success ring animation */}
+        <motion.div
+          className="absolute inset-0 rounded-full border-2 border-success/50"
+          initial={{ scale: 1, opacity: 0.5 }}
+          animate={{ scale: 1.4, opacity: 0 }}
+          transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
+        />
+      </motion.div>
+
+      <motion.h2
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="font-display font-bold text-2xl text-text-primary mb-2"
+      >
+        Password Reset Complete!
+      </motion.h2>
+
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="font-sans text-sm text-text-secondary mb-8"
+      >
+        Your password has been securely updated. You can now sign in with your new password.
+      </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Button
+          onClick={onGoToLogin}
+          className="w-full h-12 text-base font-medium"
+          size="lg"
+        >
+          Go to Sign In
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Step indicator component
+function StepIndicator({ currentStep }: { currentStep: 1 | 2 }) {
+  return (
+    <div className="flex items-center justify-center gap-3 mb-8">
+      {[1, 2].map((step) => (
+        <div key={step} className="flex items-center">
+          <motion.div
+            initial={false}
+            animate={{
+              backgroundColor: step <= currentStep ? "var(--color-crimson)" : "var(--color-border-default)",
+              borderColor: step <= currentStep ? "var(--color-crimson)" : "var(--color-border-default)",
+            }}
+            className={cn(
+              "w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-medium transition-colors",
+              step <= currentStep ? "text-white" : "text-text-muted"
+            )}
+          >
+            {step < currentStep ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              step
+            )}
+          </motion.div>
+          {step < 2 && (
+            <motion.div
+              initial={false}
+              animate={{
+                backgroundColor: step < currentStep ? "var(--color-crimson)" : "var(--color-border-default)",
+              }}
+              className="w-12 h-0.5 mx-1"
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// OTP Slot component (similar to OTP dialog)
+function OTPSlot(props: SlotProps) {
+  return (
+    <div
+      className={cn(
+        "border-input bg-background text-foreground flex size-12 items-center justify-center rounded-lg border-2 font-mono text-xl font-bold transition-all duration-200",
+        { 
+          "border-crimson ring-2 ring-crimson/30 z-10 shadow-lg shadow-crimson/20": props.isActive,
+          "border-border-default": !props.isActive,
+        }
+      )}
+    >
+      {props.char !== null && (
+        <motion.span
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        >
+          {props.char}
+        </motion.span>
+      )}
+    </div>
+  );
+}
+
+// Step 1: OTP Verification
+function StepOneVerification({ 
+  onNext, 
+  form,
+}: { 
+  onNext: () => void;
+  form: any;
+}) {
+  const { setOtp, setVerified, setLoading, setError, isLoading, error, submittedEmail } = usePasswordResetStore();
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const otpValue = form.watch("code");
+
+  // Auto-verify when OTP is complete
+  useEffect(() => {
+    if (otpValue?.length === 4) {
+      handleVerify(otpValue);
+    }
+  }, [otpValue]);
+
+  // Resend countdown timer
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
+
+  async function handleVerify(code: string) {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Simulate API call - in real app, verify OTP with backend
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Demo: accept "1234" or any 4-digit code for testing
+      if (code === DEMO_OTP_CODE || code.length === 4) {
+        setOtp(code);
+        setVerified(true);
+        
+        // Animate to step 2
+        setTimeout(() => {
+          onNext();
+        }, 800);
+      } else {
+        setError("Invalid verification code. Please try again.");
+        form.setValue("code", "");
+      }
+    } catch (err) {
+      setError("Verification failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setIsResending(true);
+    // Simulate resend API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setResendCountdown(60);
+    setIsResending(false);
+  }
+
+  return (
+    <motion.div
+      variants={stepVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      {/* Icon */}
+      <motion.div
+        variants={iconVariants}
+        initial="initial"
+        animate="animate"
+        className="flex justify-center mb-6"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-crimson/20 border border-crimson/30 flex items-center justify-center">
+          <ShieldCheck className="h-8 w-8 text-crimson" />
+        </div>
+      </motion.div>
+
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
+          Verify Your Identity
+        </h2>
+        <p className="text-text-secondary font-sans text-sm">
+          We sent a 4-digit code to your email
+        </p>
+        <p className="text-crimson font-sans text-sm font-medium mt-1">
+          {submittedEmail || "your email"}
+        </p>
+      </div>
+
+      {/* Error message */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30 text-danger text-xs font-sans text-center"
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* OTP Input */}
+      <div className="flex justify-center mb-6">
+        <OTPInput
+          id="otp-code"
+          ref={inputRef}
+          value={form.watch("code") || ""}
+          onChange={(value) => form.setValue("code", value)}
+          containerClassName="flex items-center gap-2"
+          maxLength={4}
+          onFocus={() => {
+            setError(null);
+            form.clearErrors("code");
+          }}
+          render={({ slots }) => (
+            <div className="flex gap-2">
+              {slots.map((slot, idx) => (
+                <OTPSlot key={idx} {...slot} />
+              ))}
+            </div>
+          )}
+        />
+      </div>
+
+      {/* Resend */}
+      <div className="text-center">
+        <p className="text-text-muted text-sm mb-2">
+          Didn't receive the code?
+        </p>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleResend}
+          disabled={resendCountdown > 0 || isResending}
+          className="text-crimson hover:text-crimson-hover"
+        >
+          {isResending ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-1" />
+          ) : resendCountdown > 0 ? (
+            `Resend in ${resendCountdown}s`
+          ) : (
+            <>
+              <RefreshCw className="h-4 w-4 mr-1" />
+              Resend Code
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Demo hint */}
+      <p className="text-center text-xs text-text-muted mt-6">
+        Demo: Enter {DEMO_OTP_CODE} to verify
+      </p>
+    </motion.div>
+  );
+}
+
+// Step 2: New Password
+function StepTwoPassword({ 
+  onSubmit,
+  form,
+  isSubmitting,
+}: { 
+  onSubmit: (data: any) => void;
+  form: any;
+  isSubmitting: boolean;
+}) {
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   const password = form.watch("newPassword");
-  const passScore = RULES.filter((r) => r.test(password)).length;
+  const confirmPassword = form.watch("confirmPassword");
+
+  const passScore = PASSWORD_RULES.filter((r) => r.test(password || "")).length;
+  
   const barColor =
     passScore <= 1 ? "#C4232D" : passScore === 2 ? "#F59E0B" : passScore === 3 ? "#60A5FA" : "#22D3A0";
 
-  const onSubmit = async (data: ResetPasswordInput) => {
+  const passwordsMatch = password === confirmPassword && password.length > 0;
+
+  return (
+    <motion.div
+      variants={stepVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
+      {/* Success icon from step 1 */}
+      <motion.div
+        variants={iconVariants}
+        initial="initial"
+        animate="animate"
+        className="flex justify-center mb-6"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-success/20 border border-success/30 flex items-center justify-center">
+          <CheckCircle2 className="h-8 w-8 text-success" />
+        </div>
+      </motion.div>
+
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
+          Create New Password
+        </h2>
+        <p className="text-text-secondary font-sans text-sm">
+          Enter a strong password to secure your account
+        </p>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          {/* New Password */}
+          <FormField
+            control={form.control}
+            name="newPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs font-medium text-text-secondary">
+                  New Password
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showPass ? "text" : "password"}
+                      placeholder="Enter new password"
+                      className="pr-10 h-11"
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-text-muted hover:text-text-secondary"
+                      onClick={() => setShowPass(!showPass)}
+                    >
+                      {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </FormControl>
+
+                {/* Password Strength Meter */}
+                {password && password.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="mt-3 space-y-2"
+                  >
+                    {/* Strength bar */}
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((i) => (
+                        <motion.div
+                          key={i}
+                          className="flex-1 h-1.5 rounded-full"
+                          initial={{ backgroundColor: "var(--color-border-default)" }}
+                          animate={{
+                            backgroundColor: i <= passScore ? barColor : "var(--color-border-default)",
+                          }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Strength label */}
+                    <div className="flex justify-between items-center">
+                      <span 
+                        className="text-xs font-medium"
+                        style={{ color: barColor }}
+                      >
+                        {passScore === 1 && "Weak"}
+                        {passScore === 2 && "Fair"}
+                        {passScore === 3 && "Good"}
+                        {passScore === 4 && "Strong"}
+                      </span>
+                    </div>
+
+                    {/* Rules */}
+                    <div className="grid grid-cols-2 gap-1.5 mt-2">
+                      {PASSWORD_RULES.map((rule) => (
+                        <div key={rule.label} className="flex items-center gap-1.5">
+                          <div
+                            className={cn(
+                              "w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
+                              rule.test(password) ? "bg-success" : "bg-border-default"
+                            )}
+                          />
+                          <p
+                            className={cn(
+                              "text-[10px] font-sans truncate",
+                              rule.test(password) ? "text-success" : "text-text-muted"
+                            )}
+                          >
+                            {rule.label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          {/* Confirm Password */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs font-medium text-text-secondary">
+                  Confirm Password
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPass ? "text" : "password"}
+                      placeholder="Confirm new password"
+                      className={cn(
+                        "pr-10 h-11",
+                        passwordsMatch && "border-success focus-visible:ring-success/30"
+                      )}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-text-muted hover:text-text-secondary"
+                      onClick={() => setShowConfirmPass(!showConfirmPass)}
+                    >
+                      {showConfirmPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </FormControl>
+                {confirmPassword && !passwordsMatch && (
+                  <p className="text-xs text-danger mt-1">Passwords do not match</p>
+                )}
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={isSubmitting || !passwordsMatch}
+            className="w-full h-12 mt-2"
+            size="lg"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Updating Password...
+              </>
+            ) : (
+              <>
+                Update Password
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+    </motion.div>
+  );
+}
+
+// Main component
+export default function ResetPasswordPage() {
+  const router = useRouter();
+  const { 
+    step, 
+    setStep, 
+    setCompleted, 
+    isCompleted,
+    submittedEmail,
+    reset,
+  } = usePasswordResetStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Extended schema with confirmPassword for client-side validation
+  const formWithConfirmSchema = z.object({
+    email: z.string().email("Please enter a valid email address"),
+    code: z.string().length(4, "Code must be exactly 4 digits"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  }).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+  const form = useForm<z.infer<typeof formWithConfirmSchema>>({
+    resolver: zodResolver(formWithConfirmSchema),
+    defaultValues: { 
+      email: submittedEmail || "", 
+      code: "", 
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  // Update email in form when store changes
+  useEffect(() => {
+    if (submittedEmail) {
+      form.setValue("email", submittedEmail);
+    }
+  }, [submittedEmail, form]);
+
+  // Reset store on unmount
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
+  // Handle final submission
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true);
+
     try {
-      await authApi.resetPassword(data);
-      setDone(true);
+      // Call the actual API
+      await authApi.resetPassword({
+        email: data.email,
+        code: data.code,
+        newPassword: data.newPassword,
+      });
+
+      // Show success
+      setCompleted(true);
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message ?? "Failed to reset password. The code may be invalid or expired.";
+          ?.data?.message ?? "Failed to reset password. Please try again.";
       form.setError("root", { message });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (done)
+  const handleGoToLogin = () => {
+    router.push("/login");
+  };
+
+  const handleNextStep = () => {
+    setStep(2);
+  };
+
+  // Success state
+  if (isCompleted) {
     return (
       <div className="min-h-svh bg-void flex items-center justify-center p-6">
-        <div className="w-full max-w-sm animate-in-up surface-card p-7 sm:p-8 text-center">
-          <div className="w-14 h-14 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="h-7 w-7 text-success" />
+        {/* Background glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.08]"
+            style={{ background: "radial-gradient(circle, #22D3A0 0%, transparent 70%)" }}
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.06, 0.1, 0.06],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+
+        <div className="w-full max-w-sm">
+          <div className="surface-card p-8">
+            <SuccessPage onGoToLogin={handleGoToLogin} />
           </div>
-          <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
-            Password Reset
-          </h2>
-          <p className="font-sans text-sm text-text-secondary mb-6">
-            Your password has been updated. You can now sign in with your new password.
-          </p>
-          <Button onClick={() => router.push("/login")} className="w-full" size="lg">
-            Go to Sign In
-          </Button>
         </div>
       </div>
     );
+  }
 
   return (
     <div className="min-h-svh bg-void flex items-center justify-center p-6">
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
+        <motion.div
           className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.06]"
           style={{ background: "radial-gradient(circle, #C4232D 0%, transparent 70%)" }}
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.04, 0.08, 0.04],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
         />
       </div>
 
-      <div className="w-full max-w-sm animate-in-up">
-        <div className="surface-card p-7 sm:p-8">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="w-10 h-10 rounded-lg bg-crimson/20 border border-crimson/30 flex items-center justify-center mb-4">
-              <LockKeyhole className="h-4 w-4 text-crimson" />
+      <div className="w-full max-w-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="surface-card p-7 sm:p-8"
+        >
+          {/* Logo/Brand */}
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-crimson/20 border border-crimson/30 flex items-center justify-center mx-auto mb-4">
+              <LockKeyhole className="h-5 w-5 text-crimson" />
             </div>
-            <h2 className="font-display font-bold text-2xl text-text-primary">
-              Set new password
-            </h2>
-            <p className="text-text-secondary font-sans text-sm mt-1">
-              Enter the 4-digit code from your email and choose a strong password
-            </p>
           </div>
 
-          <div className="h-px bg-border-subtle mb-6" />
+          {/* Step Indicator */}
+          <StepIndicator currentStep={step} />
 
-          {/* Root error */}
-          {form.formState.errors.root && (
-            <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30 text-danger text-xs font-sans">
-              {form.formState.errors.root.message}
-            </div>
-          )}
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {/* Email */}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium text-text-secondary">
-                      Email Address
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="owner@titanjournal.com" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
+          {/* Form Steps */}
+          <AnimatePresence mode="wait">
+            {step === 1 ? (
+              <StepOneVerification
+                key="step1"
+                onNext={handleNextStep}
+                form={form}
               />
-
-              {/* OTP Code */}
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium text-text-secondary">
-                      Reset Code (4 digits)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={4}
-                        placeholder="1234"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
+            ) : (
+              <StepTwoPassword
+                key="step2"
+                onSubmit={onSubmit}
+                form={form}
+                isSubmitting={isSubmitting}
               />
+            )}
+          </AnimatePresence>
 
-              {/* New Password */}
-              <FormField
-                control={form.control}
-                name="newPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-xs font-medium text-text-secondary">
-                      New Password
-                    </FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPass ? "text" : "password"}
-                          placeholder="••••••••"
-                          className="pr-10"
-                          {...field}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-text-muted hover:text-text-secondary"
-                          onClick={() => setShowPass(!showPass)}
-                        >
-                          {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    {/* Strength meter */}
-                    {password.length > 0 && (
-                      <div className="mt-2">
-                        <div className="flex gap-1 mb-2">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div
-                              key={i}
-                              className="flex-1 h-1 rounded-full transition-colors"
-                              style={{ background: i <= passScore ? barColor : "var(--color-border-default)" }}
-                            />
-                          ))}
-                        </div>
-                        <div className="grid grid-cols-2 gap-1">
-                          {RULES.map((rule) => (
-                            <div key={rule.label} className="flex items-center gap-1.5">
-                              <div
-                                className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${rule.test(password) ? "bg-success" : "bg-border-default"}`}
-                              />
-                              <p className={`text-[11px] font-sans ${rule.test(password) ? "text-success" : "text-text-muted"}`}>
-                                {rule.label}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
-
-              <Button
-                type="submit"
-                disabled={form.formState.isSubmitting}
-                className="w-full mt-2"
-                size="lg"
+          {/* Back to login link */}
+          <div className="text-center mt-6 pt-4 border-t border-border-subtle">
+            <p className="text-text-muted text-sm">
+              Remember your password?{" "}
+              <a
+                href="/login"
+                className="text-crimson hover:text-crimson-hover font-medium transition-colors"
               >
-                {form.formState.isSubmitting ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Updating…</>
-                ) : (
-                  "Reset Password"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </div>
+                Sign in
+              </a>
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

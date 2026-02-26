@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import { ShieldCheck, CheckCircle } from "@phosphor-icons/react";
+import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { CheckCircle } from "@phosphor-icons/react";
 import gsap from "gsap";
 import MobileShell from "./MobileShell";
 import MobileMoreDrawer from "./MobileMoreDrawer";
@@ -66,35 +66,34 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const startX = useRef(0);
   const currentX = useRef(0);
-  const [dragDirection, setDragDirection] = useState<"none" | "left" | "right">(
-    "none",
-  );
+  // Track active drag to prevent accidental swipe from pointerleave/pointercancel
+  const isDragging = useRef(false);
+  const [dragDirection, setDragDirection] = useState<"none" | "left" | "right">("none");
   const [dragRatio, setDragRatio] = useState(0);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     startX.current = e.clientX;
     currentX.current = 0;
+    isDragging.current = true;
     setDragDirection("none");
     setDragRatio(0);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }, []);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!cardRef.current) return;
+    if (!isDragging.current || !cardRef.current) return;
     const dx = e.clientX - startX.current;
     currentX.current = dx;
     const cardWidth = cardRef.current.offsetWidth;
     const ratio = Math.abs(dx) / cardWidth;
     setDragRatio(Math.min(ratio, 1));
     setDragDirection(dx > 0 ? "right" : dx < 0 ? "left" : "none");
-    gsap.set(cardRef.current, {
-      x: dx,
-      rotation: dx * 0.04,
-    });
+    gsap.set(cardRef.current, { x: dx, rotation: dx * 0.04 });
   }, []);
 
   const handlePointerUp = useCallback(() => {
-    if (!cardRef.current) return;
+    if (!isDragging.current || !cardRef.current) return;
+    isDragging.current = false;
     const cardWidth = cardRef.current.offsetWidth;
     const ratio = Math.abs(currentX.current) / cardWidth;
     if (ratio >= SWIPE_THRESHOLD) {
@@ -110,7 +109,6 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
         },
       });
     } else {
-      // Spring back
       gsap.to(cardRef.current, {
         x: 0,
         rotation: 0,
@@ -120,7 +118,17 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
       setDragDirection("none");
       setDragRatio(0);
     }
+    currentX.current = 0;
   }, [onApprove, onReject]);
+
+  const handlePointerCancel = useCallback(() => {
+    if (!isDragging.current || !cardRef.current) return;
+    isDragging.current = false;
+    currentX.current = 0;
+    gsap.to(cardRef.current, { x: 0, rotation: 0, duration: 0.3, ease: "power2.out" });
+    setDragDirection("none");
+    setDragRatio(0);
+  }, []);
 
   const approveOpacity = dragDirection === "right" ? dragRatio : 0;
   const rejectOpacity = dragDirection === "left" ? dragRatio : 0;
@@ -133,7 +141,7 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
     >
       {/* Approve overlay */}
       <div
@@ -227,21 +235,27 @@ export default function MobileVerification({
     fetchLeads({ skip: 0, take: 50, status: "DEPOSIT_REPORTED", orderBy: "createdAt", order: "desc" });
   }, [fetchLeads]);
 
-  const pendingLeads = leads.filter((l) => l.status === "DEPOSIT_REPORTED");
-  const [queue, setQueue] = useState<VerificationItem[]>([]);
+  // ── Stable derived data (no new array ref every render) ────────────────────
+  const pendingLeads = useMemo(
+    () => leads.filter((l) => l.status === "DEPOSIT_REPORTED"),
+    [leads],
+  );
+
+  // Track IDs acted on locally for optimistic removal (no useState-in-useEffect)
+  const [processedIds, setProcessedIds] = useState<Set<string>>(new Set());
   const [todayCount, setTodayCount] = useState(0);
 
-  useEffect(() => {
-    if (pendingLeads.length > 0) {
-      setQueue(pendingLeads.map(toVerificationItem));
-    }
-  }, [pendingLeads]);
+  // Derive queue from stable memoized source — no useEffect needed
+  const queue = useMemo(
+    () => pendingLeads.filter((l) => !processedIds.has(l.id)).map(toVerificationItem),
+    [pendingLeads, processedIds],
+  );
 
   const [toast, setToast] = useState<{ msg: string; type: "approve" | "reject" } | null>(null);
 
   const handleApprove = useCallback(
     async (id: string) => {
-      setQueue((prev) => prev.filter((i) => i.id !== id));
+      setProcessedIds((prev) => new Set(prev).add(id));
       setTodayCount((c) => c + 1);
       setToast({ msg: "✓ Lead approved", type: "approve" });
       onApprove?.(id);
@@ -254,7 +268,7 @@ export default function MobileVerification({
 
   const handleReject = useCallback(
     async (id: string) => {
-      setQueue((prev) => prev.filter((i) => i.id !== id));
+      setProcessedIds((prev) => new Set(prev).add(id));
       setToast({ msg: "✗ Lead rejected", type: "reject" });
       onReject?.(id);
       if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
@@ -263,9 +277,6 @@ export default function MobileVerification({
     },
     [onReject, updateStatus],
   );
-
-  const currentItem = queue[0];
-  const backItem = queue[1];
 
   return (
     <>
@@ -313,6 +324,7 @@ export default function MobileVerification({
               {queue[0] && (
                 <div className="relative z-10">
                   <SwipeCard
+                    key={queue[0].id}
                     item={queue[0]}
                     onApprove={() => handleApprove(queue[0].id)}
                     onReject={() => handleReject(queue[0].id)}
@@ -347,7 +359,7 @@ export default function MobileVerification({
         <div
           className={cn(
             "fixed left-4 right-4 z-50 flex items-center justify-between gap-3 px-4 py-3 rounded-xl font-sans font-medium text-[14px] shadow-2xl",
-            toast.type === "approve" ? "bg-success text-void" : "bg-danger text-white",
+            toast.type === "approve" ? "bg-success text-white" : "bg-danger text-white",
           )}
           style={{ bottom: "calc(56px + env(safe-area-inset-bottom) + 16px)" }}
         >

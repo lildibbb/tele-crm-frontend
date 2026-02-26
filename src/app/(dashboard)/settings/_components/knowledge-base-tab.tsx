@@ -407,8 +407,8 @@ export function KnowledgeBaseTab() {
                   )}
                 />
 
-                {/* Edit/Preview toggle — visible only on < lg */}
-                <div className="lg:hidden flex items-center gap-0.5 bg-elevated p-1 rounded-xl w-fit">
+                {/* Edit/Preview toggle — visible only on mobile */}
+                <div className="sm:hidden flex items-center gap-0.5 bg-elevated p-1 rounded-xl w-fit">
                   <button
                     type="button"
                     onClick={() => setKbPane("edit")}
@@ -436,14 +436,14 @@ export function KnowledgeBaseTab() {
                 </div>
 
                 {/* Split-panel: editor + preview */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                   <FormField
                     control={form.control}
                     name="content"
                     render={({ field }) => (
                       <FormItem
                         className={cn(
-                          kbPane === "preview" ? "hidden lg:block" : "block",
+                          kbPane === "preview" ? "hidden sm:block" : "block",
                         )}
                       >
                         <FormLabel className="text-xs font-medium text-text-secondary">
@@ -464,7 +464,7 @@ export function KnowledgeBaseTab() {
                   <div
                     className={cn(
                       "space-y-2",
-                      kbPane === "edit" ? "hidden lg:block" : "block",
+                      kbPane === "edit" ? "hidden sm:block" : "block",
                     )}
                   >
                     <p className="text-xs font-medium text-text-secondary">

@@ -4,6 +4,8 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 
+import { getDeviceId } from "@/lib/deviceId";
+
 // Create a configured Axios instance
 export const apiClient: AxiosInstance = axios.create({
   baseURL:
@@ -18,12 +20,22 @@ export const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// Request Interceptor: Attach in-memory access token
+// Request Interceptor: Attach in-memory access token and device ID header
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Lazily import to avoid circular deps — authStore is populated after initAuth()
+    // Attach device ID header for all requests (especially important for refresh requests)
     if (typeof window !== "undefined") {
       try {
+        const deviceId = getDeviceId();
+        if (deviceId && config.headers) {
+          config.headers["X-Device-Id"] = deviceId;
+        }
+      } catch {
+        // proceed without device ID if unavailable
+      }
+
+      try {
+        // Lazily import to avoid circular deps — authStore is populated after initAuth()
         // eslint-disable-next-line @typescript-eslint/no-require-imports
         const { useAuthStore } = require("@/store/authStore");
         const token: string | null = useAuthStore.getState().accessToken;

@@ -18,6 +18,8 @@ import {
   Unlink,
   List,
   ListOrdered,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tiptapToTelegramMarkdown } from "@/lib/tiptap-to-telegram";
@@ -46,7 +48,7 @@ function ToolbarBtn({
       title={title}
       disabled={disabled}
       onMouseDown={(e) => {
-        e.preventDefault(); // prevent editor losing focus
+        e.preventDefault();
         onClick();
       }}
       className={cn(
@@ -68,11 +70,25 @@ function Divider() {
   );
 }
 
+// ── TipTap JSON types ─────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TiptapJsonDoc = Record<string, any>;
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export interface RichTextEditorProps {
-  value: string;
-  onChange: (markdown: string) => void;
+  /** Legacy markdown string mode (default) */
+  value?: string;
+  onChange?: (markdown: string) => void;
+
+  /** JSON mode — pass Tiptap JSON doc directly */
+  jsonContent?: TiptapJsonDoc;
+  onJsonChange?: (json: TiptapJsonDoc) => void;
+
+  /** Which mode: "markdown" emits Telegram MarkdownV2 string, "json" emits native Tiptap JSON */
+  mode?: "markdown" | "json";
+
   placeholder?: string;
   minHeight?: number;
   maxLength?: number;
@@ -83,7 +99,10 @@ export interface RichTextEditorProps {
 export function RichTextEditor({
   value,
   onChange,
-  placeholder = "Start typing…",
+  jsonContent,
+  onJsonChange,
+  mode = "markdown",
+  placeholder = "Start typing...",
   minHeight = 160,
   maxLength = 4096,
   fillHeight = false,
@@ -93,8 +112,11 @@ export function RichTextEditor({
   const [linkUrl, setLinkUrl] = React.useState("");
   const linkInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Track last markdown we emitted so we don't re-parse on every render
-  const lastEmitted = React.useRef(value);
+  // Track last emitted value so we don't re-parse on every render
+  const lastEmittedMd = React.useRef(value);
+  const lastEmittedJsonRef = React.useRef<string>(
+    jsonContent ? JSON.stringify(jsonContent) : "",
+  );
 
   const editor = useEditor({
     extensions: [
@@ -115,12 +137,21 @@ export function RichTextEditor({
       Placeholder.configure({ placeholder }),
       CharacterCount.configure({ limit: maxLength }),
     ],
-    content: telegramMarkdownToHtml(value),
+    content:
+      mode === "json"
+        ? jsonContent || { type: "doc", content: [{ type: "paragraph" }] }
+        : telegramMarkdownToHtml(value ?? ""),
     immediatelyRender: false,
     onUpdate: ({ editor: e }) => {
-      const md = tiptapToTelegramMarkdown(e.getJSON());
-      lastEmitted.current = md;
-      onChange(md);
+      if (mode === "json") {
+        const json = e.getJSON();
+        lastEmittedJsonRef.current = JSON.stringify(json);
+        onJsonChange?.(json);
+      } else {
+        const md = tiptapToTelegramMarkdown(e.getJSON());
+        lastEmittedMd.current = md;
+        onChange?.(md);
+      }
     },
     editorProps: {
       attributes: {
@@ -130,14 +161,24 @@ export function RichTextEditor({
     },
   });
 
-  // Sync when parent changes value externally (e.g. loading a different item)
+  // Sync when parent changes value externally (markdown mode)
   React.useEffect(() => {
-    if (!editor) return;
-    if (value !== lastEmitted.current) {
-      lastEmitted.current = value;
-      editor.commands.setContent(telegramMarkdownToHtml(value));
+    if (!editor || mode !== "markdown") return;
+    if (value !== lastEmittedMd.current) {
+      lastEmittedMd.current = value;
+      editor.commands.setContent(telegramMarkdownToHtml(value ?? ""));
     }
-  }, [editor, value]);
+  }, [editor, value, mode]);
+
+  // Sync when parent changes jsonContent externally (json mode)
+  React.useEffect(() => {
+    if (!editor || mode !== "json" || !jsonContent) return;
+    const incoming = JSON.stringify(jsonContent);
+    if (incoming !== lastEmittedJsonRef.current) {
+      lastEmittedJsonRef.current = incoming;
+      editor.commands.setContent(jsonContent);
+    }
+  }, [editor, jsonContent, mode]);
 
   // ── Link helpers ────────────────────────────────────────────────────────────
   const applyLink = React.useCallback(() => {
@@ -257,6 +298,24 @@ export function RichTextEditor({
           <ListOrdered className="h-3.5 w-3.5" />
         </ToolbarBtn>
 
+        <Divider />
+
+        <ToolbarBtn
+          onClick={() => editor?.chain().focus().undo().run()}
+          title="Undo (Ctrl+Z)"
+          disabled={!editor?.can().undo()}
+        >
+          <Undo2 className="h-3.5 w-3.5" />
+        </ToolbarBtn>
+
+        <ToolbarBtn
+          onClick={() => editor?.chain().focus().redo().run()}
+          title="Redo (Ctrl+Y)"
+          disabled={!editor?.can().redo()}
+        >
+          <Redo2 className="h-3.5 w-3.5" />
+        </ToolbarBtn>
+
         {/* ── Inline link URL input ── */}
         {showLinkInput && (
           <div className="flex items-center gap-1.5 w-full mt-1.5">
@@ -297,7 +356,7 @@ export function RichTextEditor({
               }}
               className="h-7 w-7 flex items-center justify-center text-xs rounded-lg text-text-muted hover:text-text-primary hover:bg-elevated transition-colors"
             >
-              ✕
+              <span aria-hidden>&#x2715;</span>
             </button>
           </div>
         )}
@@ -305,7 +364,10 @@ export function RichTextEditor({
 
       {/* ── Editor body ── */}
       <div
-        className={cn("px-4 py-3 cursor-text", fillHeight && "flex-1 overflow-y-auto")}
+        className={cn(
+          "px-4 py-3 cursor-text",
+          fillHeight && "flex-1 overflow-y-auto",
+        )}
         style={fillHeight ? undefined : { minHeight }}
         onClick={() => editor?.commands.focus()}
       >

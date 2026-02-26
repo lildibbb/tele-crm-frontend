@@ -1,21 +1,9 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/": {
-      "get": {
-        "operationId": "AppController_getHello",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": ["App"]
-      }
-    },
     "/auth/login": {
       "post": {
-        "description": "Authenticates with email + password. Sets an HTTP-Only refresh token cookie scoped to /api/v1/auth.",
+        "description": "Context-aware login endpoint that handles all three scenarios:\n\n**1. TMA auto-login** — Send `initData` only. If the Telegram account is already linked to a CRM user, logs in immediately (no credentials needed).\n\n**2. TMA first-time / credential bind** — Send `initData` + `email` + `password`. Authenticates and automatically binds the Telegram user ID to the account. Future opens auto-login via case 1.\n\n**3. Web dashboard login** — Send `email` + `password` only. Regular credential auth.\n\n**TELEGRAM_NOT_LINKED**: When `initData` is valid but no account is linked yet (and no credentials supplied), returns `401 { code: \"TELEGRAM_NOT_LINKED\" }`. FE should show the email+password form and re-submit.",
         "operationId": "AuthController_login",
         "parameters": [],
         "requestBody": {
@@ -52,7 +40,27 @@
             }
           },
           "401": {
-            "description": "Unauthorized – invalid or missing JWT"
+            "description": "Unauthorized — invalid credentials, invalid initData, or TELEGRAM_NOT_LINKED (account not yet linked)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 401
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "example": "TELEGRAM_NOT_LINKED",
+                      "description": "Present only when initData is valid but account is not linked"
+                    }
+                  }
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation failed"
@@ -61,7 +69,7 @@
             "description": "Too many requests – rate limit exceeded"
           }
         },
-        "summary": "Email/password login",
+        "summary": "Unified login (web + Telegram Mini App)",
         "tags": ["auth"]
       }
     },
@@ -130,58 +138,6 @@
           }
         ],
         "summary": "Logout current session",
-        "tags": ["auth"]
-      }
-    },
-    "/auth/tma-login": {
-      "post": {
-        "description": "Validates Telegram WebApp initData HMAC signature and logs in the linked CRM user.",
-        "operationId": "AuthController_tmaLogin",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TmaLoginDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "TMA login successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/AuthResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "429": {
-            "description": "Too many requests – rate limit exceeded"
-          }
-        },
-        "summary": "Telegram Mini App login",
         "tags": ["auth"]
       }
     },
@@ -334,63 +290,6 @@
           }
         ],
         "summary": "Revoke a session",
-        "tags": ["auth"]
-      }
-    },
-    "/auth/users": {
-      "post": {
-        "description": "Directly creates a CRM user without an invitation (SUPERADMIN only).",
-        "operationId": "AuthController_createUser",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "User created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/UserResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          },
-          "422": {
-            "description": "Validation failed"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create system user",
         "tags": ["auth"]
       }
     },
@@ -1440,7 +1339,7 @@
     },
     "/leads": {
       "get": {
-        "description": "Paginated list of all leads with optional status filter. All roles can view leads (flat access model).",
+        "description": "Paginated list of all leads with filtering, search and sort. All roles can view.",
         "operationId": "LeadsController_findAll",
         "parameters": [
           {
@@ -1460,6 +1359,79 @@
             }
           },
           {
+            "name": "contactId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by Telegram user ID (exact)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "registered",
+            "required": false,
+            "in": "query",
+            "description": "true = has registeredAt, false = no registeredAt",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "balanceMin",
+            "required": false,
+            "in": "query",
+            "description": "Min deposit balance (inclusive)",
+            "schema": {
+              "example": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "balanceMax",
+            "required": false,
+            "in": "query",
+            "description": "Max deposit balance (inclusive)",
+            "schema": {
+              "example": 5000,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Full-text search on username, displayName, email, phoneNumber, hfmBrokerId",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by (default: createdAt)",
+            "schema": {
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "depositBalance",
+                "registeredAt",
+                "aiScore"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction (default: desc)",
+            "schema": {
+              "enum": ["asc", "desc"],
+              "type": "string"
+            }
+          },
+          {
             "name": "skip",
             "required": false,
             "in": "query",
@@ -1473,7 +1445,7 @@
             "name": "take",
             "required": false,
             "in": "query",
-            "description": "Page size (default 20)",
+            "description": "Page size (default 20, max 200)",
             "schema": {
               "example": 20,
               "type": "number"
@@ -1519,6 +1491,150 @@
           }
         ],
         "summary": "List leads",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/leaderboard": {
+      "get": {
+        "description": "Leads ordered by aiScore DESC. Tier: hot≥70, warm≥40, cold<40.",
+        "operationId": "LeadsController_leaderboard",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tier",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["hot", "warm", "cold"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Leaderboard retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "AI score leaderboard",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/export": {
+      "get": {
+        "description": "Streams a CSV file of all leads matching optional filters.",
+        "operationId": "LeadsController_exportCsv",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "NEW",
+                "CONTACTED",
+                "REGISTERED",
+                "DEPOSIT_REPORTED",
+                "DEPOSIT_CONFIRMED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 start date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 end date",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file stream",
+            "content": {
+              "text/csv": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export leads as CSV",
+        "tags": ["leads"]
+      }
+    },
+    "/leads/bulk/handover": {
+      "patch": {
+        "description": "Enables/disables human handover mode for ALL leads at once. Syncs each to Redis.",
+        "operationId": "LeadsController_bulkSetHandover",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkHandoverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Handover mode updated for all leads"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bulk toggle handover mode for all leads",
         "tags": ["leads"]
       }
     },
@@ -1773,112 +1889,6 @@
           }
         ],
         "summary": "Verify lead",
-        "tags": ["leads"]
-      }
-    },
-    "/leads/leaderboard": {
-      "get": {
-        "description": "Leads ordered by aiScore DESC. Tier: hot≥70, warm≥40, cold<40.",
-        "operationId": "LeadsController_leaderboard",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "tier",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": ["hot", "warm", "cold"],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Leaderboard retrieved"
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "AI score leaderboard",
-        "tags": ["leads"]
-      }
-    },
-    "/leads/export": {
-      "get": {
-        "description": "Streams a CSV file of all leads matching optional filters.",
-        "operationId": "LeadsController_exportCsv",
-        "parameters": [
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": [
-                "NEW",
-                "CONTACTED",
-                "REGISTERED",
-                "DEPOSIT_REPORTED",
-                "DEPOSIT_CONFIRMED"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "from",
-            "required": false,
-            "in": "query",
-            "description": "ISO8601 start date",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "to",
-            "required": false,
-            "in": "query",
-            "description": "ISO8601 end date",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "CSV file stream",
-            "content": {
-              "text/csv": {}
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Export leads as CSV",
         "tags": ["leads"]
       }
     },
@@ -2339,6 +2349,71 @@
         "tags": ["knowledge-base"]
       }
     },
+    "/knowledge-base/admin/reembed-missing": {
+      "post": {
+        "description": "Queues async embedding generation for all active KB entries that have a null embedding vector. Use after API failures or to backfill legacy entries.",
+        "operationId": "KnowledgeBaseController_reembedMissing",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "queued": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Re-embed missing KB entries",
+        "tags": ["knowledge-base"]
+      }
+    },
+    "/knowledge-base/admin/embedding-stats": {
+      "get": {
+        "description": "Returns counts of embedded vs missing embedding for KB entries.",
+        "operationId": "KnowledgeBaseController_embeddingStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Embedding coverage stats",
+        "tags": ["knowledge-base"]
+      }
+    },
     "/command-menu": {
       "get": {
         "description": "Returns all command menus ordered by display order.",
@@ -2602,6 +2677,46 @@
           }
         ],
         "summary": "Bulk reorder command menus",
+        "tags": ["command-menu"]
+      }
+    },
+    "/command-menu/admin/reembed-missing": {
+      "post": {
+        "description": "Queues async embedding generation for all active CommandMenu entries that have a null embedding vector.",
+        "operationId": "CommandMenuController_reembedMissing",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "queued": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Re-embed missing CommandMenu entries",
         "tags": ["command-menu"]
       }
     },
@@ -3606,7 +3721,7 @@
           },
           "email": {
             "type": "string",
-            "example": "admin@crm.com",
+            "example": "superadmin@yopmail.com",
             "description": "User email address"
           },
           "role": {
@@ -3741,43 +3856,31 @@
       "LoginDto": {
         "type": "object",
         "properties": {
+          "initData": {
+            "type": "string",
+            "description": "Telegram WebApp initData from window.Telegram.WebApp.initData. Present when running inside a Telegram Mini App. Send even if empty — backend auto-detects the context.",
+            "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
+          },
           "email": {
             "type": "string",
             "example": "admin@crm.com",
-            "description": "User email address"
+            "description": "User email address. Required when initData is absent."
           },
           "password": {
             "type": "string",
             "example": "P@ssw0rd!",
             "minLength": 8,
-            "description": "User password"
-          }
-        },
-        "required": ["email", "password"]
-      },
-      "TmaLoginDto": {
-        "type": "object",
-        "properties": {
-          "initData": {
-            "type": "string",
-            "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData",
-            "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
+            "description": "User password. Required when initData is absent."
           },
           "deviceId": {
             "type": "string",
-            "example": "device-uuid-v4",
-            "description": "Unique device identifier"
+            "example": "device-uuid-v4"
           },
           "userAgent": {
             "type": "string",
-            "example": "Mozilla/5.0..."
-          },
-          "ipAddress": {
-            "type": "string",
-            "example": "192.168.1.1"
+            "example": "Mozilla/5.0 ..."
           }
-        },
-        "required": ["initData", "deviceId"]
+        }
       },
       "SetupAccountDto": {
         "type": "object",
@@ -3789,7 +3892,7 @@
           },
           "initData": {
             "type": "string",
-            "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData",
+            "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram).",
             "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
           },
           "email": {
@@ -3814,30 +3917,7 @@
             "description": "Device user agent string"
           }
         },
-        "required": ["invitationToken", "initData", "email", "password"]
-      },
-      "CreateUserDto": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "example": "staff@crm.com",
-            "description": "Email address for login"
-          },
-          "password": {
-            "type": "string",
-            "example": "P@ssw0rd!",
-            "minLength": 8,
-            "description": "Initial password (min 8 characters)"
-          },
-          "role": {
-            "type": "string",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
-            "example": "STAFF",
-            "description": "RBAC role to assign to this user"
-          }
-        },
-        "required": ["email", "password", "role"]
+        "required": ["invitationToken", "email", "password"]
       },
       "ForgotPasswordDto": {
         "type": "object",
@@ -3979,6 +4059,29 @@
           }
         },
         "required": ["role"]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "staff@crm.com",
+            "description": "Email address for login"
+          },
+          "password": {
+            "type": "string",
+            "example": "P@ssw0rd!",
+            "minLength": 8,
+            "description": "Initial password (min 8 characters)"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "example": "STAFF",
+            "description": "RBAC role to assign to this user"
+          }
+        },
+        "required": ["email", "password", "role"]
       },
       "LeadResponseDto": {
         "type": "object",
@@ -4124,6 +4227,17 @@
           }
         },
         "required": ["telegramUserId"]
+      },
+      "BulkHandoverDto": {
+        "type": "object",
+        "properties": {
+          "handoverMode": {
+            "type": "boolean",
+            "example": true,
+            "description": "Enable (true) or disable (false) handover mode for all leads"
+          }
+        },
+        "required": ["handoverMode"]
       },
       "UpdateLeadStatusDto": {
         "type": "object",
@@ -4335,6 +4449,16 @@
             "example": true,
             "description": "Inactive menus are hidden from the Telegram /menu keyboard"
           },
+          "showInMenu": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether this entry appears in the /start inline menu"
+          },
+          "showInKeyboard": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether this entry appears in the persistent bottom reply keyboard (max 4)"
+          },
           "order": {
             "type": "number",
             "example": 0,
@@ -4357,6 +4481,8 @@
           "label",
           "content",
           "isActive",
+          "showInMenu",
+          "showInKeyboard",
           "order",
           "createdAt",
           "updatedAt"
@@ -4414,6 +4540,16 @@
             "type": "number",
             "example": 0,
             "description": "Display order in the Telegram menu (ascending)."
+          },
+          "showInMenu": {
+            "type": "boolean",
+            "example": true,
+            "description": "Show this entry in the /start inline menu (default true)."
+          },
+          "showInKeyboard": {
+            "type": "boolean",
+            "example": false,
+            "description": "Show this entry in the persistent bottom reply keyboard (max 4 entries, default false)."
           }
         },
         "required": ["command", "label", "content"]
@@ -4465,7 +4601,18 @@
           },
           "isActive": {
             "type": "boolean",
-            "example": true
+            "example": true,
+            "description": "Show in /start inline menu"
+          },
+          "showInMenu": {
+            "type": "boolean",
+            "example": true,
+            "description": "Show in /start inline menu (owner-controlled)"
+          },
+          "showInKeyboard": {
+            "type": "boolean",
+            "example": false,
+            "description": "Show in persistent bottom reply keyboard (max 4)"
           }
         }
       },
@@ -4821,8 +4968,8 @@
         "properties": {
           "date": {
             "type": "string",
-            "example": "2026-02-17",
-            "description": "Date or week start (YYYY-MM-DD) depending on timeframe granularity"
+            "example": "2026-02-24T14:00",
+            "description": "Bucket label: ISO datetime (YYYY-MM-DDTHH:mm) for hourly granularity, or date string (YYYY-MM-DD) for day/week/month granularity"
           },
           "newLeads": {
             "type": "number",

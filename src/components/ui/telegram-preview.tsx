@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { cn } from "@/lib/utils";
+import { tiptapToTelegramMarkdown } from "@/lib/tiptap-to-telegram";
 
 function escapeHtmlPreview(text: string): string {
   return text
@@ -10,7 +10,7 @@ function escapeHtmlPreview(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
-/** Convert Telegram MarkdownV2 → safe HTML for the preview bubble */
+/** Convert Telegram MarkdownV2 -> safe HTML for the preview bubble */
 function renderTelegramMarkdown(markdown: string): string {
   if (!markdown?.trim()) return "";
 
@@ -50,7 +50,7 @@ function renderTelegramMarkdown(markdown: string): string {
   html = html.replace(/~([^~\n]+)~/g, "<del>$1</del>");
 
   // Bullet list items
-  html = html.replace(/^• (.+)$/gm, '<span class="tg-bullet">• $1</span>');
+  html = html.replace(/^• (.+)$/gm, '<span class="tg-bullet">$1</span>');
 
   // Line breaks
   html = html.replace(/\n/g, "<br>");
@@ -58,18 +58,50 @@ function renderTelegramMarkdown(markdown: string): string {
   return html;
 }
 
+// ── Extract plain text from Tiptap JSON ───────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function extractPlainText(node: Record<string, any>): string {
+  if (!node) return "";
+  if (node.type === "text") return node.text ?? "";
+  if (Array.isArray(node.content)) {
+    return node.content
+      .map((child: Record<string, unknown>) =>
+        extractPlainText(child as Record<string, unknown>),
+      )
+      .join(node.type === "paragraph" ? "\n" : "");
+  }
+  return "";
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 interface TelegramPreviewProps {
-  markdown: string;
+  /** Legacy: Telegram MarkdownV2 string */
+  markdown?: string;
+  /** Preferred: native Tiptap JSON doc */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tiptapJson?: Record<string, any>;
   senderName?: string;
   className?: string;
 }
 
 export function TelegramPreview({
   markdown,
+  tiptapJson,
   senderName = "Titan Journal CRM",
   className,
 }: TelegramPreviewProps) {
-  const rendered = renderTelegramMarkdown(markdown);
+  // Compute directly without useMemo — ensures preview always reflects latest content
+  // even if React batches or defers the render. tiptapJson object ref changes on every
+  // editor update, so no stale-cache risk here.
+  const resolvedMarkdown = tiptapJson
+    ? tiptapToTelegramMarkdown(
+        tiptapJson as Parameters<typeof tiptapToTelegramMarkdown>[0],
+      )
+    : (markdown ?? "");
+
+  const rendered = renderTelegramMarkdown(resolvedMarkdown);
 
   if (!rendered) {
     return (
@@ -82,7 +114,7 @@ export function TelegramPreview({
         <p className="text-[#4A5568] text-xs font-sans text-center leading-relaxed">
           Preview will appear here
           <br />
-          as you type…
+          as you type...
         </p>
       </div>
     );
@@ -97,7 +129,7 @@ export function TelegramPreview({
         />
       </div>
       <p className="text-[#6C7883] text-[10px] font-mono mt-1.5 select-none">
-        {senderName} · just now
+        {senderName} &middot; just now
       </p>
     </div>
   );

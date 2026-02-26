@@ -15,6 +15,7 @@ Both the Command Menu drawer and Knowledge Base dialog use a plain `<Textarea>` 
 ## Goal
 
 Replace `<Textarea>` in both editors with a TipTap rich text editor:
+
 - Toolbar limited to Telegram-supported formatting only
 - Live **split-panel** Telegram bubble preview (editor left, preview right)
 - Output stored as **Telegram MarkdownV2** string — backend sends as-is, no extra conversion
@@ -37,22 +38,22 @@ Replace `<Textarea>` in both editors with a TipTap rich text editor:
 
 ## New Files
 
-| File | Purpose |
-|------|---------|
-| `src/lib/tiptap-to-telegram.ts` | Serializer: TipTap JSON → Telegram MarkdownV2 |
-| `src/lib/telegram-to-tiptap.ts` | Parser: MarkdownV2 → TipTap JSON (for edit init) |
-| `src/components/ui/rich-text-editor.tsx` | `<RichTextEditor>` component |
-| `src/components/ui/telegram-preview.tsx` | `<TelegramPreview>` dark bubble |
+| File                                     | Purpose                                          |
+| ---------------------------------------- | ------------------------------------------------ |
+| `src/lib/tiptap-to-telegram.ts`          | Serializer: TipTap JSON → Telegram MarkdownV2    |
+| `src/lib/telegram-to-tiptap.ts`          | Parser: MarkdownV2 → TipTap JSON (for edit init) |
+| `src/components/ui/rich-text-editor.tsx` | `<RichTextEditor>` component                     |
+| `src/components/ui/telegram-preview.tsx` | `<TelegramPreview>` dark bubble                  |
 
 ---
 
 ## Updated Files
 
-| File | Change |
-|------|--------|
-| `src/app/(dashboard)/settings/_components/commands-tab.tsx` | Sheet → `max-w-[900px]`, replace Textarea+preview with split panel |
-| `src/app/(dashboard)/settings/_components/knowledge-base-tab.tsx` | Dialog → `max-w-[880px]`, replace Textarea with split panel |
-| `src/app/globals.css` | Add ProseMirror editor styles + placeholder |
+| File                                                              | Change                                                             |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `src/app/(dashboard)/settings/_components/commands-tab.tsx`       | Sheet → `max-w-[900px]`, replace Textarea+preview with split panel |
+| `src/app/(dashboard)/settings/_components/knowledge-base-tab.tsx` | Dialog → `max-w-[880px]`, replace Textarea with split panel        |
+| `src/app/globals.css`                                             | Add ProseMirror editor styles + placeholder                        |
 
 ---
 
@@ -67,6 +68,7 @@ User types in TipTap editor
 ```
 
 **Edit init flow:**
+
 ```
 existing content.text (MarkdownV2)
   └─ telegramMarkdownToTiptap(str) → TipTap JSON
@@ -79,19 +81,19 @@ existing content.text (MarkdownV2)
 
 Walks TipTap JSON node tree recursively:
 
-| TipTap | → Telegram MarkdownV2 |
-|--------|----------------------|
-| `bold` mark | `*text*` |
-| `italic` mark | `_text_` |
-| `underline` mark | `__text__` |
-| `strike` mark | `~text~` |
-| `code` mark | `` `text` `` |
-| `link` mark (`href`) | `[text](url)` |
-| `codeBlock` node | ` ```\ncontent\n``` ` |
-| `bulletList` + `listItem` | `• item\n` |
-| `orderedList` + `listItem` | `1\. item\n` |
-| `paragraph` | text + `\n` |
-| `hardBreak` | `\n` |
+| TipTap                     | → Telegram MarkdownV2 |
+| -------------------------- | --------------------- |
+| `bold` mark                | `*text*`              |
+| `italic` mark              | `_text_`              |
+| `underline` mark           | `__text__`            |
+| `strike` mark              | `~text~`              |
+| `code` mark                | `` `text` ``          |
+| `link` mark (`href`)       | `[text](url)`         |
+| `codeBlock` node           | ` ```\ncontent\n``` ` |
+| `bulletList` + `listItem`  | `• item\n`            |
+| `orderedList` + `listItem` | `1\. item\n`          |
+| `paragraph`                | text + `\n`           |
+| `hardBreak`                | `\n`                  |
 
 Special characters outside formatting are escaped with `\` per MarkdownV2 spec:  
 `_ * [ ] ( ) ~ \` # + - = | { } . !`
@@ -110,16 +112,17 @@ Edge case fallback: unrecognised syntax rendered as plain text.
 
 ```tsx
 interface RichTextEditorProps {
-  value: string;               // MarkdownV2 string (controlled)
+  value: string; // MarkdownV2 string (controlled)
   onChange: (md: string) => void;
   placeholder?: string;
-  minHeight?: number;          // default 160px
-  maxLength?: number;          // default 4096 (Telegram message limit)
+  minHeight?: number; // default 160px
+  maxLength?: number; // default 4096 (Telegram message limit)
   className?: string;
 }
 ```
 
 **Visual structure:**
+
 ```
 ┌──────────────────────────────────────────────┐  border-border-default, rounded-xl
 │  B  I  U  S  │  `  {}  │  🔗  │  •  1.     │  toolbar, bg-card, border-b
@@ -140,8 +143,8 @@ Toolbar buttons: active state via `editor.isActive('bold')` etc. → `bg-elevate
 
 ```tsx
 interface TelegramPreviewProps {
-  markdown: string;            // MarkdownV2 string to render
-  senderName?: string;         // default: "Titan Journal CRM"
+  markdown: string; // MarkdownV2 string to render
+  senderName?: string; // default: "Titan Journal CRM"
   className?: string;
 }
 ```
@@ -155,6 +158,7 @@ Format mapping for preview rendering:
 ` ```block``` ` → `<pre><code>`, `[text](url)` → `<a target="_blank">`
 
 **Visual:**
+
 ```
 ┌───────────────────────────────┐  bg-[#17212B], rounded-xl p-4
 │  ┌──────────────────────┐     │
@@ -174,7 +178,7 @@ Format mapping for preview rendering:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Header: "Edit Command" / "New Command"              │
+│  Header: "Edit Command" / "New Command"             │
 ├──────────────────────┬──────────────────────────────┤
 │  Command, Label,     │                              │
 │  Description fields  │  Telegram Preview            │
@@ -211,7 +215,9 @@ Left column: `flex-1`, right column: `w-[320px]` sticky preview panel
 
 ```css
 /* TipTap editor */
-.ProseMirror { outline: none; }
+.ProseMirror {
+  outline: none;
+}
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   color: var(--text-muted);
@@ -219,12 +225,35 @@ Left column: `flex-1`, right column: `w-[320px]` sticky preview panel
   float: left;
   height: 0;
 }
-.ProseMirror code { background: var(--bg-elevated); border-radius: 4px; padding: 1px 4px; font-family: var(--font-mono); font-size: 12px; }
-.ProseMirror pre { background: var(--bg-elevated); border-radius: 8px; padding: 12px; overflow-x: auto; }
-.ProseMirror pre code { background: transparent; padding: 0; }
-.ProseMirror ul { list-style: disc; padding-left: 1.25rem; }
-.ProseMirror ol { list-style: decimal; padding-left: 1.25rem; }
-.ProseMirror a { color: var(--color-info); text-decoration: underline; }
+.ProseMirror code {
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.ProseMirror pre {
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+}
+.ProseMirror pre code {
+  background: transparent;
+  padding: 0;
+}
+.ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.ProseMirror a {
+  color: var(--color-info);
+  text-decoration: underline;
+}
 ```
 
 ---

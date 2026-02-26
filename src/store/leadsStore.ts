@@ -77,12 +77,21 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
             balanceMax,
           });
           const data = res.data.data;
-          const total = res.data.total ?? data.length;
+          const apiTotal = res.data.total;
+          // When API doesn't return `total`, estimate from response size:
+          //   partial page (< take items) → this is the last page → total = skip + count
+          //   full page (= take items)   → more pages likely exist → assume at least 1 more
+          const resolvedTotal =
+            apiTotal !== undefined
+              ? apiTotal
+              : data.length < take
+                ? (skip ?? 0) + data.length
+                : (skip ?? 0) + data.length + 1;
           set(
             {
               leads: data,
-              total,
-              pageCount: Math.max(1, Math.ceil(total / take)),
+              total: resolvedTotal,
+              pageCount: Math.max(1, Math.ceil(resolvedTotal / take)),
               isLoading: false,
             },
             false,

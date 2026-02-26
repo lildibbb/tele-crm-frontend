@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Mail, Loader2, CheckCircle2 } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Mail, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod/v4";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,128 +19,338 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ForgotPasswordSchema, type ForgotPasswordInput } from "@/lib/schemas/auth.schema";
 import { authApi } from "@/lib/api/auth";
+import { usePasswordResetStore } from "@/store/passwordResetStore";
+
+// Form schema
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+// Animation variants
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+};
+
+const iconVariants = {
+  initial: { scale: 0.5, opacity: 0 },
+  animate: { 
+    scale: 1, 
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 20 }
+  },
+};
 
 export default function ForgotPasswordPage() {
-  const [sent, setSent] = useState(false);
-  const [submittedEmail, setSubmittedEmail] = useState("");
+  const router = useRouter();
+  const {
+    isEmailSent,
+    submittedEmail,
+    isLoading,
+    error,
+    setEmailSent,
+    setSubmittedEmail,
+    setLoading,
+    setError,
+    reset,
+  } = usePasswordResetStore();
 
-  const form = useForm<ForgotPasswordInput>({
-    resolver: standardSchemaResolver(ForgotPasswordSchema),
+  // Reset store on unmount
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
+  const form = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
 
-  const onSubmit = async (data: ForgotPasswordInput) => {
-    await authApi.forgotPassword(data);
-    setSubmittedEmail(data.email);
-    setSent(true);
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await authApi.forgotPassword(data);
+      // Store the email for use in reset-password page
+      setSubmittedEmail(data.email);
+      setEmailSent(true);
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to send reset code. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleContinue = () => {
+    router.push("/reset-password");
+  };
+
+  const handleResend = async () => {
+    if (!submittedEmail) return;
+    
+    setLoading(true);
+    setError(null);
+
+    try {
+      await authApi.forgotPassword({ email: submittedEmail });
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message ?? "Failed to resend code. Please try again.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-svh bg-void flex items-center justify-center p-6">
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
+        <motion.div
           className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.06]"
           style={{ background: "radial-gradient(circle, #C4232D 0%, transparent 70%)" }}
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.04, 0.08, 0.04],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
         />
       </div>
 
-      <div className="w-full max-w-sm animate-in-up">
-        {/* Back link */}
-        <Link
-          href="/login"
-          className="inline-flex items-center gap-1.5 text-text-secondary hover:text-text-primary text-sm font-sans transition-colors mb-6"
+      <div className="w-full max-w-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="surface-card p-7 sm:p-8"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
-        </Link>
+          {/* Back link */}
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1.5 text-text-secondary hover:text-text-primary text-sm font-sans transition-colors mb-6"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
+          </Link>
 
-        <div className="surface-card p-7 sm:p-8">
-          {sent ? (
-            <div className="text-center">
-              <div className="w-14 h-14 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="h-7 w-7 text-success" />
-              </div>
-              <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
-                Check your inbox
-              </h2>
-              <p className="font-sans text-sm text-text-secondary leading-relaxed mb-6">
-                If{" "}
-                <span className="text-text-primary font-medium">{submittedEmail}</span>{" "}
-                is registered, a 4-digit reset code has been sent. It expires in 15 minutes.
-              </p>
-              <Button
-                variant="ghost"
-                className="w-full"
-                size="lg"
-                onClick={() => { setSent(false); form.reset(); }}
+          <AnimatePresence mode="wait">
+            {isEmailSent ? (
+              /* SUCCESS STATE */
+              <motion.div
+                key="success"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
               >
-                Resend code
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="mb-6">
-                <div className="w-10 h-10 rounded-lg bg-crimson/20 border border-crimson/30 flex items-center justify-center mb-4">
-                  <Mail className="h-4 w-4 text-crimson" />
+                {/* Success Icon */}
+                <motion.div
+                  variants={iconVariants}
+                  initial="initial"
+                  animate="animate"
+                  className="flex justify-center mb-6"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-success/20 border border-success/30 flex items-center justify-center relative">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                    >
+                      <CheckCircle2 className="h-8 w-8 text-success" />
+                    </motion.div>
+                    {/* Success ring animation */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl border-2 border-success/50"
+                      initial={{ scale: 1, opacity: 0.5 }}
+                      animate={{ scale: 1.3, opacity: 0 }}
+                      transition={{ duration: 1.2, repeat: Infinity, delay: 0.5 }}
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
+                    Check your inbox
+                  </h2>
+                  <p className="font-sans text-sm text-text-secondary leading-relaxed">
+                    We sent a 4-digit reset code to{" "}
+                    <span className="text-text-primary font-medium">{submittedEmail}</span>
+                  </p>
+                  <p className="font-sans text-xs text-text-muted mt-2">
+                    The code expires in 15 minutes.
+                  </p>
                 </div>
-                <h2 className="font-display font-bold text-2xl text-text-primary">
-                  Forgot password?
-                </h2>
-                <p className="text-text-secondary font-sans text-sm mt-1">
-                  Enter your email and we&apos;ll send a 4-digit reset code.
-                </p>
-              </div>
 
-              <div className="h-px bg-border-subtle mb-6" />
+                {/* Error message */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30 text-danger text-xs font-sans text-center"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium text-text-secondary">
-                          Email Address
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="email"
-                            placeholder="owner@titanjournal.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
-                    )}
-                  />
-
+                {/* Actions */}
+                <div className="space-y-3">
                   <Button
-                    type="submit"
-                    disabled={form.formState.isSubmitting}
-                    className="w-full mt-2"
+                    onClick={handleContinue}
+                    className="w-full h-12"
                     size="lg"
                   >
-                    {form.formState.isSubmitting ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</>
+                    Continue to Reset Password
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    onClick={handleResend}
+                    disabled={isLoading}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Sending...
+                      </>
                     ) : (
-                      "Send Reset Code"
+                      "Resend Code"
                     )}
                   </Button>
-                </form>
-              </Form>
+                </div>
 
-              <p className="text-center text-[12px] text-text-muted font-sans mt-5">
-                Remember your password?{" "}
-                <Link href="/login" className="text-crimson hover:underline">
-                  Sign in
-                </Link>
-              </p>
-            </>
-          )}
-        </div>
+                {/* Help text */}
+                <p className="text-center text-xs text-text-muted mt-6">
+                  Didn't receive the email? Check your spam folder or{" "}
+                  <button
+                    onClick={handleResend}
+                    disabled={isLoading}
+                    className="text-crimson hover:underline disabled:opacity-50"
+                  >
+                    try another email
+                  </button>
+                </p>
+              </motion.div>
+            ) : (
+              /* FORM STATE */
+              <motion.div
+                key="form"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {/* Icon */}
+                <motion.div
+                  variants={iconVariants}
+                  initial="initial"
+                  animate="animate"
+                  className="flex justify-center mb-6"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-crimson/20 border border-crimson/30 flex items-center justify-center">
+                    <Mail className="h-8 w-8 text-crimson" />
+                  </div>
+                </motion.div>
+
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
+                    Forgot password?
+                  </h2>
+                  <p className="font-sans text-sm text-text-secondary">
+                    Enter your email and we'll send a 4-digit reset code.
+                  </p>
+                </div>
+
+                {/* Error message */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30 text-danger text-xs font-sans text-center"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Form */}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium text-text-secondary">
+                            Email Address
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="owner@titanjournal.com"
+                              className="h-11"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="text-xs" />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full h-12 mt-2"
+                      size="lg"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Sending Code...
+                        </>
+                      ) : (
+                        <>
+                          Send Reset Code
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+
+                {/* Footer */}
+                <p className="text-center text-xs text-text-muted mt-6">
+                  Remember your password?{" "}
+                  <Link href="/login" className="text-crimson hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );

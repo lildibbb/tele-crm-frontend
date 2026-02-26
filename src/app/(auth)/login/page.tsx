@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { LoginSchema, type LoginInput } from "@/lib/schemas/auth.schema";
 import { useAuthStore } from "@/store/authStore";
+import { getDeviceId, getUserAgent } from "@/lib/deviceId";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,15 +54,9 @@ export default function LoginPage() {
       const initData = window.Telegram?.WebApp?.initData;
 
       if (initData) {
-        // Collect device info
-        let deviceId = "unknown";
-        if (typeof crypto !== "undefined" && crypto.randomUUID) {
-          deviceId = crypto.randomUUID();
-        } else {
-          deviceId = Math.random().toString(36).substring(2, 15);
-        }
-        const userAgent =
-          typeof navigator !== "undefined" ? navigator.userAgent : "unknown";
+        // Use persistent device ID and user agent
+        const deviceId = getDeviceId();
+        const userAgent = getUserAgent();
 
         // Store in form so it gets included if they need to manually login to link
         form.setValue("initData", initData);
@@ -93,7 +88,13 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     try {
-      await login(data);
+      // Include persistent device ID and user agent with login request
+      const loginData: LoginInput = {
+        ...data,
+        deviceId: data.deviceId || getDeviceId(),
+        userAgent: data.userAgent || getUserAgent(),
+      };
+      await login(loginData);
       router.push("/");
     } catch {
       // error is set in store; form stays open
