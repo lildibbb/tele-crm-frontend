@@ -10,11 +10,13 @@ export const FollowUpStatusSchema = z.enum([
 export const FollowUpSchema = z.object({
   id: z.string(),
   leadId: z.string(),
-  message: z.string(),
+  type: z.string(),
   scheduledAt: z.string().datetime(),
+  sentAt: z.string().datetime().nullable().optional(),
+  cancelled: z.boolean().optional(),
   status: FollowUpStatusSchema,
   createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  updatedAt: z.string().datetime().optional(),
 });
 
 export type FollowUp = z.infer<typeof FollowUpSchema>;

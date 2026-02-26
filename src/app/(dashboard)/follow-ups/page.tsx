@@ -65,9 +65,19 @@ export default function FollowUpsPage() {
     setError(null);
     try {
       const res = await followUpsApi.findAll({ skip, take: PAGE_SIZE });
-      const raw = (res.data as unknown as { data: FollowUp[]; total?: number }).data ?? [];
-      setItems(raw);
-      setTotal((res.data as unknown as { total?: number }).total ?? raw.length);
+      // Response: { statusCode, message, data: { data: FollowUp[], total: N } }
+      const outer = res.data as unknown as { data: { data: FollowUp[]; total?: number } | FollowUp[] };
+      let arr: FollowUp[];
+      let count: number;
+      if (Array.isArray(outer.data)) {
+        arr = outer.data;
+        count = arr.length;
+      } else {
+        arr = (outer.data as { data: FollowUp[] }).data ?? [];
+        count = (outer.data as { total?: number }).total ?? arr.length;
+      }
+      setItems(arr);
+      setTotal(count);
     } catch {
       setError("Failed to load follow-ups");
     } finally {
@@ -171,7 +181,7 @@ export default function FollowUpsPage() {
                     </div>
                   </div>
                   <p className="font-sans text-sm text-text-primary leading-relaxed line-clamp-2">
-                    {item.message}
+                    {item.type.replace(/_/g, ' ')}
                   </p>
                   <p className="font-mono text-[10px] text-text-muted">
                     Lead: {item.leadId}
@@ -239,7 +249,7 @@ export default function FollowUpsPage() {
           {cancelTarget && (
             <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle">
               <p className="font-sans text-sm text-text-primary line-clamp-3">
-                {cancelTarget.message}
+                {cancelTarget.type.replace(/_/g, ' ')}
               </p>
               <p className="font-mono text-[11px] text-text-muted mt-1">
                 Scheduled: {formatDate(cancelTarget.scheduledAt)}
