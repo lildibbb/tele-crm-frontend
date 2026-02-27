@@ -197,6 +197,12 @@ const en: Record<string, string> = {
   "verification.clearFilters":      "Clear filters",
   "verification.noMatch":           "No submissions match your filter.",
   "verification.notifyUser":        "This will update the lead status and notify the user.",
+  "verification.depositReceipt":    "Deposit Receipt",
+  "verification.viewReceipt":       "View Receipt",
+  "verification.amount":            "Amount",
+  "verification.hfmAccount":        "HFM Account",
+  "verification.submitted":         "Submitted",
+  "verification.alreadyVerified":   "Already Verified",
 
   /* ── Analytics ────────────────────────────────────── */
   "analytics.title":        "Analytics",

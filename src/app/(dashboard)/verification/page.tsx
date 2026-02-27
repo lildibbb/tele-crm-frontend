@@ -47,7 +47,7 @@ import { useVerificationStore } from "@/store/verificationStore";
 import { Lead } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
 import { useLeadsStore } from "@/store/leadsStore";
-import { useT } from "@/i18n";
+import { useT, K } from "@/i18n";
 import { getVerificationColumns } from "./_components/verification-columns";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { FileTypeBadge } from "@/components/ui/file-type-badge";
@@ -513,7 +513,7 @@ function ReceiptDialog() {
               </div>
               <div>
                 <DialogTitle className="font-bold text-[18px] text-text-primary leading-tight">
-                  {t("verification.depositReceipt")}
+                  {t(K.verification.depositReceipt)}
                 </DialogTitle>
                 <DialogDescription className="sr-only">
                   View deposit receipt details for this submission
@@ -531,25 +531,25 @@ function ReceiptDialog() {
                 <div className="flex flex-col items-center gap-2 text-text-muted group-hover:text-info transition-colors">
                   <PhosphorImage weight="duotone" size={32} />
                   <span className="text-[12px] font-sans">
-                    {t("verification.viewReceipt")}
+                    {t(K.verification.viewReceipt)}
                   </span>
                 </div>
               </button>
               <div className="space-y-2 text-[13px] font-sans text-text-secondary">
                 <div className="flex justify-between">
-                  <span>Amount</span>
+                  <span>{t(K.verification.amount)}</span>
                   <span className="font-bold text-gold data-mono">
                     ${Number(req.depositBalance ?? 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>HFM Account</span>
+                  <span>{t(K.verification.hfmAccount)}</span>
                   <span className="data-mono text-text-primary">
                     {req.hfmBrokerId ?? "—"}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Submitted</span>
+                  <span>{t(K.verification.submitted)}</span>
                   <span className="data-mono text-text-primary">
                     {req.updatedAt ?? "—"}
                   </span>
@@ -561,19 +561,26 @@ function ReceiptDialog() {
           <DialogFooter className="p-5 pt-0 gap-2">
             <DialogClose asChild>
               <Button variant="outline" className="flex-1 rounded-xl h-11">
-                {t("common.close")}
+                {t(K.common.close)}
               </Button>
             </DialogClose>
-            <Button
-              onClick={() => {
-                closeModal();
-                openModal(req?.id ?? "", "approve");
-              }}
-              className="flex-1 rounded-xl h-11 bg-success hover:bg-success/90 text-white font-semibold gap-2"
-            >
-              <CheckCircle weight="duotone" size={15} />
-              {t("verification.approve")}
-            </Button>
+            {req?.status === LeadStatus.DEPOSIT_REPORTED ? (
+              <Button
+                onClick={() => {
+                  closeModal();
+                  openModal(req?.id ?? "", "approve");
+                }}
+                className="flex-1 rounded-xl h-11 bg-success hover:bg-success/90 text-white font-semibold gap-2"
+              >
+                <CheckCircle weight="duotone" size={15} />
+                {t(K.verification.approve)}
+              </Button>
+            ) : (
+              <div className="flex-1 flex items-center justify-center gap-2 rounded-xl h-11 bg-elevated border border-border-subtle text-text-muted text-sm font-medium">
+                <ShieldCheck size={15} weight="duotone" className="text-success" />
+                {t(K.verification.alreadyVerified)}
+              </div>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

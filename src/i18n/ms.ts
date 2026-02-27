@@ -197,6 +197,12 @@ const ms: Record<string, string> = {
   "verification.clearFilters":      "Kosongkan penapis",
   "verification.noMatch":           "Tiada penyerahan yang sepadan dengan penapis anda.",
   "verification.notifyUser":        "Ini akan mengemas kini status prospek dan memaklumkan pengguna.",
+  "verification.depositReceipt":    "Resit Deposit",
+  "verification.viewReceipt":       "Lihat Resit",
+  "verification.amount":            "Jumlah",
+  "verification.hfmAccount":        "Akaun HFM",
+  "verification.submitted":         "Diserahkan",
+  "verification.alreadyVerified":   "Sudah Disahkan",
 
   /* ── Analytics ────────────────────────────────────── */
   "analytics.title":        "Analitik",

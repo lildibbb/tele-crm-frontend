@@ -19,6 +19,7 @@ import {
   PencilLine,
   Eye,
 } from "lucide-react";
+import { FileTypeBadge, FileTypeChip } from "@/components/ui/file-type-badge";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,6 +99,13 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
   PROCESSING: { label: "Processing", cls: "badge-warning" },
   FAILED: { label: "Failed", cls: "badge-failed" },
   PENDING: { label: "Pending", cls: "badge-pending" },
+};
+
+/** Maps KB file types to MIME types for FileTypeBadge rendering */
+const KB_TYPE_MIME: Record<string, string> = {
+  PDF: "application/pdf",
+  VIDEO_LINK: "video/mp4",
+  TEXT: "text/plain",
 };
 
 type ModalTab = "text" | "upload" | "link";
@@ -331,15 +339,25 @@ export function KnowledgeBaseTab() {
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <div className="flex items-start gap-4">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: typeConf.iconBg }}
-                  >
-                    <TypeIcon
-                      className="h-4 w-4"
-                      style={{ color: typeConf.iconColor }}
-                    />
-                  </div>
+                  {/* Icon: FileTypeBadge for PDF/VIDEO/TEXT; Lucide icon for TEMPLATE/LINK */}
+                  {KB_TYPE_MIME[entry.fileType ?? entry.type] ? (
+                    <div className="flex-shrink-0 mt-0.5">
+                      <FileTypeBadge
+                        mimeType={KB_TYPE_MIME[entry.fileType ?? entry.type]}
+                        size={36}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: typeConf.iconBg }}
+                    >
+                      <TypeIcon
+                        className="h-4 w-4"
+                        style={{ color: typeConf.iconColor }}
+                      />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span
@@ -356,9 +374,17 @@ export function KnowledgeBaseTab() {
                         )}
                         {statusConf.label}
                       </span>
-                      <span className={typeConf.badgeCls}>
-                        {typeConf.label}
-                      </span>
+                      {/* Type chip: FileTypeChip for MIME-mapped types; text badge for others */}
+                      {KB_TYPE_MIME[entry.fileType ?? entry.type] ? (
+                        <FileTypeChip
+                          mimeType={KB_TYPE_MIME[entry.fileType ?? entry.type]}
+                          size={20}
+                        />
+                      ) : (
+                        <span className={typeConf.badgeCls}>
+                          {typeConf.label}
+                        </span>
+                      )}
                     </div>
                     <h3 className="font-sans font-semibold text-[14px] text-text-primary mb-1">
                       {entry.title}

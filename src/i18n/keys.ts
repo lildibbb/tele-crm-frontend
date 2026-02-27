@@ -204,6 +204,12 @@ export const K = {
     rejectionReason:  "verification.rejectionReason",
     askMorePlaceholder:"verification.askMorePlaceholder",
     send:             "verification.send",
+    depositReceipt:   "verification.depositReceipt",
+    viewReceipt:      "verification.viewReceipt",
+    amount:           "verification.amount",
+    hfmAccount:       "verification.hfmAccount",
+    submitted:        "verification.submitted",
+    alreadyVerified:  "verification.alreadyVerified",
     tabs: {
       pending: "verification.tabs.pending",
       all:     "verification.tabs.all",
