@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   SquaresFour,
   Users,
@@ -14,7 +14,8 @@ import {
   Timer,
   ClipboardText,
   SignOut,
-  Lock,
+  UserCircle,
+  CaretUpDown,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
@@ -31,17 +32,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { authApi } from "@/lib/api/auth";
-import type { ChangeOwnPasswordInput } from "@/lib/schemas/auth.schema";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const ALL_NAV_ITEMS = [
   { href: "/",             icon: SquaresFour, labelKey: "nav.commandCenter",    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
@@ -59,39 +55,11 @@ export const NAV_ITEMS = ALL_NAV_ITEMS;
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const t = useT();
   const { user, logout } = useAuthStore();
   const { setOpenMobile } = useSidebar();
 
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [pwForm, setPwForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  const [pwError, setPwError] = useState<string | null>(null);
-  const [pwSaving, setPwSaving] = useState(false);
-  const [pwSuccess, setPwSuccess] = useState(false);
-
-  const handleChangePassword = async () => {
-    setPwError(null);
-    if (pwForm.newPassword !== pwForm.confirmPassword) {
-      setPwError("New passwords do not match.");
-      return;
-    }
-    if (pwForm.newPassword.length < 8) {
-      setPwError("New password must be at least 8 characters.");
-      return;
-    }
-    setPwSaving(true);
-    try {
-      await authApi.changeOwnPassword(pwForm as ChangeOwnPasswordInput);
-      setPwSuccess(true);
-      setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setTimeout(() => { setShowProfileModal(false); setPwSuccess(false); }, 1500);
-    } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setPwError(msg ?? "Failed to change password. Check your current password.");
-    } finally {
-      setPwSaving(false);
-    }
-  };
   const botOnline = useBotStore((s) => s.online);
   const startPolling = useBotStore((s) => s.startPolling);
 
@@ -179,104 +147,57 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-3 bg-transparent transition-all duration-300 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:pb-4">
-        <div
-          className="flex items-center gap-2.5 bg-elevated/30 p-2 rounded-xl border border-border-subtle/50 transition-all duration-300 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center cursor-pointer hover:bg-elevated/50"
-          onClick={() => setShowProfileModal(true)}
-          title="Profile settings"
-        >
-          <div className="w-8 h-8 rounded-full bg-crimson-subtle border border-crimson/30 flex items-center justify-center text-crimson font-display font-bold text-[11px] flex-shrink-0 shadow-inner group-data-[collapsible=icon]:ring-2 group-data-[collapsible=icon]:ring-crimson/20 transition-all duration-300">
-            {user?.email?.[0]?.toUpperCase() ?? "?"}
-          </div>
-          <div className="flex-1 min-w-0 transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
-            <p className="text-[12px] font-semibold text-text-primary truncate">
-              {user?.email ?? "—"}
-            </p>
-            <span
-              className={`badge ${user?.role === UserRole.OWNER ? "badge-owner" : user?.role === UserRole.ADMIN ? "badge-admin" : user?.role === UserRole.SUPERADMIN ? "badge-owner" : "badge-staff"} text-[9px] px-1.5 py-px mt-0.5 inline-block`}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="w-full flex items-center gap-2.5 bg-elevated/30 p-2 rounded-xl border border-border-subtle/50 transition-all duration-300 hover:bg-elevated/60 focus:outline-none group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center"
+              aria-label="Profile menu"
             >
-              {user?.role?.toUpperCase() ?? "—"}
-            </span>
-          </div>
-          <button
-            aria-label={t("nav.logout")}
-            onClick={(e) => { e.stopPropagation(); logout(); }}
-            className="p-1.5 rounded-md text-text-muted hover:text-danger hover:bg-danger/10 transition-colors cursor-pointer group-data-[collapsible=icon]:hidden"
-          >
-            <SignOut size={15} weight="regular" />
-          </button>
-        </div>
-      </SidebarFooter>
-
-      {/* ── Change Password Modal ── */}
-      <Dialog open={showProfileModal} onOpenChange={(o) => { setShowProfileModal(o); if (!o) { setPwError(null); setPwSuccess(false); setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" }); } }}>
-        <DialogContent className="max-w-sm rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-bold text-lg text-text-primary flex items-center gap-2">
-              <Lock size={16} className="text-crimson" />
-              Change Password
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-1">
-            <p className="text-xs text-text-muted font-sans">{user?.email}</p>
-            {pwSuccess ? (
-              <div className="p-3 rounded-xl bg-success/10 border border-success/20 text-success text-sm font-sans text-center">
-                Password changed! You will be logged out of other sessions.
+              <div className="w-8 h-8 rounded-full bg-crimson-subtle border border-crimson/30 flex items-center justify-center text-crimson font-display font-bold text-[11px] flex-shrink-0 shadow-inner group-data-[collapsible=icon]:ring-2 group-data-[collapsible=icon]:ring-crimson/20 transition-all duration-300">
+                {user?.email?.[0]?.toUpperCase() ?? "?"}
               </div>
-            ) : (
-              <>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-text-secondary">Current Password</Label>
-                  <Input
-                    type="password"
-                    value={pwForm.currentPassword}
-                    onChange={(e) => setPwForm((p) => ({ ...p, currentPassword: e.target.value }))}
-                    className="h-9 text-sm"
-                    autoComplete="current-password"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-text-secondary">New Password</Label>
-                  <Input
-                    type="password"
-                    value={pwForm.newPassword}
-                    onChange={(e) => setPwForm((p) => ({ ...p, newPassword: e.target.value }))}
-                    className="h-9 text-sm"
-                    autoComplete="new-password"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-text-secondary">Confirm New Password</Label>
-                  <Input
-                    type="password"
-                    value={pwForm.confirmPassword}
-                    onChange={(e) => setPwForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-                    className="h-9 text-sm"
-                    autoComplete="new-password"
-                  />
-                </div>
-                {pwError && (
-                  <p className="text-xs text-danger font-sans">{pwError}</p>
-                )}
-              </>
-            )}
-          </div>
-          {!pwSuccess && (
-            <DialogFooter className="gap-2">
-              <Button variant="ghost" onClick={() => setShowProfileModal(false)} className="flex-1 text-sm">
-                Cancel
-              </Button>
-              <Button
-                onClick={() => void handleChangePassword()}
-                disabled={pwSaving || !pwForm.currentPassword || !pwForm.newPassword}
-                className="flex-1 bg-crimson hover:bg-crimson/90 text-white text-sm gap-1.5"
-              >
-                {pwSaving ? <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> : <Lock size={14} />}
-                Save Password
-              </Button>
-            </DialogFooter>
-          )}
-        </DialogContent>
-      </Dialog>
+              <div className="flex-1 min-w-0 text-left transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
+                <p className="text-[12px] font-semibold text-text-primary truncate">
+                  {user?.email ?? "—"}
+                </p>
+                <span
+                  className={`badge ${user?.role === UserRole.OWNER ? "badge-owner" : user?.role === UserRole.ADMIN ? "badge-admin" : user?.role === UserRole.SUPERADMIN ? "badge-owner" : "badge-staff"} text-[9px] px-1.5 py-px mt-0.5 inline-block`}
+                >
+                  {user?.role?.toUpperCase() ?? "—"}
+                </span>
+              </div>
+              <CaretUpDown size={13} className="text-text-muted flex-shrink-0 group-data-[collapsible=icon]:hidden" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            align="start"
+            sideOffset={8}
+            className="w-56 mb-1"
+          >
+            <div className="px-2 py-1.5 mb-1">
+              <p className="text-xs font-semibold text-text-primary truncate">{user?.email}</p>
+              <p className="text-[10px] text-text-muted">{user?.role}</p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="gap-2 cursor-pointer"
+              onClick={() => { setOpenMobile(false); router.push("/profile"); }}
+            >
+              <UserCircle size={15} className="text-text-secondary" />
+              <span>My Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="gap-2 cursor-pointer text-danger focus:text-danger focus:bg-danger/10"
+              onClick={() => logout()}
+            >
+              <SignOut size={15} />
+              <span>{t("nav.logout")}</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

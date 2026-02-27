@@ -109,7 +109,14 @@ export function KnowledgeBaseTab() {
   const [modalTab, setModalTab] = useState<ModalTab>("text");
   const [kbPane, setKbPane] = useState<"edit" | "preview">("edit");
 
-  const { entries, isLoading, error, fetchAll, createText, update, remove } =
+  // Upload state
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadDragging, setUploadDragging] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const { entries, isLoading, error, fetchAll, createText, update, remove, uploadFile: storeUpload } =
     useKbStore();
 
   useEffect(() => {
@@ -138,6 +145,38 @@ export function KnowledgeBaseTab() {
     }
   };
 
+  const handleUploadFile = async () => {
+    if (!uploadFile || !uploadTitle.trim()) return;
+    setUploadLoading(true);
+    try {
+      await storeUpload(uploadFile, uploadTitle.trim());
+      setUploadSuccess(true);
+      setTimeout(() => {
+        setUploadSuccess(false);
+        setUploadFile(null);
+        setUploadTitle("");
+        setShowModal(false);
+      }, 1500);
+    } catch {
+      toast.error("Upload failed. Check file type and size.");
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setUploadDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) setUploadFile(file);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setUploadFile(file);
+    e.target.value = "";
+  };
+
   const toggleActive = async (id: string, isActive: boolean) => {
     try {
       await update(id, { isActive: !isActive });
@@ -161,6 +200,8 @@ export function KnowledgeBaseTab() {
     { label: "Text", type: KbType.TEXT },
     { label: "Link", type: KbType.LINK },
     { label: "Template", type: KbType.TEMPLATE },
+    { label: "PDF" },
+    { label: "DOCX" },
   ];
 
   const displayed = entries.filter((e) => {
@@ -499,27 +540,91 @@ export function KnowledgeBaseTab() {
 
           {modalTab === "upload" && (
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-border-default rounded-xl p-8 text-center hover:border-crimson/40 transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-full bg-crimson/10 flex items-center justify-center mx-auto mb-3">
-                  <Plus className="h-5 w-5 text-crimson" />
-                </div>
-                <p className="font-sans text-sm font-medium text-text-primary">
-                  Click to upload or drag & drop
-                </p>
-                <p className="font-sans text-xs text-text-secondary mt-1">
-                  PDF, DOCX, TXT — max 10MB
-                </p>
+              {/* Hidden file input */}
+              <input
+                id="kb-file-input"
+                type="file"
+                accept=".pdf,.docx,.txt"
+                className="hidden"
+                onChange={handleFileInput}
+              />
+
+              {/* Drop zone */}
+              <div
+                className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
+                  uploadDragging
+                    ? "border-crimson bg-crimson/5"
+                    : uploadFile
+                    ? "border-success/60 bg-success/5"
+                    : "border-border-default hover:border-crimson/40"
+                }`}
+                onDragOver={(e) => { e.preventDefault(); setUploadDragging(true); }}
+                onDragLeave={() => setUploadDragging(false)}
+                onDrop={handleFileDrop}
+                onClick={() => document.getElementById("kb-file-input")?.click()}
+              >
+                {uploadFile ? (
+                  <div className="space-y-1">
+                    <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center mx-auto">
+                      <CheckCircle2 className="h-5 w-5 text-success" />
+                    </div>
+                    <p className="font-sans text-sm font-semibold text-text-primary">{uploadFile.name}</p>
+                    <p className="font-sans text-xs text-text-muted">
+                      {(uploadFile.size / 1024).toFixed(0)} KB · Click to change
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="w-10 h-10 rounded-full bg-crimson/10 flex items-center justify-center mx-auto mb-3">
+                      <Plus className="h-5 w-5 text-crimson" />
+                    </div>
+                    <p className="font-sans text-sm font-medium text-text-primary">
+                      Click to upload or drag &amp; drop
+                    </p>
+                    <p className="font-sans text-xs text-text-secondary mt-1">
+                      PDF, DOCX, TXT — max 10 MB
+                    </p>
+                  </>
+                )}
               </div>
+
+              {/* Title field */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-text-secondary block">
+                  Title <span className="text-danger">*</span>
+                </label>
+                <Input
+                  placeholder="e.g. Product FAQ PDF"
+                  value={uploadTitle}
+                  onChange={(e) => setUploadTitle(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+
+              {uploadSuccess && (
+                <div className="flex items-center gap-2 text-xs text-success font-medium">
+                  <CheckCircle2 className="h-4 w-4" /> Uploaded! Processing in background…
+                </div>
+              )}
+
               <div className="flex gap-3 pt-1">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => { setShowModal(false); setUploadFile(null); setUploadTitle(""); }}
                 >
                   Cancel
                 </Button>
-                <Button className="flex-1" disabled>
-                  Upload (Coming Soon)
+                <Button
+                  className="flex-1 gap-1.5"
+                  disabled={!uploadFile || !uploadTitle.trim() || uploadLoading}
+                  onClick={() => void handleUploadFile()}
+                >
+                  {uploadLoading ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Uploading…</>
+                  ) : (
+                    "Upload File"
+                  )}
                 </Button>
               </div>
             </div>
