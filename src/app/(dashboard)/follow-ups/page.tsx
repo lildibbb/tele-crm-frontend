@@ -4,11 +4,14 @@ import {
   Timer,
   Check,
   X,
-  Clock,
   Warning,
   ArrowCounterClockwise,
   ArrowClockwise,
   XCircle,
+  CalendarCheck,
+  CheckCircle,
+  ProhibitInset,
+  SmileySad,
 } from "@phosphor-icons/react";
 import { followUpsApi } from "@/lib/api/followUps";
 import type { FollowUp } from "@/lib/schemas/followUp.schema";
@@ -35,15 +38,25 @@ function formatDate(iso: string) {
   });
 }
 
-function StatusBadge({ status }: { status: FollowUp["status"] }) {
+const TYPE_LABELS: Record<string, string> = {
+  follow_up_register:     "Registration Reminder",
+  follow_up_deposit:      "Deposit Reminder",
+  follow_up_verification: "Verification Follow-up",
+};
+
+function typeLabel(type: string) {
+  return TYPE_LABELS[type] ?? type.replace(/_/g, " ");
+}
+
+function StatusChip({ status }: { status: FollowUp["status"] }) {
   const map: Record<string, { label: string; cls: string }> = {
-    [FollowUpStatus.PENDING]:   { label: "Pending",   cls: "bg-warning/10 text-warning border-warning/20" },
-    [FollowUpStatus.SENT]:      { label: "Sent",      cls: "bg-success/10 text-success border-success/20" },
-    [FollowUpStatus.CANCELLED]: { label: "Cancelled", cls: "bg-muted/30 text-text-secondary border-border-subtle" },
+    [FollowUpStatus.PENDING]:   { label: "Scheduled",  cls: "bg-info/10 text-info border-info/20" },
+    [FollowUpStatus.SENT]:      { label: "Sent",       cls: "bg-success/10 text-success border-success/20" },
+    [FollowUpStatus.CANCELLED]: { label: "Cancelled",  cls: "bg-muted/20 text-text-secondary border-border-subtle" },
   };
   const { label, cls } = map[status] ?? map[FollowUpStatus.PENDING];
   return (
-    <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border ${cls}`}>
+    <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${cls}`}>
       {label}
     </span>
   );
@@ -155,9 +168,15 @@ export default function FollowUpsPage() {
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  // Stat counts
+  const countScheduled  = items.filter((i) => i.status === FollowUpStatus.PENDING).length;
+  const countSent       = items.filter((i) => i.status === FollowUpStatus.SENT).length;
+  const countCancelled  = items.filter((i) => i.status === FollowUpStatus.CANCELLED).length;
+  const countFailed     = failedJobs.length;
+
   return (
     <div className="space-y-6 animate-in-up">
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
@@ -182,27 +201,49 @@ export default function FollowUpsPage() {
         </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-card rounded-xl border border-border-subtle w-fit">
+      {/* ── Stats bar ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Scheduled",  value: countScheduled, icon: CalendarCheck,  cls: "text-info",           bg: "bg-info/10" },
+          { label: "Sent",       value: countSent,       icon: CheckCircle,    cls: "text-success",        bg: "bg-success/10" },
+          { label: "Cancelled",  value: countCancelled,  icon: ProhibitInset,  cls: "text-text-secondary", bg: "bg-muted/20" },
+          { label: "Failed",     value: countFailed,     icon: SmileySad,      cls: "text-danger",         bg: "bg-danger/10" },
+        ].map(({ label, value, icon: Icon, cls, bg }) => (
+          <div key={label} className="bg-elevated rounded-2xl border border-border-subtle px-4 py-3 flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
+              <Icon className={`h-4 w-4 ${cls}`} weight="duotone" />
+            </div>
+            <div>
+              <p className="font-display font-bold text-lg leading-none text-text-primary">{value}</p>
+              <p className="font-sans text-xs text-text-muted mt-0.5">{label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Tab switcher ── */}
+      <div className="bg-elevated rounded-xl p-1 flex gap-1 w-fit border border-border-subtle">
         {(["scheduled", "failed"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded-lg text-xs font-sans font-medium transition-colors ${
+            className={`relative px-5 py-1.5 rounded-lg text-xs font-sans font-medium transition-all ${
               tab === t
-                ? "bg-elevated text-text-primary border border-border-subtle shadow-sm"
+                ? "bg-card text-text-primary shadow-sm border border-border-subtle"
                 : "text-text-muted hover:text-text-primary"
             }`}
           >
             {t === "scheduled" ? "Scheduled" : "Failed"}
             {t === "failed" && failedJobs.length > 0 && (
-              <span className="ml-1.5 bg-danger text-white text-[9px] px-1.5 py-px rounded-full">{failedJobs.length}</span>
+              <span className="ml-1.5 bg-danger text-white text-[9px] px-1.5 py-px rounded-full leading-none">
+                {failedJobs.length}
+              </span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Error */}
+      {/* ── Error banner ── */}
       {error && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm font-sans">
           <Warning className="h-4 w-4 flex-shrink-0" />
@@ -210,50 +251,182 @@ export default function FollowUpsPage() {
         </div>
       )}
 
-      {/* Failed jobs tab */}
+      {/* ── Scheduled tab ── */}
+      {tab === "scheduled" && (
+        <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
+          {/* Table header */}
+          <div className="hidden sm:grid grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle">
+            {["Lead", "Type", "Status", "Scheduled At", ""].map((h) => (
+              <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
+                {h}
+              </span>
+            ))}
+          </div>
+
+          {isLoading && items.length === 0 ? (
+            <div className="flex items-center justify-center py-14">
+              <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+            </div>
+          ) : items.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-14 text-text-muted">
+              <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+                <Timer className="h-6 w-6 text-accent" weight="duotone" />
+              </div>
+              <div className="text-center">
+                <p className="font-sans text-sm font-medium text-text-primary">No follow-ups scheduled</p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">Messages will appear here once leads trigger follow-up events</p>
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-border-subtle">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="grid grid-cols-1 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-x-4 gap-y-1 px-5 py-3.5 items-center hover:bg-card/40 transition-colors"
+                >
+                  {/* Lead */}
+                  <div className="min-w-0">
+                    <p className="font-sans text-sm font-medium text-text-primary truncate">Lead</p>
+                    <p className="font-mono text-xs text-text-muted truncate">{item.leadId}</p>
+                  </div>
+
+                  {/* Type */}
+                  <div className="min-w-0">
+                    <p className="font-sans text-sm text-text-primary truncate">{typeLabel(item.type)}</p>
+                    <p className="font-sans text-xs text-text-muted truncate">{item.type}</p>
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    <StatusChip status={item.status} />
+                  </div>
+
+                  {/* Scheduled At */}
+                  <div className="min-w-0">
+                    <p className="font-sans text-sm text-text-primary">{formatDate(item.scheduledAt)}</p>
+                    {item.sentAt && (
+                      <p className="font-sans text-xs text-text-muted">
+                        Sent {formatDate(item.sentAt)}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Action */}
+                  <div className="flex justify-end">
+                    {item.status === FollowUpStatus.PENDING ? (
+                      <button
+                        onClick={() => setCancelTarget(item)}
+                        className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-sans font-medium bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 transition-colors"
+                        title="Cancel follow-up"
+                      >
+                        <X className="h-3 w-3" />
+                        Cancel
+                      </button>
+                    ) : item.status === FollowUpStatus.SENT ? (
+                      <span className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-sans font-medium text-success">
+                        <Check className="h-3.5 w-3.5" />
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-5 py-3 border-t border-border-subtle flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={page === 0}
+                onClick={() => setPage((p) => p - 1)}
+                className="text-xs"
+              >
+                Previous
+              </Button>
+              <span className="font-sans text-xs text-text-muted">
+                Page {page + 1} of {totalPages}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage((p) => p + 1)}
+                className="text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Failed tab ── */}
       {tab === "failed" && (
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
-          <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between">
-            <h2 className="font-sans font-semibold text-sm text-text-primary">Failed Jobs</h2>
-            <span className="badge badge-new">{failedJobs.length} jobs</span>
+          {/* Table header */}
+          <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle">
+            {["Job / Lead", "Error", ""].map((h) => (
+              <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
+                {h}
+              </span>
+            ))}
           </div>
+
           {isLoadingFailed ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center py-14">
               <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
             </div>
           ) : failedJobs.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-12 text-text-muted">
-              <XCircle className="h-8 w-8 opacity-30" />
-              <p className="font-sans text-sm">No failed jobs — all clear!</p>
+            <div className="flex flex-col items-center gap-3 py-14 text-text-muted">
+              <div className="w-12 h-12 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center">
+                <XCircle className="h-6 w-6 text-success" weight="duotone" />
+              </div>
+              <div className="text-center">
+                <p className="font-sans text-sm font-medium text-text-primary">No failed jobs</p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">All follow-up jobs processed successfully</p>
+              </div>
             </div>
           ) : (
             <div className="divide-y divide-border-subtle">
               {failedJobs.map((job) => (
-                <div key={job.id} className="px-5 py-4 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-danger/10 border border-danger/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <XCircle className="h-3.5 w-3.5 text-danger" />
+                <div
+                  key={job.id}
+                  className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-x-4 gap-y-1 px-5 py-3.5 items-center hover:bg-card/40 transition-colors"
+                >
+                  {/* Job / Lead */}
+                  <div className="min-w-0">
+                    <p className="font-sans text-sm font-medium text-text-primary truncate">{job.name}</p>
+                    <p className="font-mono text-xs text-text-muted truncate">#{job.id}</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-sans text-sm font-medium text-text-primary">{job.name}</p>
-                    {job.failedReason && (
-                      <p className="font-mono text-[11px] text-danger mt-0.5 line-clamp-2">{job.failedReason}</p>
-                    )}
-                    <p className="font-mono text-[10px] text-text-muted mt-1">Job #{job.id}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void handleRetry(job.id)}
-                    disabled={retryingId === job.id}
-                    className="flex-shrink-0 h-7 text-xs gap-1.5"
-                  >
-                    {retryingId === job.id ? (
-                      <div className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
+
+                  {/* Error */}
+                  <div className="min-w-0">
+                    {job.failedReason ? (
+                      <p className="font-mono text-xs text-danger line-clamp-2 break-all">{job.failedReason}</p>
                     ) : (
-                      <ArrowClockwise className="h-3 w-3" />
+                      <p className="font-sans text-xs text-text-muted italic">No error detail available</p>
                     )}
-                    Retry
-                  </Button>
+                  </div>
+
+                  {/* Retry */}
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => void handleRetry(job.id)}
+                      disabled={retryingId === job.id}
+                      className="h-7 text-xs gap-1.5 px-2.5"
+                    >
+                      {retryingId === job.id ? (
+                        <div className="w-3 h-3 rounded-full border border-current border-t-transparent animate-spin" />
+                      ) : (
+                        <ArrowClockwise className="h-3 w-3" />
+                      )}
+                      Retry
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -261,100 +434,7 @@ export default function FollowUpsPage() {
         </div>
       )}
 
-      {/* Scheduled messages tab */}
-      {tab === "scheduled" && (
-      <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between">
-          <h2 className="font-sans font-semibold text-sm text-text-primary">Scheduled Messages</h2>
-          <span className="badge badge-new">{total} total</span>
-        </div>
-
-        {isLoading && items.length === 0 ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-          </div>
-        ) : items.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-12 text-text-muted">
-            <Timer className="h-8 w-8 opacity-30" />
-            <p className="font-sans text-sm">No follow-ups scheduled</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border-subtle">
-            {items.map((item) => (
-              <div key={item.id} className="px-5 py-4 flex items-start gap-3">
-                {/* Icon */}
-                <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Timer className="h-3.5 w-3.5 text-accent" />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <StatusBadge status={item.status} />
-                    <div className="flex items-center gap-1 text-[11px] text-text-muted font-sans">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatDate(item.scheduledAt)}</span>
-                    </div>
-                  </div>
-                  <p className="font-sans text-sm text-text-primary leading-relaxed line-clamp-2">
-                    {item.type.replace(/_/g, ' ')}
-                  </p>
-                  <p className="font-mono text-[10px] text-text-muted">
-                    Lead: {item.leadId}
-                  </p>
-                </div>
-
-                {/* Cancel button — only for PENDING */}
-                {item.status === FollowUpStatus.PENDING && (
-                  <button
-                    onClick={() => setCancelTarget(item)}
-                    className="flex-shrink-0 w-7 h-7 rounded-full bg-danger/10 border border-danger/20 text-danger flex items-center justify-center hover:bg-danger/20 transition-colors"
-                    title="Cancel follow-up"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
-
-                {item.status === FollowUpStatus.SENT && (
-                  <div className="flex-shrink-0 w-7 h-7 rounded-full bg-success/10 border border-success/20 text-success flex items-center justify-center">
-                    <Check className="h-3.5 w-3.5" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border-subtle flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={page === 0}
-              onClick={() => setPage((p) => p - 1)}
-              className="text-xs"
-            >
-              Previous
-            </Button>
-            <span className="font-sans text-xs text-text-muted">
-              Page {page + 1} of {totalPages}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={page >= totalPages - 1}
-              onClick={() => setPage((p) => p + 1)}
-              className="text-xs"
-            >
-              Next
-            </Button>
-          </div>
-        )}
-      </div>
-      )}
-
-      {/* Cancel Confirm Dialog */}
+      {/* ── Cancel Confirm Dialog ── */}
       <Dialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
@@ -365,9 +445,7 @@ export default function FollowUpsPage() {
           </DialogHeader>
           {cancelTarget && (
             <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle">
-              <p className="font-sans text-sm text-text-primary line-clamp-3">
-                {cancelTarget.type.replace(/_/g, ' ')}
-              </p>
+              <p className="font-sans text-sm font-medium text-text-primary">{typeLabel(cancelTarget.type)}</p>
               <p className="font-mono text-[11px] text-text-muted mt-1">
                 Scheduled: {formatDate(cancelTarget.scheduledAt)}
               </p>

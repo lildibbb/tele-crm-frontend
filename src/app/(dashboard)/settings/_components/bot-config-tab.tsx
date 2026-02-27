@@ -21,6 +21,7 @@ export function BotConfigTab() {
     systemPrompt: "",
     greeting: "",
     active: true,
+    followUpEnabled: true,
   });
   const [initialised, setInitialised] = useState(false);
 
@@ -37,6 +38,7 @@ export function BotConfigTab() {
       systemPrompt: entries["bot.systemPrompt"] ?? "",
       greeting: entries["bot.welcomeMessage"] ?? "",
       active: entries["bot.active"] !== "false",
+      followUpEnabled: entries["followUp.enabled"] !== "false",
     });
     setInitialised(true);
   }, [entries, isLoading, initialised]);
@@ -47,6 +49,7 @@ export function BotConfigTab() {
       "bot.systemPrompt": draft.systemPrompt,
       "bot.welcomeMessage": draft.greeting,
       "bot.active": String(draft.active),
+      "followUp.enabled": String(draft.followUpEnabled),
     });
   };
 
@@ -136,6 +139,21 @@ export function BotConfigTab() {
               <p className="text-[11px] text-text-muted mt-1 font-sans">
                 Define the bot&apos;s personality, expertise, and boundaries.
               </p>
+            </div>
+
+            {/* Follow-up toggle */}
+            <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+              <div>
+                <p className="font-sans text-sm font-medium text-text-primary">Auto Follow-ups</p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">
+                  Send AI-personalised Telegram messages to leads after status changes
+                </p>
+              </div>
+              <Switch
+                checked={draft.followUpEnabled}
+                onCheckedChange={(c) => setDraft({ ...draft, followUpEnabled: c })}
+                disabled={isLoading}
+              />
             </div>
           </div>
         </div>

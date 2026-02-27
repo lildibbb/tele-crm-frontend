@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileAnalytics } from "@/components/mobile";
 import { useAnalyticsStore } from "@/store/analyticsStore";
+import { useAuthStore } from "@/store/authStore";
 import {
   TrendUp,
   Users,
@@ -352,6 +353,8 @@ export default function AnalyticsPage() {
   const isMobile = useIsMobile();
 
   const { summary, isLoading, fetchSummary } = useAnalyticsStore();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === "SUPERADMIN";
   const [ragStats, setRagStats] = useState<import("@/lib/schemas/analytics.schema").RagStats | null>(null);
   const [ragLoading, setRagLoading] = useState(false);
 
@@ -360,18 +363,19 @@ export default function AnalyticsPage() {
     fetchSummary({ timeframe });
   }, [fetchSummary, timeframe]);
 
-  // Fetch RAG stats (SUPERADMIN-only — silently no-ops for other roles)
+  // Fetch RAG stats — SUPERADMIN only, no call for other roles
   useEffect(() => {
+    if (!isSuperAdmin) return;
     setRagLoading(true);
     analyticsApi.getRagStats()
       .then((res) => {
         const d = (res.data as unknown as { data: import("@/lib/schemas/analytics.schema").RagStats }).data;
         setRagStats(d ?? null);
       })
-      .catch(() => { /* non-superadmin gets 403 — ignore */ })
+      .catch(() => { /* ignore */ })
       .finally(() => setRagLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isSuperAdmin]);
 
   // ── Derived data from summary API ──────────────────────────────
   const funnelData = useMemo(() => {
@@ -909,7 +913,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── RAG Quality Stats (SUPERADMIN only) ── */}
-      {(ragLoading || ragStats) && (
+      {isSuperAdmin && (ragLoading || ragStats) && (
         <div className="mt-6 bg-elevated rounded-2xl border border-border-subtle p-5">
           <div className="flex items-center gap-2 mb-4">
             <Pulse size={16} className="text-accent" weight="duotone" />

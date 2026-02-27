@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Bot, BookOpen, Terminal, Users, Shield, Brain } from "lucide-react";
+import { Bot, BookOpen, Terminal, Users, Brain } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -14,7 +14,6 @@ import { BotConfigTab } from "./bot-config-tab";
 import { KnowledgeBaseTab } from "./knowledge-base-tab";
 import { CommandsTab } from "./commands-tab";
 import { TeamTab } from "./team-tab";
-import { SessionsTab } from "./sessions-tab";
 import { AiFeedbackTab } from "./ai-feedback-tab";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types/enums";
@@ -47,13 +46,6 @@ const ALL_SETTINGS_TABS = [
     icon: Users,
     content: <TeamTab />,
     roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
-  },
-  {
-    name: "Sessions",
-    value: "sessions",
-    icon: Shield,
-    content: <SessionsTab />,
-    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN],
   },
   {
     name: "AI Feedback",

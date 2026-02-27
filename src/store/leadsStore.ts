@@ -36,7 +36,7 @@ interface LeadsActions {
   updateStatus: (id: string, data: UpdateLeadStatusInput) => Promise<void>;
   setHandover: (id: string, mode: boolean) => Promise<void>;
   bulkSetHandover: (mode: boolean) => Promise<void>;
-  verifyLead: (id: string) => Promise<void>;
+  verifyLead: (id: string) => void;
 }
 
 // ── Store ──────────────────────────────────────────────────────────────────
@@ -187,22 +187,20 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
         }
       },
 
-      verifyLead: async (id: string) => {
-        try {
-          const res = await leadsApi.verify(id);
-          const updated = res.data.data;
-          set(
-            (s) => ({ leads: s.leads.map((l) => (l.id === id ? updated : l)) }),
-            false,
-            "verifyLead/success",
-          );
-        } catch (err: unknown) {
-          const message =
-            (err as { response?: { data?: { message?: string } } })?.response
-              ?.data?.message ?? "Failed to verify lead.";
-          set({ error: message }, false, "verifyLead/error");
-          throw err;
-        }
+      verifyLead: (id: string) => {
+        // Pure local state update — the actual API call is made by verificationStore.verify().
+        // Applying optimistic status/verifiedAt so other views reflect the change immediately.
+        set(
+          (s) => ({
+            leads: s.leads.map((l) =>
+              l.id === id
+                ? { ...l, status: "DEPOSIT_CONFIRMED" as typeof l.status, verifiedAt: new Date().toISOString() }
+                : l,
+            ),
+          }),
+          false,
+          "verifyLead/success",
+        );
       },
     }),
     { name: "leads-store" },

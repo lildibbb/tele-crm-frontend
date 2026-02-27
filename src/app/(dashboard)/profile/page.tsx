@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import {
   Lock,
   UserCircle,
-  Monitor,
   CaretLeft,
   CheckCircle,
+  Shield,
 } from "@phosphor-icons/react";
 import { useAuthStore } from "@/store/authStore";
 import { authApi } from "@/lib/api/auth";
@@ -16,6 +16,7 @@ import { UserRole } from "@/types/enums";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { SessionsTab } from "@/app/(dashboard)/settings/_components/sessions-tab";
 import { cn } from "@/lib/utils";
 
 const ROLE_CSS: Record<UserRole, { text: string; bg: string }> = {
@@ -25,9 +26,12 @@ const ROLE_CSS: Record<UserRole, { text: string; bg: string }> = {
   STAFF:      { text: "text-text-secondary", bg: "bg-elevated" },
 };
 
+type ProfileTab = "profile" | "sessions";
+
 export default function ProfilePage() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
 
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [error, setError] = useState<string | null>(null);
@@ -69,9 +73,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-void font-sans">
+    <div className="space-y-6 animate-in-up">
       {/* Mobile header */}
-      <header className="flex items-center h-[52px] px-4 bg-base border-b border-border-subtle md:hidden">
+      <header className="flex items-center h-[52px] md:hidden -mx-4 -mt-4 px-4 bg-base border-b border-border-subtle">
         <button
           onClick={() => router.back()}
           className="min-w-[44px] min-h-[44px] flex items-center justify-center text-crimson"
@@ -82,134 +86,129 @@ export default function ProfilePage() {
         <div className="min-w-[44px]" />
       </header>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* Page title (desktop) */}
-        <div className="hidden md:block">
-          <h1 className="font-display font-bold text-2xl text-text-primary">My Profile</h1>
-          <p className="text-sm text-text-muted mt-0.5">Manage your account settings</p>
+      {/* Desktop title */}
+      <div className="hidden md:flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center flex-shrink-0">
+          <UserCircle className="h-5 w-5 text-crimson" weight="fill" />
         </div>
-
-        {/* Profile card */}
-        <div className="bg-base border border-border-subtle rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          {/* Avatar */}
-          <div className="w-20 h-20 rounded-full bg-crimson-subtle border-2 border-crimson/30 flex items-center justify-center text-crimson font-display font-bold text-[32px] flex-shrink-0">
-            {initial}
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 text-center sm:text-left space-y-1">
-            <p className="font-display font-bold text-xl text-text-primary">{user?.email}</p>
-            <span className={cn("inline-block text-xs font-semibold px-2 py-0.5 rounded-full border border-current", roleStyle.text, roleStyle.bg)}>
-              {role}
-            </span>
-            <div className="flex flex-col sm:flex-row sm:gap-6 pt-1 text-xs text-text-muted gap-1">
-              <span>Member since {createdAt}</span>
-              <span>Last login: {lastLogin}</span>
-              {user?.lastIpAddress && <span>IP: {user.lastIpAddress}</span>}
-            </div>
-          </div>
-
-          {/* Sessions shortcut */}
-          <button
-            onClick={() => router.push("/settings")}
-            className="flex items-center gap-1.5 text-xs font-medium text-text-secondary hover:text-crimson transition-colors px-3 py-2 rounded-lg border border-border-subtle hover:border-crimson/30 self-start"
-          >
-            <Monitor size={14} />
-            Active Sessions
-          </button>
-        </div>
-
-        {/* Change Password */}
-        <div className="bg-base border border-border-subtle rounded-2xl p-6 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Lock size={16} className="text-crimson" />
-            <h2 className="font-display font-bold text-base text-text-primary">Change Password</h2>
-          </div>
-
-          {success ? (
-            <div className="flex items-center gap-2 p-4 rounded-xl bg-success/10 border border-success/20 text-success text-sm">
-              <CheckCircle size={18} weight="fill" />
-              Password changed successfully. Other sessions have been invalidated.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs text-text-secondary">Current Password</Label>
-                <Input
-                  type="password"
-                  value={form.currentPassword}
-                  onChange={(e) => setForm((p) => ({ ...p, currentPassword: e.target.value }))}
-                  className="h-9 text-sm"
-                  autoComplete="current-password"
-                />
-              </div>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-text-secondary">New Password</Label>
-                  <Input
-                    type="password"
-                    value={form.newPassword}
-                    onChange={(e) => setForm((p) => ({ ...p, newPassword: e.target.value }))}
-                    className="h-9 text-sm"
-                    autoComplete="new-password"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-text-secondary">Confirm New Password</Label>
-                  <Input
-                    type="password"
-                    value={form.confirmPassword}
-                    onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-                    className="h-9 text-sm"
-                    autoComplete="new-password"
-                  />
-                </div>
-              </div>
-
-              {error && <p className="text-xs text-danger">{error}</p>}
-
-              <div className="flex justify-end pt-1">
-                <Button
-                  onClick={() => void handleChangePassword()}
-                  disabled={saving || !form.currentPassword || !form.newPassword || !form.confirmPassword}
-                  className="bg-crimson hover:bg-crimson/90 text-white text-sm gap-1.5 px-5"
-                >
-                  {saving ? (
-                    <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  ) : (
-                    <Lock size={14} />
-                  )}
-                  Save Password
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Quick links */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            onClick={() => router.push("/settings")}
-            className="flex items-center gap-3 p-4 bg-base border border-border-subtle rounded-xl hover:border-crimson/30 hover:bg-elevated/30 transition-all group text-left"
-          >
-            <Monitor size={18} className="text-text-muted group-hover:text-crimson transition-colors" />
-            <div>
-              <p className="text-sm font-semibold text-text-primary">Active Sessions</p>
-              <p className="text-xs text-text-muted">Manage your logged-in devices</p>
-            </div>
-          </button>
-          <button
-            onClick={() => router.push("/settings")}
-            className="flex items-center gap-3 p-4 bg-base border border-border-subtle rounded-xl hover:border-crimson/30 hover:bg-elevated/30 transition-all group text-left"
-          >
-            <UserCircle size={18} className="text-text-muted group-hover:text-crimson transition-colors" />
-            <div>
-              <p className="text-sm font-semibold text-text-primary">Account Settings</p>
-              <p className="text-xs text-text-muted">Preferences and notifications</p>
-            </div>
-          </button>
+        <div>
+          <h1 className="font-display font-bold text-xl text-text-primary">My Profile</h1>
+          <p className="font-sans text-sm text-text-secondary">Manage your account and active sessions</p>
         </div>
       </div>
+
+      {/* Profile card */}
+      <div className="bg-elevated rounded-2xl border border-border-subtle p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-crimson/10 border border-crimson/20 flex items-center justify-center text-crimson font-display font-bold text-2xl flex-shrink-0">
+          {initial}
+        </div>
+        <div className="flex-1 text-center sm:text-left space-y-1.5">
+          <p className="font-display font-bold text-lg text-text-primary">{user?.email}</p>
+          <span className={cn("inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full border border-current", roleStyle.text, roleStyle.bg)}>
+            {role}
+          </span>
+          <div className="flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-0.5 pt-0.5 text-xs text-text-muted font-sans">
+            <span>Member since {createdAt}</span>
+            <span>Last login: {lastLogin}</span>
+            {user?.lastIpAddress && <span>IP: {user.lastIpAddress}</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-elevated rounded-xl w-full sm:w-auto sm:inline-flex">
+        {([
+          { value: "profile", label: "Account", Icon: Lock },
+          { value: "sessions", label: "Sessions", Icon: Shield },
+        ] as { value: ProfileTab; label: string; Icon: React.ElementType }[]).map(({ value, label, Icon }) => (
+          <button
+            key={value}
+            onClick={() => setActiveTab(value)}
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium font-sans transition-colors",
+              activeTab === value
+                ? "bg-card shadow-sm text-text-primary"
+                : "text-text-secondary hover:text-text-primary",
+            )}
+          >
+            <Icon size={14} weight="bold" />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === "profile" ? (
+        <div className="max-w-lg space-y-4">
+          <div className="bg-elevated rounded-2xl border border-border-subtle p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Lock size={15} className="text-crimson" weight="bold" />
+              <h2 className="font-display font-semibold text-base text-text-primary">Change Password</h2>
+            </div>
+
+            {success ? (
+              <div className="flex items-center gap-2 p-4 rounded-xl bg-success/10 border border-success/20 text-success text-sm font-sans">
+                <CheckCircle size={16} weight="fill" />
+                Password changed successfully. Other sessions have been invalidated.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-text-secondary">Current Password</Label>
+                  <Input
+                    type="password"
+                    value={form.currentPassword}
+                    onChange={(e) => setForm((p) => ({ ...p, currentPassword: e.target.value }))}
+                    className="h-9 text-sm"
+                    autoComplete="current-password"
+                  />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-text-secondary">New Password</Label>
+                    <Input
+                      type="password"
+                      value={form.newPassword}
+                      onChange={(e) => setForm((p) => ({ ...p, newPassword: e.target.value }))}
+                      className="h-9 text-sm"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-text-secondary">Confirm New Password</Label>
+                    <Input
+                      type="password"
+                      value={form.confirmPassword}
+                      onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+                      className="h-9 text-sm"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                </div>
+
+                {error && <p className="text-xs text-danger font-sans">{error}</p>}
+
+                <div className="flex justify-end pt-1">
+                  <Button
+                    onClick={() => void handleChangePassword()}
+                    disabled={saving || !form.currentPassword || !form.newPassword || !form.confirmPassword}
+                    className="bg-crimson hover:bg-crimson/90 text-white text-sm gap-1.5 px-5"
+                  >
+                    {saving ? (
+                      <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    ) : (
+                      <Lock size={14} />
+                    )}
+                    Save Password
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <SessionsTab />
+      )}
     </div>
   );
 }
