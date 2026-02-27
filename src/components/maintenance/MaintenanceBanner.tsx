@@ -13,15 +13,15 @@ export function MaintenanceBanner() {
   const banner = useMaintenanceStore((s) => s.maintenanceBanner);
   const user = useAuthStore((s) => s.user);
   const [dismissed, setDismissed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Check sessionStorage on mount (re-shows on new tab)
+  // Avoid SSR/hydration mismatch — only read sessionStorage on client
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setDismissed(sessionStorage.getItem(SESSION_KEY) === 'true');
-    }
+    setMounted(true);
+    setDismissed(sessionStorage.getItem(SESSION_KEY) === 'true');
   }, []);
 
-  if (!maintenanceMode || dismissed) return null;
+  if (!mounted || !maintenanceMode || dismissed) return null;
 
   const isSuperAdmin = user?.role === UserRole.SUPERADMIN;
 
@@ -31,27 +31,28 @@ export function MaintenanceBanner() {
   };
 
   return (
-    <div className="relative flex items-center gap-3 border-b border-amber-500/30 bg-amber-950/30 px-4 py-2.5 text-sm backdrop-blur-sm dark:bg-amber-900/20">
-      <Warning
-        weight="fill"
-        className="h-4 w-4 shrink-0 text-amber-400"
-      />
-      <span className="flex-1 text-amber-200">
-        <span className="font-medium">Maintenance Mode — </span>
+    <div
+      className="w-full flex items-center gap-3 border-b border-amber-500/40 bg-amber-950/50 px-5 py-2.5 text-sm backdrop-blur-md z-[9999] shrink-0"
+      role="alert"
+      aria-live="polite"
+    >
+      <Warning weight="fill" className="h-4 w-4 shrink-0 text-amber-400" />
+      <span className="flex-1 text-amber-200 text-xs leading-snug">
+        <span className="font-semibold">Maintenance Mode — </span>
         {banner}
       </span>
       {isSuperAdmin && (
-        <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 text-xs font-medium text-emerald-400">
+        <span className="hidden sm:flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 text-xs font-medium text-emerald-400 shrink-0">
           <CheckCircle weight="fill" className="h-3 w-3" />
-          You have full access
+          Full access
         </span>
       )}
       <button
         onClick={handleDismiss}
         aria-label="Dismiss maintenance banner"
-        className="ml-1 rounded p-0.5 text-amber-400/70 transition-colors hover:bg-amber-800/40 hover:text-amber-300"
+        className="ml-1 rounded p-0.5 text-amber-400/60 transition-colors hover:bg-amber-800/40 hover:text-amber-300 shrink-0"
       >
-        <X className="h-4 w-4" />
+        <X className="h-3.5 w-3.5" />
       </button>
     </div>
   );
