@@ -156,11 +156,11 @@ export default function FollowUpsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
+    <div className="space-y-6 animate-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-accent/15 border border-accent/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
             <Timer className="h-5 w-5 text-accent" weight="fill" />
           </div>
           <div>
@@ -171,11 +171,11 @@ export default function FollowUpsPage() {
           </div>
         </div>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => tab === "scheduled" ? void load(page * PAGE_SIZE) : void loadFailed()}
           disabled={isLoading || isLoadingFailed}
-          className="gap-1.5 text-xs text-text-muted"
+          className="gap-1.5 text-xs"
         >
           <ArrowCounterClockwise className="h-3.5 w-3.5" />
           Refresh

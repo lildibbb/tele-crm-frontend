@@ -1,7 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ClipboardText, ArrowCounterClockwise, Warning } from "@phosphor-icons/react";
+import {
+  ClipboardText,
+  ArrowCounterClockwise,
+  Warning,
+  UserCircle,
+  Key,
+  Users,
+  BookOpen,
+  Command,
+  Sliders,
+  Robot,
+  Megaphone,
+} from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
@@ -14,11 +26,24 @@ function formatDate(iso: string) {
     " " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 }
 
-function actionBadgeClass(action: string) {
-  if (action.startsWith("USER_")) return "badge badge-admin";
-  if (action.startsWith("LEAD_")) return "badge badge-new";
-  if (action.startsWith("KB_") || action.startsWith("COMMAND_")) return "badge badge-staff";
-  return "badge badge-owner";
+function ActionIcon({ action }: { action: string }) {
+  if (action.startsWith("USER_") || action.startsWith("AUTH_")) return <UserCircle size={13} className="text-info" />;
+  if (action.startsWith("LEAD_")) return <Users size={13} className="text-crimson" />;
+  if (action.startsWith("KB_")) return <BookOpen size={13} className="text-accent" />;
+  if (action.startsWith("COMMAND_")) return <Command size={13} className="text-accent" />;
+  if (action.startsWith("SYSTEM_CONFIG")) return <Sliders size={13} className="text-warning" />;
+  if (action.startsWith("BOT_")) return <Robot size={13} className="text-success" />;
+  if (action.startsWith("BROADCAST_")) return <Megaphone size={13} className="text-crimson" />;
+  return <Key size={13} className="text-text-muted" />;
+}
+
+function actionPillClass(action: string) {
+  if (action.startsWith("USER_") || action.startsWith("AUTH_")) return "bg-info/10 text-info border-info/20";
+  if (action.startsWith("LEAD_")) return "bg-crimson/10 text-crimson border-crimson/20";
+  if (action.startsWith("KB_") || action.startsWith("COMMAND_")) return "bg-accent/10 text-accent border-accent/20";
+  if (action.startsWith("SYSTEM_CONFIG")) return "bg-warning/10 text-warning border-warning/20";
+  if (action.startsWith("BOT_")) return "bg-success/10 text-success border-success/20";
+  return "bg-elevated text-text-secondary border-border-subtle";
 }
 
 export default function AuditLogsPage() {
@@ -59,12 +84,12 @@ export default function AuditLogsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="space-y-6 animate-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-accent/15 border border-accent/20 flex items-center justify-center flex-shrink-0">
-            <ClipboardText className="h-5 w-5 text-accent" weight="fill" />
+          <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+            <ClipboardText size={18} className="text-accent" weight="fill" />
           </div>
           <div>
             <h1 className="font-display font-bold text-xl text-text-primary">Audit Logs</h1>
@@ -72,29 +97,31 @@ export default function AuditLogsPage() {
           </div>
         </div>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={() => void load(page * PAGE_SIZE)}
           disabled={isLoading}
-          className="gap-1.5 text-xs text-text-muted"
+          className="gap-1.5 text-xs"
         >
-          <ArrowCounterClockwise className="h-3.5 w-3.5" />
+          <ArrowCounterClockwise size={13} className={isLoading ? "animate-spin" : ""} />
           Refresh
         </Button>
       </div>
 
       {error && (
         <div className="flex items-center gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm font-sans">
-          <Warning className="h-4 w-4 flex-shrink-0" />
+          <Warning size={14} className="flex-shrink-0" />
           {error}
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
-        <div className="px-5 py-3 bg-card border-b border-border-subtle flex items-center justify-between">
+      <div className="bg-base rounded-2xl border border-border-subtle overflow-hidden">
+        <div className="px-5 py-3 border-b border-border-subtle flex items-center justify-between">
           <h2 className="font-sans font-semibold text-sm text-text-primary">Events</h2>
-          <span className="badge badge-new">{total} total</span>
+          <span className="text-xs font-medium text-text-muted bg-elevated px-2.5 py-0.5 rounded-full border border-border-subtle">
+            {total} total
+          </span>
         </div>
 
         {isLoading && items.length === 0 ? (
@@ -103,14 +130,14 @@ export default function AuditLogsPage() {
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-12 text-text-muted">
-            <ClipboardText className="h-8 w-8 opacity-30" />
+            <ClipboardText size={32} className="opacity-20" />
             <p className="font-sans text-sm">No audit events found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-sans">
               <thead>
-                <tr className="border-b border-border-subtle">
+                <tr className="border-b border-border-subtle bg-elevated/40">
                   <th className="text-left px-4 py-2.5 text-[11px] font-semibold text-text-muted uppercase tracking-wider">Time</th>
                   <th className="text-left px-4 py-2.5 text-[11px] font-semibold text-text-muted uppercase tracking-wider">Action</th>
                   <th className="text-left px-4 py-2.5 text-[11px] font-semibold text-text-muted uppercase tracking-wider">Resource</th>
@@ -120,12 +147,13 @@ export default function AuditLogsPage() {
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 {items.map((log) => (
-                  <tr key={log.id} className="hover:bg-card/40 transition-colors">
+                  <tr key={log.id} className="hover:bg-elevated/30 transition-colors">
                     <td className="px-4 py-3 text-text-muted text-xs font-mono whitespace-nowrap">
                       {formatDate(log.createdAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={actionBadgeClass(log.action)}>
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${actionPillClass(log.action)}`}>
+                        <ActionIcon action={log.action} />
                         {log.action.replace(/_/g, " ")}
                       </span>
                     </td>
@@ -183,3 +211,4 @@ export default function AuditLogsPage() {
     </div>
   );
 }
+

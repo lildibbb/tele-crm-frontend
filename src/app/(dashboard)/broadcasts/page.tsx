@@ -90,10 +90,10 @@ export default function BroadcastsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-8">
+    <div className="space-y-6 animate-in-up">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-crimson/15 border border-crimson/20 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center flex-shrink-0">
           <Megaphone className="h-5 w-5 text-crimson" weight="fill" />
         </div>
         <div>
@@ -104,7 +104,7 @@ export default function BroadcastsPage() {
         </div>
       </div>
 
-      {/* Compose Card */}
+      <div className="max-w-2xl space-y-6">
       <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
         <div className="px-5 py-4 bg-card border-b border-border-subtle">
           <h2 className="font-sans font-semibold text-sm text-text-primary">Compose Message</h2>
@@ -321,6 +321,7 @@ export default function BroadcastsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

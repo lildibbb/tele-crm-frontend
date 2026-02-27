@@ -108,6 +108,7 @@ export function KnowledgeBaseTab() {
   const [showModal, setShowModal] = useState(false);
   const [modalTab, setModalTab] = useState<ModalTab>("text");
   const [kbPane, setKbPane] = useState<"edit" | "preview">("edit");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Upload state
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -133,15 +134,46 @@ export function KnowledgeBaseTab() {
     defaultValues: { title: "", content: "", type: KbType.TEXT },
   });
 
+  const openAdd = () => {
+    setEditingId(null);
+    form.reset({ title: "", content: "", type: KbType.TEXT });
+    setModalTab("text");
+    setShowModal(true);
+  };
+
+  const openEdit = (entry: typeof entries[0]) => {
+    setEditingId(entry.id);
+    form.reset({
+      title: entry.title,
+      content: entry.content ?? "",
+      type: (entry.type as KbType) ?? KbType.TEXT,
+      url: entry.url ?? undefined,
+    });
+    setModalTab(entry.type === KbType.LINK ? "link" : "text");
+    setKbPane("edit");
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingId(null);
+    setKbPane("edit");
+    form.reset();
+  };
+
   const onSubmit = async (data: CreateKbInput) => {
     try {
-      await createText(data);
-      toast.success("Content added");
-      setShowModal(false);
-      form.reset();
+      if (editingId) {
+        await update(editingId, { title: data.title, content: data.content, url: data.url });
+        toast.success("Content updated");
+      } else {
+        await createText(data);
+        toast.success("Content added");
+      }
+      closeModal();
       await fetchAll();
     } catch {
-      toast.error("Failed to add content");
+      toast.error(editingId ? "Failed to update content" : "Failed to add content");
     }
   };
 
@@ -226,7 +258,7 @@ export function KnowledgeBaseTab() {
             Templates, guides, and links the bot uses to answer questions
           </p>
         </div>
-        <Button onClick={() => setShowModal(true)} className="gap-1.5">
+        <Button onClick={openAdd} className="gap-1.5">
           <Plus className="h-4 w-4" /> Add Content
         </Button>
       </div>
@@ -376,6 +408,7 @@ export function KnowledgeBaseTab() {
                           <Button
                             variant="ghost"
                             size="icon-xs"
+                            onClick={() => openEdit(entry)}
                             className="text-text-muted hover:text-text-primary hover:bg-elevated"
                           >
                             <Edit3 className="h-3.5 w-3.5" />
@@ -391,27 +424,18 @@ export function KnowledgeBaseTab() {
         )}
       </div>
 
-      {/* Add Content Dialog */}
-      <Dialog
-        open={showModal}
-        onOpenChange={(open) => {
-          if (!open) {
-            setShowModal(false);
-            setKbPane("edit");
-            form.reset();
-          }
-        }}
-      >
+      {/* Add / Edit Content Dialog */}
+      <Dialog open={showModal} onOpenChange={(open) => { if (!open) closeModal(); }}>
         <DialogContent className="w-full sm:max-w-[640px] lg:max-w-[880px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-bold text-xl text-text-primary">
-              Add Knowledge Base Content
+              {editingId ? "Edit Knowledge Base Content" : "Add Knowledge Base Content"}
             </DialogTitle>
           </DialogHeader>
 
-          {/* Modal tabs */}
+          {/* Modal tabs — hide upload when editing */}
           <div className="flex gap-1 p-1 bg-card rounded-lg">
-            {(["text", "upload", "link"] as ModalTab[]).map((tab) => (
+            {(["text", ...(editingId ? [] : ["upload"]), "link"] as ModalTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setModalTab(tab)}
@@ -531,7 +555,11 @@ export function KnowledgeBaseTab() {
                     className="flex-1"
                     disabled={form.formState.isSubmitting}
                   >
-                    {form.formState.isSubmitting ? "Saving…" : "Save Content"}
+                    {form.formState.isSubmitting
+                      ? "Saving…"
+                      : editingId
+                        ? "Update Content"
+                        : "Save Content"}
                   </Button>
                 </div>
               </form>

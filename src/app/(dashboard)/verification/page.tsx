@@ -80,11 +80,19 @@ function ApproveDialog() {
   const { modalKind, closeModal, verify, activeId, getActiveRequest } =
     useVerificationStore();
   const req = getActiveRequest();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!activeId) return;
-    verify(activeId);
-    toast.success("Deposit verified — lead status updated to Confirmed.");
+    setIsSubmitting(true);
+    try {
+      await verify(activeId);
+      toast.success("Deposit verified — lead status updated to Confirmed.");
+    } catch {
+      toast.error("Failed to verify deposit. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -141,16 +149,24 @@ function ApproveDialog() {
         )}
 
         <DialogFooter className="gap-2 pt-2">
-          <DialogClose asChild>
-            <Button variant="outline" className="flex-1 rounded-xl h-11">
-              {t("common.cancel")}
-            </Button>
-          </DialogClose>
           <Button
-            onClick={handleApprove}
+            variant="outline"
+            className="flex-1 rounded-xl h-11"
+            onClick={closeModal}
+            disabled={isSubmitting}
+          >
+            {t("common.cancel")}
+          </Button>
+          <Button
+            onClick={() => void handleApprove()}
+            disabled={isSubmitting}
             className="flex-1 rounded-xl h-11 bg-success hover:bg-success/90 text-white font-semibold gap-2"
           >
-            <Check size={15} weight="bold" />
+            {isSubmitting ? (
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+            ) : (
+              <Check size={15} weight="bold" />
+            )}
             {t("verification.confirmApproval")}
           </Button>
         </DialogFooter>
