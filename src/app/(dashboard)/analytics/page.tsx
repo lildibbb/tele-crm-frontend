@@ -532,7 +532,7 @@ export default function AnalyticsPage() {
               iconColor="#22d3a0"
             />
             <KpiCard
-              label={t("analytics.pendingVerification")}
+              label={t(K.analytics.pendingVerification)}
               value={(kpi?.pendingVerifications.current ?? 0).toLocaleString()}
               change={`${kpi?.pendingVerifications.changePercentage ?? 0}%`}
               up={(kpi?.pendingVerifications.trend ?? "up") === "up"}
@@ -880,7 +880,7 @@ export default function AnalyticsPage() {
                 <ChartBar size={20} weight="duotone" className="text-text-muted" />
               </div>
               <p className="text-xs font-sans mb-5 text-text-muted">
-                p25 · median · p75
+                {t(K.analytics.velocity.p25)} · {t(K.analytics.velocity.p50)} · {t(K.analytics.velocity.p75)}
               </p>
               {!velocityData || velocityData.newToRegistered.count < 5 ? (
                 <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">

@@ -999,7 +999,7 @@ export default function AdminPage() {
           {/* Bot Health */}
           <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.botHealth")}</span>
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t(K.superadminOps.botHealth)}</span>
               <div className={`w-2 h-2 rounded-full ${ragStats ? "bg-emerald-400" : "bg-text-muted"}`} />
             </div>
             <div className="space-y-1.5 text-[11px] font-sans">
@@ -1008,12 +1008,12 @@ export default function AdminPage() {
               ) : (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-text-muted">{t("superadmin.ops.pendingUpdates")}</span>
+                    <span className="text-text-muted">{t(K.superadminOps.pendingUpdates)}</span>
                     <span className="data-mono text-text-primary">—</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-text-muted">{t("superadmin.ops.lastError")}</span>
-                    <span className="text-emerald-400">{t("superadmin.ops.noError")}</span>
+                    <span className="text-text-muted">{t(K.superadminOps.lastError)}</span>
+                    <span className="text-emerald-400">{t(K.superadminOps.noError)}</span>
                   </div>
                 </>
               )}
@@ -1023,7 +1023,7 @@ export default function AdminPage() {
           {/* Queue Monitor */}
           <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.queues")}</span>
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t(K.superadminOps.queues)}</span>
               {isLoadingOps && <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
             </div>
             {isLoadingOps && !queues ? (
@@ -1034,7 +1034,7 @@ export default function AdminPage() {
                   <div key={q.name} className="flex items-center justify-between text-[10px] font-sans">
                     <span className="text-text-muted truncate max-w-[80px]">{q.name}</span>
                     <div className="flex gap-1.5">
-                      <span className="text-text-muted">{t("superadmin.ops.waiting")} <span className="data-mono text-text-primary">{q.waiting}</span></span>
+                      <span className="text-text-muted">{t(K.superadminOps.waiting)} <span className="data-mono text-text-primary">{q.waiting}</span></span>
                       {q.failed > 0 && <span className="text-red-400 data-mono font-bold">{q.failed}F</span>}
                     </div>
                   </div>
@@ -1048,7 +1048,7 @@ export default function AdminPage() {
           {/* Token Budget */}
           <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.tokenBudget")}</span>
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t(K.superadminOps.tokenBudget)}</span>
             </div>
             {isLoadingOps && !tokenUsage ? (
               <Skeleton className="h-16 w-full" />
@@ -1056,11 +1056,11 @@ export default function AdminPage() {
               <>
                 <div className="text-[11px] font-sans space-y-0.5 mb-2">
                   <div className="flex justify-between">
-                    <span className="text-text-muted">{t("superadmin.ops.rolling30d")}</span>
-                    <span className="data-mono text-text-primary">{tokenUsage.rolling30dTokens.toLocaleString()} {t("superadmin.ops.tokens")}</span>
+                    <span className="text-text-muted">{t(K.superadminOps.rolling30d)}</span>
+                    <span className="data-mono text-text-primary">{tokenUsage.rolling30dTokens.toLocaleString()} {t(K.superadminOps.tokens)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-text-muted">{t("superadmin.ops.estimatedCost")}</span>
+                    <span className="text-text-muted">{t(K.superadminOps.estimatedCost)}</span>
                     <span className="data-mono text-gold">${tokenUsage.rolling30dCostUsd.toFixed(4)}</span>
                   </div>
                 </div>
@@ -1078,7 +1078,7 @@ export default function AdminPage() {
           {/* KB Health */}
           <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
             <div className="flex items-center justify-between mb-3">
-              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.kbHealth")}</span>
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t(K.superadminOps.kbHealth)}</span>
             </div>
             {isLoadingOps && !kbHealth ? (
               <Skeleton className="h-12 w-full" />
@@ -1086,9 +1086,9 @@ export default function AdminPage() {
               <div className="space-y-2">
                 <div className="text-[11px] font-sans">
                   <div className="flex justify-between mb-1">
-                    <span className="text-text-muted">{t("superadmin.ops.embeddingCoverage")}</span>
+                    <span className="text-text-muted">{t(K.superadminOps.embeddingCoverage)}</span>
                     <span className="data-mono text-text-primary">
-                      {kbHealth.embeddingCoverage.embedded}/{kbHealth.embeddingCoverage.total} {t("superadmin.ops.chunksEmbedded")}
+                      {kbHealth.embeddingCoverage.embedded}/{kbHealth.embeddingCoverage.total} {t(K.superadminOps.chunksEmbedded)}
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-void/40">

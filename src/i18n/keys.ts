@@ -224,6 +224,7 @@ export const K = {
     totalLeads:      "analytics.totalLeads",
     totalDepositors: "analytics.totalDepositors",
     totalAum:        "analytics.totalAum",
+    pendingVerification: "analytics.pendingVerification",
     range: {
       day:   "analytics.range.day",
       week:  "analytics.range.week",

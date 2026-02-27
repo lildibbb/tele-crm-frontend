@@ -230,6 +230,20 @@ const ms: Record<string, string> = {
   "analytics.charts.leadSources":    "Sumber Prospek",
   "analytics.charts.conversionFunnel":"Corong Penukaran",
   "analytics.charts.weeklyHeatmap":  "Peta Haba Mingguan",
+  "analytics.pendingVerification":   "Pengesahan Tertangguh",
+
+  /* ── Analytics Velocity ──────────────────────────────── */
+  "analytics.velocity.title":        "Halaju Prospek",
+  "analytics.velocity.subtitle":     "Median hari setiap peringkat saluran",
+  "analytics.velocity.distribution": "Taburan Masa",
+  "analytics.velocity.newToReg":     "Baharu → Didaftar",
+  "analytics.velocity.regToConfirm": "Didaftar → Disahkan",
+  "analytics.velocity.newToConfirm": "Baharu → Disahkan",
+  "analytics.velocity.days":         "hari",
+  "analytics.velocity.noData":       "Data tidak mencukupi (min. 5 prospek diperlukan)",
+  "analytics.velocity.p25":          "p25",
+  "analytics.velocity.p50":          "median",
+  "analytics.velocity.p75":          "p75",
 
   /* ── Settings ─────────────────────────────────────── */
   "settings.botConfig":     "Konfigurasi Bot",
@@ -355,6 +369,26 @@ const ms: Record<string, string> = {
   "profile.savePassword":         "Simpan Kata Laluan",
   "profile.tab.account":          "Akaun",
   "profile.tab.sessions":         "Sesi",
+
+  /* ── Superadmin Ops ──────────────────────────────────── */
+  "superadmin.ops.botHealth":         "Kesihatan Bot",
+  "superadmin.ops.queues":            "Monitor Baris Gilir",
+  "superadmin.ops.tokenBudget":       "Bajet Token",
+  "superadmin.ops.kbHealth":          "Kesihatan KB",
+  "superadmin.ops.webhookUrl":        "URL Webhook",
+  "superadmin.ops.pendingUpdates":    "Kemas Kini Tertangguh",
+  "superadmin.ops.lastError":         "Ralat Terakhir",
+  "superadmin.ops.noError":           "Tiada ralat",
+  "superadmin.ops.waiting":           "Menunggu",
+  "superadmin.ops.active":            "Aktif",
+  "superadmin.ops.failed":            "Gagal",
+  "superadmin.ops.delayed":           "Ditangguhkan",
+  "superadmin.ops.rolling30d":        "Token 30 hari",
+  "superadmin.ops.estimatedCost":     "Kos anggaran",
+  "superadmin.ops.embeddingCoverage": "Liputan embedding",
+  "superadmin.ops.chunksEmbedded":    "bahagian dibenam",
+  "superadmin.ops.tokens":            "token",
+  "superadmin.ops.refresh":           "Muat semula",
 };
 
 export default ms;

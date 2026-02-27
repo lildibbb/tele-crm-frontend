@@ -230,6 +230,20 @@ const en: Record<string, string> = {
   "analytics.charts.leadSources":    "Lead Sources",
   "analytics.charts.conversionFunnel":"Conversion Funnel",
   "analytics.charts.weeklyHeatmap":  "Weekly Heatmap",
+  "analytics.pendingVerification":   "Pending Verification",
+
+  /* ── Analytics Velocity ──────────────────────────────── */
+  "analytics.velocity.title":        "Lead Velocity",
+  "analytics.velocity.subtitle":     "Median days per pipeline stage",
+  "analytics.velocity.distribution": "Time Distribution",
+  "analytics.velocity.newToReg":     "New → Registered",
+  "analytics.velocity.regToConfirm": "Registered → Confirmed",
+  "analytics.velocity.newToConfirm": "New → Confirmed",
+  "analytics.velocity.days":         "days",
+  "analytics.velocity.noData":       "Insufficient data (min. 5 leads required)",
+  "analytics.velocity.p25":          "p25",
+  "analytics.velocity.p50":          "median",
+  "analytics.velocity.p75":          "p75",
 
   /* ── Settings ─────────────────────────────────────── */
   "settings.botConfig":     "Bot Config",
@@ -345,6 +359,26 @@ const en: Record<string, string> = {
   "profile.savePassword":         "Save Password",
   "profile.tab.account":          "Account",
   "profile.tab.sessions":         "Sessions",
+
+  /* ── Superadmin Ops ──────────────────────────────────── */
+  "superadmin.ops.botHealth":         "Bot Health",
+  "superadmin.ops.queues":            "Queue Monitor",
+  "superadmin.ops.tokenBudget":       "Token Budget",
+  "superadmin.ops.kbHealth":          "KB Health",
+  "superadmin.ops.webhookUrl":        "Webhook URL",
+  "superadmin.ops.pendingUpdates":    "Pending Updates",
+  "superadmin.ops.lastError":         "Last Error",
+  "superadmin.ops.noError":           "No errors",
+  "superadmin.ops.waiting":           "Waiting",
+  "superadmin.ops.active":            "Active",
+  "superadmin.ops.failed":            "Failed",
+  "superadmin.ops.delayed":           "Delayed",
+  "superadmin.ops.rolling30d":        "30-day tokens",
+  "superadmin.ops.estimatedCost":     "Est. cost",
+  "superadmin.ops.embeddingCoverage": "Embedding coverage",
+  "superadmin.ops.chunksEmbedded":    "chunks embedded",
+  "superadmin.ops.tokens":            "tokens",
+  "superadmin.ops.refresh":           "Refresh",
 
   /* ── Status badges ────────────────────────────────── */
   "status.new":             "New",
