@@ -665,19 +665,22 @@ function MaintenanceConfigPanel() {
   const getVal = (key: string, def = "false") =>
     entries[key] ?? def;
 
+  const DEFAULT_BANNER = "System under maintenance — read-only mode active.";
+
   const [maintenanceOn, setMaintenanceOn] = useState(false);
-  const [bannerText, setBannerText] = useState("");
+  const [bannerText, setBannerText] = useState(DEFAULT_BANNER);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingOn, setPendingOn] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
+  const [saveErr, setSaveErr] = useState<string | null>(null);
 
-  // Sync from store entries
+  // Sync from store entries once loaded
   useEffect(() => {
+    if (!entries || Object.keys(entries).length === 0) return;
     setMaintenanceOn(getVal("system.maintenanceMode") === "true");
     setBannerText(
-      entries["system.maintenanceBanner"] ??
-        "System under maintenance — read-only mode active."
+      entries["system.maintenanceBanner"] ?? DEFAULT_BANNER
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries]);
@@ -694,28 +697,39 @@ function MaintenanceConfigPanel() {
   };
 
   const saveMaintenanceMode = async (on: boolean) => {
+    setSaveErr(null);
     setIsSaving(true);
     try {
       await upsertMany({
         "system.maintenanceMode": on ? "true" : "false",
-        "system.maintenanceBanner": bannerText,
+        // Never send empty string — backend @IsString() accepts it but semantics are wrong
+        "system.maintenanceBanner": bannerText.trim() || DEFAULT_BANNER,
       });
       setMaintenanceOn(on);
-      await fetchPublicConfig();
+      await fetchPublicConfig().catch(() => undefined);
       setSaved("maintenance");
       setTimeout(() => setSaved(null), 2500);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Save failed";
+      setSaveErr(msg);
+      setTimeout(() => setSaveErr(null), 4000);
     } finally {
       setIsSaving(false);
     }
   };
 
   const saveFeatureFlag = async (key: string, value: boolean) => {
+    setSaveErr(null);
     setIsSaving(true);
     try {
       await upsertMany({ [key]: value ? "true" : "false" });
-      await fetchPublicConfig();
+      await fetchPublicConfig().catch(() => undefined);
       setSaved(key);
       setTimeout(() => setSaved(null), 2000);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Save failed";
+      setSaveErr(msg);
+      setTimeout(() => setSaveErr(null), 4000);
     } finally {
       setIsSaving(false);
     }
@@ -855,6 +869,7 @@ function MaintenanceConfigPanel() {
             )}
 
             {/* Save banner text button */}
+            <div className="flex items-center gap-3">
             <Button
               size="sm"
               variant="ghost"
@@ -865,6 +880,10 @@ function MaintenanceConfigPanel() {
               <Gear size={13} className="mr-1" />
               {isSaving ? "Saving…" : "Save Banner"}
             </Button>
+            {saveErr && (
+              <span className="text-xs text-crimson">{saveErr}</span>
+            )}
+            </div>
           </div>
         </div>
 
