@@ -21,8 +21,8 @@ export const useBotStore = create<BotState & BotActions>()(
       check: async () => {
         try {
           const res = await botApi.getStatus();
-          const status = (res.data as unknown as { data?: { status?: string } }).data?.status;
-          set({ online: status === "ok" || status === "active", lastChecked: new Date() }, false, "bot/check");
+          const connected = (res.data as unknown as { data?: { connected?: boolean } }).data?.connected;
+          set({ online: connected === true, lastChecked: new Date() }, false, "bot/check");
         } catch {
           set({ online: false, lastChecked: new Date() }, false, "bot/error");
         }
