@@ -10,6 +10,7 @@ import {
 } from "react";
 import en from "./en";
 import ms from "./ms";
+export { K } from "./keys";
 
 export type Locale = "en" | "ms";
 
@@ -44,7 +45,12 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback(
     (key: string, params?: Record<string, string>): string => {
-      let str = LOCALES[locale][key] ?? LOCALES["en"][key] ?? key;
+      const inLocale = LOCALES[locale][key];
+      const inEn = LOCALES["en"][key];
+      if (process.env.NODE_ENV === "development" && inLocale === undefined && inEn === undefined) {
+        console.warn(`[i18n] Missing translation key: "${key}"`);
+      }
+      let str = inLocale ?? inEn ?? key;
       if (params) {
         Object.entries(params).forEach(([k, v]) => {
           str = str.replaceAll(`{{${k}}}`, v);

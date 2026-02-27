@@ -89,6 +89,7 @@ interface KpiCardProps {
 interface ActivityRow {
   id: string;
   name: string;
+  subtitle: string;
   status:
     | "NEW"
     | "REGISTERED"
@@ -378,7 +379,12 @@ export default function DashboardPage() {
       .slice(0, 5)
       .map((l) => ({
         id: l.id,
-        name: l.displayName ?? l.username ?? l.telegramUserId,
+        name: l.displayName ?? l.username ?? String(l.telegramUserId),
+        subtitle: l.phoneNumber
+          ? l.phoneNumber
+          : l.username
+          ? `@${l.username}`
+          : `#${String(l.telegramUserId).slice(0, 10)}`,
         status: l.status as ActivityRow["status"],
         amount: l.depositBalance
           ? `$${Number(l.depositBalance).toLocaleString()}`
@@ -797,7 +803,7 @@ export default function DashboardPage() {
                           <p className="text-[13px] font-sans font-medium text-text-primary truncate">
                             {row.name}
                           </p>
-                          <p className="data-mono text-[11px]">{row.id}</p>
+                          <p className="data-mono text-[11px] text-text-muted truncate">{row.subtitle}</p>
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
                           <Badge className={`badge text-[10px] ${badge.cls}`}>

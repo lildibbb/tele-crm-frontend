@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SessionsTab } from "@/app/(dashboard)/settings/_components/sessions-tab";
 import { cn } from "@/lib/utils";
+import { useT, K } from "@/i18n";
 
 const ROLE_CSS: Record<UserRole, { text: string; bg: string }> = {
   SUPERADMIN: { text: "text-gold",           bg: "bg-gold-subtle" },
@@ -29,6 +30,7 @@ const ROLE_CSS: Record<UserRole, { text: string; bg: string }> = {
 type ProfileTab = "profile" | "sessions";
 
 export default function ProfilePage() {
+  const t = useT();
   const router = useRouter();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
@@ -82,7 +84,7 @@ export default function ProfilePage() {
         >
           <CaretLeft size={22} weight="bold" />
         </button>
-        <span className="flex-1 text-center font-semibold text-[17px] text-text-primary">Profile</span>
+        <span className="flex-1 text-center font-semibold text-[17px] text-text-primary">{t(K.profile.title)}</span>
         <div className="min-w-[44px]" />
       </header>
 
@@ -92,8 +94,8 @@ export default function ProfilePage() {
           <UserCircle className="h-5 w-5 text-crimson" weight="fill" />
         </div>
         <div>
-          <h1 className="font-display font-bold text-xl text-text-primary">My Profile</h1>
-          <p className="font-sans text-sm text-text-secondary">Manage your account and active sessions</p>
+          <h1 className="font-display font-bold text-xl text-text-primary">{t(K.profile.pageTitle)}</h1>
+          <p className="font-sans text-sm text-text-secondary">{t(K.profile.subtitle)}</p>
         </div>
       </div>
 
@@ -108,9 +110,9 @@ export default function ProfilePage() {
             {role}
           </span>
           <div className="flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-0.5 pt-0.5 text-xs text-text-muted font-sans">
-            <span>Member since {createdAt}</span>
-            <span>Last login: {lastLogin}</span>
-            {user?.lastIpAddress && <span>IP: {user.lastIpAddress}</span>}
+            <span>{t(K.profile.memberSince)} {createdAt}</span>
+            <span>{t(K.profile.lastLogin)} {lastLogin}</span>
+            {user?.lastIpAddress && <span>{t(K.profile.ip)} {user.lastIpAddress}</span>}
           </div>
         </div>
       </div>
@@ -118,8 +120,8 @@ export default function ProfilePage() {
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-elevated rounded-xl w-full sm:w-auto sm:inline-flex">
         {([
-          { value: "profile", label: "Account", Icon: Lock },
-          { value: "sessions", label: "Sessions", Icon: Shield },
+          { value: "profile", label: t(K.profile.tab.account), Icon: Lock },
+          { value: "sessions", label: t(K.profile.tab.sessions), Icon: Shield },
         ] as { value: ProfileTab; label: string; Icon: React.ElementType }[]).map(({ value, label, Icon }) => (
           <button
             key={value}
@@ -143,18 +145,18 @@ export default function ProfilePage() {
           <div className="bg-elevated rounded-2xl border border-border-subtle p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Lock size={15} className="text-crimson" weight="bold" />
-              <h2 className="font-display font-semibold text-base text-text-primary">Change Password</h2>
+              <h2 className="font-display font-semibold text-base text-text-primary">{t(K.profile.changePassword)}</h2>
             </div>
 
             {success ? (
               <div className="flex items-center gap-2 p-4 rounded-xl bg-success/10 border border-success/20 text-success text-sm font-sans">
                 <CheckCircle size={16} weight="fill" />
-                Password changed successfully. Other sessions have been invalidated.
+                {t(K.profile.passwordChanged)}
               </div>
             ) : (
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <Label className="text-xs text-text-secondary">Current Password</Label>
+                  <Label className="text-xs text-text-secondary">{t(K.profile.currentPassword)}</Label>
                   <Input
                     type="password"
                     value={form.currentPassword}
@@ -165,7 +167,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-xs text-text-secondary">New Password</Label>
+                    <Label className="text-xs text-text-secondary">{t(K.profile.newPassword)}</Label>
                     <Input
                       type="password"
                       value={form.newPassword}
@@ -175,7 +177,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-text-secondary">Confirm New Password</Label>
+                    <Label className="text-xs text-text-secondary">{t(K.profile.confirmPassword)}</Label>
                     <Input
                       type="password"
                       value={form.confirmPassword}
@@ -199,7 +201,7 @@ export default function ProfilePage() {
                     ) : (
                       <Lock size={14} />
                     )}
-                    Save Password
+                    {t(K.profile.savePassword)}
                   </Button>
                 </div>
               </div>

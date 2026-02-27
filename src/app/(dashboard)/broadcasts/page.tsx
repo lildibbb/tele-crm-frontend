@@ -25,6 +25,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useT, K } from "@/i18n";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -76,6 +77,7 @@ export default function BroadcastsPage() {
     reset,
   } = useBroadcastStore();
 
+  const t = useT();
   const [showConfirm, setShowConfirm] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
 
@@ -108,9 +110,9 @@ export default function BroadcastsPage() {
           <Megaphone className="h-5 w-5 text-crimson" weight="fill" />
         </div>
         <div>
-          <h1 className="font-display font-bold text-xl text-text-primary">Broadcast</h1>
+          <h1 className="font-display font-bold text-xl text-text-primary">{t(K.broadcast.title)}</h1>
           <p className="font-sans text-sm text-text-secondary">
-            Send a message to all leads with a Telegram account
+            {t(K.broadcast.subtitle)}
           </p>
         </div>
       </div>
@@ -120,25 +122,25 @@ export default function BroadcastsPage() {
         {[
           {
             icon: <Megaphone className="h-4 w-4 text-crimson" />,
-            label: "Total Broadcasts",
+            label: t(K.broadcast.stats.total),
             value: historyTotal,
             bg: "bg-crimson/10 border-crimson/20",
           },
           {
             icon: <CalendarBlank className="h-4 w-4 text-indigo-500" />,
-            label: "Last 7 Days",
+            label: t(K.broadcast.stats.last7d),
             value: last7Days,
             bg: "bg-indigo-500/10 border-indigo-500/20",
           },
           {
             icon: <HourglassMedium className="h-4 w-4 text-warning" />,
-            label: "In Progress",
+            label: t(K.broadcast.stats.inProgress),
             value: pendingCount,
             bg: "bg-warning/10 border-warning/20",
           },
           {
             icon: <Users className="h-4 w-4 text-success" />,
-            label: "Total Recipients",
+            label: t(K.broadcast.stats.recipients),
             value: totalRecipients.toLocaleString(),
             bg: "bg-success/10 border-success/20",
           },
@@ -163,17 +165,17 @@ export default function BroadcastsPage() {
         {/* ── Compose card ─────────────────────────────────────────────────── */}
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
           <div className="px-5 py-4 bg-card border-b border-border-subtle">
-            <h2 className="font-sans font-semibold text-sm text-text-primary">Compose Message</h2>
+            <h2 className="font-sans font-semibold text-sm text-text-primary">{t(K.broadcast.compose)}</h2>
           </div>
           <div className="p-5 space-y-4">
             <div className="space-y-1.5">
               <label className="font-sans text-xs font-medium text-text-secondary uppercase tracking-wider">
-                Message <span className="text-crimson">*</span>
+                {t(K.broadcast.message)} <span className="text-crimson">*</span>
               </label>
               <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your broadcast message here…"
+                placeholder={t(K.broadcast.messagePlaceholder)}
                 rows={4}
                 maxLength={4096}
                 className="resize-none text-sm"
@@ -185,17 +187,17 @@ export default function BroadcastsPage() {
 
             <div className="space-y-1.5">
               <label className="font-sans text-xs font-medium text-text-secondary uppercase tracking-wider flex items-center gap-1.5">
-                <ImageIcon className="h-3.5 w-3.5" /> Photo URL
-                <span className="normal-case font-normal text-text-muted">(optional)</span>
+                <ImageIcon className="h-3.5 w-3.5" /> {t(K.broadcast.photoUrl)}
+                <span className="normal-case font-normal text-text-muted">{t(K.broadcast.photoUrlOptional)}</span>
               </label>
               <Input
                 value={photoUrl}
                 onChange={(e) => setPhotoUrl(e.target.value)}
-                placeholder="https://example.com/image.jpg"
+                placeholder={t(K.broadcast.photoUrlPlaceholder)}
                 className="text-sm font-mono"
               />
               <p className="font-sans text-[11px] text-text-muted">
-                Message will be sent as a photo caption when provided.
+                {t(K.broadcast.photoCaption)}
               </p>
             </div>
 
@@ -209,7 +211,7 @@ export default function BroadcastsPage() {
             {lastEnqueued !== null && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20 text-success text-sm font-sans">
                 <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                Broadcast enqueued for <strong>{lastEnqueued}</strong> recipient(s)
+                {t(K.broadcast.enqueuedFor)} <strong>{lastEnqueued}</strong> recipient(s)
               </div>
             )}
 
@@ -221,7 +223,7 @@ export default function BroadcastsPage() {
                 className="text-text-muted hover:text-text-primary text-xs"
                 disabled={isSending}
               >
-                Clear
+                {t(K.broadcast.clear)}
               </Button>
               <Button
                 onClick={() => setShowConfirm(true)}
@@ -231,12 +233,12 @@ export default function BroadcastsPage() {
                 {isSending ? (
                   <>
                     <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    Sending…
+                    {t(K.broadcast.sending)}
                   </>
                 ) : (
                   <>
                     <PaperPlaneRight className="h-4 w-4" />
-                    Send Broadcast
+                    {t(K.broadcast.send)}
                   </>
                 )}
               </Button>
@@ -247,8 +249,8 @@ export default function BroadcastsPage() {
         {/* ── History table ─────────────────────────────────────────────────── */}
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
           <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between">
-            <h2 className="font-sans font-semibold text-sm text-text-primary">Broadcast History</h2>
-            <span className="font-mono text-xs text-text-muted">{historyTotal} total</span>
+            <h2 className="font-sans font-semibold text-sm text-text-primary">{t(K.broadcast.history)}</h2>
+            <span className="font-mono text-xs text-text-muted">{historyTotal} {t(K.broadcast.total)}</span>
           </div>
 
           {isLoadingHistory && history.length === 0 ? (
@@ -258,7 +260,7 @@ export default function BroadcastsPage() {
           ) : history.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-14 text-text-muted">
               <Megaphone className="h-8 w-8 opacity-25" />
-              <p className="font-sans text-sm">No broadcasts sent yet</p>
+              <p className="font-sans text-sm">{t(K.broadcast.empty)}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -266,16 +268,16 @@ export default function BroadcastsPage() {
                 <thead>
                   <tr className="border-b border-border-subtle bg-card">
                     <th className="px-4 py-2.5 font-sans text-[11px] font-semibold uppercase tracking-wider text-text-muted">
-                      Message
+                      {t(K.broadcast.col.message)}
                     </th>
                     <th className="px-4 py-2.5 font-sans text-[11px] font-semibold uppercase tracking-wider text-text-muted w-24">
-                      Status
+                      {t(K.broadcast.col.status)}
                     </th>
                     <th className="px-4 py-2.5 font-sans text-[11px] font-semibold uppercase tracking-wider text-text-muted w-28 text-right">
-                      Recipients
+                      {t(K.broadcast.col.recipients)}
                     </th>
                     <th className="px-4 py-2.5 font-sans text-[11px] font-semibold uppercase tracking-wider text-text-muted w-44">
-                      Sent At
+                      {t(K.broadcast.col.sentAt)}
                     </th>
                   </tr>
                 </thead>
@@ -292,7 +294,7 @@ export default function BroadcastsPage() {
                         </p>
                         {item.photoUrl && (
                           <span className="mt-0.5 inline-flex items-center gap-1 font-sans text-[10px] text-text-muted">
-                            <ImageIcon className="h-3 w-3" /> Photo attached
+                            <ImageIcon className="h-3 w-3" /> {t(K.broadcast.photoAttached)}
                           </span>
                         )}
                       </td>
@@ -335,10 +337,10 @@ export default function BroadcastsPage() {
                 onClick={() => setHistoryPage((p) => p - 1)}
                 className="text-xs"
               >
-                Previous
+                {t(K.broadcast.prev)}
               </Button>
               <span className="font-sans text-xs text-text-muted">
-                Page {historyPage} of {totalPages}
+                {t(K.broadcast.page)} {historyPage} {t(K.broadcast.of)} {totalPages}
               </span>
               <Button
                 variant="ghost"
@@ -347,7 +349,7 @@ export default function BroadcastsPage() {
                 onClick={() => setHistoryPage((p) => p + 1)}
                 className="text-xs"
               >
-                Next
+                {t(K.broadcast.next)}
               </Button>
             </div>
           )}
@@ -362,12 +364,11 @@ export default function BroadcastsPage() {
                   <Megaphone className="h-5 w-5 text-warning" weight="fill" />
                 </div>
                 <DialogTitle className="font-bold text-lg text-text-primary">
-                  Confirm Broadcast
+                  {t(K.broadcast.confirmTitle)}
                 </DialogTitle>
               </div>
               <DialogDescription className="font-sans text-sm text-text-secondary">
-                This will send your message to <strong>all leads</strong> with a Telegram account.
-                This action cannot be undone.
+                {t(K.broadcast.confirmDesc)}
               </DialogDescription>
             </DialogHeader>
             <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle">
@@ -380,14 +381,14 @@ export default function BroadcastsPage() {
             </div>
             <DialogFooter className="gap-2">
               <Button variant="ghost" onClick={() => setShowConfirm(false)} className="flex-1">
-                Cancel
+                {t(K.common.cancel)}
               </Button>
               <Button
                 onClick={() => void handleSend()}
                 className="flex-1 bg-crimson hover:bg-crimson/90 text-white gap-2"
               >
                 <PaperPlaneRight className="h-4 w-4" />
-                Send Now
+                {t(K.broadcast.sendNow)}
               </Button>
             </DialogFooter>
           </DialogContent>

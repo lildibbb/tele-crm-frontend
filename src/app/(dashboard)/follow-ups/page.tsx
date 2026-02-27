@@ -25,6 +25,7 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useT, K } from "@/i18n";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -36,16 +37,6 @@ function formatDate(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  follow_up_register:     "Registration Reminder",
-  follow_up_deposit:      "Deposit Reminder",
-  follow_up_verification: "Verification Follow-up",
-};
-
-function typeLabel(type: string) {
-  return TYPE_LABELS[type] ?? type.replace(/_/g, " ");
 }
 
 function StatusChip({ status }: { status: FollowUp["status"] }) {
@@ -74,6 +65,13 @@ type FailedJob = {
 };
 
 export default function FollowUpsPage() {
+  const t = useT();
+  const TYPE_LABELS: Record<string, string> = {
+    follow_up_register:     t(K.followUp.type.register),
+    follow_up_deposit:      t(K.followUp.type.deposit),
+    follow_up_verification: t(K.followUp.type.verification),
+  };
+  const typeLabel = (type: string) => TYPE_LABELS[type] ?? type.replace(/_/g, " ");
   const [tab, setTab] = useState<"scheduled" | "failed">("scheduled");
   const [items, setItems] = useState<FollowUp[]>([]);
   const [total, setTotal] = useState(0);
@@ -183,9 +181,9 @@ export default function FollowUpsPage() {
             <Timer className="h-5 w-5 text-accent" weight="fill" />
           </div>
           <div>
-            <h1 className="font-display font-bold text-xl text-text-primary">Follow-ups</h1>
+            <h1 className="font-display font-bold text-xl text-text-primary">{t(K.followUp.title)}</h1>
             <p className="font-sans text-sm text-text-secondary">
-              Scheduled AI messages sent to leads after status changes
+              {t(K.followUp.subtitle)}
             </p>
           </div>
         </div>
@@ -197,17 +195,17 @@ export default function FollowUpsPage() {
           className="gap-1.5 text-xs"
         >
           <ArrowCounterClockwise className="h-3.5 w-3.5" />
-          Refresh
+          {t(K.followUp.refresh)}
         </Button>
       </div>
 
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Scheduled",  value: countScheduled, icon: CalendarCheck,  cls: "text-info",           bg: "bg-info/10" },
-          { label: "Sent",       value: countSent,       icon: CheckCircle,    cls: "text-success",        bg: "bg-success/10" },
-          { label: "Cancelled",  value: countCancelled,  icon: ProhibitInset,  cls: "text-text-secondary", bg: "bg-muted/20" },
-          { label: "Failed",     value: countFailed,     icon: SmileySad,      cls: "text-danger",         bg: "bg-danger/10" },
+          { label: t(K.followUp.stats.scheduled),  value: countScheduled, icon: CalendarCheck,  cls: "text-info",           bg: "bg-info/10" },
+          { label: t(K.followUp.stats.sent),        value: countSent,       icon: CheckCircle,    cls: "text-success",        bg: "bg-success/10" },
+          { label: t(K.followUp.stats.cancelled),   value: countCancelled,  icon: ProhibitInset,  cls: "text-text-secondary", bg: "bg-muted/20" },
+          { label: t(K.followUp.stats.failed),      value: countFailed,     icon: SmileySad,      cls: "text-danger",         bg: "bg-danger/10" },
         ].map(({ label, value, icon: Icon, cls, bg }) => (
           <div key={label} className="bg-elevated rounded-2xl border border-border-subtle px-4 py-3 flex items-center gap-3">
             <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
@@ -223,18 +221,18 @@ export default function FollowUpsPage() {
 
       {/* ── Tab switcher ── */}
       <div className="bg-elevated rounded-xl p-1 flex gap-1 w-fit border border-border-subtle">
-        {(["scheduled", "failed"] as const).map((t) => (
+        {(["scheduled", "failed"] as const).map((tabKey) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
             className={`relative px-5 py-1.5 rounded-lg text-xs font-sans font-medium transition-all ${
-              tab === t
+              tab === tabKey
                 ? "bg-card text-text-primary shadow-sm border border-border-subtle"
                 : "text-text-muted hover:text-text-primary"
             }`}
           >
-            {t === "scheduled" ? "Scheduled" : "Failed"}
-            {t === "failed" && failedJobs.length > 0 && (
+            {tabKey === "scheduled" ? t(K.followUp.tabs.scheduled) : t(K.followUp.tabs.failed)}
+            {tabKey === "failed" && failedJobs.length > 0 && (
               <span className="ml-1.5 bg-danger text-white text-[9px] px-1.5 py-px rounded-full leading-none">
                 {failedJobs.length}
               </span>
@@ -256,7 +254,7 @@ export default function FollowUpsPage() {
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
           {/* Table header */}
           <div className="hidden sm:grid grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle">
-            {["Lead", "Type", "Status", "Scheduled At", ""].map((h) => (
+            {[t(K.followUp.col.lead), t(K.followUp.col.type), t(K.followUp.col.status), t(K.followUp.col.scheduledAt), ""].map((h) => (
               <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
                 {h}
               </span>
@@ -273,8 +271,8 @@ export default function FollowUpsPage() {
                 <Timer className="h-6 w-6 text-accent" weight="duotone" />
               </div>
               <div className="text-center">
-                <p className="font-sans text-sm font-medium text-text-primary">No follow-ups scheduled</p>
-                <p className="font-sans text-xs text-text-muted mt-0.5">Messages will appear here once leads trigger follow-up events</p>
+                <p className="font-sans text-sm font-medium text-text-primary">{t(K.followUp.empty)}</p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">{t(K.followUp.emptyDesc)}</p>
               </div>
             </div>
           ) : (
@@ -286,7 +284,7 @@ export default function FollowUpsPage() {
                 >
                   {/* Lead */}
                   <div className="min-w-0">
-                    <p className="font-sans text-sm font-medium text-text-primary truncate">Lead</p>
+                    <p className="font-sans text-sm font-medium text-text-primary truncate">{t(K.followUp.col.lead)}</p>
                     <p className="font-mono text-xs text-text-muted truncate">{item.leadId}</p>
                   </div>
 
@@ -320,7 +318,7 @@ export default function FollowUpsPage() {
                         title="Cancel follow-up"
                       >
                         <X className="h-3 w-3" />
-                        Cancel
+                        {t(K.followUp.cancel)}
                       </button>
                     ) : item.status === FollowUpStatus.SENT ? (
                       <span className="inline-flex items-center gap-1 h-7 px-2.5 rounded-lg text-xs font-sans font-medium text-success">
@@ -343,10 +341,10 @@ export default function FollowUpsPage() {
                 onClick={() => setPage((p) => p - 1)}
                 className="text-xs"
               >
-                Previous
+                {t(K.followUp.prev)}
               </Button>
               <span className="font-sans text-xs text-text-muted">
-                Page {page + 1} of {totalPages}
+                {t(K.followUp.page)} {page + 1} {t(K.followUp.of)} {totalPages}
               </span>
               <Button
                 variant="ghost"
@@ -355,7 +353,7 @@ export default function FollowUpsPage() {
                 onClick={() => setPage((p) => p + 1)}
                 className="text-xs"
               >
-                Next
+                {t(K.followUp.next)}
               </Button>
             </div>
           )}
@@ -367,7 +365,7 @@ export default function FollowUpsPage() {
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
           {/* Table header */}
           <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle">
-            {["Job / Lead", "Error", ""].map((h) => (
+            {[t(K.followUp.failedJob), t(K.followUp.failedError), ""].map((h) => (
               <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
                 {h}
               </span>
@@ -384,8 +382,8 @@ export default function FollowUpsPage() {
                 <XCircle className="h-6 w-6 text-success" weight="duotone" />
               </div>
               <div className="text-center">
-                <p className="font-sans text-sm font-medium text-text-primary">No failed jobs</p>
-                <p className="font-sans text-xs text-text-muted mt-0.5">All follow-up jobs processed successfully</p>
+                <p className="font-sans text-sm font-medium text-text-primary">{t(K.followUp.noFailed)}</p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">{t(K.followUp.noFailedDesc)}</p>
               </div>
             </div>
           ) : (
@@ -406,7 +404,7 @@ export default function FollowUpsPage() {
                     {job.failedReason ? (
                       <p className="font-mono text-xs text-danger line-clamp-2 break-all">{job.failedReason}</p>
                     ) : (
-                      <p className="font-sans text-xs text-text-muted italic">No error detail available</p>
+                      <p className="font-sans text-xs text-text-muted italic">{t(K.followUp.noErrorDetail)}</p>
                     )}
                   </div>
 
@@ -424,7 +422,7 @@ export default function FollowUpsPage() {
                       ) : (
                         <ArrowClockwise className="h-3 w-3" />
                       )}
-                      Retry
+                      {t(K.followUp.retry)}
                     </Button>
                   </div>
                 </div>
@@ -438,9 +436,9 @@ export default function FollowUpsPage() {
       <Dialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-bold text-lg text-text-primary">Cancel Follow-up?</DialogTitle>
+            <DialogTitle className="font-bold text-lg text-text-primary">{t(K.followUp.cancelTitle)}</DialogTitle>
             <DialogDescription className="font-sans text-sm text-text-secondary">
-              This will cancel the scheduled follow-up message. It cannot be restored.
+              {t(K.followUp.cancelDesc)}
             </DialogDescription>
           </DialogHeader>
           {cancelTarget && (
@@ -453,7 +451,7 @@ export default function FollowUpsPage() {
           )}
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={() => setCancelTarget(null)} className="flex-1">
-              Keep it
+              {t(K.followUp.keep)}
             </Button>
             <Button
               onClick={() => void handleCancel()}
@@ -465,7 +463,7 @@ export default function FollowUpsPage() {
               ) : (
                 <X className="h-4 w-4" />
               )}
-              Cancel Follow-up
+              {t(K.followUp.cancelBtn)}
             </Button>
           </DialogFooter>
         </DialogContent>

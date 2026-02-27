@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
 import { AuditAction } from "@/types/enums";
+import { useT, K } from "@/i18n";
 
 const PAGE_SIZE = 20;
 
@@ -69,6 +70,7 @@ function metadataSummary(meta: Record<string, unknown> | null | undefined): stri
 }
 
 export default function AuditLogsPage() {
+  const t = useT();
   const [items, setItems] = useState<AuditLog[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -160,8 +162,8 @@ export default function AuditLogsPage() {
             <ClipboardText size={18} className="text-text-primary" weight="fill" />
           </div>
           <div>
-            <h1 className="font-display font-bold text-xl text-text-primary">Audit Logs</h1>
-            <p className="font-sans text-sm text-text-secondary">System-wide action history</p>
+            <h1 className="font-display font-bold text-xl text-text-primary">{t(K.auditLog.title)}</h1>
+            <p className="font-sans text-sm text-text-secondary">{t(K.auditLog.subtitle)}</p>
           </div>
         </div>
         <Button
@@ -172,7 +174,7 @@ export default function AuditLogsPage() {
           className="gap-1.5 text-xs"
         >
           <ArrowCounterClockwise size={13} className={isLoading ? "animate-spin" : ""} />
-          Refresh
+          {t(K.auditLog.refresh)}
         </Button>
       </div>
 
@@ -184,7 +186,7 @@ export default function AuditLogsPage() {
             <Hash size={15} className="text-text-muted" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">Total logs</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">{t(K.auditLog.stats.total)}</p>
             <p className="text-lg font-bold text-text-primary font-display leading-tight">{total.toLocaleString()}</p>
           </div>
         </div>
@@ -195,7 +197,7 @@ export default function AuditLogsPage() {
             <Calendar size={15} className="text-accent" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">Today</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">{t(K.auditLog.stats.today)}</p>
             <p className="text-lg font-bold text-text-primary font-display leading-tight">{todayCount}</p>
           </div>
         </div>
@@ -206,7 +208,7 @@ export default function AuditLogsPage() {
             <ChartBar size={15} className="text-info" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">Top action</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">{t(K.auditLog.stats.topAction)}</p>
             <p className="text-xs font-semibold text-text-primary font-sans leading-tight truncate" title={mostCommonAction}>
               {mostCommonAction}
             </p>
@@ -219,7 +221,7 @@ export default function AuditLogsPage() {
             <Users size={15} className="text-success" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">Actors</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">{t(K.auditLog.stats.actors)}</p>
             <p className="text-lg font-bold text-text-primary font-display leading-tight">{uniqueActors}</p>
           </div>
         </div>
@@ -235,7 +237,7 @@ export default function AuditLogsPage() {
           />
           <input
             type="text"
-            placeholder="Filter by user ID…"
+            placeholder={t(K.auditLog.search)}
             value={filterUserId}
             onChange={(e) => setFilterUserId(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && applyFilters()}
@@ -249,7 +251,7 @@ export default function AuditLogsPage() {
           onChange={(e) => { setFilterAction(e.target.value); setPage(0); }}
           className="px-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-colors cursor-pointer"
         >
-          <option value="">All actions</option>
+          <option value="">{t(K.auditLog.allActions)}</option>
           {ALL_ACTIONS.map((a) => (
             <option key={a} value={a}>{formatActionLabel(a)}</option>
           ))}
@@ -260,7 +262,7 @@ export default function AuditLogsPage() {
             onClick={clearFilters}
             className="px-3 py-2 text-xs font-sans rounded-lg text-text-muted hover:text-text-primary hover:bg-elevated border border-border-subtle transition-colors"
           >
-            Clear
+            {t(K.auditLog.clear)}
           </button>
         )}
       </div>
@@ -281,18 +283,18 @@ export default function AuditLogsPage() {
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-16 text-text-muted">
             <ClipboardText size={32} className="opacity-20" />
-            <p className="font-sans text-sm">No audit events found</p>
+            <p className="font-sans text-sm">{t(K.auditLog.empty)}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-sans">
               <thead>
                 <tr className="bg-card border-b border-border-subtle">
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">Actor</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">Action</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">Entity</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">Details</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">Timestamp</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.actor)}</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.action)}</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.entity)}</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.details)}</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.timestamp)}</th>
                 </tr>
               </thead>
               <tbody>
@@ -315,7 +317,7 @@ export default function AuditLogsPage() {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs font-sans text-text-muted italic">system</span>
+                        <span className="text-xs font-sans text-text-muted italic">{t(K.auditLog.system)}</span>
                       )}
                     </td>
 
@@ -374,10 +376,10 @@ export default function AuditLogsPage() {
               onClick={() => setPage((p) => p - 1)}
               className="text-xs"
             >
-              ← Previous
+              {t(K.auditLog.prev)}
             </Button>
             <span className="font-sans text-xs text-text-muted">
-              Page {page + 1} of {totalPages}
+              {t(K.auditLog.page)} {page + 1} {t(K.auditLog.of)} {totalPages}
             </span>
             <Button
               variant="ghost"
@@ -386,7 +388,7 @@ export default function AuditLogsPage() {
               onClick={() => setPage((p) => p + 1)}
               className="text-xs"
             >
-              Next →
+              {t(K.auditLog.next)}
             </Button>
           </div>
         )}
