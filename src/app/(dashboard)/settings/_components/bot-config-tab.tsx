@@ -21,6 +21,7 @@ export function BotConfigTab() {
     systemPrompt: "",
     greeting: "",
     groupId: "",
+    groupThreadEnabled: false,
     active: true,
     followUpEnabled: true,
   });
@@ -39,6 +40,7 @@ export function BotConfigTab() {
       systemPrompt: entries["bot.systemPrompt"] ?? "",
       greeting: entries["bot.welcomeMessage"] ?? "",
       groupId: entries["bot.groupId"] ?? "",
+      groupThreadEnabled: entries["bot.groupThreadEnabled"] === "true",
       active: entries["bot.active"] !== "false",
       followUpEnabled: entries["followUp.enabled"] !== "false",
     });
@@ -51,6 +53,7 @@ export function BotConfigTab() {
       "bot.systemPrompt": draft.systemPrompt,
       "bot.welcomeMessage": draft.greeting,
       "bot.groupId": draft.groupId,
+      "bot.groupThreadEnabled": String(draft.groupThreadEnabled),
       "bot.active": String(draft.active),
       "followUp.enabled": String(draft.followUpEnabled),
     });
@@ -129,6 +132,21 @@ export function BotConfigTab() {
                 Supergroup ID for thread mirroring — each lead gets their own topic.
                 Enable <strong>Topics</strong> in your group settings and add the bot as admin first.
               </p>
+            </div>
+
+            {/* Group Thread Enable toggle */}
+            <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+              <div>
+                <p className="font-sans text-sm font-medium text-text-primary">Enable Group Thread Mirroring</p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">
+                  Mirror lead conversations into the group forum topics. Disabled by default — requires Group Forum ID above.
+                </p>
+              </div>
+              <Switch
+                checked={draft.groupThreadEnabled}
+                onCheckedChange={(c) => setDraft({ ...draft, groupThreadEnabled: c })}
+                disabled={isLoading || !draft.groupId.trim()}
+              />
             </div>
           </div>
         </div>
