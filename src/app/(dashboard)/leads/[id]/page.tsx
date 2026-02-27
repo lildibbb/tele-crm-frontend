@@ -30,7 +30,19 @@ import {
   CalendarCheck,
   CurrencyDollar,
   UserSwitch,
+  FilePdf,
+  FileImage,
+  FileVideo,
+  FileAudio,
+  FileDoc,
+  FileXls,
+  FileCsv,
+  FileZip,
+  File,
+  Paperclip,
+  CaretRight,
 } from "@phosphor-icons/react";
+import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { useT } from "@/i18n";
 import { useLeadsStore } from "@/store/leadsStore";
 import { leadsApi } from "@/lib/api/leads";
@@ -79,6 +91,7 @@ function mapToMessage(ix: Interaction) {
     side,
     time: new Date(ix.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
     content: ix.content ?? "",
+    metadata: ix.metadata,
   };
 }
 
@@ -97,12 +110,62 @@ function mapToTimelineEvent(ix: Interaction, idx: number) {
   };
 }
 
-// Mock deposit proof attachments — in production these come from API
-const MOCK_PROOFS = [
-  { id: "1", name: "receipt_hfm.jpg", type: "image" as const, url: "" },
-  { id: "2", name: "deposit_proof.mp4", type: "video" as const, url: "" },
-  { id: "3", name: "balance_shot.jpg", type: "image" as const, url: "" },
-];
+// ── File type helpers ────────────────────────────────────────────────────────
+
+function getFileIcon(mimeType: string | null | undefined): React.ElementType {
+  if (!mimeType) return File;
+  if (mimeType === "application/pdf") return FilePdf;
+  if (mimeType.startsWith("image/")) return FileImage;
+  if (mimeType.startsWith("video/")) return FileVideo;
+  if (mimeType.startsWith("audio/")) return FileAudio;
+  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv") return FileCsv;
+  if (mimeType.includes("wordprocessing") || mimeType.includes("msword")) return FileDoc;
+  if (mimeType.includes("zip") || mimeType.includes("x-tar") || mimeType.includes("x-rar")) return FileZip;
+  return File;
+}
+
+function getFileIconColor(mimeType: string | null | undefined): string {
+  if (!mimeType) return "text-text-muted";
+  if (mimeType === "application/pdf") return "text-[#e44d26]";
+  if (mimeType.startsWith("image/")) return "text-info";
+  if (mimeType.startsWith("video/")) return "text-crimson";
+  if (mimeType.startsWith("audio/")) return "text-gold";
+  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv") return "text-success";
+  if (mimeType.includes("wordprocessing") || mimeType.includes("msword")) return "text-[#2b5797]";
+  return "text-text-muted";
+}
+
+function getFileIconBg(mimeType: string | null | undefined): string {
+  if (!mimeType) return "bg-text-muted/10";
+  if (mimeType === "application/pdf") return "bg-[#e44d26]/10";
+  if (mimeType.startsWith("image/")) return "bg-info/10";
+  if (mimeType.startsWith("video/")) return "bg-crimson/10";
+  if (mimeType.startsWith("audio/")) return "bg-gold/10";
+  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv") return "bg-success/10";
+  if (mimeType.includes("wordprocessing") || mimeType.includes("msword")) return "bg-info/10";
+  return "bg-text-muted/10";
+}
+
+function formatFileSize(bytes: number | null | undefined): string {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function getFileName(attachment: Attachment): string {
+  const key = attachment.fileKey ?? "";
+  const parts = key.split("/");
+  return parts[parts.length - 1] ?? `file-${attachment.id.slice(0, 8)}`;
+}
+
+function isImage(mimeType: string | null | undefined): boolean {
+  return !!mimeType?.startsWith("image/");
+}
+
+function isVideo(mimeType: string | null | undefined): boolean {
+  return !!mimeType?.startsWith("video/");
+}
 
 // ── Toast component ──────────────────────────────────────────────────────────
 
@@ -132,7 +195,7 @@ function ToastMsg({
 
 // ── Media Lightbox ───────────────────────────────────────────────────────────
 
-type MediaItem = { url: string; type: "image" | "video"; name: string };
+type MediaItem = { url: string; type: "image" | "video" | "file"; name: string; mimeType?: string | null; size?: number | null };
 
 function MediaLightbox({
   item,
@@ -166,7 +229,7 @@ function MediaLightbox({
                   No video URL — this is a placeholder
                 </p>
               </video>
-            ) : (
+            ) : item.type === "image" ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={
@@ -176,6 +239,13 @@ function MediaLightbox({
                 alt={item.name}
                 className="w-full max-h-[70vh] object-contain"
               />
+            ) : (
+              <div className="flex flex-col items-center gap-4 p-12 text-text-muted">
+                {React.createElement(getFileIcon(item.mimeType), { size: 48, className: getFileIconColor(item.mimeType) })}
+                <p className="text-sm font-sans text-text-secondary">{item.name}</p>
+                {item.size && <p className="text-xs text-text-muted">{formatFileSize(item.size)}</p>}
+                <p className="text-xs text-text-muted">Preview not available</p>
+              </div>
             )}
           </div>
           {/* Footer */}
@@ -185,7 +255,7 @@ function MediaLightbox({
                 {item.name}
               </p>
               <p className="text-[11px] font-sans text-text-muted capitalize">
-                {item.type} · Jan 20, 14:30
+                {item.mimeType ?? item.type}{item.size ? ` · ${formatFileSize(item.size)}` : ""}
               </p>
             </div>
             <Button
@@ -251,12 +321,23 @@ export default function LeadDetailPage({
     const interval = setInterval(() => void loadInteractions(), 5000);
     return () => { cancelled = true; clearInterval(interval); };
   }, [id]);
+
+  // Load attachments once
+  useEffect(() => {
+    attachmentsApi.findByLead(id)
+      .then((res) => {
+        const items = (res.data as unknown as { data: Attachment[] }).data ?? [];
+        setAttachments(items);
+      })
+      .catch(() => { /* silent */ });
+  }, [id]);
   const isMobile = useIsMobile();
 
   const [handover, setHandover] = useState(lead?.handoverMode ?? false);
   const [replyText, setReplyText] = useState("");
   const [messages, setMessages] = useState<ReturnType<typeof mapToMessage>[]>([]);
   const [timeline, setTimeline] = useState<ReturnType<typeof mapToTimelineEvent>[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -384,6 +465,7 @@ export default function LeadDetailPage({
       side: "agent" as const,
       time: now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
       content: text,
+      metadata: null as Record<string, unknown> | null,
     };
     setMessages((prev) => [...prev, optimisticMsg]);
     try {
@@ -638,105 +720,154 @@ export default function LeadDetailPage({
               </div>
             </div>
 
-            {/* ── Deposit Proof Panel ── */}
+            {/* ── Attachments Panel ── */}
             <div className="bg-elevated rounded-xl overflow-hidden">
               <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between">
-                <h3 className="font-sans font-semibold text-[14px] text-text-primary">
-                  {t("lead.proof")}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <Paperclip size={14} className="text-text-muted" />
+                  <h3 className="font-sans font-semibold text-[14px] text-text-primary">
+                    {t("lead.proof")}
+                  </h3>
+                </div>
                 <span className="badge badge-pending">
-                  {MOCK_PROOFS.length} files
+                  {attachments.length} file{attachments.length !== 1 ? "s" : ""}
                 </span>
               </div>
-              <div className="p-5">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {MOCK_PROOFS.map((file) => (
-                    <button
-                      key={file.id}
-                      type="button"
-                      onClick={() => setMediaPreview(file)}
-                      className="group text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 rounded-lg"
-                    >
-                      <div className="aspect-video rounded-lg overflow-hidden bg-card border border-border-subtle group-hover:border-crimson/30 transition-all mb-2 flex items-center justify-center relative">
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all z-10 flex items-center justify-center">
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full p-1.5">
-                            <ArrowSquareOut className="h-3.5 w-3.5 text-white" />
-                          </div>
-                        </div>
-                        {file.type === "video" ? (
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-10 h-10 rounded-full bg-crimson/15 border border-crimson/20 flex items-center justify-center">
-                              <Play className="h-4 w-4 text-crimson" />
-                            </div>
-                            <span className="text-[10px] font-sans text-text-muted">
-                              Video
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-10 h-10 rounded-full bg-info/10 border border-info/20 flex items-center justify-center">
-                              <ImageIcon className="h-4 w-4 text-info" />
-                            </div>
-                            <span className="text-[10px] font-sans text-text-muted">
-                              Image
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <p className="data-mono text-[11px] text-text-secondary truncate">
-                        {file.name}
-                      </p>
-                      <p className="flex items-center gap-1 text-[10px] font-sans text-text-muted mt-0.5">
-                        <Clock className="h-2.5 w-2.5" /> Jan 20, 14:30
-                      </p>
-                    </button>
-                  ))}
+              {attachments.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-10 text-text-muted">
+                  <Paperclip size={28} className="opacity-20" />
+                  <p className="text-xs font-sans">No attachments yet</p>
                 </div>
-              </div>
+              ) : (
+                <div className="p-4">
+                  {/* Horizontal scroll carousel */}
+                  <div className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory" style={{ scrollbarWidth: "none" }}>
+                    {attachments.map((file) => {
+                      const name = getFileName(file);
+                      const img = isImage(file.mimeType);
+                      const vid = isVideo(file.mimeType);
+                      const FileIcon = getFileIcon(file.mimeType);
+                      const iconColor = getFileIconColor(file.mimeType);
+                      const iconBg = getFileIconBg(file.mimeType);
+                      const mediaType: "image" | "video" | "file" = img ? "image" : vid ? "video" : "file";
+                      return (
+                        <button
+                          key={file.id}
+                          type="button"
+                          onClick={() => setMediaPreview({
+                            url: file.fileUrl,
+                            type: mediaType,
+                            name,
+                            mimeType: file.mimeType,
+                            size: file.size,
+                          })}
+                          className="group flex-shrink-0 snap-start w-44 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 rounded-xl"
+                        >
+                          {/* Thumbnail / icon area */}
+                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-card border border-border-subtle group-hover:border-accent/40 transition-all mb-2.5">
+                            {img && file.fileUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={file.fileUrl}
+                                alt={name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                            ) : vid && file.fileUrl ? (
+                              <div className="w-full h-full flex items-center justify-center bg-black/40">
+                                <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                                  <Play size={14} className="text-white ml-0.5" weight="fill" />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className={`w-full h-full flex items-center justify-center ${iconBg}`}>
+                                <FileIcon size={32} className={iconColor} weight="duotone" />
+                              </div>
+                            )}
+                            {/* Hover overlay */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full p-1.5">
+                                <ArrowSquareOut size={12} className="text-white" />
+                              </div>
+                            </div>
+                          </div>
+                          {/* File info */}
+                          <div className="px-0.5">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <FileIcon size={11} className={iconColor} weight="duotone" />
+                              <p className="text-[11px] font-sans font-medium text-text-primary truncate flex-1">{name}</p>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              {file.size && (
+                                <span className="text-[10px] font-mono text-text-muted">{formatFileSize(file.size)}</span>
+                              )}
+                              <span className="text-[10px] font-mono text-text-muted ml-auto">
+                                {new Date(file.uploadedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {attachments.length > 3 && (
+                    <p className="text-[10px] text-text-muted font-sans text-center mt-1.5 flex items-center justify-center gap-1">
+                      <CaretRight size={10} /> Scroll to see {attachments.length - 3} more
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ── Activity Timeline ── */}
             <div className="bg-elevated rounded-xl overflow-hidden">
-              <div className="px-5 py-3.5 bg-card border-b border-border-subtle">
+              <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between">
                 <h3 className="font-sans font-semibold text-[14px] text-text-primary">
                   {t("lead.history")}
                 </h3>
+                {timeline.length > 0 && (
+                  <span className="text-[10px] font-mono text-text-muted">{timeline.length} events</span>
+                )}
               </div>
               <div className="p-5">
+                <ScrollArea className="max-h-64">
                 <div className="relative" ref={timelineRef}>
                   <div className="absolute left-[11px] top-0 bottom-0 w-px bg-border-subtle" />
                   <div className="space-y-4">
-                    {timeline.map((event) => {
-                      const Icon = event.Icon;
-                      return (
-                        <div
-                          key={event.id}
-                          className="timeline-item flex gap-4 relative"
-                        >
-                          <div className="w-[22px] h-[22px] rounded-full bg-card border border-border-default flex items-center justify-center flex-shrink-0 z-10">
-                            <Icon className={`h-3 w-3 ${event.color}`} />
-                          </div>
-                          <div className="flex-1 pb-1">
-                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                              <span
-                                className={`text-[10px] font-mono font-semibold uppercase tracking-wider ${event.color}`}
-                              >
-                                {event.type.replace(/_/g, " ")}
-                              </span>
-                              <span className="data-mono text-[10px] text-text-muted">
-                                {event.time}
-                              </span>
+                    {timeline.length === 0 ? (
+                      <p className="text-xs font-sans text-text-muted pl-8">No activity yet.</p>
+                    ) : (
+                      timeline.map((event) => {
+                        const Icon = event.Icon;
+                        return (
+                          <div
+                            key={event.id}
+                            className="timeline-item flex gap-4 relative"
+                          >
+                            <div className="w-[22px] h-[22px] rounded-full bg-card border border-border-default flex items-center justify-center flex-shrink-0 z-10">
+                              <Icon className={`h-3 w-3 ${event.color}`} />
                             </div>
-                            <p className="text-sm font-sans text-text-secondary">
-                              {event.msg}
-                            </p>
+                            <div className="flex-1 pb-1">
+                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                <span
+                                  className={`text-[10px] font-mono font-semibold uppercase tracking-wider ${event.color}`}
+                                >
+                                  {event.type.replace(/_/g, " ")}
+                                </span>
+                                <span className="data-mono text-[10px] text-text-muted">
+                                  {event.time}
+                                </span>
+                              </div>
+                              <p className="text-sm font-sans text-text-secondary">
+                                {event.msg}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
                 </div>
+                </ScrollArea>
               </div>
             </div>
           </div>
@@ -808,6 +939,13 @@ export default function LeadDetailPage({
                   const isUser = msg.side === "user";
                   const isAgent = msg.side === "agent";
                   const isBot = msg.side === "bot";
+
+                  // Detect attachment in metadata
+                  const meta = msg.metadata as Record<string, unknown> | null | undefined;
+                  const attachMime = meta?.mimeType as string | undefined;
+                  const attachName = (meta?.fileName ?? meta?.file_name ?? meta?.caption) as string | undefined;
+                  const hasAttachment = !!(attachMime ?? attachName);
+
                   return (
                     <div
                       key={i}
@@ -832,9 +970,24 @@ export default function LeadDetailPage({
                             Bot
                           </p>
                         )}
-                        <p className="text-sm font-sans text-text-primary leading-relaxed">
-                          {msg.content}
-                        </p>
+                        {/* Attachment chip */}
+                        {hasAttachment && (
+                          <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${isUser ? "bg-elevated" : "bg-card/40"}`}>
+                            {React.createElement(getFileIcon(attachMime), {
+                              size: 14,
+                              className: getFileIconColor(attachMime),
+                              weight: "duotone",
+                            })}
+                            <span className="text-[11px] font-sans text-text-secondary truncate max-w-[140px]">
+                              {attachName ?? attachMime ?? "Attachment"}
+                            </span>
+                          </div>
+                        )}
+                        {msg.content && (
+                          <p className="text-sm font-sans text-text-primary leading-relaxed">
+                            {msg.content}
+                          </p>
+                        )}
                         <p className="data-mono text-[10px] text-text-muted mt-1">
                           {msg.time}
                         </p>
