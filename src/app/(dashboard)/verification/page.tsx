@@ -49,6 +49,8 @@ import { LeadStatus } from "@/types/enums";
 import { useLeadsStore } from "@/store/leadsStore";
 import { useT } from "@/i18n";
 import { getVerificationColumns } from "./_components/verification-columns";
+import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
+import { FileTypeBadge } from "@/components/ui/file-type-badge";
 
 // Register GSAP plugin
 gsap.registerPlugin(useGSAP);
@@ -357,6 +359,24 @@ function AttachmentPreviewDialog({
   onClose: () => void;
   req: Lead | undefined;
 }) {
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [loadingAtts, setLoadingAtts] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    if (!open || !req?.id) return;
+    setLoadingAtts(true);
+    setActiveIdx(0);
+    attachmentsApi
+      .findByLead(req.id)
+      .then((r) => setAttachments(r.data?.data ?? []))
+      .catch(() => setAttachments([]))
+      .finally(() => setLoadingAtts(false));
+  }, [open, req?.id]);
+
+  const active = attachments[activeIdx];
+  const isImg = active?.mimeType?.startsWith("image/");
+
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <DialogPortal>
@@ -378,21 +398,67 @@ function AttachmentPreviewDialog({
             >
               <X size={15} weight="bold" />
             </Button>
-            <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex flex-col items-center justify-center gap-4">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
-                  <PhosphorImage
-                    weight="duotone"
-                    size={36}
-                    className="text-white/50"
-                  />
+
+            {/* Main preview area */}
+            <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
+              {loadingAtts ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
+                  <p className="text-white/40 text-xs font-sans">Loading…</p>
                 </div>
-                <p className="font-sans text-sm text-white/70 font-medium">
-                  Deposit Receipt
-                </p>
-                <p className="data-mono text-xs text-white/40">{req?.id}</p>
-              </div>
+              ) : !active ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
+                    <PhosphorImage weight="duotone" size={36} className="text-white/50" />
+                  </div>
+                  <p className="font-sans text-sm text-white/50">No attachments yet</p>
+                </div>
+              ) : isImg ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={active.fileUrl}
+                  alt="Proof attachment"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-4">
+                  <FileTypeBadge mimeType={active.mimeType} size={64} />
+                  <a
+                    href={active.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sky-300 underline text-xs font-sans"
+                  >
+                    Open file ↗
+                  </a>
+                </div>
+              )}
             </div>
+
+            {/* Thumbnail strip when multiple attachments */}
+            {attachments.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                {attachments.map((att, i) => (
+                  <button
+                    key={att.id}
+                    onClick={() => setActiveIdx(i)}
+                    className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
+                      i === activeIdx ? "border-white/70" : "border-white/15 opacity-60"
+                    }`}
+                  >
+                    {att.mimeType?.startsWith("image/") ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={att.fileUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-white/10 flex items-center justify-center">
+                        <FileTypeBadge mimeType={att.mimeType} size={24} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {req && (
               <div className="w-full flex items-center justify-between px-1">
                 <div className="flex items-center gap-2.5">
