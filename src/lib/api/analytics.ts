@@ -13,6 +13,18 @@ import type {
 } from "@/lib/schemas/analytics.schema";
 import type { ApiResponse } from "@/lib/schemas/common";
 
+export interface VelocityDistribution {
+  p25: number | null;
+  p50: number | null;
+  p75: number | null;
+  count: number;
+}
+export interface VelocityData {
+  newToRegistered: VelocityDistribution;
+  newToConfirmed:  VelocityDistribution;
+  registeredToConfirmed: { p50: number | null; count: number };
+}
+
 export const analyticsApi = {
   /**
    * Returns consolidated KPI cards, funnel metrics, and trend series data.
@@ -55,4 +67,9 @@ export const analyticsApi = {
     apiClient.get<ApiResponse<MonthlyStats[]>>("/analytics/monthly", {
       params,
     }),
+
+  getVelocity: async () => {
+    const res = await apiClient.get<ApiResponse<VelocityData>>('/analytics/velocity');
+    return res.data.data;
+  },
 };

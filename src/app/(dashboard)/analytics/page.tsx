@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -29,7 +29,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { useT } from "@/i18n";
+import { useT, K } from "@/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AnalyticsSummaryParams } from "@/lib/schemas/analytics.schema";
 import { analyticsApi } from "@/lib/api/analytics";
@@ -352,7 +352,7 @@ export default function AnalyticsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const { summary, isLoading, fetchSummary } = useAnalyticsStore();
+  const { summary, isLoading, fetchSummary, velocityData, fetchVelocity } = useAnalyticsStore();
   const { user } = useAuthStore();
   const isSuperAdmin = user?.role === "SUPERADMIN";
   const [ragStats, setRagStats] = useState<import("@/lib/schemas/analytics.schema").RagStats | null>(null);
@@ -361,7 +361,8 @@ export default function AnalyticsPage() {
   // Fetch on mount and whenever timeframe changes
   useEffect(() => {
     fetchSummary({ timeframe });
-  }, [fetchSummary, timeframe]);
+    fetchVelocity();
+  }, [fetchSummary, timeframe, fetchVelocity]);
 
   // Fetch RAG stats — SUPERADMIN only, no call for other roles
   useEffect(() => {
@@ -820,95 +821,121 @@ export default function AnalyticsPage() {
             </div>
           </ChartInView>
 
-          {/* Conversion funnel full-width bar */}
-          <ChartInView className="bg-elevated rounded-xl p-5">
-            <div className="flex items-center justify-between mb-1">
-              <h2 className="font-sans font-semibold text-[15px] text-text-primary">
-                {t("analytics.charts.conversionFunnel")}
-              </h2>
-
-              <Pulse size={22} weight="duotone" />
-            </div>
-            <p className="text-xs font-sans mb-5 text-text-muted">
-              {t("analytics.funnel.desc")}
-            </p>
-            <ResponsiveContainer width="100%" height={120}>
-              <BarChart
-                data={funnelData}
-                margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
-                barSize={32}
-              >
-                <defs>
-                  {funnelData.map((f, i) => (
-                    <linearGradient
-                      key={i}
-                      id={`fGrad${i}`}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="0%" stopColor={f.fill} stopOpacity={0.85} />
-                      <stop
-                        offset="100%"
-                        stopColor={f.fill}
-                        stopOpacity={0.4}
-                      />
-                    </linearGradient>
-                  ))}
-                </defs>
-                <XAxis
-                  dataKey="name"
-                  tick={{
-                    fontSize: 10,
-                    fill: "var(--text-muted)",
-                    fontFamily: "inherit",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis hide />
-                <Tooltip
-                  content={({ active, payload, label }: any) =>
-                    active && payload?.length ? (
-                      <div
-                        style={{
-                          background: "var(--elevated)",
-                          border: "1px solid var(--border-subtle)",
-                          borderRadius: 10,
-                          padding: "8px 12px",
-                        }}
-                      >
-                        <p
-                          style={{
-                            fontSize: 11,
-                            color: "var(--text-muted)",
-                            marginBottom: 4,
-                          }}
-                        >
-                          {label}
-                        </p>
-                        <p
-                          style={{
-                            fontSize: 14,
-                            color: payload[0].fill,
-                            fontFamily: "var(--font-jetbrains-mono, monospace)",
-                          }}
-                        >
-                          {payload[0].value.toLocaleString()}
-                        </p>
+          {/* ── Lead Velocity & Time Distribution ── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Panel A — Stage Velocity */}
+            <ChartInView className="bg-elevated rounded-xl p-5">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="font-sans font-semibold text-[15px] text-text-primary">
+                  {t(K.analytics.velocity.title)}
+                </h2>
+                <ArrowsLeftRight size={20} weight="duotone" className="text-text-muted" />
+              </div>
+              <p className="text-xs font-sans mb-5 text-text-muted">{t(K.analytics.velocity.subtitle)}</p>
+              {!velocityData || velocityData.newToRegistered.count < 5 ? (
+                <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
+                  {t(K.analytics.velocity.noData)}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {[
+                    { label: t(K.analytics.velocity.newToReg),     value: velocityData.newToRegistered.p50,     color: "#a855f7" },
+                    { label: t(K.analytics.velocity.regToConfirm), value: velocityData.registeredToConfirmed.p50, color: "#22d3a0" },
+                    { label: t(K.analytics.velocity.newToConfirm), value: velocityData.newToConfirmed.p50,      color: "#C4232D" },
+                  ].map(({ label, value, color }) => {
+                    const max = Math.max(
+                      velocityData.newToRegistered.p50 ?? 0,
+                      velocityData.registeredToConfirmed.p50 ?? 0,
+                      velocityData.newToConfirmed.p50 ?? 0,
+                      1,
+                    );
+                    const pct = value != null ? (value / max) * 100 : 0;
+                    return (
+                      <div key={label}>
+                        <div className="flex justify-between text-[11px] font-sans mb-1">
+                          <span className="text-text-muted">{label}</span>
+                          <span className="data-mono" style={{ color }}>
+                            {value != null ? `${value} ${t(K.analytics.velocity.days)}` : "—"}
+                          </span>
+                        </div>
+                        <div className="h-2 rounded-full bg-void/40">
+                          <div
+                            className="h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, background: color, opacity: 0.8 }}
+                          />
+                        </div>
                       </div>
-                    ) : null
-                  }
-                />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                  {funnelData.map((f, i) => (
-                    <Cell key={i} fill={f.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartInView>
+                    );
+                  })}
+                </div>
+              )}
+            </ChartInView>
+
+            {/* Panel B — Time Distribution */}
+            <ChartInView className="bg-elevated rounded-xl p-5">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="font-sans font-semibold text-[15px] text-text-primary">
+                  {t(K.analytics.velocity.distribution)}
+                </h2>
+                <ChartBar size={20} weight="duotone" className="text-text-muted" />
+              </div>
+              <p className="text-xs font-sans mb-5 text-text-muted">
+                p25 · median · p75
+              </p>
+              {!velocityData || velocityData.newToRegistered.count < 5 ? (
+                <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
+                  {t(K.analytics.velocity.noData)}
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={120}>
+                  <BarChart
+                    data={[
+                      {
+                        name: t(K.analytics.velocity.newToReg),
+                        p25:  velocityData.newToRegistered.p25,
+                        p50:  velocityData.newToRegistered.p50,
+                        p75:  velocityData.newToRegistered.p75,
+                      },
+                      {
+                        name: t(K.analytics.velocity.newToConfirm),
+                        p25:  velocityData.newToConfirmed.p25,
+                        p50:  velocityData.newToConfirmed.p50,
+                        p75:  velocityData.newToConfirmed.p75,
+                      },
+                    ]}
+                    margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                    barSize={16}
+                    barGap={2}
+                  >
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 10, fill: "var(--text-muted)", fontFamily: "inherit" }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis hide />
+                    <Tooltip
+                      content={({ active, payload, label }: any) =>
+                        active && payload?.length ? (
+                          <div style={{ background: "var(--elevated)", border: "1px solid var(--border-subtle)", borderRadius: 10, padding: "8px 12px" }}>
+                            <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{label}</p>
+                            {payload.map((p: any) => (
+                              <p key={p.name} style={{ fontSize: 12, color: p.fill, fontFamily: "var(--font-jetbrains-mono, monospace)" }}>
+                                {p.name}: {p.value ?? "—"} {t(K.analytics.velocity.days)}
+                              </p>
+                            ))}
+                          </div>
+                        ) : null
+                      }
+                    />
+                    <Bar dataKey="p25" name={t(K.analytics.velocity.p25)} fill="#a855f7" fillOpacity={0.4} radius={[4,4,0,0]} />
+                    <Bar dataKey="p50" name={t(K.analytics.velocity.p50)} fill="#a855f7" fillOpacity={0.8} radius={[4,4,0,0]} />
+                    <Bar dataKey="p75" name={t(K.analytics.velocity.p75)} fill="#a855f7" fillOpacity={0.3} radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </ChartInView>
+          </div>
         </div>
       </div>
 

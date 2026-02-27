@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { superadminApi } from "@/lib/api/superadmin";
+import type { QueueStats, TokenUsageData, KbHealthData } from "@/lib/api/superadmin";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import { analyticsApi } from "@/lib/api/analytics";
 import type {
@@ -19,9 +20,13 @@ interface SuperadminState {
   users: UserResponse[];
   auditLogs: AuditLog[];
   ragStats: RagStats | null;
+  queues: QueueStats | null;
+  tokenUsage: TokenUsageData | null;
+  kbHealth: KbHealthData | null;
   isLoadingUsers: boolean;
   isLoadingLogs: boolean;
   isLoadingRag: boolean;
+  isLoadingOps: boolean;
   isMutating: boolean;
   error: string | null;
 }
@@ -30,6 +35,7 @@ interface SuperadminActions {
   fetchUsers: () => Promise<void>;
   fetchAuditLogs: (params?: ListAuditLogsParams) => Promise<void>;
   fetchRagStats: () => Promise<void>;
+  fetchOpsData: () => Promise<void>;
   createUser: (data: CreateUserInput) => Promise<void>;
   deactivateUser: (id: string) => Promise<void>;
   reactivateUser: (id: string) => Promise<void>;
@@ -43,9 +49,13 @@ export const useSuperadminStore = create<SuperadminState & SuperadminActions>()(
       users: [],
       auditLogs: [],
       ragStats: null,
+      queues: null,
+      tokenUsage: null,
+      kbHealth: null,
       isLoadingUsers: false,
       isLoadingLogs: false,
       isLoadingRag: false,
+      isLoadingOps: false,
       isMutating: false,
       error: null,
 
@@ -112,6 +122,24 @@ export const useSuperadminStore = create<SuperadminState & SuperadminActions>()(
           );
         } catch {
           set({ isLoadingRag: false }, false, "fetchRagStats/error");
+        }
+      },
+
+      fetchOpsData: async () => {
+        set({ isLoadingOps: true });
+        try {
+          const [queues, tokenUsage, kbHealth] = await Promise.allSettled([
+            superadminApi.getQueues(),
+            superadminApi.getTokenUsage(),
+            superadminApi.getKbHealth(),
+          ]);
+          set({
+            queues: queues.status === 'fulfilled' ? queues.value : null,
+            tokenUsage: tokenUsage.status === 'fulfilled' ? tokenUsage.value : null,
+            kbHealth: kbHealth.status === 'fulfilled' ? kbHealth.value : null,
+          });
+        } finally {
+          set({ isLoadingOps: false });
         }
       },
 

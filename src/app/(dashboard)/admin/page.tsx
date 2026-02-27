@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(useGSAP);
+import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useT, K } from "@/i18n";
 
 import {
   useReactTable,
@@ -792,6 +794,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { user: authUser } = useAuthStore();
   const containerRef = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   if (isMobile) return <MobileAdminDashboard />;
 
@@ -802,9 +805,14 @@ export default function AdminPage() {
     isLoadingUsers,
     isLoadingLogs,
     isLoadingRag,
+    queues,
+    tokenUsage,
+    kbHealth,
+    isLoadingOps,
     fetchUsers,
     fetchAuditLogs,
     fetchRagStats,
+    fetchOpsData,
     deactivateUser,
     reactivateUser,
   } = useSuperadminStore();
@@ -834,8 +842,11 @@ export default function AdminPage() {
       fetchUsers();
       fetchAuditLogs({ take: 100 });
       fetchRagStats();
+      fetchOpsData();
+      const interval = setInterval(() => { fetchOpsData(); }, 30_000);
+      return () => clearInterval(interval);
     }
-  }, [authUser, fetchUsers, fetchAuditLogs, fetchRagStats]);
+  }, [authUser, fetchUsers, fetchAuditLogs, fetchRagStats, fetchOpsData]);
 
   // ── GSAP ───────────────────────────────────────────────────────────
   useGSAP(
@@ -981,6 +992,124 @@ export default function AdminPage() {
             value={ragTokens}
             sub={ragStats ? `Avg ${(ragStats.avgChunksPerRequest ?? 0).toFixed(1)} chunks/reply` : "Loading…"}
             accent="crimson" loading={isLoadingRag} />
+        </div>
+
+        {/* ── Ops Dashboard — Bot Health + Queue Monitor + Token Budget + KB Health ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {/* Bot Health */}
+          <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.botHealth")}</span>
+              <div className={`w-2 h-2 rounded-full ${ragStats ? "bg-emerald-400" : "bg-text-muted"}`} />
+            </div>
+            <div className="space-y-1.5 text-[11px] font-sans">
+              {isLoadingRag ? (
+                <Skeleton className="h-3 w-full" />
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">{t("superadmin.ops.pendingUpdates")}</span>
+                    <span className="data-mono text-text-primary">—</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">{t("superadmin.ops.lastError")}</span>
+                    <span className="text-emerald-400">{t("superadmin.ops.noError")}</span>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Queue Monitor */}
+          <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.queues")}</span>
+              {isLoadingOps && <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />}
+            </div>
+            {isLoadingOps && !queues ? (
+              <div className="space-y-1"><Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-3/4" /></div>
+            ) : queues ? (
+              <div className="space-y-1">
+                {queues.queues.map((q) => (
+                  <div key={q.name} className="flex items-center justify-between text-[10px] font-sans">
+                    <span className="text-text-muted truncate max-w-[80px]">{q.name}</span>
+                    <div className="flex gap-1.5">
+                      <span className="text-text-muted">{t("superadmin.ops.waiting")} <span className="data-mono text-text-primary">{q.waiting}</span></span>
+                      {q.failed > 0 && <span className="text-red-400 data-mono font-bold">{q.failed}F</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="text-[11px] text-text-muted font-sans">—</span>
+            )}
+          </div>
+
+          {/* Token Budget */}
+          <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.tokenBudget")}</span>
+            </div>
+            {isLoadingOps && !tokenUsage ? (
+              <Skeleton className="h-16 w-full" />
+            ) : tokenUsage ? (
+              <>
+                <div className="text-[11px] font-sans space-y-0.5 mb-2">
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">{t("superadmin.ops.rolling30d")}</span>
+                    <span className="data-mono text-text-primary">{tokenUsage.rolling30dTokens.toLocaleString()} {t("superadmin.ops.tokens")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-text-muted">{t("superadmin.ops.estimatedCost")}</span>
+                    <span className="data-mono text-gold">${tokenUsage.rolling30dCostUsd.toFixed(4)}</span>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={36}>
+                  <AreaChart data={tokenUsage.daily} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                    <Area type="monotone" dataKey="tokens" stroke="#C4232D" fill="#C4232D" fillOpacity={0.15} strokeWidth={1.5} dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </>
+            ) : (
+              <span className="text-[11px] text-text-muted font-sans">—</span>
+            )}
+          </div>
+
+          {/* KB Health */}
+          <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-sans font-semibold text-[13px] text-text-primary">{t("superadmin.ops.kbHealth")}</span>
+            </div>
+            {isLoadingOps && !kbHealth ? (
+              <Skeleton className="h-12 w-full" />
+            ) : kbHealth ? (
+              <div className="space-y-2">
+                <div className="text-[11px] font-sans">
+                  <div className="flex justify-between mb-1">
+                    <span className="text-text-muted">{t("superadmin.ops.embeddingCoverage")}</span>
+                    <span className="data-mono text-text-primary">
+                      {kbHealth.embeddingCoverage.embedded}/{kbHealth.embeddingCoverage.total} {t("superadmin.ops.chunksEmbedded")}
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-void/40">
+                    <div
+                      className="h-1.5 rounded-full bg-crimson"
+                      style={{ width: kbHealth.embeddingCoverage.total > 0 ? `${(kbHealth.embeddingCoverage.embedded / kbHealth.embeddingCoverage.total) * 100}%` : "0%" }}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {Object.entries(kbHealth.byStatus).map(([status, count]) => (
+                    <span key={status} className="text-[9px] font-sans px-1.5 py-0.5 rounded bg-accent/10 text-text-muted">
+                      {status}: {count}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <span className="text-[11px] text-text-muted font-sans">—</span>
+            )}
+          </div>
         </div>
 
         {/* ── Users Table ── */}

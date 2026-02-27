@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { analyticsApi } from "@/lib/api/analytics";
+import type { VelocityData } from "@/lib/api/analytics";
 import type {
   AnalyticsDashboard,
   DailyStats,
@@ -20,6 +21,7 @@ interface AnalyticsState {
   today: DailyStats | null;
   weekly: WeeklyStats[];
   monthly: MonthlyStats[];
+  velocityData: VelocityData | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -30,6 +32,7 @@ interface AnalyticsActions {
   fetchToday: () => Promise<void>;
   fetchWeekly: (params?: WeeklyStatsParams) => Promise<void>;
   fetchMonthly: (params?: MonthlyStatsParams) => Promise<void>;
+  fetchVelocity: () => Promise<void>;
 }
 
 // ── Store ──────────────────────────────────────────────────────────────────
@@ -42,6 +45,7 @@ export const useAnalyticsStore = create<AnalyticsState & AnalyticsActions>()(
       today: null,
       weekly: [],
       monthly: [],
+      velocityData: null,
       isLoading: false,
       error: null,
 
@@ -139,6 +143,15 @@ export const useAnalyticsStore = create<AnalyticsState & AnalyticsActions>()(
             false,
             "fetchMonthly/error",
           );
+        }
+      },
+
+      fetchVelocity: async () => {
+        try {
+          const data = await analyticsApi.getVelocity();
+          set({ velocityData: data });
+        } catch {
+          // velocity is non-critical, fail silently
         }
       },
     }),

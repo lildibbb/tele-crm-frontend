@@ -262,6 +262,20 @@ export const K = {
       conversionFunnel: "analytics.charts.conversionFunnel",
       weeklyHeatmap:    "analytics.charts.weeklyHeatmap",
     },
+    /* ── Analytics Velocity ──────────────────────────────── */
+    velocity: {
+      title:        "analytics.velocity.title",
+      subtitle:     "analytics.velocity.subtitle",
+      distribution: "analytics.velocity.distribution",
+      newToReg:     "analytics.velocity.newToReg",
+      regToConfirm: "analytics.velocity.regToConfirm",
+      newToConfirm: "analytics.velocity.newToConfirm",
+      days:         "analytics.velocity.days",
+      noData:       "analytics.velocity.noData",
+      p25:          "analytics.velocity.p25",
+      p50:          "analytics.velocity.p50",
+      p75:          "analytics.velocity.p75",
+    },
   },
 
   /* ── Settings ─────────────────────────────────────── */
@@ -417,6 +431,28 @@ export const K = {
     pending:      "status.pending",
     approved:     "status.approved",
     rejected:     "status.rejected",
+  },
+
+  /* ── Superadmin Ops ──────────────────────────────────── */
+  superadminOps: {
+    botHealth:         "superadmin.ops.botHealth",
+    queues:            "superadmin.ops.queues",
+    tokenBudget:       "superadmin.ops.tokenBudget",
+    kbHealth:          "superadmin.ops.kbHealth",
+    webhookUrl:        "superadmin.ops.webhookUrl",
+    pendingUpdates:    "superadmin.ops.pendingUpdates",
+    lastError:         "superadmin.ops.lastError",
+    noError:           "superadmin.ops.noError",
+    waiting:           "superadmin.ops.waiting",
+    active:            "superadmin.ops.active",
+    failed:            "superadmin.ops.failed",
+    delayed:           "superadmin.ops.delayed",
+    rolling30d:        "superadmin.ops.rolling30d",
+    estimatedCost:     "superadmin.ops.estimatedCost",
+    embeddingCoverage: "superadmin.ops.embeddingCoverage",
+    chunksEmbedded:    "superadmin.ops.chunksEmbedded",
+    tokens:            "superadmin.ops.tokens",
+    refresh:           "superadmin.ops.refresh",
   },
 } as const;
 

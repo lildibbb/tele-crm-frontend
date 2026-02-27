@@ -7,6 +7,30 @@ import type {
 import type { ChangePasswordInput } from "@/lib/schemas/auth.schema";
 import type { ApiResponse } from "@/lib/schemas/common";
 
+export interface QueueJobCount {
+  name: string;
+  waiting: number;
+  active: number;
+  completed: number;
+  failed: number;
+  delayed: number;
+}
+export interface QueueStats { queues: QueueJobCount[] }
+
+export interface TokenDay { date: string; tokens: number; estimatedCostUsd: number }
+export interface TokenUsageData {
+  daily: TokenDay[];
+  rolling30dTokens: number;
+  rolling30dCostUsd: number;
+}
+
+export interface KbHealthData {
+  total: number;
+  byStatus: Record<string, number>;
+  byType: Record<string, number>;
+  embeddingCoverage: { total: number; embedded: number };
+}
+
 /**
  * Superadmin-only API endpoints for system administration.
  * These endpoints require SUPERADMIN role.
@@ -53,4 +77,17 @@ export const superadminApi = {
    */
   changeUserRole: (id: string, data: ChangeRoleInput) =>
     apiClient.patch<ApiResponse<UserResponse>>(`/superadmin/users/${id}/role`, data),
+
+  getQueues: async (): Promise<QueueStats> => {
+    const res = await apiClient.get<ApiResponse<QueueStats>>('/superadmin/queues');
+    return res.data.data;
+  },
+  getTokenUsage: async (): Promise<TokenUsageData> => {
+    const res = await apiClient.get<ApiResponse<TokenUsageData>>('/superadmin/token-usage');
+    return res.data.data;
+  },
+  getKbHealth: async (): Promise<KbHealthData> => {
+    const res = await apiClient.get<ApiResponse<KbHealthData>>('/superadmin/kb-health');
+    return res.data.data;
+  },
 };
