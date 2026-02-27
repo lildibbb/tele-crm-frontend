@@ -25,6 +25,7 @@ export const LeadResponseSchema = z.object({
   registeredAt: z.string().nullable(),
   verifiedAt: z.string().nullable(),
   handoverMode: z.boolean(),
+  groupTopicId: z.number().nullable().optional(),
   aiScore: z.number().nullable().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

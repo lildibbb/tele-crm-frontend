@@ -22,6 +22,7 @@ export function BotConfigTab() {
     greeting: "",
     groupId: "",
     groupThreadEnabled: false,
+    forwardEnabled: true,
     active: true,
     followUpEnabled: true,
   });
@@ -41,6 +42,7 @@ export function BotConfigTab() {
       greeting: entries["bot.welcomeMessage"] ?? "",
       groupId: entries["bot.groupId"] ?? "",
       groupThreadEnabled: entries["bot.groupThreadEnabled"] === "true",
+      forwardEnabled: entries["bot.forwardEnabled"] !== "false",
       active: entries["bot.active"] !== "false",
       followUpEnabled: entries["followUp.enabled"] !== "false",
     });
@@ -54,6 +56,7 @@ export function BotConfigTab() {
       "bot.welcomeMessage": draft.greeting,
       "bot.groupId": draft.groupId,
       "bot.groupThreadEnabled": String(draft.groupThreadEnabled),
+      "bot.forwardEnabled": String(draft.forwardEnabled),
       "bot.active": String(draft.active),
       "followUp.enabled": String(draft.followUpEnabled),
     });
@@ -190,6 +193,21 @@ export function BotConfigTab() {
               <Switch
                 checked={draft.followUpEnabled}
                 onCheckedChange={(c) => setDraft({ ...draft, followUpEnabled: c })}
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Forward to admin toggle */}
+            <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+              <div>
+                <p className="font-sans text-sm font-medium text-text-primary">Forward Messages to Admin</p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">
+                  Forward every lead message to the admin Telegram ID for monitoring
+                </p>
+              </div>
+              <Switch
+                checked={draft.forwardEnabled}
+                onCheckedChange={(c) => setDraft({ ...draft, forwardEnabled: c })}
                 disabled={isLoading}
               />
             </div>

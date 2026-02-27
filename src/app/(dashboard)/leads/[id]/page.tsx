@@ -30,6 +30,7 @@ import {
   UserSwitch,
   Paperclip,
   CaretRight,
+  Hash,
 } from "@phosphor-icons/react";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { useT } from "@/i18n";
@@ -613,6 +614,24 @@ export default function LeadDetailPage({
                     )}
                   </Button>
                 </div>
+
+                {/* Group Thread Topic */}
+                {lead.groupTopicId != null && (
+                  <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
+                    <Hash className="h-4 w-4 text-text-muted flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-0.5">
+                        Group Thread
+                      </p>
+                      <p className="data-mono text-[12px] text-text-primary">
+                        Topic #{lead.groupTopicId}
+                      </p>
+                    </div>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+                      Active
+                    </span>
+                  </div>
+                )}
 
                 {/* Action buttons */}
                 <div className="pt-1 flex items-center gap-2 flex-wrap">
