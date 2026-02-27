@@ -7,14 +7,12 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileLeadDetail } from "@/components/mobile";
 import {
   CaretLeft,
-  Clock,
   CheckCircle,
   XCircle,
   Link as LinkIcon,
   PencilSimple,
   PaperPlaneRight,
   Play,
-  Image as ImageIcon,
   Robot,
   UserCircle,
   Chat,
@@ -30,15 +28,6 @@ import {
   CalendarCheck,
   CurrencyDollar,
   UserSwitch,
-  FilePdf,
-  FileImage,
-  FileVideo,
-  FileAudio,
-  FileDoc,
-  FileXls,
-  FileCsv,
-  FileZip,
-  File,
   Paperclip,
   CaretRight,
 } from "@phosphor-icons/react";
@@ -66,7 +55,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
@@ -110,40 +98,64 @@ function mapToTimelineEvent(ix: Interaction, idx: number) {
   };
 }
 
-// ── File type helpers ────────────────────────────────────────────────────────
+// ── File type badge (real-looking colored SVG icons) ────────────────────────
 
-function getFileIcon(mimeType: string | null | undefined): React.ElementType {
-  if (!mimeType) return File;
-  if (mimeType === "application/pdf") return FilePdf;
-  if (mimeType.startsWith("image/")) return FileImage;
-  if (mimeType.startsWith("video/")) return FileVideo;
-  if (mimeType.startsWith("audio/")) return FileAudio;
-  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv") return FileCsv;
-  if (mimeType.includes("wordprocessing") || mimeType.includes("msword")) return FileDoc;
-  if (mimeType.includes("zip") || mimeType.includes("x-tar") || mimeType.includes("x-rar")) return FileZip;
-  return File;
+interface FileBadgeConfig { bg: string; fg: string; label: string; }
+
+function getFileBadgeConfig(mimeType: string | null | undefined): FileBadgeConfig {
+  if (!mimeType) return { bg: "#64748B", fg: "#fff", label: "FILE" };
+  if (mimeType === "application/pdf")                                            return { bg: "#DC2626", fg: "#fff", label: "PDF" };
+  if (mimeType === "text/csv")                                                   return { bg: "#16A34A", fg: "#fff", label: "CSV" };
+  if (mimeType.includes("spreadsheet") || mimeType.includes("excel"))           return { bg: "#15803D", fg: "#fff", label: "XLS" };
+  if (mimeType.includes("wordprocessing") || mimeType.includes("msword"))       return { bg: "#1D4ED8", fg: "#fff", label: "DOC" };
+  if (mimeType.includes("presentation") || mimeType.includes("powerpoint"))     return { bg: "#C2410C", fg: "#fff", label: "PPT" };
+  if (mimeType.startsWith("image/"))                                             return { bg: "#0284C7", fg: "#fff", label: "IMG" };
+  if (mimeType.startsWith("video/"))                                             return { bg: "#7C3AED", fg: "#fff", label: "VID" };
+  if (mimeType.startsWith("audio/"))                                             return { bg: "#0891B2", fg: "#fff", label: "AUD" };
+  if (mimeType.includes("zip") || mimeType.includes("tar") || mimeType.includes("rar")) return { bg: "#B45309", fg: "#fff", label: "ZIP" };
+  if (mimeType === "text/plain")                                                 return { bg: "#6B7280", fg: "#fff", label: "TXT" };
+  return { bg: "#64748B", fg: "#fff", label: "FILE" };
 }
 
-function getFileIconColor(mimeType: string | null | undefined): string {
-  if (!mimeType) return "text-text-muted";
-  if (mimeType === "application/pdf") return "text-[#e44d26]";
-  if (mimeType.startsWith("image/")) return "text-info";
-  if (mimeType.startsWith("video/")) return "text-crimson";
-  if (mimeType.startsWith("audio/")) return "text-gold";
-  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv") return "text-success";
-  if (mimeType.includes("wordprocessing") || mimeType.includes("msword")) return "text-[#2b5797]";
-  return "text-text-muted";
+function FileTypeBadge({ mimeType, size = 40 }: { mimeType: string | null | undefined; size?: number }) {
+  const { bg, fg, label } = getFileBadgeConfig(mimeType);
+  const w = size;
+  const h = Math.round(size * 1.25);
+  // Corner fold = 25% of width
+  const fold = Math.round(w * 0.27);
+  return (
+    <svg width={w} height={h} viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Page body */}
+      <path d={`M0 4C0 1.8 1.8 0 4 0H27L40 13V46C40 48.2 38.2 50 36 50H4C1.8 50 0 48.2 0 46V4Z`} fill={bg} />
+      {/* Folded corner shadow */}
+      <path d={`M27 0L40 13H30C28.3 13 27 11.7 27 10V0Z`} fill="rgba(0,0,0,0.25)" />
+      {/* Extension label */}
+      <text
+        x="20"
+        y="36"
+        fontSize={label.length > 3 ? "8" : "9"}
+        fontWeight="800"
+        fill={fg}
+        textAnchor="middle"
+        fontFamily="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif"
+        letterSpacing="0.5"
+      >
+        {label}
+      </text>
+    </svg>
+  );
 }
 
-function getFileIconBg(mimeType: string | null | undefined): string {
-  if (!mimeType) return "bg-text-muted/10";
-  if (mimeType === "application/pdf") return "bg-[#e44d26]/10";
-  if (mimeType.startsWith("image/")) return "bg-info/10";
-  if (mimeType.startsWith("video/")) return "bg-crimson/10";
-  if (mimeType.startsWith("audio/")) return "bg-gold/10";
-  if (mimeType.includes("spreadsheet") || mimeType.includes("excel") || mimeType === "text/csv") return "bg-success/10";
-  if (mimeType.includes("wordprocessing") || mimeType.includes("msword")) return "bg-info/10";
-  return "bg-text-muted/10";
+// Small inline chip variant (for message bubbles)
+function FileTypeChip({ mimeType, size = 16 }: { mimeType: string | null | undefined; size?: number }) {
+  const { bg, fg, label } = getFileBadgeConfig(mimeType);
+  return (
+    <span
+      style={{ background: bg, color: fg, fontSize: 8, lineHeight: 1, padding: "2px 4px", borderRadius: 3, fontWeight: 800, letterSpacing: "0.3px", flexShrink: 0, display: "inline-flex", alignItems: "center", width: size + 4, justifyContent: "center" }}
+    >
+      {label.slice(0, 3)}
+    </span>
+  );
 }
 
 function formatFileSize(bytes: number | null | undefined): string {
@@ -241,7 +253,7 @@ function MediaLightbox({
               />
             ) : (
               <div className="flex flex-col items-center gap-4 p-12 text-text-muted">
-                {React.createElement(getFileIcon(item.mimeType), { size: 48, className: getFileIconColor(item.mimeType) })}
+                <FileTypeBadge mimeType={item.mimeType} size={56} />
                 <p className="text-sm font-sans text-text-secondary">{item.name}</p>
                 {item.size && <p className="text-xs text-text-muted">{formatFileSize(item.size)}</p>}
                 <p className="text-xs text-text-muted">Preview not available</p>
@@ -746,9 +758,6 @@ export default function LeadDetailPage({
                       const name = getFileName(file);
                       const img = isImage(file.mimeType);
                       const vid = isVideo(file.mimeType);
-                      const FileIcon = getFileIcon(file.mimeType);
-                      const iconColor = getFileIconColor(file.mimeType);
-                      const iconBg = getFileIconBg(file.mimeType);
                       const mediaType: "image" | "video" | "file" = img ? "image" : vid ? "video" : "file";
                       return (
                         <button
@@ -773,14 +782,14 @@ export default function LeadDetailPage({
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                               />
                             ) : vid && file.fileUrl ? (
-                              <div className="w-full h-full flex items-center justify-center bg-black/40">
+                              <div className="w-full h-full flex items-center justify-center bg-black/50">
                                 <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
                                   <Play size={14} className="text-white ml-0.5" weight="fill" />
                                 </div>
                               </div>
                             ) : (
-                              <div className={`w-full h-full flex items-center justify-center ${iconBg}`}>
-                                <FileIcon size={32} className={iconColor} weight="duotone" />
+                              <div className="w-full h-full flex items-center justify-center bg-card/60">
+                                <FileTypeBadge mimeType={file.mimeType} size={36} />
                               </div>
                             )}
                             {/* Hover overlay */}
@@ -793,7 +802,7 @@ export default function LeadDetailPage({
                           {/* File info */}
                           <div className="px-0.5">
                             <div className="flex items-center gap-1.5 mb-0.5">
-                              <FileIcon size={11} className={iconColor} weight="duotone" />
+                              <FileTypeChip mimeType={file.mimeType} />
                               <p className="text-[11px] font-sans font-medium text-text-primary truncate flex-1">{name}</p>
                             </div>
                             <div className="flex items-center justify-between">
@@ -829,7 +838,10 @@ export default function LeadDetailPage({
                 )}
               </div>
               <div className="p-5">
-                <ScrollArea className="max-h-64">
+                <div
+                  className="overflow-y-auto pr-1"
+                  style={{ maxHeight: 256, scrollbarWidth: "thin" }}
+                >
                 <div className="relative" ref={timelineRef}>
                   <div className="absolute left-[11px] top-0 bottom-0 w-px bg-border-subtle" />
                   <div className="space-y-4">
@@ -867,7 +879,7 @@ export default function LeadDetailPage({
                     )}
                   </div>
                 </div>
-                </ScrollArea>
+                </div>
               </div>
             </div>
           </div>
@@ -925,7 +937,7 @@ export default function LeadDetailPage({
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
               <div className="p-4 space-y-3">
                 {messages.map((msg, i) => {
                   if (msg.side === "system")
@@ -973,11 +985,7 @@ export default function LeadDetailPage({
                         {/* Attachment chip */}
                         {hasAttachment && (
                           <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${isUser ? "bg-elevated" : "bg-card/40"}`}>
-                            {React.createElement(getFileIcon(attachMime), {
-                              size: 14,
-                              className: getFileIconColor(attachMime),
-                              weight: "duotone",
-                            })}
+                            <FileTypeChip mimeType={attachMime} />
                             <span className="text-[11px] font-sans text-text-secondary truncate max-w-[140px]">
                               {attachName ?? attachMime ?? "Attachment"}
                             </span>
@@ -997,7 +1005,7 @@ export default function LeadDetailPage({
                 })}
                 <div ref={messagesEndRef} />
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Reply input */}
             <div
