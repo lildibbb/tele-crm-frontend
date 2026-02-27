@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import apiClient from '@/lib/api/apiClient';
-import type { ApiResponse } from '@/lib/schemas/api.schema';
+import { apiClient } from '@/lib/api/apiClient';
+import type { ApiResponse } from '@/lib/schemas/common';
 
 interface FeatureFlags {
   knowledgeBase: boolean;
