@@ -616,6 +616,7 @@ const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: string; 
       { key: "bot.handoverMessage", label: "Handover Message", description: "Sent when handing over to a human agent", type: "textarea" },
       { key: "bot.registrationUrl", label: "Registration URL", description: "URL linked in registration prompts", type: "text" },
       { key: "bot.depositFormUrl", label: "Deposit Form URL", description: "URL linked in deposit prompts", type: "text" },
+      { key: "bot.groupId", label: "Group Forum ID", description: "Telegram supergroup ID for thread mirroring (e.g. -1001234567890)", type: "text" },
     ],
   },
   {

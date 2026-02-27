@@ -20,6 +20,7 @@ export function BotConfigTab() {
     name: "",
     systemPrompt: "",
     greeting: "",
+    groupId: "",
     active: true,
     followUpEnabled: true,
   });
@@ -37,6 +38,7 @@ export function BotConfigTab() {
       name: entries["persona.name"] ?? "TitanBot",
       systemPrompt: entries["bot.systemPrompt"] ?? "",
       greeting: entries["bot.welcomeMessage"] ?? "",
+      groupId: entries["bot.groupId"] ?? "",
       active: entries["bot.active"] !== "false",
       followUpEnabled: entries["followUp.enabled"] !== "false",
     });
@@ -48,6 +50,7 @@ export function BotConfigTab() {
       "persona.name": draft.name,
       "bot.systemPrompt": draft.systemPrompt,
       "bot.welcomeMessage": draft.greeting,
+      "bot.groupId": draft.groupId,
       "bot.active": String(draft.active),
       "followUp.enabled": String(draft.followUpEnabled),
     });
@@ -108,6 +111,23 @@ export function BotConfigTab() {
               />
               <p className="text-[11px] text-text-muted mt-1 font-sans">
                 This is the first message the bot sends to new Telegram leads.
+              </p>
+            </div>
+
+            {/* Telegram Group Forum */}
+            <div className="space-y-1.5 border-t border-border-subtle pt-4">
+              <Label htmlFor="group-id">Telegram Group Forum ID</Label>
+              <Input
+                id="group-id"
+                value={draft.groupId}
+                onChange={(e) => setDraft({ ...draft, groupId: e.target.value })}
+                placeholder="e.g. -1001234567890"
+                className="text-sm font-mono"
+                disabled={isLoading}
+              />
+              <p className="text-[11px] text-text-muted mt-1 font-sans">
+                Supergroup ID for thread mirroring — each lead gets their own topic.
+                Enable <strong>Topics</strong> in your group settings and add the bot as admin first.
               </p>
             </div>
           </div>
