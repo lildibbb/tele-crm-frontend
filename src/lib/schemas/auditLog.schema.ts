@@ -21,10 +21,13 @@ export const AuditActionSchema = z.enum([
 export const AuditLogSchema = z.object({
   id: z.string(),
   userId: z.string().nullable(),
+  userEmail: z.string().nullable().optional(),
+  userRole: z.string().nullable().optional(),
   action: AuditActionSchema,
   resourceType: z.string().nullable().optional(),
   resourceId: z.string().nullable().optional(),
-  metadata: z.record(z.string(), z.unknown()).nullable().optional(),
+  before: z.record(z.string(), z.unknown()).nullable().optional(),
+  after: z.record(z.string(), z.unknown()).nullable().optional(),
   ipAddress: z.string().nullable().optional(),
   createdAt: z.string().datetime(),
 });
@@ -33,6 +36,7 @@ export type AuditLog = z.infer<typeof AuditLogSchema>;
 
 export const ListAuditLogsParamsSchema = z.object({
   userId: z.string().optional(),
+  userEmail: z.string().optional(),
   action: AuditActionSchema.optional(),
   resourceType: z.string().optional(),
   from: z.string().optional(),

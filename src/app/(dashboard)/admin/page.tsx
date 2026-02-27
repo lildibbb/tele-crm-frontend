@@ -92,6 +92,13 @@ import {
   Cpu,
 } from "@phosphor-icons/react";
 
+import {
+  auditIconMap as auditIconMapShared,
+  auditColorMap as auditColorMapShared,
+  formatAuditAction,
+  auditFallbackIcon,
+} from "@/lib/audit-utils";
+
 import type { UserResponse } from "@/lib/schemas/user.schema";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -109,39 +116,8 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-const auditIconMap: Partial<Record<AuditAction, React.ElementType>> = {
-  USER_CREATED: UserPlus,
-  USER_DEACTIVATED: ProhibitInset,
-  USER_REACTIVATED: ArrowCounterClockwise,
-  USER_ROLE_CHANGED: PencilSimple,
-  PASSWORD_CHANGED: LockKey,
-  LEAD_STATUS_CHANGED: CheckCircle,
-  LEAD_VERIFIED: CheckCircle,
-  KB_CREATED: Database,
-  KB_UPDATED: Gear,
-  KB_DELETED: X,
-  COMMAND_MENU_CREATED: ChatText,
-  COMMAND_MENU_UPDATED: Gear,
-  COMMAND_MENU_DELETED: X,
-  SYSTEM_CONFIG_CHANGED: Gear,
-};
-
-const auditColorMap: Partial<Record<AuditAction, string>> = {
-  USER_CREATED: "text-info",
-  USER_DEACTIVATED: "text-danger",
-  USER_REACTIVATED: "text-success",
-  USER_ROLE_CHANGED: "text-gold",
-  PASSWORD_CHANGED: "text-warning",
-  LEAD_VERIFIED: "text-success",
-  SYSTEM_CONFIG_CHANGED: "text-crimson",
-};
-
-function formatAuditAction(action: string): string {
-  return action
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
+const auditIconMap = auditIconMapShared;
+const auditColorMap = auditColorMapShared;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -351,7 +327,7 @@ function getAuditColumns(): ColumnDef<AuditLog>[] {
       ),
       cell: ({ row }) => {
         const action = row.original.action;
-        const IconComp = auditIconMap[action] ?? Pulse;
+        const IconComp = auditIconMap[action] ?? auditFallbackIcon;
         const colorCls = auditColorMap[action] ?? "text-text-secondary";
         return (
           <div className="flex items-center gap-2">
