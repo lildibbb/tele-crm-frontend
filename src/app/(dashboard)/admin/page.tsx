@@ -615,7 +615,13 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
 
 // ─── System Config Panel ──────────────────────────────────────────────────────
 
-type FieldDef = { key: string; label: string; description?: string; type: "text" | "textarea" | "number" | "toggle"; };
+type FieldDef = { key: string; label: string; description?: string; type: "text" | "textarea" | "number" | "toggle"; defaultValue?: string; };
+
+/** Default values for keys that are not yet persisted in DB — must match backend fallback defaults */
+const FIELD_DEFAULTS: Record<string, string> = {
+  "bot.active":       "true",
+  "bot.hydeEnabled":  "true",  // backend defaults to true (see bot.service.ts ?? true)
+};
 
 const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: string; fields: FieldDef[] }[] = [
   {
@@ -690,7 +696,7 @@ function SystemConfigPanel() {
     });
   }, [entries]);
 
-  const getValue = (key: string) => drafts[key] ?? entries[key] ?? "";
+  const getValue = (key: string) => drafts[key] ?? entries[key] ?? FIELD_DEFAULTS[key] ?? "";
   const setValue = (key: string, val: string) => setDrafts((d) => ({ ...d, [key]: val }));
 
   const handleSaveSection = async (sectionTitle: string, fields: FieldDef[]) => {
