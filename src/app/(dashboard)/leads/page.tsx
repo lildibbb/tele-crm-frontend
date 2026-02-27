@@ -47,6 +47,7 @@ import { useDataTable } from "@/lib/hooks/use-data-table";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { getLeadsColumns } from "./_components/leads-columns";
 import { Input } from "@/components/ui/input";
+import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
 
 gsap.registerPlugin(useGSAP);
 
@@ -54,6 +55,7 @@ export default function LeadsPage() {
   const t = useT();
   const isMobile = useIsMobile();
   const tableRef = useRef<HTMLDivElement>(null);
+  const isBlocked = useIsMaintenanceBlocked();
 
   const {
     leads,
@@ -347,12 +349,22 @@ export default function LeadsPage() {
                     ? t("common.exportReady")
                     : t("common.export")}
               </Button>
-              <Button
-                size="sm"
-                className="h-8 gap-1.5 text-xs bg-crimson hover:bg-crimson-hover text-white font-medium"
-              >
-                <Plus className="h-3.5 w-3.5 font-bold" /> Add Lead
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      size="sm"
+                      disabled={isBlocked}
+                      className="h-8 gap-1.5 text-xs bg-crimson hover:bg-crimson-hover text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Plus className="h-3.5 w-3.5 font-bold" /> Add Lead
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {isBlocked && (
+                  <TooltipContent>Read-only during maintenance</TooltipContent>
+                )}
+              </Tooltip>
             </div>
           </div>
 

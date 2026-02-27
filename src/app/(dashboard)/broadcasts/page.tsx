@@ -26,6 +26,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useT, K } from "@/i18n";
+import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -60,6 +62,8 @@ function StatusChip({ status }: { status: BroadcastStatus }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function BroadcastsPage() {
+  const broadcastEnabled = useMaintenanceStore((s) => s.featureFlags.broadcast);
+  const isBlocked = !broadcastEnabled;
   const {
     message,
     photoUrl,
@@ -103,6 +107,9 @@ export default function BroadcastsPage() {
 
   return (
     <div className="space-y-6 animate-in-up">
+      {!broadcastEnabled && (
+        <FeatureDisabledBanner feature="Broadcast Messages" />
+      )}
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
@@ -384,8 +391,9 @@ export default function BroadcastsPage() {
                 {t(K.common.cancel)}
               </Button>
               <Button
-                onClick={() => void handleSend()}
-                className="flex-1 bg-crimson hover:bg-crimson/90 text-white gap-2"
+                onClick={() => !isBlocked && void handleSend()}
+                disabled={isBlocked}
+                className="flex-1 bg-crimson hover:bg-crimson/90 text-white gap-2 disabled:opacity-50"
               >
                 <PaperPlaneRight className="h-4 w-4" />
                 {t(K.broadcast.sendNow)}

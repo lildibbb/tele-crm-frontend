@@ -63,6 +63,7 @@ import {
   FileTypeBadge,
   FileTypeChip,
 } from "@/components/ui/file-type-badge";
+import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
 
 gsap.registerPlugin(useGSAP);
 
@@ -246,6 +247,7 @@ export default function LeadDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const t = useT();
+  const isBlocked = useIsMaintenanceBlocked();
   const { id } = React.use(params);
   const {
     updateStatus,
@@ -653,14 +655,17 @@ export default function LeadDetailPage({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="gap-1.5 text-xs"
-                        onClick={() => setShowEditModal(true)}
+                        disabled={isBlocked}
+                        className="gap-1.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => !isBlocked && setShowEditModal(true)}
                       >
                         <PencilSimple className="h-3.5 w-3.5" />{" "}
                         {t("lead.edit")}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>Edit lead details</TooltipContent>
+                    <TooltipContent>
+                      {isBlocked ? "Read-only during maintenance" : "Edit lead details"}
+                    </TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>

@@ -88,6 +88,8 @@ import {
   type TiptapDoc,
 } from "@/lib/schemas/commandMenu.schema";
 import { toast } from "sonner";
+import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -327,6 +329,7 @@ function SortableCommandRow({
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function CommandsTab() {
+  const commandMenuEnabled = useMaintenanceStore((s) => s.featureFlags.commandMenu);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [activePane, setActivePane] = useState<"edit" | "preview">("edit");
@@ -515,6 +518,9 @@ export function CommandsTab() {
 
   return (
     <div className="space-y-5 animate-in-up relative">
+      {!commandMenuEnabled && (
+        <FeatureDisabledBanner feature="Command Menus" />
+      )}
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>

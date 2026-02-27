@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { ReactNode, useEffect } from "react";
 import Link from "next/link";
@@ -8,6 +8,8 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useT, useLocale } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
+import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { MaintenanceBanner } from "@/components/maintenance/MaintenanceBanner";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
   SidebarProvider,
@@ -33,6 +35,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isInitialized } = useAuthStore();
+  const fetchPublicConfig = useMaintenanceStore((s) => s.fetchPublicConfig);
   const t = useT();
   const { locale, setLocale } = useLocale();
   const isMobile = useIsMobile();
@@ -43,6 +46,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       router.replace("/login");
     }
   }, [isInitialized, user, router]);
+
+  // Fetch public config (maintenance mode + feature flags) on mount
+  useEffect(() => {
+    fetchPublicConfig();
+  }, [fetchPublicConfig]);
 
   const toggleLocale = () =>
     setLocale(locale === "en" ? "ms" : ("en" as Locale));
@@ -57,6 +65,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="flex bg-void min-h-[100dvh] w-full overflow-hidden">
         <AppSidebar />
         <SidebarInset className="bg-void border-none shadow-none z-10 flex-1 flex flex-col min-w-0 h-[100svh] overflow-hidden rounded-xl transition-all duration-300">
+          {/* Maintenance mode banner — above topbar */}
+          <MaintenanceBanner />
           {/* Topbar */}
           <header className="h-14 backdrop-blur-xl bg-transparent rounded-xl flex items-center justify-between px-4 md:px-5 flex-shrink-0 z-30">
             <div className="flex items-center gap-3">

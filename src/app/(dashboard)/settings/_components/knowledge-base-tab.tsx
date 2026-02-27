@@ -46,6 +46,8 @@ import { useKbStore } from "@/store/kbStore";
 import { CreateKbSchema, type CreateKbInput } from "@/lib/schemas/kb.schema";
 import { KbType, KbStatus } from "@/types/enums";
 import { toast } from "sonner";
+import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
 const TYPE_CONFIG: Record<
   string,
@@ -111,6 +113,7 @@ const KB_TYPE_MIME: Record<string, string> = {
 type ModalTab = "text" | "upload" | "link";
 
 export function KnowledgeBaseTab() {
+  const kbEnabled = useMaintenanceStore((s) => s.featureFlags.knowledgeBase);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -256,6 +259,9 @@ export function KnowledgeBaseTab() {
 
   return (
     <div className="space-y-5 animate-in-up">
+      {!kbEnabled && (
+        <FeatureDisabledBanner feature="Knowledge Base Processing" />
+      )}
       {/* Page header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
