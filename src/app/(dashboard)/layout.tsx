@@ -28,7 +28,12 @@ const PAGE_TITLE_KEYS: Record<string, string> = {
   "/settings/commands": "settings.commands",
   "/settings/team": "settings.team",
   "/settings/sessions": "settings.sessions",
-  "/admin": "nav.superAdmin",
+  "/admin/overview": "nav.superAdmin",
+  "/admin/users": "nav.superAdmin",
+  "/admin/maintenance": "nav.superAdmin",
+  "/admin/system": "nav.superAdmin",
+  "/admin/backup": "nav.superAdmin",
+  "/admin/secrets": "nav.superAdmin",
 };
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

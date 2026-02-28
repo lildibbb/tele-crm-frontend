@@ -48,7 +48,7 @@ const ALL_NAV_ITEMS = [
   { href: "/audit-logs",   icon: ClipboardText, labelKey: "nav.auditLogs",       roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN] },
   { href: "/analytics",    icon: ChartBar,    labelKey: "nav.analytics",         roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
   { href: "/settings",     icon: Sliders,     labelKey: "nav.settings",          roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
-  { href: "/admin",        icon: Crown,       labelKey: "nav.superAdmin",        roles: [UserRole.SUPERADMIN] },
+  { href: "/admin/overview", icon: Crown,       labelKey: "nav.superAdmin",        roles: [UserRole.SUPERADMIN] },
 ];
 
 export const NAV_ITEMS = ALL_NAV_ITEMS;
