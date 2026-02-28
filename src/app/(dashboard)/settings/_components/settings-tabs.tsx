@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Bot, BookOpen, Terminal, Users, Brain } from "lucide-react";
+import { Bot, BookOpen, Terminal, Users, Brain, Link2 } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -15,6 +15,7 @@ import { KnowledgeBaseTab } from "./knowledge-base-tab";
 import { CommandsTab } from "./commands-tab";
 import { TeamTab } from "./team-tab";
 import { AiFeedbackTab } from "./ai-feedback-tab";
+import { IntegrationsTab } from "./integrations-tab";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types/enums";
 
@@ -45,6 +46,13 @@ const ALL_SETTINGS_TABS = [
     value: "team",
     icon: Users,
     content: <TeamTab />,
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
+  },
+  {
+    name: "Integrations",
+    value: "integrations",
+    icon: Link2,
+    content: <IntegrationsTab />,
     roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
   },
   {

@@ -7,6 +7,29 @@ import type {
 import type { ChangePasswordInput } from "@/lib/schemas/auth.schema";
 import type { ApiResponse } from "@/lib/schemas/common";
 
+// ── Backup ────────────────────────────────────────────────────────────────────
+
+export type BackupStatus = "success" | "partial" | "failed";
+
+export interface BackupLog {
+  id: string;
+  filename: string;
+  sizeBytes: number;
+  destinations: string[];
+  status: BackupStatus;
+  error: string | null;
+  createdAt: string;
+}
+
+// ── Secrets ───────────────────────────────────────────────────────────────────
+
+export interface SecretMeta {
+  key: string;
+  description: string | null;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
 export interface QueueJobCount {
   name: string;
   waiting: number;
@@ -90,4 +113,23 @@ export const superadminApi = {
     const res = await apiClient.get<ApiResponse<KbHealthData>>('/superadmin/kb-health');
     return res.data.data;
   },
+
+  // ── Backup ───────────────────────────────────────────────────────────────
+
+  triggerBackup: () =>
+    apiClient.post<ApiResponse<{ message: string }>>("/superadmin/backup/trigger"),
+
+  getBackupHistory: (limit = 10) =>
+    apiClient.get<ApiResponse<BackupLog[]>>(`/superadmin/backup/history?limit=${limit}`),
+
+  // ── Secrets ──────────────────────────────────────────────────────────────
+
+  listSecrets: () =>
+    apiClient.get<ApiResponse<SecretMeta[]>>("/superadmin/secrets"),
+
+  setSecret: (data: { key: string; value: string; description?: string }) =>
+    apiClient.post<void>("/superadmin/secrets", data),
+
+  deleteSecret: (key: string) =>
+    apiClient.delete<void>(`/superadmin/secrets/${key}`),
 };

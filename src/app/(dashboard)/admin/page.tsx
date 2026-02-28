@@ -104,6 +104,8 @@ import type { UserResponse } from "@/lib/schemas/user.schema";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileAdminDashboard } from "@/components/mobile";
+import { BackupPanel } from "@/components/superadmin/backup-panel";
+import { SecretsPanel } from "@/components/superadmin/secrets-panel";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1507,6 +1509,12 @@ export default function AdminPage() {
 
         {/* ── System Configuration ── */}
         <SystemConfigPanel />
+
+        {/* ── Database Backup ── */}
+        <BackupPanel />
+
+        {/* ── Encrypted Secrets ── */}
+        <SecretsPanel />
 
       </div>
     </TooltipProvider>
