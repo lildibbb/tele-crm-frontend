@@ -140,8 +140,8 @@ export function KnowledgeBaseTab() {
   }, [error]);
 
   const form = useForm<CreateKbInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(CreateKbSchema as any),
+    // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
+    resolver: zodResolver(CreateKbSchema as any), // eslint-disable-line @typescript-eslint/no-explicit-any
     defaultValues: { title: "", content: "", type: KbType.TEXT },
   });
 

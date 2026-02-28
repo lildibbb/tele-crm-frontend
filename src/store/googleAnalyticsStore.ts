@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { googleAnalyticsApi, type GoogleAnalyticsResult } from "@/lib/api/googleAnalytics";
+import { parseApiData } from "@/lib/api/parseResponse";
 
 interface GoogleAnalyticsState {
   data: GoogleAnalyticsResult | null;
@@ -16,7 +17,7 @@ export const useGoogleAnalyticsStore = create<GoogleAnalyticsState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await googleAnalyticsApi.getAnalytics();
-      const result = (res.data as any).data as GoogleAnalyticsResult;
+      const result = parseApiData<GoogleAnalyticsResult>(res.data);
       set({ data: result, isLoading: false });
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to load";

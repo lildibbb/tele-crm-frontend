@@ -1,4 +1,4 @@
-import { apiClient } from "./apiClient";
+import { apiClient, API_BASE_URL } from "./apiClient";
 import type {
   KbEntry,
   CreateKbInput,
@@ -57,8 +57,7 @@ export const kbApi = {
    * The token must be passed as a query param since EventSource doesn't support headers.
    */
   getProcessingStatus: (kbId: string, accessToken: string): EventSource => {
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    const url = `${base}/knowledge-base/status?kbId=${encodeURIComponent(kbId)}&token=${encodeURIComponent(accessToken)}`;
+    const url = `${API_BASE_URL}/knowledge-base/status?kbId=${encodeURIComponent(kbId)}&token=${encodeURIComponent(accessToken)}`;
     return new EventSource(url);
   },
 };

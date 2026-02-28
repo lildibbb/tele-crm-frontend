@@ -353,8 +353,8 @@ export function CommandsTab() {
   // ── Form ──────────────────────────────────────────────────────────────────
 
   const form = useForm<CreateCommandMenuInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(CreateCommandMenuSchema as any),
+    // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
+    resolver: zodResolver(CreateCommandMenuSchema as any), // eslint-disable-line @typescript-eslint/no-explicit-any
     defaultValues: {
       command: "",
       label: "",

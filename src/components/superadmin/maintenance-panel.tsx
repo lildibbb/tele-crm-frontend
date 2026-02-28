@@ -36,13 +36,13 @@ export function MaintenancePanel() {
   const [saveErr, setSaveErr] = useState<string | null>(null);
 
   // Sync from store entries once loaded
+  // getVal reads `entries` which is already in the dep array
   useEffect(() => {
     if (!entries || Object.keys(entries).length === 0) return;
-    setMaintenanceOn(getVal("system.maintenanceMode") === "true");
+    setMaintenanceOn(entries["system.maintenanceMode"] === "true");
     setBannerText(
       entries["system.maintenanceBanner"] ?? DEFAULT_BANNER
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries]);
 
   useEffect(() => { void fetchAll(); }, [fetchAll]);

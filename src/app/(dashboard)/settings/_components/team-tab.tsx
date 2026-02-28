@@ -67,8 +67,8 @@ export function TeamTab() {
   }, [fetchUsers, fetchInvitations]);
 
   const form = useForm<InviteUserInput>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(InviteUserSchema as any),
+    // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
+    resolver: zodResolver(InviteUserSchema as any), // eslint-disable-line @typescript-eslint/no-explicit-any
     defaultValues: { role: UserRole.STAFF, email: "" },
   });
 

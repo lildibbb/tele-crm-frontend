@@ -35,6 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     initAuth();
+    // Mount-only effect — deps intentionally omitted
+    // initAuth and skipAuthCheck are stable store functions; re-running on pathname
+    // change is handled by the isPublicRoute check above
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 

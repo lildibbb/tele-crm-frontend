@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
 import { AuditAction } from "@/types/enums";
+import { parsePaginatedData } from "@/lib/api/parseResponse";
 import { useT, K } from "@/i18n";
 import {
   auditIconMap,
@@ -259,17 +260,7 @@ export default function AuditLogsPage() {
           ...(from ? { from } : {}),
           ...(to ? { to } : {}),
         });
-        const outer = res.data as unknown as {
-          data: { data: AuditLog[]; total?: number } | AuditLog[];
-        };
-        let arr: AuditLog[];
-        let count: number;
-        if (Array.isArray(outer.data)) {
-          arr = outer.data; count = arr.length;
-        } else {
-          arr = (outer.data as { data: AuditLog[] }).data ?? [];
-          count = (outer.data as { total?: number }).total ?? arr.length;
-        }
+        const { data: arr, total: count } = parsePaginatedData<AuditLog>(res.data);
         setItems(arr);
         setTotal(count);
       } catch {

@@ -56,7 +56,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   // Fetch public config (maintenance mode + feature flags) on mount
   useEffect(() => {
     void fetchPublicConfig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Mount-only effect — deps intentionally omitted (fetch config once on layout mount)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleLocale = () =>

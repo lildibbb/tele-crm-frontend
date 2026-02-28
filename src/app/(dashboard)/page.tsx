@@ -292,9 +292,13 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const isMobile = useIsMobile();
 
-  const { summary, isLoading, error, fetchSummary } = useAnalyticsStore();
-  const { leads, fetchLeads } = useLeadsStore();
-  const { widgets } = useDashboardLayoutStore();
+  const summary = useAnalyticsStore((s) => s.summary);
+  const isLoading = useAnalyticsStore((s) => s.isLoading);
+  const error = useAnalyticsStore((s) => s.error);
+  const fetchSummary = useAnalyticsStore((s) => s.fetchSummary);
+  const leads = useLeadsStore((s) => s.leads);
+  const fetchLeads = useLeadsStore((s) => s.fetchLeads);
+  const widgets = useDashboardLayoutStore((s) => s.widgets);
   const visibleWidgets = [...widgets].sort((a, b) => a.order - b.order).filter((w) => w.visible);
 
   // Fetch on mount or period change
@@ -716,8 +720,8 @@ export default function DashboardPage() {
                             dataKey="value"
                             strokeWidth={0}
                           >
-                            {funnelDonut.map((entry, i) => (
-                              <Cell key={i} fill={entry.color} />
+                            {funnelDonut.map((entry) => (
+                              <Cell key={entry.name} fill={entry.color} />
                             ))}
                           </Pie>
                           <Tooltip

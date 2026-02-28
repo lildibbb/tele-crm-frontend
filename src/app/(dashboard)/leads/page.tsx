@@ -48,6 +48,7 @@ import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { getLeadsColumns } from "./_components/leads-columns";
 import { Input } from "@/components/ui/input";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
+import { toast } from "sonner";
 
 gsap.registerPlugin(useGSAP);
 
@@ -57,15 +58,13 @@ export default function LeadsPage() {
   const tableRef = useRef<HTMLDivElement>(null);
   const isBlocked = useIsMaintenanceBlocked();
 
-  const {
-    leads,
-    total,
-    isLoading,
-    fetchLeads,
-    setHandover,
-    bulkSetHandover,
-    pageCount,
-  } = useLeadsStore();
+  const leads = useLeadsStore((s) => s.leads);
+  const total = useLeadsStore((s) => s.total);
+  const isLoading = useLeadsStore((s) => s.isLoading);
+  const fetchLeads = useLeadsStore((s) => s.fetchLeads);
+  const setHandover = useLeadsStore((s) => s.setHandover);
+  const bulkSetHandover = useLeadsStore((s) => s.bulkSetHandover);
+  const pageCount = useLeadsStore((s) => s.pageCount);
 
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "ALL">("ALL");
   const [exportStatus, setExportStatus] = useState<"idle" | "loading" | "done">(
@@ -87,7 +86,7 @@ export default function LeadsPage() {
   const handleBulkHandover = useCallback(
     async (checked: boolean) => {
       setBulkHandoverPending(true);
-      await bulkSetHandover(checked).catch(() => {});
+      await bulkSetHandover(checked).catch(() => toast.error('Failed to update lead'));
       setBulkHandoverPending(false);
     },
     [bulkSetHandover],
@@ -145,6 +144,7 @@ export default function LeadsPage() {
     setSearchRaw("");
     setSearchValue("");
     table.setPageIndex(0);
+    // Mount-only effect — table is a stable ref from useDataTable
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -157,7 +157,6 @@ export default function LeadsPage() {
       orderBy,
       order,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pageIndex,
     pageSize,
@@ -239,10 +238,9 @@ export default function LeadsPage() {
         orderBy,
         order,
       });
-    } catch { /* silent */ } finally {
+    } catch { toast.error('Failed to update status'); } finally {
       setBulkStatusPending(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table, bulkStatusValue, bulkStatusPending, pageIndex, pageSize, statusFilter, searchValue, orderBy, order, fetchLeads]);
 
   const handleStatusChange = (value: string) => {
@@ -269,6 +267,14 @@ export default function LeadsPage() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (!bulkHandoverPending) void handleBulkHandover(!globalHandoverOn);
+                      }
+                    }}
                     className={`flex items-center gap-2 px-3 h-8 rounded-lg border transition-colors cursor-pointer select-none ${
                       globalHandoverOn
                         ? "bg-crimson/10 border-crimson/30"

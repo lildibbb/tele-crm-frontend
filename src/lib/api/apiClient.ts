@@ -6,6 +6,10 @@ import axios, {
 
 import { getDeviceId } from "@/lib/deviceId";
 
+/** Absolute API base URL for use with EventSource and other non-Axios clients. */
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
+
 // Create a configured Axios instance
 export const apiClient: AxiosInstance = axios.create({
   baseURL:

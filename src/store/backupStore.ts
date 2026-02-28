@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { superadminApi } from "@/lib/api/superadmin";
 import type { BackupLog } from "@/lib/api/superadmin";
+import { parseApiData } from "@/lib/api/parseResponse";
 
 interface BackupState {
   history: BackupLog[];
@@ -30,7 +31,7 @@ export const useBackupStore = create<BackupState & BackupActions>()(
         set({ isLoadingHistory: true, error: null }, false, "backup/fetchHistory/pending");
         try {
           const res = await superadminApi.getBackupHistory(limit);
-          const data = (res.data as any).data ?? [];
+          const data = parseApiData<BackupLog[]>(res.data) ?? [];
           set({ isLoadingHistory: false, history: data }, false, "backup/fetchHistory/success");
         } catch (err: unknown) {
           const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to load backup history";

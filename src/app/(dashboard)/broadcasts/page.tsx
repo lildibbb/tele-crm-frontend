@@ -93,8 +93,7 @@ export default function BroadcastsPage() {
   useEffect(() => {
     void fetchHistory(historyPage);
     return () => stopPolling();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyPage]);
+  }, [historyPage, fetchHistory, stopPolling]);
 
   const handleSend = async () => {
     setShowConfirm(false);

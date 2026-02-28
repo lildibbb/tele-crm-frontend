@@ -5,6 +5,7 @@ import {
   type BroadcastInput,
   type BroadcastLog,
 } from "@/lib/api/broadcast";
+import { parseApiData } from "@/lib/api/parseResponse";
 
 // ── State & Actions ────────────────────────────────────────────────────────
 
@@ -56,7 +57,7 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
           const input: BroadcastInput = { message: message.trim() };
           if (photoUrl.trim()) input.photoUrl = photoUrl.trim();
           const res = await broadcastApi.send(input);
-          const payload = (res.data as unknown as { data: { enqueued: number; logId: string } }).data;
+          const payload = parseApiData<{ enqueued: number; logId: string }>(res.data);
           const enqueued = payload?.enqueued ?? 0;
           const logId = payload?.logId;
 
@@ -92,7 +93,7 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
         set({ isLoadingHistory: true, error: null }, false, "fetchHistory/pending");
         try {
           const res = await broadcastApi.history({ page, limit });
-          const payload = (res.data as unknown as { data: { data: BroadcastLog[]; total: number } }).data;
+          const payload = parseApiData<{ data: BroadcastLog[]; total: number }>(res.data);
           set(
             { isLoadingHistory: false, history: payload?.data ?? [], historyTotal: payload?.total ?? 0 },
             false,
@@ -116,7 +117,7 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
           }
           try {
             const res = await broadcastApi.history({ page: 1, limit: 20 });
-            const payload = (res.data as unknown as { data: { data: BroadcastLog[]; total: number } }).data;
+            const payload = parseApiData<{ data: BroadcastLog[]; total: number }>(res.data);
             const logs = payload?.data ?? [];
             const updated = logs.find((l) => l.id === logId);
             if (updated?.status === "SENT" || updated?.status === "FAILED") {

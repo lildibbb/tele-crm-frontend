@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Brain, ThumbsUp, ThumbsDown, Star, SpinnerGap } from "@phosphor-icons/react";
 import { aiFeedbackApi } from "@/lib/api/aiFeedback";
 import type { AiFeedback } from "@/lib/schemas/aiFeedback.schema";
+import { parsePaginatedData } from "@/lib/api/parseResponse";
 import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE = 20;
@@ -32,16 +33,7 @@ export function AiFeedbackTab() {
     setError(null);
     try {
       const res = await aiFeedbackApi.findMany({ skip: s, take: PAGE_SIZE });
-      const outer = res.data as unknown as { data: { data: AiFeedback[]; total?: number } | AiFeedback[] };
-      let arr: AiFeedback[];
-      let count: number;
-      if (Array.isArray(outer.data)) {
-        arr = outer.data;
-        count = arr.length;
-      } else {
-        arr = (outer.data as { data: AiFeedback[] }).data ?? [];
-        count = (outer.data as { total?: number }).total ?? arr.length;
-      }
+      const { data: arr, total: count } = parsePaginatedData<AiFeedback>(res.data);
       setItems(arr);
       setTotal(count);
     } catch {

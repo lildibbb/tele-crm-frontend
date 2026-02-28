@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { systemConfigApi } from "@/lib/api/systemConfig";
 import type { SystemConfigEntry } from "@/lib/schemas/systemConfig.schema";
+import { parseApiData } from "@/lib/api/parseResponse";
 
 // ── State & Actions ───────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ export const useSystemConfigStore = create<SystemConfigState & SystemConfigActio
         set({ isLoading: true, error: null }, false, "fetchAll/pending");
         try {
           const res = await systemConfigApi.findAll();
-          const raw = (res.data as unknown as { data: SystemConfigEntry[] }).data ?? [];
+          const raw = parseApiData<SystemConfigEntry[]>(res.data) ?? [];
           const entries: Record<string, string> = {};
           for (const e of raw) entries[e.key] = e.value;
           set({ isLoading: false, entries }, false, "fetchAll/success");

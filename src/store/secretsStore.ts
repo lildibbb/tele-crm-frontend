@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { superadminApi } from "@/lib/api/superadmin";
 import type { SecretMeta } from "@/lib/api/superadmin";
+import { parseApiData } from "@/lib/api/parseResponse";
 
 interface SecretsState {
   secrets: SecretMeta[];
@@ -28,7 +29,7 @@ export const useSecretsStore = create<SecretsState & SecretsActions>()(
         set({ isLoading: true, error: null }, false, "secrets/fetch/pending");
         try {
           const res = await superadminApi.listSecrets();
-          const data = (res.data as any).data ?? [];
+          const data = parseApiData<SecretMeta[]>(res.data) ?? [];
           set({ isLoading: false, secrets: data }, false, "secrets/fetch/success");
         } catch (err: unknown) {
           const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to load secrets";

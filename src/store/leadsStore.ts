@@ -3,6 +3,7 @@ import { devtools } from "zustand/middleware";
 import { leadsApi } from "@/lib/api/leads";
 import type { Lead, UpdateLeadStatusInput } from "@/lib/schemas/lead.schema";
 import { LeadStatus } from "@/types/enums";
+import { parseApiData } from "@/lib/api/parseResponse";
 
 // Re-export for convenience
 export type { Lead };
@@ -76,7 +77,7 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
             balanceMin,
             balanceMax,
           });
-          const payload = res.data.data as unknown as { data: Lead[]; meta?: { total?: number } };
+          const payload = parseApiData<{ data: Lead[]; meta?: { total?: number } } | Lead[]>(res.data);
           const data = Array.isArray(payload) ? payload : (payload?.data ?? []);
           const apiTotal = Array.isArray(payload) ? undefined : payload?.meta?.total;
           // When API doesn't return `total`, estimate from response size:

@@ -38,6 +38,7 @@ import { useLeadsStore } from "@/store/leadsStore";
 import { leadsApi } from "@/lib/api/leads";
 import type { Interaction } from "@/lib/schemas/lead.schema";
 import { LeadStatus } from "@/types/enums";
+import { parseApiData } from "@/lib/api/parseResponse";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -64,6 +65,7 @@ import {
   FileTypeChip,
 } from "@/components/ui/file-type-badge";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
+import { toast as sonnerToast } from "sonner";
 
 gsap.registerPlugin(useGSAP);
 
@@ -269,7 +271,7 @@ export default function LeadDetailPage({
     const loadInteractions = async () => {
       try {
         const res = await leadsApi.getInteractions(id, { skip: 0, take: 50 });
-        const items: Interaction[] = (res.data as unknown as { data: Interaction[] }).data ?? [];
+        const items: Interaction[] = parseApiData<Interaction[]>(res.data) ?? [];
         const sorted = [...items].reverse(); // API returns newest-first; we show oldest-first
         if (!cancelled) {
           setMessages(sorted.map(mapToMessage));
@@ -286,10 +288,10 @@ export default function LeadDetailPage({
   useEffect(() => {
     attachmentsApi.findByLead(id)
       .then((res) => {
-        const items = (res.data as unknown as { data: Attachment[] }).data ?? [];
+        const items = parseApiData<Attachment[]>(res.data) ?? [];
         setAttachments(items);
       })
-      .catch(() => { /* silent */ });
+      .catch(() => sonnerToast.error('Failed to load attachments'));
   }, [id]);
   const isMobile = useIsMobile();
 
@@ -408,10 +410,14 @@ export default function LeadDetailPage({
   const handleCopyLink = async () => {
     const ref = lead?.telegramUserId ?? id;
     const link = `https://app.titanjournal.com/tma/register?ref=${ref}`;
-    await navigator.clipboard.writeText(link).catch(() => {});
-    setCopied(true);
-    showToastMsg(t("lead.toast.copied"), "info");
-    setTimeout(() => setCopied(false), 2500);
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      showToastMsg(t("lead.toast.copied"), "info");
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      sonnerToast.error('Failed to copy');
+    }
   };
 
   const handleSend = async () => {

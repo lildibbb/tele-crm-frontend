@@ -177,8 +177,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
   useEffect(() => {
     void fetchHistory(historyPage, LIMIT);
     return () => stopPolling();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyPage]);
+  }, [historyPage, fetchHistory, stopPolling]);
 
   const handleSend = useCallback(async () => {
     setShowConfirm(false);

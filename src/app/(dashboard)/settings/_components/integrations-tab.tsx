@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useSystemConfigStore } from "@/store/systemConfigStore";
 import { integrationsApi } from "@/lib/api/integrations";
 import type { SecretMeta } from "@/lib/api/superadmin";
+import { parseApiData } from "@/lib/api/parseResponse";
 import { Icon } from "@iconify/react";
 import {
   CheckCircle,
@@ -193,7 +194,7 @@ export function IntegrationsTab() {
     setLoadingCreds(true);
     try {
       const res = await integrationsApi.listCredentials();
-      setCredentials((res.data as any).data ?? []);
+      setCredentials(parseApiData<SecretMeta[]>(res.data) ?? []);
     } catch {
       // silently ignore — owner may not have creds yet
     } finally {

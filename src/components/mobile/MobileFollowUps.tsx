@@ -17,6 +17,7 @@ import { useT, K } from "@/i18n";
 import { followUpsApi } from "@/lib/api/followUps";
 import type { FollowUp } from "@/lib/schemas/followUp.schema";
 import { FollowUpStatus } from "@/types/enums";
+import { parseApiData, parsePaginatedData } from "@/lib/api/parseResponse";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -115,18 +116,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
     setError(null);
     try {
       const res = await followUpsApi.findAll({ skip, take: PAGE_SIZE });
-      const outer = res.data as unknown as {
-        data: { data: FollowUp[]; total?: number } | FollowUp[];
-      };
-      let arr: FollowUp[];
-      let count: number;
-      if (Array.isArray(outer.data)) {
-        arr = outer.data;
-        count = arr.length;
-      } else {
-        arr = (outer.data as { data: FollowUp[] }).data ?? [];
-        count = (outer.data as { total?: number }).total ?? arr.length;
-      }
+      const { data: arr, total: count } = parsePaginatedData<FollowUp>(res.data);
       setItems(arr);
       setTotal(count);
     } catch {
@@ -144,7 +134,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
     setIsLoadingFailed(true);
     try {
       const res = await followUpsApi.getFailed({ start: 0, end: 49 });
-      const jobs = (res.data as unknown as { data?: FailedJob[] }).data ?? [];
+      const jobs = parseApiData<FailedJob[]>(res.data) ?? [];
       setFailedJobs(jobs);
     } catch {
       setError("Failed to load failed jobs");

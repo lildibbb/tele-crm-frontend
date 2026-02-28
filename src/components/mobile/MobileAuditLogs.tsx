@@ -14,6 +14,7 @@ import { useT, K } from "@/i18n";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
 import { AuditAction } from "@/types/enums";
+import { parseApiData } from "@/lib/api/parseResponse";
 import {
   auditIconMap,
   auditColorMap,
@@ -96,7 +97,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
         if (actionFilter) params.action = actionFilter;
 
         const { data } = await auditLogsApi.findMany(params as never);
-        const items: AuditLog[] = (data as unknown as { data: AuditLog[] }).data ?? [];
+        const items: AuditLog[] = parseApiData<AuditLog[]>(data) ?? [];
 
         setLogs((prev) => (replace ? items : [...prev, ...items]));
         setHasMore(items.length >= PAGE_SIZE);

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { botApi } from "@/lib/api/bot";
+import { parseApiData } from "@/lib/api/parseResponse";
 
 interface BotState {
   online: boolean | null; // null = unknown/loading
@@ -21,7 +22,7 @@ export const useBotStore = create<BotState & BotActions>()(
       check: async () => {
         try {
           const res = await botApi.getStatus();
-          const connected = (res.data as unknown as { data?: { connected?: boolean } }).data?.connected;
+          const connected = parseApiData<{ connected?: boolean }>(res.data)?.connected;
           set({ online: connected === true, lastChecked: new Date() }, false, "bot/check");
         } catch {
           set({ online: false, lastChecked: new Date() }, false, "bot/error");

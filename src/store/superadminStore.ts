@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { superadminApi } from "@/lib/api/superadmin";
 import type { QueueStats, TokenUsageData, KbHealthData } from "@/lib/api/superadmin";
+import { parseApiData } from "@/lib/api/parseResponse";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import { analyticsApi } from "@/lib/api/analytics";
 import type {
@@ -63,11 +64,8 @@ export const useSuperadminStore = create<SuperadminState & SuperadminActions>()(
         set({ isLoadingUsers: true, error: null }, false, "fetchUsers/pending");
         try {
           const res = await superadminApi.findAllUsers();
-          const userList = Array.isArray(res.data.data)
-            ? res.data.data
-            : (res.data.data as any)?.items ||
-              (res.data.data as any)?.data ||
-              [];
+          const raw = parseApiData<UserResponse[] | Record<string, UserResponse[]>>(res.data);
+          const userList = Array.isArray(raw) ? raw : raw?.items ?? raw?.data ?? [];
           set(
             { users: userList, isLoadingUsers: false },
             false,
@@ -89,11 +87,8 @@ export const useSuperadminStore = create<SuperadminState & SuperadminActions>()(
         );
         try {
           const res = await auditLogsApi.findMany(params);
-          const logs = Array.isArray(res.data.data)
-            ? res.data.data
-            : (res.data.data as any)?.items ||
-              (res.data.data as any)?.data ||
-              [];
+          const rawLogs = parseApiData<AuditLog[] | Record<string, AuditLog[]>>(res.data);
+          const logs = Array.isArray(rawLogs) ? rawLogs : rawLogs?.items ?? rawLogs?.data ?? [];
           set(
             { auditLogs: logs, isLoadingLogs: false },
             false,

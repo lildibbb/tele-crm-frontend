@@ -32,7 +32,10 @@ import {
 import { useT, K } from "@/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AnalyticsSummaryParams } from "@/lib/schemas/analytics.schema";
+import type { RagStats } from "@/lib/schemas/analytics.schema";
 import { analyticsApi } from "@/lib/api/analytics";
+import { parseApiData } from "@/lib/api/parseResponse";
+import { toast } from "sonner";
 
 gsap.registerPlugin(useGSAP);
 
@@ -352,8 +355,12 @@ export default function AnalyticsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const { summary, isLoading, fetchSummary, velocityData, fetchVelocity } = useAnalyticsStore();
-  const { user } = useAuthStore();
+  const summary = useAnalyticsStore((s) => s.summary);
+  const isLoading = useAnalyticsStore((s) => s.isLoading);
+  const fetchSummary = useAnalyticsStore((s) => s.fetchSummary);
+  const velocityData = useAnalyticsStore((s) => s.velocityData);
+  const fetchVelocity = useAnalyticsStore((s) => s.fetchVelocity);
+  const user = useAuthStore((s) => s.user);
   const isSuperAdmin = user?.role === "SUPERADMIN";
   const [ragStats, setRagStats] = useState<import("@/lib/schemas/analytics.schema").RagStats | null>(null);
   const [ragLoading, setRagLoading] = useState(false);
@@ -370,11 +377,12 @@ export default function AnalyticsPage() {
     setRagLoading(true);
     analyticsApi.getRagStats()
       .then((res) => {
-        const d = (res.data as unknown as { data: import("@/lib/schemas/analytics.schema").RagStats }).data;
+        const d = parseApiData<RagStats>(res.data);
         setRagStats(d ?? null);
       })
-      .catch(() => { /* ignore */ })
+      .catch(() => toast.error('Failed to load analytics'))
       .finally(() => setRagLoading(false));
+  // Mount-only effect — deps intentionally omitted (fetch RAG stats once when role is known)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuperAdmin]);
 
