@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShieldCheck, Users, ArrowRight } from "@phosphor-icons/react";
+import {
+  ShieldCheck,
+  Users,
+  ArrowRight,
+  CaretRight,
+  Clock,
+  Timer,
+  CheckCircle,
+  CircleNotch,
+} from "@phosphor-icons/react";
 import MobileShell from "./MobileShell";
 import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useLeadsStore } from "@/store/leadsStore";
@@ -32,6 +41,21 @@ const STATUS_LABEL: Record<string, string> = {
   DEPOSIT_CONFIRMED: "CONFIRMED",
 };
 
+// ── Skeleton components ────────────────────────────────────────────────────────
+function SkeletonKpiCard() {
+  return (
+    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle animate-pulse min-h-[100px]">
+      <div className="w-10 h-10 rounded-xl bg-elevated" />
+      <div className="w-14 h-6 rounded bg-elevated mt-1" />
+      <div className="w-20 h-3 rounded bg-elevated" />
+    </div>
+  );
+}
+
+function SkeletonLeadCard() {
+  return <div className="h-[64px] rounded-xl bg-card border border-border-subtle animate-pulse" />;
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function StaffHome({
   onMoreOpen,
@@ -41,7 +65,7 @@ export default function StaffHome({
   const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuthStore();
   const { leads, total, isLoading, fetchLeads } = useLeadsStore();
-  const { summary, fetchSummary } = useAnalyticsStore();
+  const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
 
   useEffect(() => {
     fetchLeads({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
@@ -50,6 +74,8 @@ export default function StaffHome({
 
   const firstName = user?.email?.split("@")[0] ?? "Staff";
   const pendingCount = summary?.kpi?.pendingVerifications?.current ?? 0;
+  const registeredToday = summary?.kpi?.registeredAccounts?.current ?? 0;
+  const loading = isLoading || analyticsLoading;
 
   const today = new Date().toLocaleDateString("en-MY", {
     weekday: "long",
@@ -57,6 +83,35 @@ export default function StaffHome({
     month: "short",
     year: "numeric",
   });
+
+  const kpiCards = [
+    {
+      Icon: Users,
+      iconBg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]",
+      iconColor: "text-info",
+      value: String(total || "—"),
+      label: "My Leads",
+    },
+    {
+      Icon: Timer,
+      iconBg: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]",
+      iconColor: "text-warning",
+      value: String(pendingCount || "—"),
+      label: "Pending Follow-ups",
+    },
+    {
+      Icon: CheckCircle,
+      iconBg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]",
+      iconColor: "text-success",
+      value: String(registeredToday || "—"),
+      label: "Verified Today",
+    },
+  ];
+
+  const quickActions = [
+    { Icon: Users, label: "View Leads", color: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]", textColor: "text-info", action: onMyLeads },
+    { Icon: ShieldCheck, label: "Follow-ups", color: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]", textColor: "text-warning", action: onVerificationQueue },
+  ];
 
   return (
     <>
@@ -69,123 +124,145 @@ export default function StaffHome({
           if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
         }}
       >
-      <div className="px-4 pb-6 pt-4">
-        {/* Greeting */}
-        <div className="mb-5">
+      <div className="pb-6 space-y-5">
+        {/* ── Greeting ──────────────────────────────────────── */}
+        <section className="px-4 pt-4">
           <p className="font-sans text-[13px] text-text-muted">Welcome back</p>
-          <h1 className="font-display font-bold text-[24px] text-text-primary mt-0.5">
+          <h1 className="font-sans font-bold text-[24px] text-text-primary mt-0.5 leading-tight">
             {user?.email ?? "Staff"}
           </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="rounded-full px-2 py-0.5 bg-elevated font-sans font-medium text-[11px] text-text-secondary">
-              STAFF
+          <div className="flex items-center gap-2 mt-2">
+            <span className="rounded-full px-2.5 py-1 bg-elevated font-sans font-medium text-[11px] text-text-secondary uppercase tracking-wide">
+              Staff
             </span>
             <span className="font-sans text-[12px] text-text-muted">{today}</span>
           </div>
-        </div>
+        </section>
 
-        {/* Quick action cards */}
-        <div className="grid grid-cols-2 gap-2 mb-5">
-          <button
-            onClick={onVerificationQueue}
-            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px] shadow-sm"
-          >
-            <ShieldCheck size={28} className="text-crimson" weight="fill" />
-            <span className="font-sans font-semibold text-[14px] text-text-primary">
-              Verification Queue
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="rounded-full px-2 py-0.5 bg-[color-mix(in_srgb,var(--warning)_15%,transparent)] font-sans text-[11px] font-medium text-warning">
-                {pendingCount > 0 ? `${pendingCount} pending` : "All clear"}
-              </span>
-              <ArrowRight size={14} className="text-crimson" />
-            </div>
-          </button>
+        {/* ── KPI Cards ─────────────────────────────────────── */}
+        <section className="px-4">
+          <div className="grid grid-cols-3 gap-2">
+            {loading
+              ? [1, 2, 3].map((i) => <SkeletonKpiCard key={i} />)
+              : kpiCards.map((card) => (
+                  <div
+                    key={card.label}
+                    className="flex flex-col gap-1.5 p-3 rounded-2xl bg-card border border-border-subtle shadow-sm"
+                  >
+                    <span className={cn("flex items-center justify-center w-9 h-9 rounded-xl", card.iconBg)}>
+                      <card.Icon size={18} className={card.iconColor} weight="fill" />
+                    </span>
+                    <span className="font-mono font-bold text-[22px] leading-tight text-text-primary">
+                      {card.value}
+                    </span>
+                    <span className="font-sans text-[11px] text-text-secondary leading-tight">
+                      {card.label}
+                    </span>
+                  </div>
+                ))}
+          </div>
+        </section>
 
-          <button
-            onClick={onMyLeads}
-            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px] shadow-sm"
-          >
-            <Users size={28} className="text-info" weight="fill" />
-            <span className="font-sans font-semibold text-[14px] text-text-primary">
-              My Leads
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="rounded-full px-2 py-0.5 bg-[color-mix(in_srgb,var(--info)_15%,transparent)] font-sans text-[11px] font-medium text-info">
-                {isLoading ? "…" : `${total} leads`}
-              </span>
-              <ArrowRight size={14} className="text-info" />
-            </div>
-          </button>
-        </div>
-
-        {/* Today's leads */}
-        <div className="mb-5">
-          <h2 className="font-sans font-semibold text-[14px] text-text-primary mb-3">
-            Recent Leads
+        {/* ── Quick Actions ─────────────────────────────────── */}
+        <section className="px-4">
+          <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider mb-3">
+            Quick Actions
           </h2>
-          {isLoading ? (
-            <div className="flex flex-col gap-2">
-              {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-card animate-pulse shadow-sm" />)}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {leads.slice(0, 5).map((lead) => {
-                const color = STATUS_COLOR[lead.status] ?? "var(--text-muted)";
-                return (
-                  <Link key={lead.id} href={`/leads/${lead.id}`}>
-                    <div
-                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm"
-                      style={{ borderLeft: `3px solid ${color}` }}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <span className="font-sans font-semibold text-[14px] text-text-primary truncate block">
-                          {lead.displayName ?? "—"}
-                        </span>
-                        <span className="font-mono text-[12px] text-text-muted">
-                          HFM: {lead.hfmBrokerId ?? "—"}
-                        </span>
-                      </div>
-                      <span
-                        className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-                        style={{
-                          background: `color-mix(in srgb, ${color} 15%, transparent)`,
-                          color,
-                        }}
-                      >
-                        {STATUS_LABEL[lead.status] ?? lead.status}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-          {total > 5 && (
-            <button
-              onClick={onMyLeads}
-              className="mt-2 font-sans text-[13px] text-crimson"
-            >
-              View all {total} leads →
-            </button>
-          )}
-        </div>
+          <div className="flex items-center gap-4">
+            {quickActions.map((qa) => (
+              <button
+                key={qa.label}
+                onClick={qa.action}
+                className="flex flex-col items-center gap-2 min-w-[56px] active:scale-95 transition-transform"
+              >
+                <span className={cn("flex items-center justify-center w-14 h-14 rounded-2xl shadow-sm", qa.color)}>
+                  <qa.Icon size={22} className={qa.textColor} weight="bold" />
+                </span>
+                <span className="font-sans text-[11px] text-text-secondary">{qa.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
 
-        {/* Verification banner */}
+        {/* ── Verification Banner ───────────────────────────── */}
         {pendingCount > 0 && (
-          <button
-            onClick={onVerificationQueue}
-            className="w-full flex flex-col gap-1 p-4 rounded-xl border border-warning active:scale-[0.97] transition-transform text-left mb-5"
-            style={{ background: "color-mix(in srgb, var(--warning) 10%, transparent)" }}
-          >
-            <span className="font-sans font-semibold text-[14px] text-text-primary">
-              {pendingCount} deposits awaiting your review
-            </span>
-            <span className="font-sans text-[12px] text-text-secondary">
-              Tap to open Verification Queue →
-            </span>
-          </button>
+          <section className="px-4">
+            <button
+              onClick={onVerificationQueue}
+              className="w-full flex items-center gap-3 p-4 rounded-2xl border border-warning bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] active:scale-[0.97] transition-transform"
+            >
+              <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]">
+                <ShieldCheck size={20} className="text-warning" weight="fill" />
+              </span>
+              <div className="flex-1 text-left">
+                <span className="font-sans font-semibold text-[14px] text-text-primary block">
+                  {pendingCount} deposits awaiting review
+                </span>
+                <span className="font-sans text-[12px] text-text-muted">Tap to open queue</span>
+              </div>
+              <CaretRight size={16} className="text-warning shrink-0" />
+            </button>
+          </section>
         )}
+
+        {/* ── Assigned Leads ────────────────────────────────── */}
+        <section className="px-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
+              Recent Assigned Leads
+            </h2>
+            {total > 5 && (
+              <button onClick={onMyLeads} className="flex items-center gap-1 font-sans text-[12px] text-crimson font-medium min-h-[44px]">
+                All {total} <ArrowRight size={12} />
+              </button>
+            )}
+          </div>
+          <div className="space-y-2">
+            {isLoading
+              ? [1, 2, 3, 4, 5].map((i) => <SkeletonLeadCard key={i} />)
+              : leads.slice(0, 5).map((lead) => {
+                  const color = STATUS_COLOR[lead.status] ?? "var(--text-muted)";
+                  return (
+                    <Link key={lead.id} href={`/leads/${lead.id}`}>
+                      <div
+                        className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm group"
+                        style={{ borderLeft: `3px solid ${color}` }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <span className="font-sans font-semibold text-[14px] text-text-primary truncate block">
+                            {lead.displayName ?? "—"}
+                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="font-mono text-[12px] text-text-muted">
+                              {lead.hfmBrokerId ? `HFM: ${lead.hfmBrokerId}` : "No broker ID"}
+                            </span>
+                            <span className="text-text-muted">·</span>
+                            <span className="font-sans text-[11px] text-text-muted flex items-center gap-1">
+                              <Clock size={10} />
+                              {new Date(lead.createdAt).toLocaleDateString("en-MY", { day: "numeric", month: "short" })}
+                            </span>
+                          </div>
+                        </div>
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
+                          style={{ background: `color-mix(in srgb, ${color} 15%, transparent)`, color }}
+                        >
+                          {STATUS_LABEL[lead.status] ?? lead.status}
+                        </span>
+                        <CaretRight size={14} className="text-text-muted shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </Link>
+                  );
+                })}
+
+            {!isLoading && leads.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <CircleNotch size={32} className="text-text-muted mb-2" />
+                <span className="font-sans text-[13px] text-text-muted">No leads assigned yet</span>
+              </div>
+            )}
+          </div>
+        </section>
       </div>
       </MobileShell>
       <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />

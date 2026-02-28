@@ -77,8 +77,6 @@ export default function FollowUpsPage() {
   };
   const typeLabel = (type: string) => TYPE_LABELS[type] ?? type.replace(/_/g, " ");
 
-  if (isMobile) return <MobileFollowUps />;
-
   const [tab, setTab]= useState<"scheduled" | "failed">("scheduled");
   const [items, setItems] = useState<FollowUp[]>([]);
   const [total, setTotal] = useState(0);
@@ -110,8 +108,9 @@ export default function FollowUpsPage() {
   }, []);
 
   useEffect(() => {
+    if (isMobile) return;
     void load(page * PAGE_SIZE);
-  }, [page, load]);
+  }, [page, load, isMobile]);
 
   const loadFailed = useCallback(async () => {
     setIsLoadingFailed(true);
@@ -127,8 +126,11 @@ export default function FollowUpsPage() {
   }, []);
 
   useEffect(() => {
+    if (isMobile) return;
     if (tab === "failed") void loadFailed();
-  }, [tab, loadFailed]);
+  }, [tab, loadFailed, isMobile]);
+
+  if (isMobile) return <MobileFollowUps />;
 
   const handleRetry = async (jobId: string) => {
     setRetryingId(jobId);

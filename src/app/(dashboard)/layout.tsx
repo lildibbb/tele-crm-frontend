@@ -10,7 +10,7 @@ import type { Locale } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { MaintenanceBanner } from "@/components/maintenance/MaintenanceBanner";
-import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useIsMobileHydrated } from "@/lib/hooks/useIsMobile";
 import {
   SidebarProvider,
   SidebarInset,
@@ -45,7 +45,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const fetchPublicConfig = useMaintenanceStore((s) => s.fetchPublicConfig);
   const t = useT();
   const { locale, setLocale } = useLocale();
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileHydrated();
 
   // Route guard: redirect unauthenticated users to login
   useEffect(() => {
@@ -63,6 +63,15 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const toggleLocale = () =>
     setLocale(locale === "en" ? "ms" : ("en" as Locale));
+
+  // Prevent flash of wrong layout during hydration
+  if (isMobile === undefined) {
+    return (
+      <div className="flex items-center justify-center h-[100dvh] bg-void">
+        <div className="w-6 h-6 border-2 border-crimson/30 border-t-crimson rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // ── Mobile layout — pages handle their own MobileShell ──
   if (isMobile) {

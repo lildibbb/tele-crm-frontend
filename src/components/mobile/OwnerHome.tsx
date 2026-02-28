@@ -10,14 +10,12 @@ import {
   ShieldCheck,
   Plus,
   ArrowRight,
+  Megaphone,
+  GearSix,
+  CaretRight,
+  Clock,
+  CircleNotch,
 } from "@phosphor-icons/react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  Tooltip,
-} from "recharts";
 import MobileShell from "./MobileShell";
 import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useAnalyticsStore } from "@/store/analyticsStore";
@@ -49,9 +47,27 @@ const STATUS_LABELS: Record<string, string> = {
   REJECTED:          "REJECTED",
 };
 
-// ── Skeleton strip ─────────────────────────────────────────────────────────────
-function SkeletonChip() {
-  return <div className="flex-shrink-0 w-[110px] h-[92px] rounded-[10px] bg-elevated animate-pulse" />;
+const EVENT_ICONS: Record<string, string> = {
+  NEW: "🟢",
+  REGISTERED: "🔵",
+  DEPOSIT_REPORTED: "🟡",
+  DEPOSIT_CONFIRMED: "✅",
+  REJECTED: "🔴",
+};
+
+// ── Skeleton card ──────────────────────────────────────────────────────────────
+function SkeletonKpiCard() {
+  return (
+    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle animate-pulse">
+      <div className="w-10 h-10 rounded-xl bg-elevated" />
+      <div className="w-16 h-6 rounded bg-elevated mt-1" />
+      <div className="w-12 h-3 rounded bg-elevated" />
+    </div>
+  );
+}
+
+function SkeletonActivityCard() {
+  return <div className="h-[60px] rounded-xl bg-card border border-border-subtle animate-pulse" />;
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
@@ -68,51 +84,60 @@ export default function OwnerHome({
 
   useEffect(() => {
     fetchSummary();
-    fetchLeads({ skip: 0, take: 3, orderBy: "createdAt", order: "desc" });
+    fetchLeads({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
   }, [fetchSummary, fetchLeads]);
 
   const kpi = summary?.kpi;
-  const trendSeries = (summary?.trendSeries ?? []).slice(-7);
   const pendingCount = kpi?.pendingVerifications?.current ?? 0;
+  const totalLeads = kpi?.totalLeads?.current ?? 0;
+  const registered = kpi?.registeredAccounts?.current ?? 0;
+  const depositing = kpi?.depositingClients?.current ?? 0;
+  const conversionRate = totalLeads > 0 ? ((depositing / totalLeads) * 100).toFixed(1) : "0.0";
 
-  // Map trendSeries → chart format
-  const chartData = trendSeries.map((d) => ({
-    day: new Date(d.date).toLocaleDateString("en-MY", { weekday: "short" }),
-    leads: d.newLeads,
-    registered: d.registered,
-    ftd: d.confirmed,
-  }));
-
-  // Build stat chips from real data
-  const statChips = [
+  const kpiCards = [
     {
       Icon: Users,
-      iconBg: "bg-crimson-subtle",
-      value: String(kpi?.totalLeads?.current ?? "—"),
-      label: "New Leads",
-      valueClass: "text-text-primary",
+      iconBg: "bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]",
+      iconColor: "text-crimson",
+      value: String(totalLeads || "—"),
+      label: "Total Leads",
+      trend: kpi?.totalLeads?.trend,
+      trendPct: kpi?.totalLeads?.changePercentage,
     },
     {
       Icon: UserCheck,
-      iconBg: "bg-[#60A5FA22]",
-      value: String(kpi?.registeredAccounts?.current ?? "—"),
-      label: "Registered",
-      valueClass: "text-text-primary",
+      iconBg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]",
+      iconColor: "text-info",
+      value: String(registered || "—"),
+      label: "Verified",
+      trend: kpi?.registeredAccounts?.trend,
+      trendPct: kpi?.registeredAccounts?.changePercentage,
     },
     {
       Icon: CurrencyDollar,
-      iconBg: "bg-gold-subtle",
-      value: String(kpi?.depositingClients?.current ?? "—"),
-      label: "FTD Today",
-      valueClass: "text-gold",
+      iconBg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]",
+      iconColor: "text-success",
+      value: String(depositing || "—"),
+      label: "Deposits",
+      trend: kpi?.depositingClients?.trend,
+      trendPct: kpi?.depositingClients?.changePercentage,
     },
     {
       Icon: TrendUp,
       iconBg: "bg-gold-subtle",
-      value: "—",
-      label: "AUM",
-      valueClass: "text-gold",
+      iconColor: "text-gold",
+      value: `${conversionRate}%`,
+      label: "Conversion",
+      trend: undefined as string | undefined,
+      trendPct: undefined as number | undefined,
     },
+  ];
+
+  const quickActions = [
+    { Icon: Plus, label: "Add Lead", color: "bg-crimson", textColor: "text-white", action: onAddLead },
+    { Icon: Megaphone, label: "Broadcast", color: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]", textColor: "text-info", action: undefined },
+    { Icon: ShieldCheck, label: "Verify", color: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]", textColor: "text-warning", action: onVerificationBanner },
+    { Icon: GearSix, label: "Settings", color: "bg-elevated", textColor: "text-text-secondary", action: undefined },
   ];
 
   return (
@@ -126,148 +151,148 @@ export default function OwnerHome({
           if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
         }}
       >
-      <div className="pb-6">
-        {/* Section 1 — Stat strip */}
-        <div className="px-4 pt-4">
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+      <div className="pb-6 space-y-5">
+        {/* ── KPI Grid 2×2 ──────────────────────────────────── */}
+        <section className="px-4 pt-4">
+          <div className="grid grid-cols-2 gap-3">
             {analyticsLoading
-              ? [1, 2, 3, 4].map((i) => <SkeletonChip key={i} />)
-              : statChips.map((chip, i) => (
-                  <div key={i} className="flex-shrink-0 flex flex-col gap-1 w-[110px] p-3 rounded-[10px] bg-card border border-border-subtle shadow-sm">
-                    <span className={cn("flex items-center justify-center w-7 h-7 rounded-lg", chip.iconBg)}>
-                      <chip.Icon size={16} className={chip.valueClass} weight="fill" />
+              ? [1, 2, 3, 4].map((i) => <SkeletonKpiCard key={i} />)
+              : kpiCards.map((card) => (
+                  <div
+                    key={card.label}
+                    className="flex flex-col gap-1.5 p-4 rounded-2xl bg-card border border-border-subtle shadow-sm"
+                  >
+                    <span className={cn("flex items-center justify-center w-10 h-10 rounded-xl", card.iconBg)}>
+                      <card.Icon size={20} className={card.iconColor} weight="fill" />
                     </span>
-                    <span className={cn("font-display font-bold text-[22px] leading-none", chip.valueClass)}>
-                      {chip.value}
+                    <span className={cn("font-mono font-bold text-[26px] leading-tight tracking-tight text-text-primary")}>
+                      {card.value}
                     </span>
-                    <span className="font-sans text-[11px] text-text-secondary">{chip.label}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-sans text-[12px] text-text-secondary">{card.label}</span>
+                      {card.trend && card.trend !== "neutral" && card.trendPct != null && (
+                        <span className={cn(
+                          "font-mono text-[11px] font-medium",
+                          card.trend === "up" ? "text-success" : "text-danger"
+                        )}>
+                          {card.trend === "up" ? "↑" : "↓"}{Math.abs(card.trendPct)}%
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
           </div>
-        </div>
+        </section>
 
-        {/* Section 2 — IB Funnel chart */}
-        <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle shadow-sm">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-sans font-semibold text-[14px] text-text-primary">IB Funnel — 7 Days</span>
-            <span className="font-mono text-[12px] text-text-muted">
-              {chartData[0]?.day ?? ""} – {chartData[chartData.length - 1]?.day ?? ""}
-            </span>
-          </div>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={140}>
-              <LineChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-                <XAxis
-                  dataKey="day"
-                  tick={{ fill: "var(--text-muted)", fontSize: 10, fontFamily: "JetBrains Mono" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  contentStyle={{ background: "var(--elevated)", border: "1px solid var(--border-subtle)", borderRadius: 8 }}
-                  labelStyle={{ color: "var(--text-secondary)", fontSize: 11 }}
-                  itemStyle={{ color: "var(--text-primary)", fontSize: 12 }}
-                />
-                <Line type="monotone" dataKey="leads"      stroke="var(--crimson)"  strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="registered" stroke="var(--info)"     strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="ftd"        stroke="var(--success)"  strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[140px] rounded-lg bg-elevated animate-pulse" />
-          )}
-          <div className="flex items-center gap-4 mt-1">
-            {[
-              ["var(--crimson)", "Leads"],
-              ["var(--info)", "Registered"],
-              ["var(--success)", "FTD"],
-            ].map(([c, l]) => (
-              <span key={l} className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: c }} />
-                <span className="font-sans text-[11px] text-text-secondary">{l}</span>
-              </span>
+        {/* ── Quick Actions ─────────────────────────────────── */}
+        <section className="px-4">
+          <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider mb-3">
+            Quick Actions
+          </h2>
+          <div className="flex items-center gap-4">
+            {quickActions.map((qa) => (
+              <button
+                key={qa.label}
+                onClick={qa.action}
+                className="flex flex-col items-center gap-2 min-w-[56px] active:scale-95 transition-transform"
+              >
+                <span className={cn("flex items-center justify-center w-14 h-14 rounded-2xl shadow-sm", qa.color)}>
+                  <qa.Icon size={22} className={qa.textColor} weight="bold" />
+                </span>
+                <span className="font-sans text-[11px] text-text-secondary">{qa.label}</span>
+              </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Section 3 — Verification banner */}
+        {/* ── Verification Banner ───────────────────────────── */}
         {pendingCount > 0 && (
-          <button
-            onClick={onVerificationBanner}
-            className="mx-4 mt-4 w-[calc(100%-2rem)] flex items-center gap-3 p-3 rounded-xl border border-crimson bg-crimson-subtle active:scale-[0.97] transition-transform"
-          >
-            <ShieldCheck size={20} className="text-crimson shrink-0" weight="fill" />
-            <span className="font-sans font-semibold text-[14px] text-text-primary flex-1 text-left">
-              {pendingCount} leads awaiting verification
-            </span>
-            <ArrowRight size={16} className="text-crimson shrink-0" />
-          </button>
+          <section className="px-4">
+            <button
+              onClick={onVerificationBanner}
+              className="w-full flex items-center gap-3 p-4 rounded-2xl border border-crimson bg-[color-mix(in_srgb,var(--crimson)_8%,transparent)] active:scale-[0.97] transition-transform"
+            >
+              <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]">
+                <ShieldCheck size={20} className="text-crimson" weight="fill" />
+              </span>
+              <div className="flex-1 text-left">
+                <span className="font-sans font-semibold text-[14px] text-text-primary block">
+                  {pendingCount} leads awaiting verification
+                </span>
+                <span className="font-sans text-[12px] text-text-muted">Tap to review now</span>
+              </div>
+              <CaretRight size={16} className="text-crimson shrink-0" />
+            </button>
+          </section>
         )}
 
-        {/* Section 4 — Recent leads */}
-        <div className="mx-4 mt-4">
+        {/* ── Recent Activity Feed ──────────────────────────── */}
+        <section className="px-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-[14px] text-text-primary">Recent Leads</span>
-            <button onClick={onViewAllLeads} className="flex items-center gap-1 font-sans text-[12px] text-crimson">
+            <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
+              Recent Activity
+            </h2>
+            <button onClick={onViewAllLeads} className="flex items-center gap-1 font-sans text-[12px] text-crimson font-medium min-h-[44px]">
               View All <ArrowRight size={12} />
             </button>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="space-y-2">
             {leadsLoading
-              ? [1, 2, 3].map((i) => <div key={i} className="h-[72px] rounded-xl bg-card animate-pulse shadow-sm" />)
-              : leads.slice(0, 3).map((lead) => {
+              ? [1, 2, 3, 4, 5].map((i) => <SkeletonActivityCard key={i} />)
+              : leads.slice(0, 5).map((lead, idx) => {
                   const accentColor = STATUS_COLORS[lead.status] ?? "var(--text-muted)";
+                  const eventIcon = EVENT_ICONS[lead.status] ?? "⚪";
                   return (
                     <Link key={lead.id} href={`/leads/${lead.id}`}>
-                      <div
-                        className="flex flex-col gap-2 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm"
-                        style={{ borderLeft: `3px solid ${accentColor}` }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-sans font-semibold text-[15px] text-text-primary truncate flex-1 mr-2">
-                            {lead.displayName ?? "—"}
-                          </span>
-                          <span
-                            className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-                            style={{ background: `color-mix(in srgb, ${accentColor} 15%, transparent)`, color: accentColor }}
-                          >
-                            {STATUS_LABELS[lead.status] ?? lead.status}
-                          </span>
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm group">
+                        {/* Timeline dot + connector */}
+                        <div className="flex flex-col items-center self-stretch shrink-0">
+                          <span className="text-[14px] leading-none mt-0.5">{eventIcon}</span>
+                          {idx < Math.min(leads.length, 5) - 1 && (
+                            <span className="flex-1 w-px bg-border-subtle mt-1" />
+                          )}
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-[13px] text-text-secondary">
-                            HFM: {lead.hfmBrokerId ?? "—"}
-                          </span>
-                          <span className="font-sans text-[11px] text-text-muted">
-                            {new Date(lead.createdAt).toLocaleDateString("en-MY", { day: "numeric", month: "short" })}
-                          </span>
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-sans font-semibold text-[14px] text-text-primary truncate">
+                              {lead.displayName ?? "—"}
+                            </span>
+                            <span
+                              className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
+                              style={{ background: `color-mix(in srgb, ${accentColor} 15%, transparent)`, color: accentColor }}
+                            >
+                              {STATUS_LABELS[lead.status] ?? lead.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="font-mono text-[12px] text-text-muted">
+                              {lead.hfmBrokerId ? `HFM: ${lead.hfmBrokerId}` : "No broker ID"}
+                            </span>
+                            <span className="text-text-muted">·</span>
+                            <span className="font-sans text-[11px] text-text-muted flex items-center gap-1">
+                              <Clock size={10} />
+                              {new Date(lead.createdAt).toLocaleDateString("en-MY", { day: "numeric", month: "short" })}
+                            </span>
+                          </div>
                         </div>
+                        <CaretRight size={14} className="text-text-muted shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </Link>
                   );
                 })}
-          </div>
-        </div>
 
-        {/* Section 5 — Today pills */}
-        <div className="mx-4 mt-4 flex flex-wrap gap-2">
-          {[
-            { label: `${kpi?.totalLeads?.current ?? "—"} leads today`,    color: "var(--crimson)" },
-            { label: `${kpi?.depositingClients?.current ?? "—"} FTDs`,    color: "var(--gold)" },
-            { label: `${kpi?.pendingVerifications?.current ?? "—"} pending`, color: "var(--warning)" },
-          ].map(({ label, color }) => (
-            <span
-              key={label}
-              className="rounded-full px-3 py-1 font-sans text-[12px] font-medium"
-              style={{ background: `color-mix(in srgb, ${color} 15%, transparent)`, color }}
-            >
-              {label}
-            </span>
-          ))}
-        </div>
+            {!leadsLoading && leads.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <CircleNotch size={32} className="text-text-muted mb-2" />
+                <span className="font-sans text-[13px] text-text-muted">No recent activity</span>
+              </div>
+            )}
+          </div>
+        </section>
       </div>
 
-      {/* FAB */}
+      {/* ── FAB ──────────────────────────────────────────── */}
       <button
         onClick={onAddLead}
         className="fixed right-5 flex items-center justify-center w-14 h-14 rounded-full bg-crimson shadow-lg active:scale-95 transition-transform z-30"

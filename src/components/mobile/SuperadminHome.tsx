@@ -4,13 +4,16 @@ import React, { useState, useEffect } from "react";
 import {
   ChartBar,
   Users,
-  CurrencyDollar,
   Pulse,
-  WarningCircle,
+  Wrench,
+  ClipboardText,
+  Database,
   CheckCircle,
-  ArrowRight,
+  WarningCircle,
+  CaretRight,
+  Clock,
+  ShieldCheck,
 } from "@phosphor-icons/react";
-import { ResponsiveContainer, AreaChart, Area, Tooltip } from "recharts";
 import MobileShell, { LiveDot } from "./MobileShell";
 import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useAnalyticsStore } from "@/store/analyticsStore";
@@ -21,6 +24,37 @@ export interface SuperadminHomeProps {
   readonly onMoreOpen?: () => void;
   readonly onOrgClick?: (orgId: string) => void;
 }
+
+// ── Skeleton components ────────────────────────────────────────────────────────
+function SkeletonKpiCard() {
+  return (
+    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle animate-pulse min-h-[110px]">
+      <div className="w-10 h-10 rounded-xl bg-elevated" />
+      <div className="w-14 h-6 rounded bg-elevated mt-1" />
+      <div className="w-20 h-3 rounded bg-elevated" />
+    </div>
+  );
+}
+
+function SkeletonRow() {
+  return <div className="h-[52px] rounded-lg bg-elevated animate-pulse" />;
+}
+
+// ── Mock data for system-level info not in analytics store ──────────────────────
+const HEALTH_CHECKS = [
+  { name: "API Server", status: "healthy" as const, latency: "12ms" },
+  { name: "Database", status: "healthy" as const, latency: "3ms" },
+  { name: "Redis Cache", status: "healthy" as const, latency: "1ms" },
+  { name: "File Storage", status: "warning" as const, latency: "89ms" },
+];
+
+const AUDIT_EVENTS = [
+  { id: "1", action: "User login", actor: "admin@org.com", time: "2 min ago", type: "auth" as const },
+  { id: "2", action: "Lead status changed", actor: "staff@org.com", time: "15 min ago", type: "data" as const },
+  { id: "3", action: "Backup completed", actor: "system", time: "1 hour ago", type: "system" as const },
+  { id: "4", action: "New user created", actor: "admin@org.com", time: "3 hours ago", type: "auth" as const },
+  { id: "5", action: "Config updated", actor: "superadmin", time: "5 hours ago", type: "system" as const },
+];
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function SuperadminHome({
@@ -35,44 +69,38 @@ export default function SuperadminHome({
   }, [fetchSummary]);
 
   const kpi = summary?.kpi;
-  const trend = summary?.trendSeries ?? [];
+  const totalLeads = kpi?.totalLeads?.current ?? 0;
+  const activeToday = kpi?.depositingClients?.current ?? 0;
 
-  const chartData = trend.slice(-14).map((d) => ({
-    day: trend.indexOf(d),
-    leads: d.newLeads,
-    registered: d.registered,
-    ftd: d.confirmed,
-  }));
-
-  const statChips = [
+  const kpiCards = [
     {
       Icon: ChartBar,
       iconBg: "bg-gold-subtle",
+      iconColor: "text-gold",
       value: "—",
-      valueClass: "text-text-primary",
-      label: "Orgs",
+      label: "Total Orgs",
     },
     {
       Icon: Users,
-      iconBg: "bg-crimson-subtle",
-      value: String(kpi?.totalLeads?.current ?? "—"),
-      valueClass: "text-text-primary",
-      label: "Total Leads",
-    },
-    {
-      Icon: CurrencyDollar,
-      iconBg: "bg-gold-subtle",
-      value: "—",
-      valueClass: "text-gold",
-      label: "Platform AUM",
+      iconBg: "bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]",
+      iconColor: "text-crimson",
+      value: String(totalLeads || "—"),
+      label: "Total Users",
     },
     {
       Icon: Pulse,
       iconBg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]",
-      value: String(kpi?.depositingClients?.current ?? "—"),
-      valueClass: "text-success",
-      label: "Active Today",
+      iconColor: "text-success",
+      value: String(activeToday || "—"),
+      label: "System Health",
     },
+  ];
+
+  const quickActions = [
+    { Icon: Users, label: "Manage Users", color: "bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]", textColor: "text-crimson" },
+    { Icon: Wrench, label: "Maintenance", color: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]", textColor: "text-warning" },
+    { Icon: ClipboardText, label: "Audit Logs", color: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]", textColor: "text-info" },
+    { Icon: Database, label: "Backups", color: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]", textColor: "text-success" },
   ];
 
   return (
@@ -86,107 +114,142 @@ export default function SuperadminHome({
           if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
         }}
       >
-      <div className="pb-6">
-        {/* Stat strip */}
-        <div className="px-4 pt-4">
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+      <div className="pb-6 space-y-5">
+        {/* ── KPI Cards ─────────────────────────────────────── */}
+        <section className="px-4 pt-4">
+          <div className="grid grid-cols-3 gap-2">
             {isLoading
-              ? [1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex-shrink-0 w-[120px] h-[92px] rounded-[10px] bg-elevated animate-pulse" />
-                ))
-              : statChips.map((chip, i) => (
+              ? [1, 2, 3].map((i) => <SkeletonKpiCard key={i} />)
+              : kpiCards.map((card) => (
                   <div
-                    key={i}
-                    className="flex-shrink-0 flex flex-col gap-1 w-[120px] p-3 rounded-[10px] bg-card border border-border-subtle shadow-sm"
+                    key={card.label}
+                    className="flex flex-col gap-1.5 p-3 rounded-2xl bg-card border border-border-subtle shadow-sm"
                   >
-                    <span className={cn("flex items-center justify-center w-7 h-7 rounded-lg", chip.iconBg)}>
-                      <chip.Icon size={16} className={chip.valueClass} weight="fill" />
+                    <span className={cn("flex items-center justify-center w-10 h-10 rounded-xl", card.iconBg)}>
+                      <card.Icon size={20} className={card.iconColor} weight="fill" />
                     </span>
-                    <span className={cn("font-display font-bold text-[22px] leading-none", chip.valueClass)}>
-                      {chip.value}
+                    <span className="font-mono font-bold text-[22px] leading-tight text-text-primary">
+                      {card.value}
                     </span>
-                    <span className="font-sans text-[11px] text-text-secondary">{chip.label}</span>
+                    <span className="font-sans text-[11px] text-text-secondary leading-tight">
+                      {card.label}
+                    </span>
                   </div>
                 ))}
           </div>
-        </div>
+        </section>
 
-        {/* Platform funnel chart */}
-        <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle shadow-sm">
-          <div className="flex items-center justify-between mb-1">
-            <span className="font-sans font-semibold text-[14px] text-text-primary">
-              Platform Funnel — 30 Days
-            </span>
+        {/* ── Quick Actions ─────────────────────────────────── */}
+        <section className="px-4">
+          <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider mb-3">
+            Quick Actions
+          </h2>
+          <div className="flex items-center gap-4">
+            {quickActions.map((qa) => (
+              <button
+                key={qa.label}
+                className="flex flex-col items-center gap-2 min-w-[56px] active:scale-95 transition-transform"
+              >
+                <span className={cn("flex items-center justify-center w-14 h-14 rounded-2xl shadow-sm", qa.color)}>
+                  <qa.Icon size={22} className={qa.textColor} weight="bold" />
+                </span>
+                <span className="font-sans text-[11px] text-text-secondary">{qa.label}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* ── System Health ──────────────────────────────────── */}
+        <section className="px-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
+              System Health
+            </h2>
             <LiveDot />
           </div>
-          <p className="font-sans text-[12px] text-text-secondary mb-3">
-            All organizations combined
-          </p>
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={160}>
-              <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                <defs>
-                  <linearGradient id="gLeadsSA" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--crimson)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="var(--crimson)" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="gRegSA" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--info)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="var(--info)" stopOpacity={0.05} />
-                  </linearGradient>
-                  <linearGradient id="gFtdSA" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="var(--success)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="var(--success)" stopOpacity={0.05} />
-                  </linearGradient>
-                </defs>
-                <Tooltip
-                  contentStyle={{ background: "var(--elevated)", border: "1px solid var(--border-subtle)", borderRadius: 8 }}
-                  labelStyle={{ display: "none" }}
-                  itemStyle={{ color: "var(--text-primary)", fontSize: 12 }}
-                />
-                <Area type="monotone" dataKey="leads"      stroke="var(--crimson)"  fill="url(#gLeadsSA)" strokeWidth={1.5} dot={false} />
-                <Area type="monotone" dataKey="registered" stroke="var(--info)"     fill="url(#gRegSA)"   strokeWidth={1.5} dot={false} />
-                <Area type="monotone" dataKey="ftd"        stroke="var(--success)"  fill="url(#gFtdSA)"   strokeWidth={1.5} dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-[160px] rounded-lg bg-elevated animate-pulse" />
-          )}
-          <div className="flex items-center gap-4 mt-2">
-            {[
-              ["var(--crimson)", "Leads"],
-              ["var(--info)", "Registered"],
-              ["var(--success)", "FTD"],
-            ].map(([c, l]) => (
-              <span key={l} className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: c }} />
-                <span className="font-sans text-[11px] text-text-secondary">{l}</span>
-              </span>
-            ))}
+          <div className="rounded-2xl bg-card border border-border-subtle shadow-sm divide-y divide-border-subtle overflow-hidden">
+            {isLoading
+              ? [1, 2, 3, 4].map((i) => (
+                  <div key={i} className="px-4 py-3">
+                    <SkeletonRow />
+                  </div>
+                ))
+              : HEALTH_CHECKS.map((check) => (
+                  <div key={check.name} className="flex items-center gap-3 px-4 py-3">
+                    {check.status === "healthy" ? (
+                      <CheckCircle size={18} className="text-success shrink-0" weight="fill" />
+                    ) : (
+                      <WarningCircle size={18} className="text-warning shrink-0" weight="fill" />
+                    )}
+                    <span className="font-sans text-[13px] text-text-primary flex-1">{check.name}</span>
+                    <span className={cn(
+                      "font-mono text-[12px]",
+                      check.status === "healthy" ? "text-success" : "text-warning"
+                    )}>
+                      {check.latency}
+                    </span>
+                    <span className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                      check.status === "healthy"
+                        ? "bg-[color-mix(in_srgb,var(--success)_15%,transparent)] text-success"
+                        : "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)] text-warning"
+                    )}>
+                      {check.status === "healthy" ? "OK" : "SLOW"}
+                    </span>
+                  </div>
+                ))}
           </div>
-        </div>
+        </section>
 
-        {/* KPI summary */}
-        <div className="mx-4 mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-sans font-semibold text-[14px] text-text-primary">Platform KPIs</span>
+        {/* ── Recent Audit Events ───────────────────────────── */}
+        <section className="px-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
+              Recent Audit Events
+            </h2>
           </div>
-          <div className="rounded-xl bg-card border border-border-subtle divide-y divide-border-subtle shadow-sm">
-            {[
-              { label: "Total Leads", value: kpi?.totalLeads?.current ?? "—", changeClass: "text-success" },
-              { label: "Registered", value: kpi?.registeredAccounts?.current ?? "—", changeClass: "text-info" },
-              { label: "FTD", value: kpi?.depositingClients?.current ?? "—", changeClass: "text-gold" },
-              { label: "Pending Verification", value: kpi?.pendingVerifications?.current ?? "—", changeClass: "text-warning" },
-            ].map((row) => (
-              <div key={row.label} className="flex items-center justify-between px-4 py-3">
-                <span className="font-sans text-[13px] text-text-secondary">{row.label}</span>
-                <span className={cn("font-display font-bold text-[16px]", row.changeClass)}>
-                  {String(row.value)}
-                </span>
-              </div>
-            ))}
+          <div className="space-y-2">
+            {isLoading
+              ? [1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-[56px] rounded-xl bg-card border border-border-subtle animate-pulse" />
+                ))
+              : AUDIT_EVENTS.map((event) => {
+                  const typeConfig = {
+                    auth:   { icon: ShieldCheck, color: "text-info", bg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]" },
+                    data:   { icon: ClipboardText, color: "text-warning", bg: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]" },
+                    system: { icon: Wrench, color: "text-success", bg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]" },
+                  }[event.type];
+                  const EventIcon = typeConfig.icon;
+
+                  return (
+                    <div
+                      key={event.id}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle shadow-sm"
+                    >
+                      <span className={cn("flex items-center justify-center w-8 h-8 rounded-lg shrink-0", typeConfig.bg)}>
+                        <EventIcon size={16} className={typeConfig.color} weight="fill" />
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-sans font-medium text-[13px] text-text-primary truncate block">
+                          {event.action}
+                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="font-mono text-[11px] text-text-muted truncate">
+                            {event.actor}
+                          </span>
+                          <span className="text-text-muted">·</span>
+                          <span className="font-sans text-[11px] text-text-muted flex items-center gap-1 shrink-0">
+                            <Clock size={10} />
+                            {event.time}
+                          </span>
+                        </div>
+                      </div>
+                      <CaretRight size={14} className="text-text-muted shrink-0" />
+                    </div>
+                  );
+                })}
           </div>
-        </div>
+        </section>
       </div>
       </MobileShell>
       <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />

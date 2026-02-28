@@ -231,8 +231,6 @@ export default function AuditLogsPage() {
   const isMobile = useIsMobile();
   const t = useT();
 
-  if (isMobile) return <MobileAuditLogs />;
-
   const [items, setItems]= useState<AuditLog[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -273,17 +271,13 @@ export default function AuditLogsPage() {
   );
 
   useEffect(() => {
+    if (isMobile) return;
     void load(page * PAGE_SIZE, filterAction, filterEmail, filterFrom, filterTo);
-  }, [page, load, filterAction, filterEmail, filterFrom, filterTo]);
+  }, [page, load, filterAction, filterEmail, filterFrom, filterTo, isMobile]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const hasActiveFilters = filterAction !== "" || filterEmail !== "" || filterFrom !== "" || filterTo !== "";
 
-  function clearFilters() {
-    setFilterAction(""); setFilterEmail(""); setFilterFrom(""); setFilterTo(""); setPage(0);
-  }
-
-  // Stats
   const todayCount = useMemo(() => items.filter((l) => isToday(l.createdAt)).length, [items]);
   const mostCommonAction = useMemo(() => {
     if (items.length === 0) return "—";
@@ -293,6 +287,12 @@ export default function AuditLogsPage() {
     return top ? formatAuditAction(top[0]) : "—";
   }, [items]);
   const uniqueActors = useMemo(() => new Set(items.map((l) => l.userEmail ?? l.userId ?? "system")).size, [items]);
+
+  if (isMobile) return <MobileAuditLogs />;
+
+  function clearFilters() {
+    setFilterAction(""); setFilterEmail(""); setFilterFrom(""); setFilterTo(""); setPage(0);
+  }
 
   return (
     <div className="space-y-6 animate-in-up">

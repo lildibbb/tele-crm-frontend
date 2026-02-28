@@ -28,71 +28,76 @@ export interface MobileMoreDrawerProps {
   readonly notificationCount?: number;
 }
 
-interface NavItemConfig {
+interface QuickLink {
   Icon: React.ElementType;
-  iconClass: string;
   label: string;
-  badge?: number;
   href: string;
+  iconColor: string;
+  iconBg: string;
+  badge?: number;
 }
 
 // ── Role config ────────────────────────────────────────────────────────────────
 const ROLE_CHIP_CONFIG: Record<UserRole, { label: string; textClass: string; bgClass: string }> = {
-  SUPERADMIN: { label: "Superadmin", textClass: "text-gold",         bgClass: "bg-gold-subtle" },
-  OWNER:      { label: "Owner",      textClass: "text-crimson",      bgClass: "bg-crimson-subtle" },
-  ADMIN:      { label: "Admin",      textClass: "text-info",         bgClass: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]" },
+  SUPERADMIN: { label: "Superadmin", textClass: "text-gold",           bgClass: "bg-gold-subtle" },
+  OWNER:      { label: "Owner",      textClass: "text-crimson",        bgClass: "bg-crimson-subtle" },
+  ADMIN:      { label: "Admin",      textClass: "text-info",           bgClass: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]" },
   STAFF:      { label: "Staff",      textClass: "text-text-secondary", bgClass: "bg-elevated" },
 };
 
-function getNavItems(role: UserRole, notifCount: number): NavItemConfig[] {
-  const base: NavItemConfig[] = [
-    { Icon: Bell, iconClass: "text-warning", label: "Notifications", badge: notifCount > 0 ? notifCount : undefined, href: "/notifications" },
-    { Icon: User, iconClass: "text-text-secondary", label: "Profile", href: "/profile" },
-  ];
-
-  const sharedFeatures: NavItemConfig[] = [
-    { Icon: Megaphone,     iconClass: "text-crimson",        label: "Broadcasts",  href: "/broadcasts" },
-    { Icon: Timer,         iconClass: "text-accent",         label: "Follow-ups",  href: "/follow-ups" },
-    { Icon: ClipboardText, iconClass: "text-text-primary",   label: "Audit Logs",  href: "/audit-logs" },
-  ];
+function getQuickLinks(role: UserRole, notifCount: number): QuickLink[] {
+  const analytics: QuickLink = {
+    Icon: ChartBar, label: "Analytics", href: "/analytics",
+    iconColor: "text-info", iconBg: "bg-[color-mix(in_srgb,var(--info)_12%,transparent)]",
+  };
+  const auditLogs: QuickLink = {
+    Icon: ClipboardText, label: "Audit Logs", href: "/audit-logs",
+    iconColor: "text-text-primary", iconBg: "bg-elevated",
+  };
+  const followUps: QuickLink = {
+    Icon: Timer, label: "Follow-ups", href: "/follow-ups",
+    iconColor: "text-gold", iconBg: "bg-gold-subtle",
+  };
+  const broadcasts: QuickLink = {
+    Icon: Megaphone, label: "Broadcasts", href: "/broadcasts",
+    iconColor: "text-crimson", iconBg: "bg-crimson-subtle",
+  };
+  const settings: QuickLink = {
+    Icon: GearSix, label: "Settings", href: "/settings",
+    iconColor: "text-text-secondary", iconBg: "bg-elevated",
+  };
+  const profile: QuickLink = {
+    Icon: User, label: "Profile", href: "/profile",
+    iconColor: "text-success", iconBg: "bg-[color-mix(in_srgb,var(--success)_12%,transparent)]",
+  };
 
   if (role === "SUPERADMIN") {
-    return [
-      { Icon: ChartBar, iconClass: "text-info",           label: "Analytics",     href: "/analytics" },
-      ...sharedFeatures,
-      { Icon: GearSix,  iconClass: "text-text-secondary", label: "System Config", href: "/settings" },
-      { Icon: Crown,    iconClass: "text-gold",            label: "Admin Panel",   href: "/admin" },
-      ...base,
-    ];
+    return [analytics, auditLogs, followUps, broadcasts, settings, profile];
   }
   if (role === "OWNER" || role === "ADMIN") {
-    return [
-      { Icon: ChartBar, iconClass: "text-info",           label: "Analytics", href: "/analytics" },
-      ...sharedFeatures,
-      { Icon: Sliders,  iconClass: "text-text-secondary", label: "Settings",  href: "/settings" },
-      ...base,
-    ];
+    return [analytics, auditLogs, followUps, broadcasts, settings, profile];
   }
-  return base;
+  return [followUps, broadcasts, settings, profile, auditLogs, analytics];
 }
 
-// ── Nav row ────────────────────────────────────────────────────────────────────
-function NavRow({ item, onNavigate }: { item: NavItemConfig; onNavigate: (href: string) => void }) {
+// ── Quick Link Cell ────────────────────────────────────────────────────────────
+function QuickLinkCell({ link, onNavigate }: { link: QuickLink; onNavigate: (href: string) => void }) {
   return (
     <button
-      onClick={() => onNavigate(item.href)}
-      className="flex items-center gap-4 w-full p-4 active:bg-elevated transition-colors group"
+      onClick={() => onNavigate(link.href)}
+      className="flex flex-col items-center gap-2 py-3 active:scale-[0.95] transition-transform min-h-[44px]"
     >
-      <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-card border border-border-subtle shadow-sm">
-        <item.Icon size={20} className={item.iconClass} weight="fill" />
+      <span className={cn("relative flex items-center justify-center w-12 h-12 rounded-2xl", link.iconBg)}>
+        <link.Icon size={22} className={link.iconColor} weight="fill" />
+        {link.badge !== undefined && link.badge > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-crimson font-mono text-[10px] text-white flex items-center justify-center font-bold">
+            {link.badge >= 10 ? "9+" : link.badge}
+          </span>
+        )}
       </span>
-      <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">{item.label}</span>
-      {item.badge !== undefined && item.badge > 0 && (
-        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-crimson font-mono text-[11px] text-white flex items-center justify-center">
-          {item.badge >= 10 ? "9+" : item.badge}
-        </span>
-      )}
-      <CaretRight size={16} className="text-text-muted shrink-0 group-hover:translate-x-1 transition-transform" />
+      <span className="font-sans text-[11px] font-medium text-text-secondary text-center leading-tight">
+        {link.label}
+      </span>
     </button>
   );
 }
@@ -107,11 +112,12 @@ export default function MobileMoreDrawer({
   const { user, logout } = useAuthStore();
 
   const role = (user?.role as UserRole) ?? "STAFF";
-  const userName = user?.email?.split("@")[0] ?? "User";
+  const userEmail = user?.email ?? "user@example.com";
+  const userName = userEmail.split("@")[0] ?? "User";
   const userInitials = userName[0]?.toUpperCase() ?? "U";
 
   const chip = ROLE_CHIP_CONFIG[role];
-  const navItems = getNavItems(role, notificationCount);
+  const quickLinks = getQuickLinks(role, notificationCount);
 
   const handleNavigate = (href: string) => {
     onClose();
@@ -128,52 +134,72 @@ export default function MobileMoreDrawer({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="bottom"
-        className="p-0 border-t border-border-subtle rounded-t-[20px] focus:outline-none bg-base"
-        style={{ maxHeight: "75vh" }}
+        className="p-0 border-t border-border-subtle rounded-t-[24px] focus:outline-none bg-base"
+        style={{ maxHeight: "80vh" }}
       >
-        {/* Handle */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-8 h-1 rounded-full bg-border-default" />
+        {/* ── Drag Handle ───────────────────────────────────────────── */}
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-9 h-[5px] rounded-full bg-border-default" />
         </div>
 
-        {/* Profile row */}
-        <button
-          onClick={() => handleNavigate("/profile")}
-          className="flex items-center gap-4 w-full px-5 py-3 active:bg-elevated transition-colors"
-        >
-          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-sans font-semibold text-[14px] text-text-primary bg-elevated">
-            {userInitials}
+        {/* ── Quick Links Grid (3 columns) ──────────────────────────── */}
+        <div className="px-5 pt-3 pb-2">
+          <p className="font-sans text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-2">
+            Quick Links
+          </p>
+          <div className="grid grid-cols-3 gap-x-2 gap-y-1">
+            {quickLinks.map((link) => (
+              <QuickLinkCell key={link.href} link={link} onNavigate={handleNavigate} />
+            ))}
           </div>
-          <div className="flex-1 text-left min-w-0">
-            <div className="font-sans font-semibold text-[15px] text-text-primary truncate">{userName}</div>
-            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans font-semibold text-[11px] mt-0.5", chip.bgClass, chip.textClass)}>
-              {chip.label}
-            </span>
+        </div>
+
+        <div className="mx-5">
+          <Separator className="bg-border-subtle" />
+        </div>
+
+        {/* ── Account Section ───────────────────────────────────────── */}
+        <div className="px-5 pt-4 pb-2">
+          <p className="font-sans text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-3">
+            Account
+          </p>
+          <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
+            {/* User Info */}
+            <button
+              onClick={() => handleNavigate("/profile")}
+              className="flex items-center gap-3.5 w-full px-4 py-3.5 active:bg-elevated transition-colors text-left min-h-[56px]"
+            >
+              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-crimson-subtle font-display text-[15px] font-bold text-crimson shrink-0">
+                {userInitials}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-sans font-semibold text-[14px] text-text-primary truncate">{userName}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="font-sans text-[12px] text-text-muted truncate">{userEmail}</span>
+                  <span className={cn("inline-flex items-center gap-1 shrink-0 rounded-full px-2 py-0.5 font-sans font-bold text-[10px]", chip.bgClass, chip.textClass)}>
+                    {chip.label}
+                  </span>
+                </div>
+              </div>
+              <CaretRight size={16} className="text-text-muted shrink-0" />
+            </button>
+
+            {/* Sign Out */}
+            <div className="border-t border-border-subtle">
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-3 w-full px-4 py-3.5 active:bg-elevated transition-colors min-h-[48px]"
+              >
+                <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] shrink-0">
+                  <SignOut size={18} className="text-danger" weight="bold" />
+                </span>
+                <span className="font-sans font-semibold text-[14px] text-danger">Sign Out</span>
+              </button>
+            </div>
           </div>
-          <CaretRight size={16} className="text-text-muted shrink-0" />
-        </button>
-
-        <Separator className="bg-border-subtle" />
-
-        {/* Nav items */}
-        <div className="py-2">
-          {navItems.map((item) => <NavRow key={item.href} item={item} onNavigate={handleNavigate} />)}
         </div>
 
-        <Separator className="bg-border-subtle" />
-
-        {/* Sign Out */}
-        <div className="flex items-center justify-end px-5 py-4">
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-2 rounded-xl px-4 py-2 border-2 border-crimson text-crimson hover:bg-crimson hover:text-white transition-all active:scale-[0.97]"
-          >
-            <SignOut size={16} weight="bold" />
-            <span className="font-sans font-semibold text-[14px]">Sign Out</span>
-          </button>
-        </div>
-
-        <div style={{ height: "env(safe-area-inset-bottom)" }} />
+        <div style={{ height: "calc(16px + env(safe-area-inset-bottom))" }} />
       </SheetContent>
     </Sheet>
   );

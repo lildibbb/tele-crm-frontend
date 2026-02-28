@@ -37,13 +37,13 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user } = useAuthStore();
 
-  if (isMobile) return <MobileProfile onBack={() => router.back()} onSignOut={() => router.replace("/login")} />;
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
-
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  if (isMobile) return <MobileProfile onBack={() => router.back()} onSignOut={() => router.replace("/login")} />;
 
   const role = (user?.role ?? "STAFF") as UserRole;
   const roleStyle = ROLE_CSS[role];

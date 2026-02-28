@@ -88,12 +88,13 @@ export default function BroadcastsPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
 
-  if (isMobile) return <MobileBroadcasts />;
-
   useEffect(() => {
+    if (isMobile) return;
     void fetchHistory(historyPage);
     return () => stopPolling();
-  }, [historyPage, fetchHistory, stopPolling]);
+  }, [historyPage, fetchHistory, stopPolling, isMobile]);
+
+  if (isMobile) return <MobileBroadcasts />;
 
   const handleSend = async () => {
     setShowConfirm(false);
