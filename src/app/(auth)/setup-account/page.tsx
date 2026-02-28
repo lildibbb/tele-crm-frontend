@@ -115,7 +115,7 @@ function SetupAccountContent() {
           </p>
         </div>
 
-        <div className="surface-card p-7 sm:p-8">
+        <div className="surface-card p-7 sm:p-8 shadow-sm">
           {/* Stepper */}
           <div className="flex items-center gap-2 mb-7">
             {STEPS.map((label, i) => (
@@ -144,7 +144,7 @@ function SetupAccountContent() {
 
           {/* Invite badge */}
           {step < 2 && emailFromUrl && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border-subtle mb-6">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border-subtle mb-6 shadow-sm">
               <div className="w-8 h-8 rounded-full bg-crimson/20 border border-crimson/30 flex items-center justify-center flex-shrink-0">
                 <Shield className="h-4 w-4 text-crimson" />
               </div>

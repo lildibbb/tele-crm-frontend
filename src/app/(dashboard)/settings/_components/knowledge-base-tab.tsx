@@ -466,7 +466,7 @@ export function KnowledgeBaseTab() {
           </DialogHeader>
 
           {/* Modal tabs — hide upload when editing */}
-          <div className="flex gap-1 p-1 bg-card rounded-lg">
+          <div className="flex gap-1 p-1 bg-card rounded-lg shadow-sm">
             {(["text", ...(editingId ? [] : ["upload"]), "link"] as ModalTab[]).map((tab) => (
               <button
                 key={tab}

@@ -144,7 +144,7 @@ export default function LoginPage() {
           </div>
 
           {/* Form card */}
-          <div className="surface-card p-7 sm:p-8">
+          <div className="surface-card p-7 sm:p-8 shadow-sm">
             {isAuthenticatingTma ? (
               <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in zoom-in duration-300">
                 <div className="w-14 h-14 rounded-full bg-[#2AABEE]/10 border border-[#2AABEE]/30 flex items-center justify-center mb-6 relative">

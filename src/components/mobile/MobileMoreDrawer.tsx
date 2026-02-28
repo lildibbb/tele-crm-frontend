@@ -11,6 +11,9 @@ import {
   SignOut,
   CaretRight,
   GearSix,
+  Megaphone,
+  Timer,
+  ClipboardText,
 } from "@phosphor-icons/react";
 import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -47,9 +50,16 @@ function getNavItems(role: UserRole, notifCount: number): NavItemConfig[] {
     { Icon: User, iconClass: "text-text-secondary", label: "Profile", href: "/profile" },
   ];
 
+  const sharedFeatures: NavItemConfig[] = [
+    { Icon: Megaphone,     iconClass: "text-crimson",        label: "Broadcasts",  href: "/broadcasts" },
+    { Icon: Timer,         iconClass: "text-accent",         label: "Follow-ups",  href: "/follow-ups" },
+    { Icon: ClipboardText, iconClass: "text-text-primary",   label: "Audit Logs",  href: "/audit-logs" },
+  ];
+
   if (role === "SUPERADMIN") {
     return [
       { Icon: ChartBar, iconClass: "text-info",           label: "Analytics",     href: "/analytics" },
+      ...sharedFeatures,
       { Icon: GearSix,  iconClass: "text-text-secondary", label: "System Config", href: "/settings" },
       { Icon: Crown,    iconClass: "text-gold",            label: "Admin Panel",   href: "/admin" },
       ...base,
@@ -58,6 +68,7 @@ function getNavItems(role: UserRole, notifCount: number): NavItemConfig[] {
   if (role === "OWNER" || role === "ADMIN") {
     return [
       { Icon: ChartBar, iconClass: "text-info",           label: "Analytics", href: "/analytics" },
+      ...sharedFeatures,
       { Icon: Sliders,  iconClass: "text-text-secondary", label: "Settings",  href: "/settings" },
       ...base,
     ];
@@ -72,7 +83,7 @@ function NavRow({ item, onNavigate }: { item: NavItemConfig; onNavigate: (href: 
       onClick={() => onNavigate(item.href)}
       className="flex items-center gap-4 w-full p-4 active:bg-elevated transition-colors group"
     >
-      <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-card border border-border-subtle">
+      <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-card border border-border-subtle shadow-sm">
         <item.Icon size={20} className={item.iconClass} weight="fill" />
       </span>
       <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">{item.label}</span>

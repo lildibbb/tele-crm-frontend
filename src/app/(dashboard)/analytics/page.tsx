@@ -945,7 +945,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-2 mb-4">
             <Pulse size={16} className="text-accent" weight="duotone" />
             <h3 className="font-sans font-semibold text-sm text-text-primary">RAG Quality</h3>
-            <span className="text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle ml-auto">SUPERADMIN</span>
+            <span className="text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle ml-auto shadow-sm">SUPERADMIN</span>
           </div>
           {ragLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -964,7 +964,7 @@ export default function AnalyticsPage() {
                 { label: "Completion Tokens", value: ragStats.totalCompletionTokens.toLocaleString(), color: "text-text-primary" },
                 { label: "RAG Hits", value: ragStats.ragHitCount.toLocaleString(), color: "text-text-primary" },
               ].map(({ label, value, color }) => (
-                <div key={label} className="bg-card rounded-xl p-3 border border-border-subtle flex flex-col gap-1">
+                <div key={label} className="bg-card rounded-xl p-3 border border-border-subtle flex flex-col gap-1 shadow-sm">
                   <p className={`font-mono text-lg font-bold ${color}`}>{value}</p>
                   <p className="font-sans text-[10px] text-text-muted uppercase tracking-wider">{label}</p>
                 </div>

@@ -102,7 +102,7 @@ function ApproveDialog() {
       open={modalKind === "approve"}
       onOpenChange={(open) => !open && closeModal()}
     >
-      <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-2xl">
+      <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-sm">
         <DialogHeader className="pb-0">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-2xl bg-success/12 border border-success/25 flex items-center justify-center flex-shrink-0">
@@ -203,7 +203,7 @@ function RejectDialog() {
       open={modalKind === "reject"}
       onOpenChange={(open) => !open && closeModal()}
     >
-      <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-2xl">
+      <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-sm">
         <DialogHeader className="pb-0">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-2xl bg-danger/12 border border-danger/25 flex items-center justify-center flex-shrink-0">
@@ -293,7 +293,7 @@ function AskMoreDialog() {
       open={modalKind === "askMore"}
       onOpenChange={(open) => !open && closeModal()}
     >
-      <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-2xl">
+      <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-sm">
         <DialogHeader className="pb-0">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-2xl bg-info/12 border border-info/25 flex items-center justify-center flex-shrink-0">
@@ -501,7 +501,7 @@ function ReceiptDialog() {
         open={modalKind === "receipt"}
         onOpenChange={(open) => !open && closeModal()}
       >
-        <DialogContent className="sm:max-w-md rounded-3xl border-border-subtle bg-card shadow-2xl gap-0">
+        <DialogContent className="sm:max-w-md rounded-3xl border-border-subtle bg-card gap-0 shadow-sm">
           <DialogHeader className="p-5 pb-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-info/12 border border-info/25 flex items-center justify-center flex-shrink-0">

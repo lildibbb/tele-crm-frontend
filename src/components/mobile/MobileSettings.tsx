@@ -193,7 +193,7 @@ function SettingsGroup({
       <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
         {group.header}
       </h3>
-      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
+      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle shadow-sm">
         {group.items.map((item) => (
           <Row key={item.id} item={item} />
         ))}
@@ -265,7 +265,7 @@ export default function MobileSettings({
             <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
               Team
             </h3>
-            <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
+            <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle shadow-sm">
               {TEAM_ITEMS_ADMIN.map((item) => (
                 <Row key={item.id} item={item} />
               ))}

@@ -27,6 +27,8 @@ import {
   formatAuditAction,
   computeChangeSummary,
 } from "@/lib/audit-utils";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { MobileAuditLogs } from "@/components/mobile";
 
 const PAGE_SIZE = 20;
 const ALL_ACTIONS = Object.values(AuditAction);
@@ -101,7 +103,7 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       {/* Panel */}
-      <div className="relative w-full max-w-md bg-card border-l border-border-subtle shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
+      <div className="relative w-full max-w-md bg-card border-l border-border-subtle flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 shadow-sm">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-elevated flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -167,7 +169,7 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
                 {log.resourceId && (
                   <button
                     onClick={copyId}
-                    className="ml-2 flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-sans text-text-muted hover:text-text-primary hover:bg-card transition-colors"
+                    className="ml-2 flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-sans text-text-muted hover:text-text-primary hover:bg-card transition-colors shadow-sm"
                   >
                     {copied ? <Check size={11} className="text-success" /> : <Copy size={11} />}
                     {copied ? t(K.auditLog.drawer.copied) : t(K.auditLog.drawer.copyId)}
@@ -185,7 +187,7 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
               </p>
               <div className="rounded-xl border border-border-subtle overflow-hidden">
                 {/* Header row */}
-                <div className="grid grid-cols-3 text-[10px] font-semibold uppercase tracking-widest text-text-muted bg-card border-b border-border-subtle">
+                <div className="grid grid-cols-3 text-[10px] font-semibold uppercase tracking-widest text-text-muted bg-card border-b border-border-subtle shadow-sm">
                   <div className="px-3 py-2">Key</div>
                   <div className="px-3 py-2 border-l border-border-subtle">{t(K.auditLog.drawer.before)}</div>
                   <div className="px-3 py-2 border-l border-border-subtle">{t(K.auditLog.drawer.after)}</div>
@@ -225,8 +227,12 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 
 export default function AuditLogsPage() {
+  const isMobile = useIsMobile();
   const t = useT();
-  const [items, setItems] = useState<AuditLog[]>([]);
+
+  if (isMobile) return <MobileAuditLogs />;
+
+  const [items, setItems]= useState<AuditLog[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -365,7 +371,7 @@ export default function AuditLogsPage() {
             <CaretDown size={11} className="text-text-muted" />
           </button>
           {actionMenuOpen && (
-            <div className="absolute top-full left-0 mt-1 z-20 bg-card border border-border-subtle rounded-xl shadow-xl min-w-[200px] py-1 max-h-64 overflow-y-auto">
+            <div className="absolute top-full left-0 mt-1 z-20 bg-card border border-border-subtle rounded-xl min-w-[200px] py-1 max-h-64 overflow-y-auto shadow-sm">
               <button
                 className="w-full text-left px-3 py-1.5 text-xs font-sans text-text-muted hover:bg-elevated hover:text-text-primary transition-colors"
                 onClick={() => { setFilterAction(""); setActionMenuOpen(false); setPage(0); }}
@@ -437,7 +443,7 @@ export default function AuditLogsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-sans">
               <thead>
-                <tr className="bg-card border-b border-border-subtle">
+                <tr className="bg-card border-b border-border-subtle shadow-sm">
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.actor)}</th>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.action)}</th>
                   <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.entity)}</th>
@@ -454,7 +460,7 @@ export default function AuditLogsPage() {
                     <tr
                       key={log.id}
                       onClick={() => setSelected(log)}
-                      className="cursor-pointer hover:bg-card/60 transition-colors border-b border-border-subtle/50 last:border-0"
+                      className="cursor-pointer hover:bg-card/60 transition-colors border-b border-border-subtle/50 last:border-0 shadow-sm"
                     >
                       {/* Actor */}
                       <td className="px-4 py-3 whitespace-nowrap">

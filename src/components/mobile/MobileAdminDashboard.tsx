@@ -104,7 +104,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
               {(isLoadingUsers || analyticsLoading)
                 ? [1, 2, 3, 4].map((i) => <SkeletonChip key={i} />)
                 : statChips.map((chip, i) => (
-                    <div key={i} className="flex-shrink-0 flex flex-col gap-1 w-[120px] p-3 rounded-[12px] bg-card border border-border-subtle">
+                    <div key={i} className="flex-shrink-0 flex flex-col gap-1 w-[120px] p-3 rounded-[12px] bg-card border border-border-subtle shadow-sm">
                       <span className={cn("flex items-center justify-center w-7 h-7 rounded-lg", chip.iconBg)}>
                         <chip.Icon size={16} className={chip.valueClass} weight="fill" />
                       </span>
@@ -122,7 +122,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
             <p className="font-sans text-[11px] font-semibold text-text-muted uppercase tracking-widest mb-3">
               AI System
             </p>
-            <div className="rounded-[14px] bg-card border border-border-subtle divide-y divide-border-subtle">
+            <div className="rounded-[14px] bg-card border border-border-subtle divide-y divide-border-subtle shadow-sm">
               {isLoadingRag ? (
                 <div className="p-4 space-y-2">
                   {[1, 2].map((i) => <div key={i} className="h-5 rounded bg-elevated animate-pulse" />)}
@@ -167,7 +167,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                 Manage <ArrowRight size={12} weight="bold" />
               </button>
             </div>
-            <div className="rounded-[14px] bg-card border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+            <div className="rounded-[14px] bg-card border border-border-subtle divide-y divide-border-subtle overflow-hidden shadow-sm">
               {isLoadingUsers ? (
                 [1, 2, 3].map((i) => (
                   <div key={i} className="flex items-center gap-3 px-4 py-3">
@@ -208,7 +208,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                 Recent Activity
               </p>
             </div>
-            <div className="rounded-[14px] bg-card border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+            <div className="rounded-[14px] bg-card border border-border-subtle divide-y divide-border-subtle overflow-hidden shadow-sm">
               {isLoadingLogs ? (
                 [1, 2, 3].map((i) => (
                   <div key={i} className="px-4 py-3 space-y-1">

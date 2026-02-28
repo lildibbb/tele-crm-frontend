@@ -512,7 +512,7 @@ export default function LeadDetailPage({
             {/* ── Profile Panel ── */}
             <div className="bg-elevated rounded-xl overflow-hidden">
               {/* Header strip */}
-              <div className="px-5 py-4 bg-card border-b border-border-subtle">
+              <div className="px-5 py-4 bg-card border-b border-border-subtle shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   {/* Avatar + name */}
                   <div className="flex items-center gap-4">
@@ -577,7 +577,7 @@ export default function LeadDetailPage({
                   ].map(({ label, value, Icon: FieldIcon }) => (
                     <div
                       key={label}
-                      className="flex items-start gap-3 p-3 bg-card rounded-lg"
+                      className="flex items-start gap-3 p-3 bg-card rounded-lg shadow-sm"
                     >
                       <FieldIcon className="h-4 w-4 text-text-muted flex-shrink-0 mt-0.5" />
                       <div className="min-w-0">
@@ -593,7 +593,7 @@ export default function LeadDetailPage({
                 </div>
 
                 {/* Telegram ID */}
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
+                <div className="flex items-center gap-3 p-3 bg-card rounded-lg shadow-sm">
                   <CurrencyDollar className="h-4 w-4 text-text-muted flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-0.5">
@@ -619,7 +619,7 @@ export default function LeadDetailPage({
 
                 {/* Group Thread Topic */}
                 {lead.groupTopicId != null && (
-                  <div className="flex items-center gap-3 p-3 bg-card rounded-lg">
+                  <div className="flex items-center gap-3 p-3 bg-card rounded-lg shadow-sm">
                     <Hash className="h-4 w-4 text-text-muted flex-shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-0.5">
@@ -703,7 +703,7 @@ export default function LeadDetailPage({
 
             {/* ── Attachments Panel ── */}
             <div className="bg-elevated rounded-xl overflow-hidden">
-              <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between">
+              <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2">
                   <Paperclip size={14} className="text-text-muted" />
                   <h3 className="font-sans font-semibold text-[14px] text-text-primary">
@@ -742,7 +742,7 @@ export default function LeadDetailPage({
                           className="group flex-shrink-0 snap-start w-44 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 rounded-xl"
                         >
                           {/* Thumbnail / icon area */}
-                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-card border border-border-subtle group-hover:border-accent/40 transition-all mb-2.5">
+                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-card border border-border-subtle group-hover:border-accent/40 transition-all mb-2.5 shadow-sm">
                             {img && file.fileUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
@@ -757,7 +757,7 @@ export default function LeadDetailPage({
                                 </div>
                               </div>
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-card/60">
+                              <div className="w-full h-full flex items-center justify-center bg-card/60 shadow-sm">
                                 <FileTypeBadge mimeType={file.mimeType} size={36} />
                               </div>
                             )}
@@ -798,7 +798,7 @@ export default function LeadDetailPage({
 
             {/* ── Activity Timeline ── */}
             <div className="bg-elevated rounded-xl overflow-hidden">
-              <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between">
+              <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between shadow-sm">
                 <h3 className="font-sans font-semibold text-[14px] text-text-primary">
                   {t("lead.history")}
                 </h3>
@@ -824,7 +824,7 @@ export default function LeadDetailPage({
                             key={event.id}
                             className="timeline-item flex gap-4 relative"
                           >
-                            <div className="w-[22px] h-[22px] rounded-full bg-card border border-border-default flex items-center justify-center flex-shrink-0 z-10">
+                            <div className="w-[22px] h-[22px] rounded-full bg-card border border-border-default flex items-center justify-center flex-shrink-0 z-10 shadow-sm">
                               <Icon className={`h-3 w-3 ${event.color}`} />
                             </div>
                             <div className="flex-1 pb-1">
@@ -857,7 +857,7 @@ export default function LeadDetailPage({
           {/* ════ RIGHT COLUMN — Chat ════ */}
           <div className="bg-elevated rounded-xl overflow-hidden flex flex-col h-[640px] min-h-[500px]">
             {/* Handover control */}
-            <div className="p-4 bg-card border-b border-border-subtle space-y-3">
+            <div className="p-4 bg-card border-b border-border-subtle space-y-3 shadow-sm">
               <p className="text-[11px] font-sans font-semibold text-text-muted uppercase tracking-wider">
                 {t("lead.botControl")}
               </p>
@@ -912,7 +912,7 @@ export default function LeadDetailPage({
                   if (msg.side === "system")
                     return (
                       <div key={i} className="text-center py-1">
-                        <span className="text-[11px] font-sans italic text-text-muted bg-card px-3 py-1 rounded-full">
+                        <span className="text-[11px] font-sans italic text-text-muted bg-card px-3 py-1 rounded-full shadow-sm">
                           {msg.content}
                         </span>
                       </div>

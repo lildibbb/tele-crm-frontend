@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="surface-card p-7 sm:p-8"
+          className="surface-card p-7 sm:p-8 shadow-sm"
         >
           {/* Back link */}
           <Link

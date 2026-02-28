@@ -28,6 +28,8 @@ import {
 import { useT, K } from "@/i18n";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { MobileBroadcasts } from "@/components/mobile";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -62,6 +64,7 @@ function StatusChip({ status }: { status: BroadcastStatus }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function BroadcastsPage() {
+  const isMobile = useIsMobile();
   const broadcastEnabled = useMaintenanceStore((s) => s.featureFlags.broadcast);
   const isBlocked = !broadcastEnabled;
   const {
@@ -84,6 +87,8 @@ export default function BroadcastsPage() {
   const t = useT();
   const [showConfirm, setShowConfirm] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
+
+  if (isMobile) return <MobileBroadcasts />;
 
   useEffect(() => {
     void fetchHistory(historyPage);
@@ -171,7 +176,7 @@ export default function BroadcastsPage() {
 
         {/* ── Compose card ─────────────────────────────────────────────────── */}
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
-          <div className="px-5 py-4 bg-card border-b border-border-subtle">
+          <div className="px-5 py-4 bg-card border-b border-border-subtle shadow-sm">
             <h2 className="font-sans font-semibold text-sm text-text-primary">{t(K.broadcast.compose)}</h2>
           </div>
           <div className="p-5 space-y-4">
@@ -255,7 +260,7 @@ export default function BroadcastsPage() {
 
         {/* ── History table ─────────────────────────────────────────────────── */}
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
-          <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between">
+          <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between shadow-sm">
             <h2 className="font-sans font-semibold text-sm text-text-primary">{t(K.broadcast.history)}</h2>
             <span className="font-mono text-xs text-text-muted">{historyTotal} {t(K.broadcast.total)}</span>
           </div>
@@ -273,7 +278,7 @@ export default function BroadcastsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-border-subtle bg-card">
+                  <tr className="border-b border-border-subtle bg-card shadow-sm">
                     <th className="px-4 py-2.5 font-sans text-[11px] font-semibold uppercase tracking-wider text-text-muted">
                       {t(K.broadcast.col.message)}
                     </th>
@@ -378,7 +383,7 @@ export default function BroadcastsPage() {
                 {t(K.broadcast.confirmDesc)}
               </DialogDescription>
             </DialogHeader>
-            <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle">
+            <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
               <p className="font-sans text-sm text-text-primary line-clamp-4">{message}</p>
               {photoUrl && (
                 <p className="font-mono text-[11px] text-text-muted mt-1.5 truncate">

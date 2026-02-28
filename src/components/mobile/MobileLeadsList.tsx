@@ -51,7 +51,7 @@ function LeadCard({ lead }: { lead: Lead }) {
   return (
     <Link href={`/leads/${lead.id}`}>
       <div
-        className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform"
+        className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm"
         style={{ borderLeft: `3px solid ${color}` }}
       >
         <div className="flex items-center justify-between">
@@ -209,7 +209,7 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
         <div className="flex flex-col gap-2 px-4">
           {isLoading && leads.length === 0 ? (
             [1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-20 rounded-xl bg-card animate-pulse" />
+              <div key={i} className="h-20 rounded-xl bg-card animate-pulse shadow-sm" />
             ))
           ) : leads.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
@@ -225,7 +225,7 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
         {!isLoading && leads.length > 0 && leads.length < total && (
           <button
             onClick={loadMore}
-            className="mx-4 mt-3 w-[calc(100%-32px)] h-10 rounded-xl bg-card border border-border-subtle font-sans text-[13px] text-text-secondary"
+            className="mx-4 mt-3 w-[calc(100%-32px)] h-10 rounded-xl bg-card border border-border-subtle font-sans text-[13px] text-text-secondary shadow-sm"
           >
             Load more ({total - leads.length} remaining)
           </button>

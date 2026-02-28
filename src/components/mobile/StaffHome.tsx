@@ -88,7 +88,7 @@ export default function StaffHome({
         <div className="grid grid-cols-2 gap-2 mb-5">
           <button
             onClick={onVerificationQueue}
-            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px]"
+            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px] shadow-sm"
           >
             <ShieldCheck size={28} className="text-crimson" weight="fill" />
             <span className="font-sans font-semibold text-[14px] text-text-primary">
@@ -104,7 +104,7 @@ export default function StaffHome({
 
           <button
             onClick={onMyLeads}
-            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px]"
+            className="flex flex-col gap-2 p-4 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform text-left min-h-[100px] shadow-sm"
           >
             <Users size={28} className="text-info" weight="fill" />
             <span className="font-sans font-semibold text-[14px] text-text-primary">
@@ -126,7 +126,7 @@ export default function StaffHome({
           </h2>
           {isLoading ? (
             <div className="flex flex-col gap-2">
-              {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-card animate-pulse" />)}
+              {[1, 2, 3].map((i) => <div key={i} className="h-16 rounded-xl bg-card animate-pulse shadow-sm" />)}
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -135,7 +135,7 @@ export default function StaffHome({
                 return (
                   <Link key={lead.id} href={`/leads/${lead.id}`}>
                     <div
-                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform"
+                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm"
                       style={{ borderLeft: `3px solid ${color}` }}
                     >
                       <div className="flex-1 min-w-0">

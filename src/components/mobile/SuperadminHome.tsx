@@ -97,7 +97,7 @@ export default function SuperadminHome({
               : statChips.map((chip, i) => (
                   <div
                     key={i}
-                    className="flex-shrink-0 flex flex-col gap-1 w-[120px] p-3 rounded-[10px] bg-card border border-border-subtle"
+                    className="flex-shrink-0 flex flex-col gap-1 w-[120px] p-3 rounded-[10px] bg-card border border-border-subtle shadow-sm"
                   >
                     <span className={cn("flex items-center justify-center w-7 h-7 rounded-lg", chip.iconBg)}>
                       <chip.Icon size={16} className={chip.valueClass} weight="fill" />
@@ -112,7 +112,7 @@ export default function SuperadminHome({
         </div>
 
         {/* Platform funnel chart */}
-        <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle">
+        <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <span className="font-sans font-semibold text-[14px] text-text-primary">
               Platform Funnel — 30 Days
@@ -171,7 +171,7 @@ export default function SuperadminHome({
           <div className="flex items-center justify-between mb-2">
             <span className="font-sans font-semibold text-[14px] text-text-primary">Platform KPIs</span>
           </div>
-          <div className="rounded-xl bg-card border border-border-subtle divide-y divide-border-subtle">
+          <div className="rounded-xl bg-card border border-border-subtle divide-y divide-border-subtle shadow-sm">
             {[
               { label: "Total Leads", value: kpi?.totalLeads?.current ?? "—", changeClass: "text-success" },
               { label: "Registered", value: kpi?.registeredAccounts?.current ?? "—", changeClass: "text-info" },

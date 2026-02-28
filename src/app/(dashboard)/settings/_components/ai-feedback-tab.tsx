@@ -87,7 +87,7 @@ export function AiFeedbackTab() {
             Bot conversation ratings. Promote good replies as few-shot examples.
           </p>
         </div>
-        <span className="ml-auto text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle">
+        <span className="ml-auto text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle shadow-sm">
           SUPERADMIN
         </span>
       </div>
@@ -98,7 +98,7 @@ export function AiFeedbackTab() {
         </div>
       )}
 
-      <div className="bg-card rounded-2xl border border-border-subtle overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border-subtle overflow-hidden shadow-sm">
         <div className="px-5 py-3 border-b border-border-subtle flex items-center justify-between">
           <span className="font-sans text-xs font-medium text-text-secondary">{total} entries</span>
           <Button

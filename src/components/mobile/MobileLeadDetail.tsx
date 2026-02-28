@@ -87,7 +87,7 @@ function fmtTime(dateStr: string | null | undefined): string {
 // ── Info cell ──────────────────────────────────────────────────────────────────
 function InfoCell({ cell }: { cell: InfoCell }) {
   return (
-    <div className="flex flex-col gap-1 p-3 rounded-[10px] bg-card border border-border-subtle">
+    <div className="flex flex-col gap-1 p-3 rounded-[10px] bg-card border border-border-subtle shadow-sm">
       <span className="font-sans text-[11px] text-text-secondary uppercase tracking-wide">
         {cell.label}
       </span>
@@ -117,10 +117,10 @@ function LoadingSkeleton() {
         <div className="rounded-2xl p-5 bg-elevated animate-pulse h-36" />
         <div className="grid grid-cols-2 gap-2">
           {[1,2,3,4,5,6].map((i) => (
-            <div key={i} className="h-16 rounded-[10px] bg-card border border-border-subtle animate-pulse" />
+            <div key={i} className="h-16 rounded-[10px] bg-card border border-border-subtle animate-pulse shadow-sm" />
           ))}
         </div>
-        <div className="h-28 rounded-xl bg-card border border-border-subtle animate-pulse" />
+        <div className="h-28 rounded-xl bg-card border border-border-subtle animate-pulse shadow-sm" />
       </main>
     </div>
   );
@@ -249,7 +249,7 @@ export default function MobileLeadDetail({
               {fmt(lead.createdAt)}
             </span>
           </div>
-          <div className="w-14 h-14 rounded-full flex items-center justify-center bg-card">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center bg-card shadow-sm">
             <span className="font-display font-bold text-[24px] text-text-primary">{initials}</span>
           </div>
           <div className="text-center">
@@ -277,7 +277,7 @@ export default function MobileLeadDetail({
 
         {/* Deposit section */}
         {(status === "DEPOSIT_REPORTED" || status === "DEPOSIT_CONFIRMED") && lead.depositBalance && (
-          <div className="rounded-xl p-4 flex flex-col items-center gap-2 bg-card border border-border-subtle">
+          <div className="rounded-xl p-4 flex flex-col items-center gap-2 bg-card border border-border-subtle shadow-sm">
             <div className="flex items-center gap-2 w-full">
               <CurrencyDollar size={18} className="text-gold" weight="fill" />
               <span className="font-sans font-semibold text-[14px] text-text-primary">

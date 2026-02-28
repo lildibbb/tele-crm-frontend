@@ -667,7 +667,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="w-full max-w-sm">
-          <div className="surface-card p-8">
+          <div className="surface-card p-8 shadow-sm">
             <SuccessPage onGoToLogin={handleGoToLogin} />
           </div>
         </div>
@@ -699,7 +699,7 @@ export default function ResetPasswordPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="surface-card p-7 sm:p-8"
+          className="surface-card p-7 sm:p-8 shadow-sm"
         >
           {/* Logo/Brand */}
           <div className="text-center mb-6">

@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { SessionsTab } from "@/app/(dashboard)/settings/_components/sessions-tab";
 import { cn } from "@/lib/utils";
 import { useT, K } from "@/i18n";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { MobileProfile } from "@/components/mobile";
 
 const ROLE_CSS: Record<UserRole, { text: string; bg: string }> = {
   SUPERADMIN: { text: "text-gold",           bg: "bg-gold-subtle" },
@@ -30,9 +32,12 @@ const ROLE_CSS: Record<UserRole, { text: string; bg: string }> = {
 type ProfileTab = "profile" | "sessions";
 
 export default function ProfilePage() {
+  const isMobile = useIsMobile();
   const t = useT();
   const router = useRouter();
   const { user } = useAuthStore();
+
+  if (isMobile) return <MobileProfile onBack={() => router.back()} onSignOut={() => router.replace("/login")} />;
   const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
 
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });

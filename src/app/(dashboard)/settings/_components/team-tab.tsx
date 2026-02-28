@@ -238,7 +238,7 @@ export function TeamTab() {
 
       {/* Pending Invitations */}
       <div className="bg-elevated rounded-xl overflow-hidden">
-        <div className="px-5 py-4 bg-card rounded-t-xl">
+        <div className="px-5 py-4 bg-card rounded-t-xl shadow-sm">
           <h3 className="font-sans font-semibold text-[14px] text-text-primary">
             Pending Invitations
           </h3>

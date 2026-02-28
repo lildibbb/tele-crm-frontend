@@ -26,6 +26,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useT, K } from "@/i18n";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { MobileFollowUps } from "@/components/mobile";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -65,6 +67,7 @@ type FailedJob = {
 };
 
 export default function FollowUpsPage() {
+  const isMobile = useIsMobile();
   const t = useT();
   const TYPE_LABELS: Record<string, string> = {
     follow_up_register:     t(K.followUp.type.register),
@@ -72,7 +75,10 @@ export default function FollowUpsPage() {
     follow_up_verification: t(K.followUp.type.verification),
   };
   const typeLabel = (type: string) => TYPE_LABELS[type] ?? type.replace(/_/g, " ");
-  const [tab, setTab] = useState<"scheduled" | "failed">("scheduled");
+
+  if (isMobile) return <MobileFollowUps />;
+
+  const [tab, setTab]= useState<"scheduled" | "failed">("scheduled");
   const [items, setItems] = useState<FollowUp[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -253,7 +259,7 @@ export default function FollowUpsPage() {
       {tab === "scheduled" && (
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
           {/* Table header */}
-          <div className="hidden sm:grid grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle">
+          <div className="hidden sm:grid grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle shadow-sm">
             {[t(K.followUp.col.lead), t(K.followUp.col.type), t(K.followUp.col.status), t(K.followUp.col.scheduledAt), ""].map((h) => (
               <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
                 {h}
@@ -280,7 +286,7 @@ export default function FollowUpsPage() {
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="grid grid-cols-1 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-x-4 gap-y-1 px-5 py-3.5 items-center hover:bg-card/40 transition-colors"
+                  className="grid grid-cols-1 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-x-4 gap-y-1 px-5 py-3.5 items-center hover:bg-card/40 transition-colors shadow-sm"
                 >
                   {/* Lead */}
                   <div className="min-w-0">
@@ -364,7 +370,7 @@ export default function FollowUpsPage() {
       {tab === "failed" && (
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
           {/* Table header */}
-          <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle">
+          <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle shadow-sm">
             {[t(K.followUp.failedJob), t(K.followUp.failedError), ""].map((h) => (
               <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
                 {h}
@@ -391,7 +397,7 @@ export default function FollowUpsPage() {
               {failedJobs.map((job) => (
                 <div
                   key={job.id}
-                  className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-x-4 gap-y-1 px-5 py-3.5 items-center hover:bg-card/40 transition-colors"
+                  className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-x-4 gap-y-1 px-5 py-3.5 items-center hover:bg-card/40 transition-colors shadow-sm"
                 >
                   {/* Job / Lead */}
                   <div className="min-w-0">
@@ -442,7 +448,7 @@ export default function FollowUpsPage() {
             </DialogDescription>
           </DialogHeader>
           {cancelTarget && (
-            <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle">
+            <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
               <p className="font-sans text-sm font-medium text-text-primary">{typeLabel(cancelTarget.type)}</p>
               <p className="font-mono text-[11px] text-text-muted mt-1">
                 Scheduled: {formatDate(cancelTarget.scheduledAt)}

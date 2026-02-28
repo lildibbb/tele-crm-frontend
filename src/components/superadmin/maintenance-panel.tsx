@@ -163,7 +163,7 @@ export function MaintenancePanel() {
 
       <div className="space-y-4">
         {/* ── Maintenance Mode Card ─────────────────────────────────────────── */}
-        <div className="page-panel rounded-xl overflow-hidden border border-amber-500/25 bg-amber-950/10 card-shadow">
+        <div className="page-panel rounded-xl overflow-hidden border border-amber-500/25 bg-amber-950/10 shadow-sm">
           <div className="px-5 py-4 bg-amber-900/10 flex items-center justify-between border-b border-amber-500/20">
             <div>
               <h2 className="text-sm font-semibold text-amber-300 flex items-center gap-2">
@@ -256,8 +256,8 @@ export function MaintenancePanel() {
         </div>
 
         {/* ── Feature Flags Card ──────────────────────────────────────────────── */}
-        <div className="page-panel bg-elevated rounded-xl overflow-hidden card-shadow">
-          <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle">
+        <div className="page-panel bg-elevated rounded-xl overflow-hidden shadow-sm">
+          <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle shadow-sm">
             <div>
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                 <Lightning size={16} weight="duotone" className="text-info" />

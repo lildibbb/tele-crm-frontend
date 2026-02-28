@@ -154,7 +154,7 @@ export default function AdminGooglePage() {
 
       {/* Recent Operations Table */}
       <div className="page-panel bg-elevated rounded-xl overflow-hidden border border-border-subtle">
-        <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between">
+        <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between shadow-sm">
           <div>
             <h2 className="text-sm font-semibold text-text-primary">Recent Operations</h2>
             <p className="text-xs text-text-muted mt-0.5">Last {ops.length} API calls, newest first</p>

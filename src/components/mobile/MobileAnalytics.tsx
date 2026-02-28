@@ -37,7 +37,7 @@ function SectionCard({
   badge?: React.ReactNode;
 }) {
   return (
-    <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle">
+    <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <span className="font-sans font-semibold text-[14px] text-text-primary">{title}</span>
         {badge}
@@ -127,7 +127,7 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
           {isLoading
             ? [1, 2, 3, 4].map((i) => <div key={i} className="shrink-0 w-[90px] h-[64px] rounded-[10px] bg-elevated animate-pulse" />)
             : statChips.map((chip) => (
-                <div key={chip.label} className="shrink-0 flex flex-col gap-0.5 px-4 py-3 rounded-[10px] bg-card border border-border-subtle">
+                <div key={chip.label} className="shrink-0 flex flex-col gap-0.5 px-4 py-3 rounded-[10px] bg-card border border-border-subtle shadow-sm">
                   <span className="font-display font-bold text-[20px]" style={{ color: chip.color }}>{chip.value}</span>
                   <span className="font-sans text-[11px] text-text-secondary">{chip.label}</span>
                 </div>

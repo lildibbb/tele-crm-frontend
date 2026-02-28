@@ -371,7 +371,7 @@ export default function LeadsPage() {
           {/* ── Main Panel ── */}
           <div className="bg-elevated rounded-xl overflow-hidden">
             {/* Panel header: tabs + search */}
-            <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between gap-3 flex-wrap">
+            <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between gap-3 flex-wrap shadow-sm">
               <div
                 className="bg-elevated p-1 flex items-center gap-0.5 rounded-xl overflow-x-auto scrollbar-none"
                 role="tablist"
@@ -486,7 +486,7 @@ export default function LeadsPage() {
 
         {/* ── Bulk Status Floating Action Bar ── */}
         {table.getSelectedRowModel().rows.length > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-card border border-border-default rounded-2xl shadow-xl px-4 py-2.5 animate-in slide-in-from-bottom-4 duration-200">
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-card border border-border-default rounded-2xl px-4 py-2.5 animate-in slide-in-from-bottom-4 duration-200 shadow-sm">
             <span className="text-sm font-sans font-medium text-text-primary whitespace-nowrap">
               {table.getSelectedRowModel().rows.length} selected
             </span>

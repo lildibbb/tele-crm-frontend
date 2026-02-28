@@ -133,7 +133,7 @@ export default function OwnerHome({
             {analyticsLoading
               ? [1, 2, 3, 4].map((i) => <SkeletonChip key={i} />)
               : statChips.map((chip, i) => (
-                  <div key={i} className="flex-shrink-0 flex flex-col gap-1 w-[110px] p-3 rounded-[10px] bg-card border border-border-subtle">
+                  <div key={i} className="flex-shrink-0 flex flex-col gap-1 w-[110px] p-3 rounded-[10px] bg-card border border-border-subtle shadow-sm">
                     <span className={cn("flex items-center justify-center w-7 h-7 rounded-lg", chip.iconBg)}>
                       <chip.Icon size={16} className={chip.valueClass} weight="fill" />
                     </span>
@@ -147,7 +147,7 @@ export default function OwnerHome({
         </div>
 
         {/* Section 2 — IB Funnel chart */}
-        <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle">
+        <div className="mx-4 mt-4 p-4 rounded-xl bg-card border border-border-subtle shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <span className="font-sans font-semibold text-[14px] text-text-primary">IB Funnel — 7 Days</span>
             <span className="font-mono text-[12px] text-text-muted">
@@ -214,13 +214,13 @@ export default function OwnerHome({
           </div>
           <div className="flex flex-col gap-2">
             {leadsLoading
-              ? [1, 2, 3].map((i) => <div key={i} className="h-[72px] rounded-xl bg-card animate-pulse" />)
+              ? [1, 2, 3].map((i) => <div key={i} className="h-[72px] rounded-xl bg-card animate-pulse shadow-sm" />)
               : leads.slice(0, 3).map((lead) => {
                   const accentColor = STATUS_COLORS[lead.status] ?? "var(--text-muted)";
                   return (
                     <Link key={lead.id} href={`/leads/${lead.id}`}>
                       <div
-                        className="flex flex-col gap-2 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform"
+                        className="flex flex-col gap-2 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm"
                         style={{ borderLeft: `3px solid ${accentColor}` }}
                       >
                         <div className="flex items-center justify-between">

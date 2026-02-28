@@ -660,7 +660,7 @@ export function UsersPanel() {
 
         {/* ── Users Table ── */}
         <div className="page-panel bg-elevated rounded-xl overflow-hidden">
-          <div className="px-5 py-4 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div className="px-5 py-4 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-sm">
             <div>
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                 <Users size={16} weight="duotone" className="text-info" />
@@ -700,7 +700,7 @@ export function UsersPanel() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* Audit Log — 2 cols */}
           <div className="page-panel xl:col-span-2 bg-elevated rounded-xl overflow-hidden">
-            <div className="px-5 py-4 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="px-5 py-4 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-sm">
               <div>
                 <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                   <Database size={16} weight="duotone" className="text-warning" />

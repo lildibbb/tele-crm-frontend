@@ -288,7 +288,7 @@ export function IntegrationsTab() {
 
       {/* ── Google Sheets ─────────────────────────────────────────────────────── */}
       <div className="page-panel bg-elevated rounded-xl overflow-hidden border border-border-subtle">
-        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle">
+        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle shadow-sm">
           <div className="flex items-center gap-3">
             <GoogleSheetsIcon className="w-7 h-7 shrink-0" />
             <div>
@@ -324,7 +324,7 @@ export function IntegrationsTab() {
               <div className="space-y-1">
                 <p>1. Open your Google Sheets spreadsheet</p>
                 <p>2. Look at the URL bar — copy the long code:</p>
-                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all">
+                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all shadow-sm">
                   docs.google.com/spreadsheets/d/<strong className="text-info">ID</strong>/edit
                 </p>
                 <p>3. Paste that code above</p>
@@ -339,7 +339,7 @@ export function IntegrationsTab() {
 
       {/* ── Google Drive ──────────────────────────────────────────────────────── */}
       <div className="page-panel bg-elevated rounded-xl overflow-hidden border border-border-subtle">
-        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle">
+        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle shadow-sm">
           <div className="flex items-center gap-3">
             <GoogleDriveIcon className="w-7 h-7 shrink-0" />
             <div>
@@ -375,7 +375,7 @@ export function IntegrationsTab() {
               <div className="space-y-1">
                 <p>1. Open Google Drive and go to your folder</p>
                 <p>2. Look at the URL bar — copy the code at the end:</p>
-                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all">
+                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all shadow-sm">
                   drive.google.com/drive/folders/<strong className="text-info">ID</strong>
                 </p>
                 <p>3. Paste that code above</p>

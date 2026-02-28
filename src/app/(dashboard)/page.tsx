@@ -168,7 +168,7 @@ function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
+    <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-sm">
       <p className="text-[11px] text-text-secondary mb-2 font-sans">{label}</p>
       {payload.map((entry: any) => (
         <div key={entry.name} className="flex items-center gap-2 mb-[3px]">
@@ -199,7 +199,7 @@ function BarTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
+    <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-sm">
       <p className="text-[11px] text-text-secondary mb-1 font-sans">{label}</p>
       <p className="text-base data-mono text-gold leading-tight">
         {payload[0].value}{" "}
@@ -219,7 +219,7 @@ function FunnelTooltip({
   if (!active || !payload?.length) return null;
   const item = payload[0];
   return (
-    <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-[0_8px_32px_rgba(0,0,0,0.45)]">
+    <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-sm">
       <p className="text-[11px] text-text-secondary mb-1 font-sans">
         {item.name}
       </p>
@@ -249,9 +249,9 @@ function KpiCard({
   const displayValue = prefix + count.toLocaleString() + suffix;
 
   return (
-    <div className="kpi-stat-card bg-elevated rounded-xl p-5">
+    <div className="kpi-stat-card bg-elevated rounded-xl p-5 border border-border-subtle shadow-sm">
       <div className="flex items-start justify-between mb-4">
-        <Icon size={22} weight="duotone" />
+        <Icon size={22} weight="duotone" className="text-text-secondary" />
         <span
           className={`flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
             deltaPositive
@@ -684,7 +684,7 @@ export default function DashboardPage() {
               /* ── Funnel Donut + Live Activity ── */
               <div key="funnel-activity" className="page-section grid grid-cols-1 xl:grid-cols-7 gap-3 md:gap-4">
                 {/* Funnel Donut Chart */}
-                <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle card-shadow">
+                <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
                   <div className="flex items-center justify-between mb-1">
                     <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                       {t("dashboard.funnelOverview")}
@@ -783,8 +783,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Live Activity Feed */}
-                <div className="xl:col-span-3 bg-elevated rounded-[20px] border border-border-subtle flex flex-col overflow-hidden">
-                  <div className="flex flex-row items-center justify-between px-5 py-4 bg-card">
+                <div className="xl:col-span-3 bg-elevated rounded-[20px] border border-border-subtle flex flex-col overflow-hidden shadow-sm">
+                  <div className="flex flex-row items-center justify-between px-5 py-4 bg-card shadow-sm">
                     <span className="font-sans font-semibold text-[15px] text-text-primary">
                       {t("dashboard.liveActivity")}
                     </span>
@@ -803,7 +803,14 @@ export default function DashboardPage() {
                             href={`/leads/${row.id}`}
                             className="activity-row flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-void/40 transition-colors group"
                           >
-                            <div className="w-8 h-8 rounded-full bg-crimson/15 border border-crimson/20 flex items-center justify-center text-crimson font-bold text-[10px] flex-shrink-0">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 border ${
+                              row.status === "DEPOSIT_CONFIRMED" ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400" :
+                              row.status === "DEPOSIT_REPORTED" ? "bg-amber-500/15 border-amber-500/25 text-amber-400" :
+                              row.status === "REGISTERED" ? "bg-purple-500/15 border-purple-500/25 text-purple-400" :
+                              row.status === "CONTACTED" ? "bg-blue-500/15 border-blue-500/25 text-blue-400" :
+                              row.status === "REJECTED" ? "bg-red-500/15 border-red-500/25 text-red-400" :
+                              "bg-crimson/15 border-crimson/20 text-crimson"
+                            }`}>
                               {row.name
                                 .split(" ")
                                 .map((n) => n[0])
@@ -853,7 +860,7 @@ export default function DashboardPage() {
 
             if (widget.id === "action-strip") return (
               /* ── Action Strip ── */
-              <div key="action-strip" className="page-section bg-elevated rounded-xl overflow-hidden border border-border-subtle card-shadow">
+              <div key="action-strip" className="page-section bg-elevated rounded-xl overflow-hidden border border-border-subtle shadow-sm">
                 <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border-subtle">
                   <Button
                     variant="ghost"
@@ -862,11 +869,7 @@ export default function DashboardPage() {
                   >
                     <Link href="/verification">
                       <div className="flex-shrink-0">
-                        <Warning
-                          size={16}
-                          weight="duotone"
-                          className="text-warning"
-                        />
+                        <Warning size={16} weight="duotone" className="text-warning" />
                       </div>
                       <div className="flex-1 min-w-0 text-left">
                         <span className="font-sans font-semibold text-[13px] text-text-primary">
@@ -895,11 +898,7 @@ export default function DashboardPage() {
                   >
                     <Link href="/leads?handover=true">
                       <div className="flex-shrink-0">
-                        <ArrowsLeftRight
-                          size={16}
-                          weight="duotone"
-                          className="text-info"
-                        />
+                        <ArrowsLeftRight size={16} weight="duotone" className="text-info" />
                       </div>
                       <div className="flex-1 min-w-0 text-left">
                         <span className="font-sans font-semibold text-[13px] text-text-primary">
@@ -929,7 +928,7 @@ export default function DashboardPage() {
               /* ── Trend + Weekly Charts ── */
               <div key="trend-charts" className="page-section grid grid-cols-1 xl:grid-cols-5 gap-3 md:gap-4">
                 {/* Area Chart — Lead Acquisition Trend */}
-                <div className="xl:col-span-3 bg-elevated rounded-[20px] p-5 border border-border-subtle">
+                <div className="xl:col-span-3 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
                   <div className="flex items-center justify-between mb-1">
                     <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                       {t("dashboard.acquisitionTrend")}
@@ -1003,7 +1002,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Bar Chart — Deposits Trend */}
-                <div className="xl:col-span-2 bg-elevated rounded-[20px] p-5 border border-border-subtle">
+                <div className="xl:col-span-2 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
                   <div className="flex items-center justify-between mb-1">
                     <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                       Deposits Trend

@@ -155,7 +155,7 @@ export default function SessionsPage() {
             <Skeleton key={i} className="h-[80px] rounded-xl" />
           ))
         ) : sessions.length === 0 ? (
-          <div className="surface-card p-6 text-center">
+          <div className="surface-card p-6 text-center shadow-sm">
             <div className="w-10 h-10 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto mb-3">
               <Shield className="h-5 w-5 text-success" />
             </div>
@@ -171,7 +171,7 @@ export default function SessionsPage() {
           return (
             <div
               key={session.id}
-              className="surface-card p-5 transition-all animate-in-up"
+              className="surface-card p-5 transition-all animate-in-up shadow-sm"
               style={{ animationDelay: `${i * 50}ms` }}
             >
               <div className="flex items-start gap-4">

@@ -51,7 +51,7 @@ function SectionGroup({ header, children }: { header: string; children: React.Re
       <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
         {header}
       </h3>
-      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
+      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle shadow-sm">
         {children}
       </div>
     </div>

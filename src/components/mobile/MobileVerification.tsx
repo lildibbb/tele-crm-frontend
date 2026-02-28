@@ -136,7 +136,7 @@ function SwipeCard({ item, onApprove, onReject }: SwipeCardProps) {
   return (
     <div
       ref={cardRef}
-      className="relative rounded-2xl border border-border-subtle cursor-grab active:cursor-grabbing select-none bg-card"
+      className="relative rounded-2xl border border-border-subtle cursor-grab active:cursor-grabbing select-none bg-card shadow-sm"
       style={{ touchAction: "none" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -307,7 +307,7 @@ export default function MobileVerification({
 
         {isLoading && queue.length === 0 ? (
           <div className="px-4 pt-4">
-            <div className="h-64 rounded-2xl bg-card animate-pulse" />
+            <div className="h-64 rounded-2xl bg-card animate-pulse shadow-sm" />
           </div>
         ) : queue.length === 0 ? (
           <EmptyState todayCount={todayCount} />

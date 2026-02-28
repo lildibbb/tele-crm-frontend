@@ -128,7 +128,7 @@ export function SystemConfigPanel() {
 
   return (
     <div className="page-panel bg-elevated rounded-xl overflow-hidden">
-      <div className="px-5 py-4 bg-card flex items-center justify-between">
+      <div className="px-5 py-4 bg-card flex items-center justify-between shadow-sm">
         <div>
           <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
             <Sliders size={16} weight="duotone" className="text-crimson" />

@@ -87,7 +87,7 @@ export function BotConfigTab() {
       <div className="grid gap-5 md:grid-cols-2">
         {/* General Settings */}
         <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
-          <div className="px-5 py-4 bg-card rounded-t-xl">
+          <div className="px-5 py-4 bg-card rounded-t-xl shadow-sm">
             <h3 className="font-sans font-semibold text-[14px] text-text-primary">
               General Settings
             </h3>
@@ -156,7 +156,7 @@ export function BotConfigTab() {
 
         {/* AI Behavior */}
         <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
-          <div className="px-5 py-4 bg-card rounded-t-xl flex items-center justify-between">
+          <div className="px-5 py-4 bg-card rounded-t-xl flex items-center justify-between shadow-sm">
             <h3 className="font-sans font-semibold text-[14px] text-text-primary">
               AI Behavior
             </h3>

@@ -188,7 +188,7 @@ export function SecretsPanel() {
 
       <div className="page-panel bg-elevated rounded-xl overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle">
+        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle shadow-sm">
           <div className="flex items-center gap-2">
             <LockKey size={16} weight="duotone" className="text-gold" />
             <div>
@@ -219,7 +219,7 @@ export function SecretsPanel() {
             <div className="rounded-lg border border-border-subtle overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-border-subtle bg-card">
+                  <tr className="border-b border-border-subtle bg-card shadow-sm">
                     <th className="text-left px-4 py-2.5 font-medium text-text-muted">Key</th>
                     <th className="text-left px-3 py-2.5 font-medium text-text-muted">Description</th>
                     <th className="text-left px-3 py-2.5 font-medium text-text-muted">Last Updated</th>
