@@ -27,7 +27,6 @@ import {
   Warning as PhWarning,
 } from "@phosphor-icons/react";
 import { UserRole } from "@/types/enums";
-import { Separator } from "@/components/ui/separator";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -50,27 +49,33 @@ export type ChapterMeta = {
 
 export function ScreenshotPlaceholder({ caption }: { caption: string }) {
   return (
-    <div className="my-4 rounded-xl border border-border-default bg-elevated/50 flex flex-col items-center justify-center gap-2 py-10 px-4 text-center">
-      <ImageIcon size={28} className="text-text-muted" weight="light" />
-      <p className="text-xs text-text-muted font-mono">{caption}</p>
+    <div className="my-5 rounded-xl border border-dashed border-border-default bg-elevated/20 flex flex-col items-center justify-center gap-2.5 py-14 px-4 text-center">
+      <ImageIcon size={26} className="text-text-muted/40" weight="thin" />
+      <p className="text-[11.5px] text-text-muted font-mono tracking-wide">{caption}</p>
     </div>
   );
 }
 
 export function Tip({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-4 flex gap-3 rounded-lg border border-success/20 bg-success/5 px-4 py-3">
-      <Lightbulb size={18} weight="fill" className="text-success mt-0.5 flex-shrink-0" />
-      <p className="text-sm text-text-secondary leading-relaxed">{children}</p>
+    <div className="relative my-5 rounded-xl overflow-hidden bg-card border border-border-subtle">
+      <div className="absolute left-0 inset-y-0 w-[3px] bg-blue-500 rounded-l-xl" />
+      <div className="pl-5 pr-4 py-3.5 flex gap-3 items-start">
+        <Lightbulb size={16} weight="fill" className="text-blue-400 shrink-0 mt-0.5" />
+        <div className="text-[13.5px] text-text-primary leading-relaxed font-sans">{children}</div>
+      </div>
     </div>
   );
 }
 
 export function Warn({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-4 flex gap-3 rounded-lg border border-warning/20 bg-warning/5 px-4 py-3">
-      <PhWarning size={18} weight="fill" className="text-warning mt-0.5 flex-shrink-0" />
-      <p className="text-sm text-text-secondary leading-relaxed">{children}</p>
+    <div className="relative my-5 rounded-xl overflow-hidden bg-card border border-border-subtle">
+      <div className="absolute left-0 inset-y-0 w-[3px] bg-amber-500 rounded-l-xl" />
+      <div className="pl-5 pr-4 py-3.5 flex gap-3 items-start">
+        <PhWarning size={16} weight="fill" className="text-amber-400 shrink-0 mt-0.5" />
+        <div className="text-[13.5px] text-text-primary leading-relaxed font-sans">{children}</div>
+      </div>
     </div>
   );
 }
@@ -98,13 +103,16 @@ export function AccessBadge({ roles }: { roles: string[] }) {
 
 export function RestrictedBanner({ access }: { access: UserRole[] }) {
   return (
-    <div className="mt-4 flex gap-3 rounded-lg border border-crimson/20 bg-crimson/5 px-4 py-3">
-      <Lock size={18} weight="fill" className="text-crimson mt-0.5 flex-shrink-0" />
-      <p className="text-sm text-text-secondary leading-relaxed">
-        This feature requires the{" "}
-        <strong className="text-crimson">{access.map((r) => r.toString()).join(" or ")}</strong>{" "}
-        role. You are viewing this chapter as documentation only.
-      </p>
+    <div className="relative mt-5 rounded-xl overflow-hidden bg-card border border-border-subtle">
+      <div className="absolute left-0 inset-y-0 w-[3px] bg-crimson rounded-l-xl" />
+      <div className="pl-5 pr-4 py-3.5 flex gap-3 items-start">
+        <Lock size={16} weight="fill" className="text-crimson shrink-0 mt-0.5" />
+        <p className="text-[13.5px] text-text-primary leading-relaxed font-sans">
+          This feature requires the{" "}
+          <strong className="text-crimson font-semibold">{access.map((r) => r.toString()).join(" or ")}</strong>{" "}
+          role. You are viewing this chapter as documentation only.
+        </p>
+      </div>
     </div>
   );
 }
@@ -132,45 +140,51 @@ export function ChapterHeader({
       : (chapterMeta.access as UserRole[]).map((r) => r.toString());
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-xs font-mono text-text-muted">Chapter {String(number).padStart(2, "0")}</span>
+    <div className="mb-8">
+      {/* Eyebrow row */}
+      <div className="flex items-center gap-3 mb-4">
+        <span className="inline-flex items-center font-mono text-[10px] text-crimson bg-crimson/10 border border-crimson/20 px-2.5 py-0.5 rounded-full uppercase tracking-widest">
+          Chapter {String(number).padStart(2, "0")}
+        </span>
         <AccessBadge roles={accessRoles} />
       </div>
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 p-2 rounded-lg bg-crimson/10 mt-0.5">
-          <Icon size={22} className="text-crimson" weight="duotone" />
+      {/* Icon + title */}
+      <div className="flex items-start gap-4">
+        <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-elevated border border-border-subtle flex items-center justify-center">
+          <Icon size={24} className="text-crimson" weight="duotone" />
         </div>
         <div>
-          <h2 className="text-2xl font-display font-bold text-text-primary leading-tight">
+          <h2 className="text-[26px] font-display font-bold text-text-primary leading-tight">
             {chapterMeta.title}
           </h2>
-          <p className="mt-1 text-text-secondary font-sans">{chapterMeta.summary}</p>
+          <p className="mt-1.5 text-[13.5px] text-text-secondary font-sans leading-relaxed max-w-prose">
+            {chapterMeta.summary}
+          </p>
         </div>
       </div>
       {restricted && chapterMeta.access !== "all" && (
         <RestrictedBanner access={chapterMeta.access as UserRole[]} />
       )}
-      <Separator className="mt-6" />
+      <div className="mt-7 h-px bg-border-subtle" />
     </div>
   );
 }
 
 export function SectionH3({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-lg font-display font-semibold text-text-primary mb-3 mt-6">{children}</h3>
+    <h3 className="text-[16px] font-display font-bold text-text-primary mt-8 mb-3 pb-2 border-b border-border-subtle">{children}</h3>
   );
 }
 
 export function StepList({ steps }: { steps: string[] }) {
   return (
-    <ol className="space-y-2 mb-4">
+    <ol className="space-y-3 my-4">
       {steps.map((step, i) => (
-        <li key={i} className="flex gap-3 text-text-secondary text-sm">
-          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-crimson/10 text-crimson text-xs font-mono font-bold flex items-center justify-center mt-0.5">
+        <li key={i} className="flex gap-4 items-start">
+          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-crimson text-white text-[11px] font-mono font-bold flex items-center justify-center mt-0.5">
             {i + 1}
           </span>
-          <span className="leading-relaxed">{step}</span>
+          <span className="text-[13.5px] text-text-primary leading-relaxed font-sans">{step}</span>
         </li>
       ))}
     </ol>
@@ -179,20 +193,20 @@ export function StepList({ steps }: { steps: string[] }) {
 
 export function SimpleTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border-subtle mb-4">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-border-subtle my-5">
+      <table className="w-full text-[13px]">
         <thead>
           <tr className="bg-elevated border-b border-border-subtle">
             {headers.map((h) => (
-              <th key={h} className="text-left px-4 py-3 text-text-secondary font-medium">{h}</th>
+              <th key={h} className="text-left px-4 py-3 text-text-primary font-semibold font-sans tracking-tight">{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className={`border-b border-border-subtle last:border-0 ${i % 2 === 0 ? "bg-base" : "bg-elevated/30"}`}>
+            <tr key={i} className={`border-b border-border-subtle last:border-0 ${i % 2 === 0 ? "" : "bg-elevated/20"}`}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-4 py-2.5 text-text-secondary">{cell}</td>
+                <td key={ci} className="px-4 py-2.5 text-text-secondary font-sans">{cell}</td>
               ))}
             </tr>
           ))}

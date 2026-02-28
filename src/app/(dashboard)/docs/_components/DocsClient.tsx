@@ -225,7 +225,7 @@ export function DocsClient() {
       <div ref={contentRef} className="flex-1 min-w-0 h-full overflow-y-auto">
 
         {/* Sticky content topbar (mobile nav trigger + breadcrumb) */}
-        <div className="sticky top-0 z-20 flex items-center gap-3 px-5 md:px-8 h-12 bg-base/90 backdrop-blur-xl border-b border-border-subtle">
+        <div className="sticky top-0 z-20 flex items-center gap-3 px-6 md:px-10 h-12 bg-base/90 backdrop-blur-xl border-b border-border-subtle">
           {/* Mobile nav toggle */}
           <button
             onClick={() => setNavOpen(true)}
@@ -254,7 +254,7 @@ export function DocsClient() {
         </div>
 
         {/* Chapter content */}
-        <div className="px-5 md:px-10 xl:px-16 py-8 max-w-[860px]">
+        <div className="px-6 md:px-10 py-8 max-w-[960px] mx-auto w-full">
           <ChapterHeader chapterMeta={activeChapter} number={activeIndex + 1} role={role} />
 
           {BodyComponent && (
