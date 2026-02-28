@@ -254,7 +254,7 @@ export function DocsClient() {
         </div>
 
         {/* Chapter content */}
-        <div className="px-6 md:px-10 py-8 max-w-[960px] mx-auto w-full">
+        <div className="px-6 md:px-10 py-8">
           <ChapterHeader chapterMeta={activeChapter} number={activeIndex + 1} role={role} />
 
           {BodyComponent && (

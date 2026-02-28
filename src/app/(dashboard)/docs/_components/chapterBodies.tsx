@@ -6,6 +6,12 @@
 
 import React from "react";
 import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import {
   UsersThree,
   SignIn,
   ChartBar,
@@ -27,6 +33,7 @@ import {
   Warning as PhWarning,
 } from "@phosphor-icons/react";
 import { UserRole } from "@/types/enums";
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -1059,20 +1066,22 @@ export function Ch15Troubleshooting({ role }: { role?: UserRole }) {
   ];
   return (
     <>
-      <div className="space-y-4">
+      <Accordion type="single" collapsible className="rounded-xl border border-border-subtle overflow-hidden mb-6">
         {faqs.map(({ q, a }, i) => (
-          <div key={i} className="rounded-xl border border-border-subtle bg-elevated/30 p-5">
-            <div className="flex gap-3 items-start">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-crimson/10 text-crimson text-xs font-mono font-bold flex items-center justify-center mt-0.5">Q</span>
-              <p className="text-sm font-semibold text-text-primary">{q}</p>
-            </div>
-            <div className="flex gap-3 items-start mt-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-success/10 text-success text-xs font-mono font-bold flex items-center justify-center mt-0.5">A</span>
-              <p className="text-sm text-text-secondary leading-relaxed">{a}</p>
-            </div>
-          </div>
+          <AccordionItem
+            key={i}
+            value={`faq-${i}`}
+            className="border-b border-border-subtle last:border-b-0 bg-card"
+          >
+            <AccordionTrigger className="px-5 py-3.5 text-[13.5px] font-sans font-semibold text-text-primary hover:no-underline hover:bg-elevated/30 transition-colors text-left [&[data-state=open]]:text-crimson">
+              {q}
+            </AccordionTrigger>
+            <AccordionContent className="px-5 pb-4 pt-0">
+              <p className="text-[13px] text-text-secondary font-sans leading-relaxed">{a}</p>
+            </AccordionContent>
+          </AccordionItem>
         ))}
-      </div>
+      </Accordion>
       <ScreenshotPlaceholder caption="Bot Settings — Bot Active toggle and webhook status indicator" />
       <ScreenshotPlaceholder caption="System Configuration — feature flags and maintenance mode toggle" />
     </>

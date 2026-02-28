@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import {
   Lock,
   UserCircle,
-  CaretLeft,
   CheckCircle,
   Shield,
+  Calendar,
+  Clock,
+  Globe,
 } from "@phosphor-icons/react";
 import { useAuthStore } from "@/store/authStore";
 import { authApi } from "@/lib/api/auth";
@@ -16,20 +18,24 @@ import { UserRole } from "@/types/enums";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SessionsTab } from "@/app/(dashboard)/settings/_components/sessions-tab";
 import { cn } from "@/lib/utils";
 import { useT, K } from "@/i18n";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileProfile } from "@/components/mobile";
 
-const ROLE_CSS: Record<UserRole, { text: string; bg: string }> = {
-  SUPERADMIN: { text: "text-gold",           bg: "bg-gold-subtle" },
-  OWNER:      { text: "text-crimson",        bg: "bg-crimson-subtle" },
-  ADMIN:      { text: "text-info",           bg: "bg-info/10" },
-  STAFF:      { text: "text-text-secondary", bg: "bg-elevated" },
+const ROLE_BADGE: Record<UserRole, string> = {
+  SUPERADMIN: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  OWNER:      "bg-crimson/15 text-crimson border-crimson/30",
+  ADMIN:      "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  STAFF:      "bg-elevated text-text-secondary border-border-default",
 };
-
-type ProfileTab = "profile" | "sessions";
 
 export default function ProfilePage() {
   const isMobile = useIsMobile();
@@ -37,7 +43,6 @@ export default function ProfilePage() {
   const router = useRouter();
   const { user } = useAuthStore();
 
-  const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
   const [form, setForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -46,7 +51,6 @@ export default function ProfilePage() {
   if (isMobile) return <MobileProfile onBack={() => router.back()} onSignOut={() => router.replace("/login")} onActiveSessions={() => router.push("/settings/sessions")} />;
 
   const role = (user?.role ?? "STAFF") as UserRole;
-  const roleStyle = ROLE_CSS[role];
   const initial = user?.email?.[0]?.toUpperCase() ?? "?";
 
   const createdAt = user?.createdAt
@@ -58,14 +62,8 @@ export default function ProfilePage() {
 
   const handleChangePassword = async () => {
     setError(null);
-    if (form.newPassword !== form.confirmPassword) {
-      setError("New passwords do not match.");
-      return;
-    }
-    if (form.newPassword.length < 8) {
-      setError("New password must be at least 8 characters.");
-      return;
-    }
+    if (form.newPassword !== form.confirmPassword) { setError("New passwords do not match."); return; }
+    if (form.newPassword.length < 8) { setError("New password must be at least 8 characters."); return; }
     setSaving(true);
     try {
       await authApi.changeOwnPassword(form as ChangeOwnPasswordInput);
@@ -81,20 +79,8 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6 animate-in-up">
-      {/* Mobile header */}
-      <header className="flex items-center h-[52px] md:hidden -mx-4 -mt-4 px-4 bg-base border-b border-border-subtle">
-        <button
-          onClick={() => router.back()}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-crimson"
-        >
-          <CaretLeft size={22} weight="bold" />
-        </button>
-        <span className="flex-1 text-center font-semibold text-[17px] text-text-primary">{t(K.profile.title)}</span>
-        <div className="min-w-[44px]" />
-      </header>
-
-      {/* Desktop title */}
-      <div className="hidden md:flex items-center gap-3">
+      {/* Page header */}
+      <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center flex-shrink-0">
           <UserCircle className="h-5 w-5 text-crimson" weight="fill" />
         </div>
@@ -104,119 +90,174 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Profile card */}
-      <div className="bg-elevated rounded-2xl border border-border-subtle p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-crimson/10 border border-crimson/20 flex items-center justify-center text-crimson font-display font-bold text-2xl flex-shrink-0">
-          {initial}
-        </div>
-        <div className="flex-1 text-center sm:text-left space-y-1.5">
-          <p className="font-display font-bold text-lg text-text-primary">{user?.email}</p>
-          <span className={cn("inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full border border-current", roleStyle.text, roleStyle.bg)}>
-            {role}
-          </span>
-          <div className="flex flex-wrap justify-center sm:justify-start gap-x-5 gap-y-0.5 pt-0.5 text-xs text-text-muted font-sans">
-            <span>{t(K.profile.memberSince)} {createdAt}</span>
-            <span>{t(K.profile.lastLogin)} {lastLogin}</span>
-            {user?.lastIpAddress && <span>{t(K.profile.ip)} {user.lastIpAddress}</span>}
-          </div>
-        </div>
-      </div>
+      <div className="grid md:grid-cols-[270px_1fr] lg:grid-cols-[300px_1fr] gap-5 items-start">
+        {/* ── Left: Profile identity card ───────────────────── */}
+        <Card>
+          <CardContent className="p-6 flex flex-col items-center text-center gap-4">
+            {/* Avatar */}
+            <Avatar className="w-20 h-20 rounded-2xl bg-crimson/10 border border-crimson/20 flex-shrink-0">
+              <AvatarFallback className="rounded-2xl bg-crimson/10 text-crimson font-display font-bold text-3xl">
+                {initial}
+              </AvatarFallback>
+            </Avatar>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-elevated rounded-xl w-full sm:w-auto sm:inline-flex">
-        {([
-          { value: "profile", label: t(K.profile.tab.account), Icon: Lock },
-          { value: "sessions", label: t(K.profile.tab.sessions), Icon: Shield },
-        ] as { value: ProfileTab; label: string; Icon: React.ElementType }[]).map(({ value, label, Icon }) => (
-          <button
-            key={value}
-            onClick={() => setActiveTab(value)}
-            className={cn(
-              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium font-sans transition-colors",
-              activeTab === value
-                ? "bg-card shadow-sm text-text-primary"
-                : "text-text-secondary hover:text-text-primary",
-            )}
-          >
-            <Icon size={14} weight="bold" />
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
-      {activeTab === "profile" ? (
-        <div className="max-w-lg space-y-4">
-          <div className="bg-elevated rounded-2xl border border-border-subtle p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <Lock size={15} className="text-crimson" weight="bold" />
-              <h2 className="font-display font-semibold text-base text-text-primary">{t(K.profile.changePassword)}</h2>
+            {/* Email + role */}
+            <div className="space-y-2 w-full">
+              <p className="font-display font-bold text-[14.5px] text-text-primary break-all leading-snug">
+                {user?.email}
+              </p>
+              <Badge
+                variant="outline"
+                className={cn("font-mono text-[11px] tracking-wide px-2.5 py-0.5", ROLE_BADGE[role])}
+              >
+                {role}
+              </Badge>
             </div>
 
-            {success ? (
-              <div className="flex items-center gap-2 p-4 rounded-xl bg-success/10 border border-success/20 text-success text-sm font-sans">
-                <CheckCircle size={16} weight="fill" />
-                {t(K.profile.passwordChanged)}
+            <Separator className="w-full" />
+
+            {/* Meta info */}
+            <div className="w-full space-y-3.5 text-left">
+              <div className="flex items-start gap-3">
+                <Calendar size={14} weight="regular" className="text-text-muted shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-sans text-[10.5px] text-text-muted uppercase tracking-widest mb-0.5">
+                    {t(K.profile.memberSince)}
+                  </p>
+                  <p className="font-sans text-[13px] text-text-primary font-medium">{createdAt}</p>
+                </div>
               </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-xs text-text-secondary">{t(K.profile.currentPassword)}</Label>
-                  <Input
-                    type="password"
-                    value={form.currentPassword}
-                    onChange={(e) => setForm((p) => ({ ...p, currentPassword: e.target.value }))}
-                    className="h-9 text-sm"
-                    autoComplete="current-password"
-                  />
+
+              <div className="flex items-start gap-3">
+                <Clock size={14} weight="regular" className="text-text-muted shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-sans text-[10.5px] text-text-muted uppercase tracking-widest mb-0.5">
+                    {t(K.profile.lastLogin)}
+                  </p>
+                  <p className="font-sans text-[13px] text-text-primary font-medium">{lastLogin}</p>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-text-secondary">{t(K.profile.newPassword)}</Label>
-                    <Input
-                      type="password"
-                      value={form.newPassword}
-                      onChange={(e) => setForm((p) => ({ ...p, newPassword: e.target.value }))}
-                      className="h-9 text-sm"
-                      autoComplete="new-password"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-text-secondary">{t(K.profile.confirmPassword)}</Label>
-                    <Input
-                      type="password"
-                      value={form.confirmPassword}
-                      onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-                      className="h-9 text-sm"
-                      autoComplete="new-password"
-                    />
+              </div>
+
+              {user?.lastIpAddress && (
+                <div className="flex items-start gap-3">
+                  <Globe size={14} weight="regular" className="text-text-muted shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-sans text-[10.5px] text-text-muted uppercase tracking-widest mb-0.5">
+                      {t(K.profile.ip)}
+                    </p>
+                    <p className="font-mono text-[12px] text-text-primary">{user.lastIpAddress}</p>
                   </div>
                 </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-                {error && <p className="text-xs text-danger font-sans">{error}</p>}
+        {/* ── Right: Tabs ─────────────────────────────────── */}
+        <Tabs defaultValue="security" className="space-y-4">
+          <TabsList className="bg-elevated border border-border-subtle">
+            <TabsTrigger value="security" className="flex items-center gap-1.5 text-[13px]">
+              <Lock size={13} weight="bold" />
+              {t(K.profile.tab.account)}
+            </TabsTrigger>
+            <TabsTrigger value="sessions" className="flex items-center gap-1.5 text-[13px]">
+              <Shield size={13} weight="bold" />
+              {t(K.profile.tab.sessions)}
+            </TabsTrigger>
+          </TabsList>
 
-                <div className="flex justify-end pt-1">
-                  <Button
-                    onClick={() => void handleChangePassword()}
-                    disabled={saving || !form.currentPassword || !form.newPassword || !form.confirmPassword}
-                    className="bg-crimson hover:bg-crimson/90 text-white text-sm gap-1.5 px-5"
-                  >
-                    {saving ? (
-                      <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    ) : (
-                      <Lock size={14} />
+          {/* Security tab */}
+          <TabsContent value="security">
+            <Card>
+              <CardHeader>
+                <div>
+                  <CardTitle className="flex items-center gap-2 font-display">
+                    <Lock size={14} className="text-crimson" weight="bold" />
+                    {t(K.profile.changePassword)}
+                  </CardTitle>
+                  <CardDescription className="mt-0.5">
+                    Use a strong password with 8+ characters, including numbers and symbols.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {success ? (
+                  <Alert className="border-green-500/25 bg-green-500/8">
+                    <CheckCircle size={15} weight="fill" className="text-green-400" />
+                    <AlertDescription className="text-green-400 font-sans">
+                      {t(K.profile.passwordChanged)}
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-text-secondary">{t(K.profile.currentPassword)}</Label>
+                      <Input
+                        type="password"
+                        value={form.currentPassword}
+                        onChange={(e) => setForm((p) => ({ ...p, currentPassword: e.target.value }))}
+                        className="h-9 text-sm"
+                        autoComplete="current-password"
+                      />
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-text-secondary">{t(K.profile.newPassword)}</Label>
+                        <Input
+                          type="password"
+                          value={form.newPassword}
+                          onChange={(e) => setForm((p) => ({ ...p, newPassword: e.target.value }))}
+                          className="h-9 text-sm"
+                          autoComplete="new-password"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs text-text-secondary">{t(K.profile.confirmPassword)}</Label>
+                        <Input
+                          type="password"
+                          value={form.confirmPassword}
+                          onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+                          className="h-9 text-sm"
+                          autoComplete="new-password"
+                        />
+                      </div>
+                    </div>
+
+                    {error && (
+                      <Alert variant="destructive" className="py-2.5">
+                        <AlertDescription className="text-[13px]">{error}</AlertDescription>
+                      </Alert>
                     )}
-                    {t(K.profile.savePassword)}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <SessionsTab />
-      )}
+
+                    <div className="flex justify-end pt-1">
+                      <Button
+                        onClick={() => void handleChangePassword()}
+                        disabled={saving || !form.currentPassword || !form.newPassword || !form.confirmPassword}
+                        className="bg-crimson hover:bg-crimson/90 text-white text-sm gap-1.5 px-5"
+                      >
+                        {saving ? (
+                          <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        ) : (
+                          <Lock size={14} />
+                        )}
+                        {t(K.profile.savePassword)}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Sessions tab */}
+          <TabsContent value="sessions">
+            <SessionsTab />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
+
+
 
