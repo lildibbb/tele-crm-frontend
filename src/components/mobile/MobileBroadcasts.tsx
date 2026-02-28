@@ -17,6 +17,10 @@ import { useBroadcastStore } from "@/store/broadcastStore";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { useT, K } from "@/i18n";
 import type { BroadcastStatus } from "@/lib/api/broadcast";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -39,50 +43,37 @@ function formatDate(iso: string) {
 
 const STATUS_MAP: Record<
   BroadcastStatus,
-  { label: string; cls: string; icon: React.ReactNode }
+  { label: string; icon: React.ReactNode }
 > = {
   QUEUED: {
     label: "Queued",
-    cls: "bg-warning/10 text-warning",
-    icon: <Clock className="h-2.5 w-2.5" weight="fill" />,
+    icon: <Clock className="h-2.5 w-2.5 text-text-secondary" weight="fill" />,
   },
   SENDING: {
     label: "Sending",
-    cls: "bg-info/10 text-info",
-    icon: <Spinner className="h-2.5 w-2.5 animate-spin" />,
+    icon: <Spinner className="h-2.5 w-2.5 text-text-secondary animate-spin" />,
   },
   SENT: {
     label: "Sent",
-    cls: "bg-success/10 text-success",
-    icon: <CheckCircle className="h-2.5 w-2.5" weight="fill" />,
+    icon: <CheckCircle className="h-2.5 w-2.5 text-text-secondary" weight="fill" />,
   },
   FAILED: {
     label: "Failed",
-    cls: "bg-danger/10 text-danger",
-    icon: <Warning className="h-2.5 w-2.5" weight="fill" />,
+    icon: <Warning className="h-2.5 w-2.5 text-text-secondary" weight="fill" />,
   },
 };
 
 function StatusChip({ status }: { status: BroadcastStatus }) {
-  const { label, cls, icon } = STATUS_MAP[status] ?? STATUS_MAP.QUEUED;
+  const { label, icon } = STATUS_MAP[status] ?? STATUS_MAP.QUEUED;
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0",
-        cls,
-      )}
-    >
+    <Badge variant="secondary" className="text-[10px] font-medium gap-1">
       {icon}
       {label}
-    </span>
+    </Badge>
   );
 }
 
 // ── Skeleton Loading ───────────────────────────────────────────────────────────
-
-function SkeletonPulse({ className }: { className?: string }) {
-  return <div className={cn("rounded-lg bg-elevated animate-pulse", className)} />;
-}
 
 function HistorySkeleton() {
   return (
@@ -94,14 +85,14 @@ function HistorySkeleton() {
         >
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 space-y-2">
-              <SkeletonPulse className="h-3 w-full" />
-              <SkeletonPulse className="h-3 w-3/4" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-3/4" />
             </div>
-            <SkeletonPulse className="h-5 w-16 rounded-full" />
+            <Skeleton className="h-5 w-16 rounded-full" />
           </div>
           <div className="flex items-center gap-3">
-            <SkeletonPulse className="h-3 w-16" />
-            <SkeletonPulse className="h-3 w-24" />
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-24" />
           </div>
         </div>
       ))}
@@ -114,8 +105,8 @@ function HistorySkeleton() {
 function EmptyHistory() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-8">
-      <div className="w-16 h-16 rounded-2xl bg-crimson/10 flex items-center justify-center mb-1">
-        <Megaphone size={32} weight="fill" className="text-crimson" />
+      <div className="w-16 h-16 rounded-2xl bg-elevated flex items-center justify-center mb-1">
+        <Megaphone size={32} weight="fill" className="text-text-secondary" />
       </div>
       <span className="font-display font-bold text-[17px] text-text-primary">
         No broadcasts yet
@@ -196,8 +187,8 @@ function ConfirmSheet({
 
         {/* Icon + Title */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-crimson/10 flex items-center justify-center">
-            <Megaphone size={20} weight="fill" className="text-crimson" />
+          <div className="w-10 h-10 rounded-xl bg-elevated flex items-center justify-center">
+            <Megaphone size={20} weight="fill" className="text-text-secondary" />
           </div>
           <div>
             <h3 className="font-display font-bold text-[17px] text-text-primary">
@@ -313,8 +304,8 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
     <div className="flex flex-col gap-4 pb-6">
       {/* ── Page Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 pt-2">
-        <div className="w-10 h-10 rounded-xl bg-crimson/10 flex items-center justify-center shrink-0">
-          <Megaphone size={20} weight="fill" className="text-crimson" />
+        <div className="w-10 h-10 rounded-xl bg-elevated flex items-center justify-center shrink-0">
+          <Megaphone size={20} weight="fill" className="text-text-secondary" />
         </div>
         <div>
           <h1 className="font-display font-bold text-[20px] text-text-primary leading-tight">
@@ -329,7 +320,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
       {/* ── Alerts ──────────────────────────────────────────────────────────── */}
       {!broadcastEnabled && (
         <div className="mx-4 rounded-xl bg-warning/10 p-3 flex items-start gap-2">
-          <Warning size={18} className="text-warning shrink-0 mt-0.5" weight="fill" />
+          <Warning size={18} className="text-text-secondary shrink-0 mt-0.5" weight="fill" />
           <p className="font-sans text-[13px] text-warning leading-snug">
             Broadcast feature is currently disabled by your administrator.
           </p>
@@ -338,7 +329,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
 
       {lastEnqueued !== null && lastEnqueued > 0 && (
         <div className="mx-4 rounded-xl bg-success/10 p-3 flex items-start gap-2">
-          <CheckCircle size={18} className="text-success shrink-0 mt-0.5" weight="fill" />
+          <CheckCircle size={18} className="text-text-secondary shrink-0 mt-0.5" weight="fill" />
           <p className="font-sans text-[13px] text-success leading-snug">
             {t(K.broadcast.enqueuedFor)} {lastEnqueued} recipients
           </p>
@@ -347,7 +338,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
 
       {error && (
         <div className="mx-4 rounded-xl bg-danger/10 p-3 flex items-start gap-2">
-          <Warning size={18} className="text-danger shrink-0 mt-0.5" weight="fill" />
+          <Warning size={18} className="text-text-secondary shrink-0 mt-0.5" weight="fill" />
           <p className="font-sans text-[13px] text-danger leading-snug">{error}</p>
         </div>
       )}
@@ -355,22 +346,22 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
       {/* ── Stats Row ───────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-2 px-4">
         <StatCard
-          icon={<Megaphone className="h-3.5 w-3.5 text-crimson" weight="fill" />}
+          icon={<Megaphone className="h-3.5 w-3.5 text-text-secondary" weight="fill" />}
           value={historyTotal}
           label={t(K.broadcast.stats.total)}
-          accentCls="bg-crimson/10"
+          accentCls="bg-elevated"
         />
         <StatCard
-          icon={<Clock className="h-3.5 w-3.5 text-warning" weight="fill" />}
+          icon={<Clock className="h-3.5 w-3.5 text-text-secondary" weight="fill" />}
           value={pendingCount}
           label={t(K.broadcast.stats.inProgress)}
-          accentCls="bg-warning/10"
+          accentCls="bg-elevated"
         />
         <StatCard
-          icon={<CalendarBlank className="h-3.5 w-3.5 text-info" weight="fill" />}
+          icon={<CalendarBlank className="h-3.5 w-3.5 text-text-secondary" weight="fill" />}
           value={last7Days}
           label={t(K.broadcast.stats.last7d)}
-          accentCls="bg-info/10"
+          accentCls="bg-elevated"
         />
       </div>
 
@@ -385,7 +376,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
         <div className="p-4 flex flex-col gap-3">
           {/* Textarea */}
           <div className="relative">
-            <textarea
+            <Textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={t(K.broadcast.messagePlaceholder)}
@@ -423,7 +414,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
           {/* Photo URL input */}
           <div className="flex items-center gap-2">
             <ImageIcon size={16} className="text-text-muted shrink-0" />
-            <input
+            <Input
               type="url"
               value={photoUrl}
               onChange={(e) => setPhotoUrl(e.target.value)}

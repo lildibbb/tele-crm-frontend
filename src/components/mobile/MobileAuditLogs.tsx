@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useT, K } from "@/i18n";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
@@ -20,7 +21,6 @@ import { AuditAction } from "@/types/enums";
 import { parseApiData } from "@/lib/api/parseResponse";
 import {
   auditIconMap,
-  auditColorMap,
   auditFallbackIcon,
   formatAuditAction,
   computeChangeSummary,
@@ -90,7 +90,7 @@ function SkeletonCard({ index }: { index: number }) {
     <div className="relative flex gap-3 px-4">
       {/* Timeline spine */}
       <div className="flex flex-col items-center pt-1">
-        <div className="w-10 h-10 rounded-full bg-elevated animate-pulse" />
+        <Skeleton className="w-10 h-10 rounded-full" />
         {index < 3 && (
           <div className="w-px flex-1 bg-border-subtle/40 mt-1" />
         )}
@@ -99,12 +99,12 @@ function SkeletonCard({ index }: { index: number }) {
       <div className="flex-1 rounded-xl bg-card border border-border-subtle p-3.5 mb-3">
         <div className="flex items-center gap-3">
           <div className="flex-1 space-y-2">
-            <div className="h-3.5 w-32 rounded-md bg-elevated animate-pulse" />
-            <div className="h-3 w-24 rounded-md bg-elevated animate-pulse" />
+            <Skeleton className="h-3.5 w-32 rounded-md" />
+            <Skeleton className="h-3 w-24 rounded-md" />
           </div>
-          <div className="h-3 w-12 rounded-md bg-elevated animate-pulse" />
+          <Skeleton className="h-3 w-12 rounded-md" />
         </div>
-        <div className="h-3 w-44 rounded-md bg-elevated animate-pulse mt-2.5" />
+        <Skeleton className="h-3 w-44 rounded-md mt-2.5" />
       </div>
     </div>
   );
@@ -124,22 +124,22 @@ function StatsHeader({
       icon: CalendarBlank,
       label: "Today",
       value: String(todayCount),
-      color: "text-crimson",
-      bg: "bg-crimson/10",
+      color: "text-text-secondary",
+      bg: "bg-elevated",
     },
     {
       icon: Lightning,
       label: "Top Action",
       value: topAction ? formatAuditAction(topAction) : "—",
-      color: "text-gold",
-      bg: "bg-gold/10",
+      color: "text-text-secondary",
+      bg: "bg-elevated",
     },
     {
       icon: Users,
       label: "Actors",
       value: String(uniqueActors),
-      color: "text-info",
-      bg: "bg-info/10",
+      color: "text-text-secondary",
+      bg: "bg-elevated",
     },
   ];
 
@@ -249,11 +249,11 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
             <CaretLeft size={22} weight="bold" className="text-text-primary" />
           </button>
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="w-8 h-8 rounded-lg bg-crimson/10 flex items-center justify-center shrink-0">
+            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-elevated shrink-0">
               <ClipboardText
                 size={18}
                 weight="fill"
-                className="text-crimson"
+                className="text-text-secondary"
               />
             </span>
             <div className="min-w-0">
@@ -294,7 +294,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
         {/* Error banner */}
         {error && (
           <div className="flex items-center gap-2.5 mx-4 mt-3 px-3.5 py-3 rounded-xl bg-danger/10">
-            <Warning size={18} weight="fill" className="text-danger shrink-0" />
+            <Warning size={18} weight="fill" className="text-text-secondary shrink-0" />
             <span className="font-sans text-[13px] text-danger flex-1">
               {error}
             </span>
@@ -302,7 +302,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
               onClick={() => fetchLogs(0, true)}
               className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:bg-danger/10 transition-colors"
             >
-              <ArrowCounterClockwise size={18} className="text-danger" />
+              <ArrowCounterClockwise size={18} className="text-text-secondary" />
             </button>
           </div>
         )}
@@ -316,9 +316,9 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
                   key={i}
                   className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle p-2.5"
                 >
-                  <div className="w-8 h-8 rounded-full bg-elevated animate-pulse" />
-                  <div className="h-4 w-8 rounded-md bg-elevated animate-pulse" />
-                  <div className="h-2 w-10 rounded-md bg-elevated animate-pulse" />
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  <Skeleton className="h-4 w-8 rounded-md" />
+                  <Skeleton className="h-2 w-10 rounded-md" />
                 </div>
               ))}
             </div>
@@ -373,8 +373,6 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
               {logs.map((log, idx) => {
                 const Icon =
                   auditIconMap[log.action] ?? auditFallbackIcon;
-                const colorCls =
-                  auditColorMap[log.action] ?? "text-text-secondary";
                 const isExpanded = expandedId === log.id;
                 const diffEntries = isExpanded
                   ? buildDiffEntries(log.before, log.after)
@@ -385,16 +383,11 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
                   <div key={log.id} className="relative flex gap-3 px-4">
                     {/* ── Timeline spine ───────────────────────────── */}
                     <div className="flex flex-col items-center pt-1 shrink-0">
-                      <span
-                        className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center ring-[3px] ring-background z-10",
-                          colorCls.replace("text-", "bg-") + "/15",
-                        )}
-                      >
+                      <span className="w-10 h-10 rounded-full flex items-center justify-center ring-[3px] ring-background z-10 bg-elevated">
                         <Icon
                           size={18}
                           weight="fill"
-                          className={colorCls}
+                          className="text-text-secondary"
                         />
                       </span>
                       {!isLast && (

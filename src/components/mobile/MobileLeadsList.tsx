@@ -9,38 +9,29 @@ import {
   X,
   FunnelSimple,
 } from "@phosphor-icons/react";
-import MobileShell from "./MobileShell";
-import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useLeadsStore } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
 import type { Lead } from "@/store/leadsStore";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadsListProps {
-  readonly onMoreOpen?: () => void;
   readonly onAddLead?: () => void;
 }
 
 type FilterTab = LeadStatus | "ALL";
 
 // ── Status display helpers ─────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
-  NEW:               { color: "text-info",    bg: "bg-info/10",    label: "New" },
-  CONTACTED:         { color: "text-info",    bg: "bg-info/10",    label: "Contacted" },
-  REGISTERED:        { color: "text-[#A855F7]", bg: "bg-[#A855F7]/10", label: "Registered" },
-  DEPOSIT_REPORTED:  { color: "text-warning", bg: "bg-warning/10", label: "Deposit" },
-  DEPOSIT_CONFIRMED: { color: "text-success", bg: "bg-success/10", label: "Verified" },
-  REJECTED:          { color: "text-danger",  bg: "bg-danger/10",  label: "Rejected" },
-};
-
-const STATUS_DOT_COLOR: Record<string, string> = {
-  NEW:               "bg-info",
-  CONTACTED:         "bg-info",
-  REGISTERED:        "bg-[#A855F7]",
-  DEPOSIT_REPORTED:  "bg-warning",
-  DEPOSIT_CONFIRMED: "bg-success",
-  REJECTED:          "bg-danger",
+const STATUS_CONFIG: Record<string, { label: string }> = {
+  NEW:               { label: "New" },
+  CONTACTED:         { label: "Contacted" },
+  REGISTERED:        { label: "Registered" },
+  DEPOSIT_REPORTED:  { label: "Deposit" },
+  DEPOSIT_CONFIRMED: { label: "Verified" },
+  REJECTED:          { label: "Rejected" },
 };
 
 
@@ -72,18 +63,16 @@ function formatDeposit(val: string): string {
 // ── Skeleton Card ──────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border-subtle animate-pulse">
-      {/* Avatar skeleton */}
-      <div className="shrink-0 w-11 h-11 rounded-full bg-elevated" />
-      {/* Content skeleton */}
+    <div className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border-subtle">
+      <Skeleton className="shrink-0 w-11 h-11 rounded-full" />
       <div className="flex-1 min-w-0 space-y-2.5">
         <div className="flex items-center justify-between gap-2">
-          <div className="h-4 w-28 rounded bg-elevated" />
-          <div className="h-5 w-16 rounded-full bg-elevated" />
+          <Skeleton className="h-4 w-28 rounded" />
+          <Skeleton className="h-5 w-16 rounded-full" />
         </div>
         <div className="flex items-center justify-between gap-2">
-          <div className="h-3 w-24 rounded bg-elevated" />
-          <div className="h-3 w-14 rounded bg-elevated" />
+          <Skeleton className="h-3 w-24 rounded" />
+          <Skeleton className="h-3 w-14 rounded" />
         </div>
       </div>
     </div>
@@ -113,7 +102,6 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 function LeadCard({ lead }: { lead: Lead }) {
   const status = lead.status ?? "NEW";
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.NEW;
-  const dotColor = STATUS_DOT_COLOR[status] ?? "bg-text-muted";
   const initials = getInitials(lead.displayName);
 
   return (
@@ -125,21 +113,12 @@ function LeadCard({ lead }: { lead: Lead }) {
           "shadow-[0_1px_3px_rgba(0,0,0,0.2)]",
         )}
       >
-        {/* Avatar with status dot */}
-        <div className="relative shrink-0">
-          <div className="flex items-center justify-center w-11 h-11 rounded-full bg-elevated">
-            <span className="font-sans font-semibold text-[13px] text-text-primary select-none">
-              {initials}
-            </span>
-          </div>
-          {/* Status indicator dot */}
-          <span
-            className={cn(
-              "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-card",
-              dotColor,
-            )}
-          />
-        </div>
+        {/* Avatar */}
+        <Avatar className="w-11 h-11 shrink-0">
+          <AvatarFallback className="bg-elevated text-text-primary text-sm font-semibold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-1.5">
@@ -148,15 +127,9 @@ function LeadCard({ lead }: { lead: Lead }) {
             <span className="font-sans font-semibold text-[15px] text-text-primary truncate">
               {lead.displayName ?? "Unknown Lead"}
             </span>
-            <span
-              className={cn(
-                "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                cfg.bg,
-                cfg.color,
-              )}
-            >
+            <Badge variant="secondary" className="shrink-0 text-[10px] font-medium">
               {cfg.label}
-            </span>
+            </Badge>
           </div>
 
           {/* Row 2: Phone / Broker ID + Time */}
@@ -178,7 +151,7 @@ function LeadCard({ lead }: { lead: Lead }) {
           {/* Row 3: Deposit amount (if exists) */}
           {lead.depositBalance && (
             <div className="flex items-center gap-1.5 pt-0.5">
-              <span className="font-mono font-semibold text-[13px] text-gold">
+              <span className="font-mono font-semibold text-[13px] text-text-secondary">
                 {formatDeposit(lead.depositBalance)}
               </span>
               <span className="font-sans text-[10px] font-medium uppercase tracking-widest text-text-muted">
@@ -219,12 +192,11 @@ function PullIndicator({ visible }: { visible: boolean }) {
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
-export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsListProps) {
+export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
   const { leads, total, isLoading, fetchLeads } = useLeadsStore();
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [search, setSearch] = useState("");
   const [skip, setSkip] = useState(0);
-  const [moreOpen, setMoreOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -301,20 +273,13 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
   const showLoadMore = !isLoading && leads.length > 0 && leads.length < total;
 
   return (
-    <>
-      <MobileShell
-        activeTab="leads"
-        pageTitle="Lead Intelligence"
-        onTabChange={(tab) => {
-          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
-        }}
+    <div>
+      <div
+        ref={scrollRef}
+        className="pb-6"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
-        <div
-          ref={scrollRef}
-          className="pb-6"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
           {/* Pull-to-refresh indicator */}
           <PullIndicator visible={isRefreshing} />
 
@@ -374,7 +339,7 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
                     "font-sans text-[12px] font-semibold tracking-wide",
                     "transition-all duration-150 min-w-[44px]",
                     filter === tab.id
-                      ? "bg-crimson/15 text-crimson"
+                      ? "bg-elevated text-text-primary"
                       : "text-text-muted active:text-text-secondary",
                   )}
                 >
@@ -391,7 +356,7 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
             <span className="font-sans text-[13px] text-text-secondary tabular-nums">
               {isLoading ? (
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-crimson animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-border-default animate-pulse" />
                   Loading…
                 </span>
               ) : (
@@ -453,14 +418,11 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
             "shadow-[0_4px_20px_rgba(196,35,45,0.4)]",
             "active:scale-90 transition-transform duration-150",
           )}
-          style={{ bottom: "calc(56px + env(safe-area-inset-bottom) + 20px)" }}
+          style={{ bottom: "calc(60px + env(safe-area-inset-bottom) + 20px)" }}
           aria-label="Add Lead"
         >
-          <Plus size={24} color="white" weight="bold" />
+          <Plus size={24} className="text-white" weight="bold" />
         </button>
-      </MobileShell>
-
-      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
-    </>
+    </div>
   );
 }

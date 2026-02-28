@@ -16,6 +16,8 @@ import {
   ShieldCheck,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSuperadminStore } from "@/store/superadminStore";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
@@ -35,16 +37,16 @@ interface NavItem {
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function SkeletonBar({ className }: { className?: string }) {
-  return <div className={cn("rounded-lg bg-elevated animate-pulse", className)} />;
+  return <Skeleton className={cn(className)} />;
 }
 
 // ── Data ───────────────────────────────────────────────────────────────────────
 const NAV_ITEMS: NavItem[] = [
-  { icon: Wrench,   label: "Maintenance",      desc: "Mode & feature flags",        href: "/admin/maintenance",        iconColor: "text-warning", iconBg: "bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]" },
-  { icon: Database,  label: "Backup",           desc: "Scheduled backups & history", href: "/admin/backup",             iconColor: "text-info",    iconBg: "bg-[color-mix(in_srgb,var(--info)_12%,transparent)]" },
-  { icon: LockKey,   label: "Secrets",          desc: "Encrypted credentials",       href: "/admin/secrets",            iconColor: "text-crimson", iconBg: "bg-crimson-subtle" },
+  { icon: Wrench,   label: "Maintenance",      desc: "Mode & feature flags",        href: "/admin/maintenance",        iconColor: "text-text-secondary", iconBg: "bg-elevated" },
+  { icon: Database,  label: "Backup",           desc: "Scheduled backups & history", href: "/admin/backup",             iconColor: "text-text-secondary", iconBg: "bg-elevated" },
+  { icon: LockKey,   label: "Secrets",          desc: "Encrypted credentials",       href: "/admin/secrets",            iconColor: "text-text-secondary", iconBg: "bg-elevated" },
   { icon: GearSix,   label: "System Config",    desc: "All configuration keys",      href: "/settings",                 iconColor: "text-text-secondary", iconBg: "bg-elevated" },
-  { icon: ChartBar,  label: "Google Analytics", desc: "API usage tracking",          href: "/admin/google-analytics",   iconColor: "text-success", iconBg: "bg-[color-mix(in_srgb,var(--success)_12%,transparent)]" },
+  { icon: ChartBar,  label: "Google Analytics", desc: "API usage tracking",          href: "/admin/google-analytics",   iconColor: "text-text-secondary", iconBg: "bg-elevated" },
 ];
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -66,9 +68,9 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
   const pendingVerifications = users.filter((u) => u.isActive && !u.telegramId).length;
 
   const overviewStats = [
-    { label: "Total Users",  value: totalUsers,  Icon: Users,       color: "text-crimson", bg: "bg-crimson-subtle",  loading: isLoadingUsers },
-    { label: "Active Today", value: activeToday,  Icon: Lightning,   color: "text-success", bg: "bg-[color-mix(in_srgb,var(--success)_12%,transparent)]", loading: isLoadingUsers },
-    { label: "Total Leads",  value: totalLeads,   Icon: ChartBar,    color: "text-gold",    bg: "bg-gold-subtle",     loading: analyticsLoading },
+    { label: "Total Users",  value: totalUsers,  Icon: Users,       color: "text-text-secondary", bg: "bg-elevated",  loading: isLoadingUsers },
+    { label: "Active Today", value: activeToday,  Icon: Lightning,   color: "text-text-secondary", bg: "bg-elevated", loading: isLoadingUsers },
+    { label: "Total Leads",  value: totalLeads,   Icon: ChartBar,    color: "text-text-secondary", bg: "bg-elevated",     loading: analyticsLoading },
   ];
 
   const FLAG_BADGES: { key: keyof typeof featureFlags; label: string }[] = [
@@ -86,7 +88,7 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
       <header className="sticky top-0 z-30 flex items-center h-[56px] px-4 bg-base/80 backdrop-blur-xl border-b border-border-subtle">
         <button
           onClick={() => router.back()}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-crimson active:bg-crimson-subtle transition-colors"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-text-secondary active:bg-elevated transition-colors"
         >
           <CaretLeft size={22} weight="bold" />
         </button>
@@ -94,7 +96,7 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
           Admin Overview
         </span>
         <span className="min-w-[44px] flex items-center justify-center">
-          <Crown size={20} weight="fill" className="text-gold" />
+          <Crown size={20} weight="fill" className="text-text-secondary" />
         </span>
       </header>
 
@@ -119,8 +121,8 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
                     <span className={cn("flex items-center justify-center w-9 h-9 rounded-xl mx-auto mb-2", stat.bg)}>
                       <stat.Icon size={18} className={stat.color} weight="fill" />
                     </span>
-                    <p className={cn("font-display text-[22px] font-bold leading-none", stat.color)}>
-                      {stat.value || "—"}
+                    <p className="font-display text-[22px] font-bold leading-none text-text-primary">
+                       {stat.value || "—"}
                     </p>
                     <p className="font-sans text-[10px] text-text-muted font-medium mt-1">{stat.label}</p>
                   </>
@@ -142,7 +144,7 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
               className="rounded-2xl bg-card border border-border-subtle p-4 shadow-[var(--shadow-card)] text-left active:scale-[0.98] transition-transform min-h-[44px]"
             >
               <div className="flex items-center gap-2 mb-2.5">
-                <Wrench size={16} className="text-warning" weight="fill" />
+                <Wrench size={16} className="text-text-secondary" weight="fill" />
                 <p className="font-sans text-[11px] text-text-muted font-medium">Maintenance</p>
               </div>
               <div className="flex items-center gap-2">
@@ -159,7 +161,7 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
             {/* Bot Status */}
             <div className="rounded-2xl bg-card border border-border-subtle p-4 shadow-[var(--shadow-card)]">
               <div className="flex items-center gap-2 mb-2.5">
-                <Lightning size={16} className="text-success" weight="fill" />
+                <Lightning size={16} className="text-text-secondary" weight="fill" />
                 <p className="font-sans text-[11px] text-text-muted font-medium">Bot Engine</p>
               </div>
               <div className="flex items-center gap-2">
@@ -171,7 +173,7 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
             {/* Pending Verifications */}
             <div className="rounded-2xl bg-card border border-border-subtle p-4 shadow-[var(--shadow-card)]">
               <div className="flex items-center gap-2 mb-2.5">
-                <ShieldCheck size={16} className="text-info" weight="fill" />
+                <ShieldCheck size={16} className="text-text-secondary" weight="fill" />
                 <p className="font-sans text-[11px] text-text-muted font-medium">Pending</p>
               </div>
               {isLoadingUsers ? (
@@ -184,7 +186,7 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
             {/* Active Sessions */}
             <div className="rounded-2xl bg-card border border-border-subtle p-4 shadow-[var(--shadow-card)]">
               <div className="flex items-center gap-2 mb-2.5">
-                <Users size={16} className="text-gold" weight="fill" />
+                <Users size={16} className="text-text-secondary" weight="fill" />
                 <p className="font-sans text-[11px] text-text-muted font-medium">Sessions</p>
               </div>
               {isLoadingUsers ? (
@@ -235,18 +237,14 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
                 {FLAG_BADGES.map(({ key, label }) => {
                   const enabled = featureFlags[key];
                   return (
-                    <span
+                    <Badge
                       key={key}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full font-sans text-[11px] font-bold transition-colors",
-                        enabled
-                          ? "bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-success"
-                          : "bg-[color-mix(in_srgb,var(--danger)_12%,transparent)] text-danger",
-                      )}
+                      variant="secondary"
+                      className="text-[11px] font-bold gap-1.5 px-3 py-1.5 rounded-full"
                     >
-                      <span className={cn("w-1.5 h-1.5 rounded-full", enabled ? "bg-success" : "bg-danger")} />
+                      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", enabled ? "bg-success" : "bg-danger")} />
                       {label}
-                    </span>
+                    </Badge>
                   );
                 })}
               </div>

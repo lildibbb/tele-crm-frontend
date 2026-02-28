@@ -11,6 +11,7 @@ import { useAuthStore } from "@/store/authStore";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { MaintenanceBanner } from "@/components/maintenance/MaintenanceBanner";
 import { useIsMobileHydrated } from "@/lib/hooks/useIsMobile";
+import MobileGlobalLayout from "@/components/mobile/MobileGlobalLayout";
 import {
   SidebarProvider,
   SidebarInset,
@@ -73,9 +74,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // ── Mobile layout — pages handle their own MobileShell ──
+  // ── Mobile layout — global shell wraps all pages ──
   if (isMobile) {
-    return <>{children}</>;
+    return <MobileGlobalLayout>{children}</MobileGlobalLayout>;
   }
 
   return (

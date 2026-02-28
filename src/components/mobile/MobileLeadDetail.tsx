@@ -28,6 +28,9 @@ import {
 import type { Lead } from "@/store/leadsStore";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadDetailProps {
@@ -58,13 +61,13 @@ interface TimelineEntry {
 }
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { color: string; label: string; glow: string }> = {
-  NEW:               { color: "var(--info)",    label: "NEW",              glow: "rgba(96,165,250,0.25)" },
-  CONTACTED:         { color: "var(--info)",    label: "CONTACTED",        glow: "rgba(96,165,250,0.25)" },
-  REGISTERED:        { color: "#A855F7",        label: "REGISTERED",       glow: "rgba(168,85,247,0.25)" },
-  DEPOSIT_REPORTED:  { color: "var(--warning)", label: "DEPOSIT REPORTED", glow: "rgba(245,158,11,0.25)" },
-  DEPOSIT_CONFIRMED: { color: "var(--success)", label: "CONFIRMED",        glow: "rgba(34,211,160,0.25)" },
-  REJECTED:          { color: "var(--danger)",  label: "REJECTED",         glow: "rgba(239,68,68,0.25)" },
+const STATUS_CONFIG: Record<string, { label: string }> = {
+  NEW:               { label: "New" },
+  CONTACTED:         { label: "Contacted" },
+  REGISTERED:        { label: "Registered" },
+  DEPOSIT_REPORTED:  { label: "Deposit Reported" },
+  DEPOSIT_CONFIRMED: { label: "Confirmed" },
+  REJECTED:          { label: "Rejected" },
 };
 
 function getInitials(name: string): string {
@@ -110,7 +113,7 @@ function fmtRelative(dateStr: string | null | undefined): string {
 
 // ── Skeleton Pulse Block ──────────────────────────────────────────────────────
 function Pulse({ className }: { className?: string }) {
-  return <div className={cn("rounded-lg bg-elevated/60 animate-pulse", className)} />;
+  return <Skeleton className={cn("rounded-lg", className)} />;
 }
 
 // ── Info Card ─────────────────────────────────────────────────────────────────
@@ -153,7 +156,7 @@ function InfoCard({ card }: { card: InfoCardData }) {
           {card.copyable && card.value !== "—" && (
             <span className="shrink-0 text-text-muted">
               {copied ? (
-                <CheckCircle size={13} weight="fill" className="text-success" />
+                <CheckCircle size={13} weight="fill" className="text-text-secondary" />
               ) : (
                 <Copy size={13} />
               )}
@@ -171,10 +174,7 @@ function TimelineBubble({ entry, isLast }: { entry: TimelineEntry; isLast: boole
     <div className="flex gap-3">
       {/* Vertical track */}
       <div className="flex flex-col items-center w-5 shrink-0">
-        <div
-          className="w-[10px] h-[10px] rounded-full mt-1.5 ring-2 ring-background shrink-0"
-          style={{ background: entry.color }}
-        />
+        <div className="w-[10px] h-[10px] rounded-full mt-1.5 ring-2 ring-background bg-border-default shrink-0" />
         {!isLast && (
           <div className="w-px flex-1 bg-border-subtle mt-1" style={{ minHeight: 24 }} />
         )}
@@ -293,7 +293,7 @@ export default function MobileLeadDetail({
   if (isLoading || !lead) return <LoadingSkeleton />;
 
   const status = lead.status ?? "NEW";
-  const cfg = STATUS_CONFIG[status] ?? { color: "#8888AA", label: status, glow: "transparent" };
+  const cfg = STATUS_CONFIG[status] ?? { label: status };
   const name = lead.displayName ?? lead.username ?? "Unknown";
   const initials = getInitials(name);
 
@@ -303,7 +303,7 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "created",
       color: "var(--info)",
-      icon: <Star size={14} weight="fill" className="text-info" />,
+      icon: <Star size={14} weight="fill" className="text-text-secondary" />,
       description: "Lead created via Telegram bot",
       time: fmtTime(lead.createdAt),
       type: "milestone",
@@ -313,7 +313,7 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "registered",
       color: "#A855F7",
-      icon: <IdentificationBadge size={14} weight="fill" style={{ color: "#A855F7" }} />,
+      icon: <IdentificationBadge size={14} weight="fill" className="text-text-secondary" />,
       description: `Account registered on HFM${lead.hfmBrokerId ? ` (ID: ${lead.hfmBrokerId})` : ""}`,
       time: fmtTime(lead.registeredAt),
       type: "milestone",
@@ -323,7 +323,7 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "deposit",
       color: "var(--warning)",
-      icon: <CurrencyDollar size={14} weight="fill" className="text-warning" />,
+      icon: <CurrencyDollar size={14} weight="fill" className="text-text-secondary" />,
       description: `Deposit proof submitted — ${lead.depositBalance}`,
       time: fmtTime(lead.updatedAt),
       type: "action",
@@ -333,7 +333,7 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "verified",
       color: "var(--success)",
-      icon: <ShieldCheck size={14} weight="fill" className="text-success" />,
+      icon: <ShieldCheck size={14} weight="fill" className="text-text-secondary" />,
       description: "Deposit verified by team",
       time: fmtTime(lead.verifiedAt),
       type: "milestone",
@@ -343,7 +343,7 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "rejected",
       color: "var(--danger)",
-      icon: <XCircle size={14} weight="fill" className="text-danger" />,
+      icon: <XCircle size={14} weight="fill" className="text-text-secondary" />,
       description: "Lead status set to Rejected",
       time: fmtTime(lead.updatedAt),
       type: "action",
@@ -359,14 +359,14 @@ export default function MobileLeadDetail({
       copyable: true,
     },
     {
-      icon: <IdentificationBadge size={16} weight="duotone" className="text-gold" />,
+      icon: <IdentificationBadge size={16} weight="duotone" className="text-text-secondary" />,
       label: "HFM Broker ID",
       value: lead.hfmBrokerId ?? "—",
       mono: true,
       copyable: true,
     },
     {
-      icon: <TelegramLogo size={16} weight="duotone" className="text-info" />,
+      icon: <TelegramLogo size={16} weight="duotone" className="text-text-secondary" />,
       label: "Telegram ID",
       value: lead.telegramUserId ?? "—",
       mono: true,
@@ -407,12 +407,7 @@ export default function MobileLeadDetail({
       <div className="pt-[env(safe-area-inset-top)]" />
 
       {/* ── Status accent bar ─────────────────────────────────────────── */}
-      <div
-        className="h-1 shrink-0"
-        style={{
-          background: `linear-gradient(90deg, ${cfg.color}, ${cfg.color}80, transparent)`,
-        }}
-      />
+      <div className="h-1 shrink-0 bg-border-subtle" />
 
       {/* ── Header ────────────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-4 h-14 bg-card/80 backdrop-blur-xl border-b border-border-subtle shrink-0 sticky top-0 z-30">
@@ -447,30 +442,16 @@ export default function MobileLeadDetail({
       >
         {/* ── Avatar Hero ──────────────────────────────────────────────── */}
         <section className="relative px-4 pt-6 pb-5">
-          {/* Ambient glow */}
-          <div
-            className="absolute inset-x-0 top-0 h-32 pointer-events-none opacity-30"
-            style={{
-              background: `radial-gradient(ellipse at 50% 0%, ${cfg.glow}, transparent 70%)`,
-            }}
-          />
-
           <div className="relative flex flex-col items-center gap-3">
             {/* Avatar */}
             <div className="relative">
-              <div
-                className="w-20 h-20 rounded-full flex items-center justify-center bg-elevated shadow-lg"
-                style={{ boxShadow: `0 0 24px ${cfg.glow}` }}
-              >
-                <span className="font-sans font-bold text-[28px] text-text-primary select-none">
+              <Avatar className="w-20 h-20 shrink-0">
+                <AvatarFallback className="bg-elevated text-text-primary text-[28px] font-bold">
                   {initials}
-                </span>
-              </div>
+                </AvatarFallback>
+              </Avatar>
               {/* Status dot */}
-              <div
-                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full border-[3px] border-background"
-                style={{ background: cfg.color }}
-              />
+              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full border-[3px] border-background bg-border-default" />
             </div>
 
             {/* Name + username */}
@@ -485,31 +466,14 @@ export default function MobileLeadDetail({
 
             {/* Status badge + Handover badge */}
             <div className="flex items-center gap-2 flex-wrap justify-center">
-              <span
-                className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider"
-                style={{
-                  background: `color-mix(in srgb, ${cfg.color} 14%, transparent)`,
-                  color: cfg.color,
-                }}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ background: cfg.color }}
-                />
+              <Badge variant="secondary" className="text-[11px] font-bold uppercase tracking-wider">
                 {cfg.label}
-              </span>
+              </Badge>
 
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold",
-                  lead.handoverMode
-                    ? "bg-success/12 text-success"
-                    : "bg-elevated text-text-muted",
-                )}
-              >
-                <UserSwitch size={13} weight="bold" />
+              <Badge variant="secondary" className="text-[11px] font-semibold gap-1">
+                <UserSwitch size={13} weight="bold" className="text-text-secondary" />
                 {lead.handoverMode ? "Handover ON" : "Handover OFF"}
-              </span>
+              </Badge>
             </div>
 
             {/* Quick contact chips */}
@@ -519,7 +483,7 @@ export default function MobileLeadDetail({
                   href={`tel:${lead.phoneNumber}`}
                   className="flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-card border border-border-subtle text-text-secondary text-[12px] font-medium active:scale-[0.96] transition-transform"
                 >
-                  <Phone size={14} weight="bold" className="text-success" />
+                  <Phone size={14} weight="bold" className="text-text-secondary" />
                   {lead.phoneNumber}
                 </a>
               )}
@@ -528,7 +492,7 @@ export default function MobileLeadDetail({
                   href={`mailto:${lead.email}`}
                   className="flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-card border border-border-subtle text-text-secondary text-[12px] font-medium active:scale-[0.96] transition-transform"
                 >
-                  <EnvelopeSimple size={14} weight="bold" className="text-info" />
+                  <EnvelopeSimple size={14} weight="bold" className="text-text-secondary" />
                   Email
                 </a>
               )}
@@ -549,24 +513,17 @@ export default function MobileLeadDetail({
                   <CurrencyDollar
                     size={20}
                     weight="fill"
-                    className={status === "DEPOSIT_CONFIRMED" ? "text-success" : "text-gold"}
+                    className="text-text-secondary"
                   />
                   <span className="font-sans font-semibold text-[14px] text-text-primary">
                     Deposit
                   </span>
                 </div>
-                <span
-                  className={cn(
-                    "text-[11px] font-bold px-2 py-0.5 rounded-full",
-                    status === "DEPOSIT_CONFIRMED"
-                      ? "bg-success/15 text-success"
-                      : "bg-warning/15 text-warning",
-                  )}
-                >
+                <Badge variant="secondary" className="text-[11px] font-bold">
                   {status === "DEPOSIT_CONFIRMED" ? "✓ Verified" : "⏳ Pending"}
-                </span>
+                </Badge>
               </div>
-              <span className="font-mono font-bold text-[36px] leading-none text-gold mt-1">
+              <span className="font-mono font-bold text-[36px] leading-none text-text-primary mt-1">
                 {lead.depositBalance}
               </span>
               <span className="font-sans text-[12px] text-text-muted">
@@ -671,16 +628,16 @@ export default function MobileLeadDetail({
           <div className="flex gap-3">
             <button
               onClick={onVerify}
-              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-success text-white flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-success/20"
+              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-crimson text-white flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
             >
               <CheckCircle size={20} weight="bold" />
               Verify
             </button>
             <button
               onClick={onReject}
-              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-danger/10 text-danger flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
+              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-text-secondary border border-border-subtle flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
             >
-              <XCircle size={20} weight="bold" />
+              <XCircle size={20} weight="bold" className="text-text-secondary" />
               Reject
             </button>
           </div>

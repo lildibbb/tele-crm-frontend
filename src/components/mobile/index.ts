@@ -1,6 +1,8 @@
 // Mobile component barrel exports
 // All 12 screens for the Titan Journal CRM mobile native app shell
 
+export { default as MobileGlobalLayout } from "./MobileGlobalLayout";
+
 export { default as MobileShell } from "./MobileShell";
 export type { MobileShellProps, MobileTab } from "./MobileShell";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -15,13 +15,14 @@ import {
   CaretRight,
   Clock,
   CircleNotch,
+  Circle,
 } from "@phosphor-icons/react";
-import MobileShell from "./MobileShell";
-import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { useLeadsStore } from "@/store/leadsStore";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface OwnerHomeProps {
@@ -47,27 +48,19 @@ const STATUS_LABELS: Record<string, string> = {
   REJECTED:          "REJECTED",
 };
 
-const EVENT_ICONS: Record<string, string> = {
-  NEW: "🟢",
-  REGISTERED: "🔵",
-  DEPOSIT_REPORTED: "🟡",
-  DEPOSIT_CONFIRMED: "✅",
-  REJECTED: "🔴",
-};
-
-// ── Skeleton card ──────────────────────────────────────────────────────────────
+// ── Skeleton card──────────────────────────────────────────────────────────────
 function SkeletonKpiCard() {
   return (
-    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle animate-pulse">
-      <div className="w-10 h-10 rounded-xl bg-elevated" />
-      <div className="w-16 h-6 rounded bg-elevated mt-1" />
-      <div className="w-12 h-3 rounded bg-elevated" />
+    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle">
+      <Skeleton className="w-10 h-10 rounded-xl" />
+      <Skeleton className="w-16 h-6 rounded mt-1" />
+      <Skeleton className="w-12 h-3 rounded" />
     </div>
   );
 }
 
 function SkeletonActivityCard() {
-  return <div className="h-[60px] rounded-xl bg-card border border-border-subtle animate-pulse" />;
+  return <Skeleton className="h-[60px] rounded-xl" />;
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
@@ -77,7 +70,6 @@ export default function OwnerHome({
   onViewAllLeads,
   onVerificationBanner,
 }: OwnerHomeProps) {
-  const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuthStore();
   const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
   const { leads, isLoading: leadsLoading, fetchLeads } = useLeadsStore();
@@ -97,8 +89,8 @@ export default function OwnerHome({
   const kpiCards = [
     {
       Icon: Users,
-      iconBg: "bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]",
-      iconColor: "text-crimson",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(totalLeads || "—"),
       label: "Total Leads",
       trend: kpi?.totalLeads?.trend,
@@ -106,8 +98,8 @@ export default function OwnerHome({
     },
     {
       Icon: UserCheck,
-      iconBg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]",
-      iconColor: "text-info",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(registered || "—"),
       label: "Verified",
       trend: kpi?.registeredAccounts?.trend,
@@ -115,8 +107,8 @@ export default function OwnerHome({
     },
     {
       Icon: CurrencyDollar,
-      iconBg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]",
-      iconColor: "text-success",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(depositing || "—"),
       label: "Deposits",
       trend: kpi?.depositingClients?.trend,
@@ -124,8 +116,8 @@ export default function OwnerHome({
     },
     {
       Icon: TrendUp,
-      iconBg: "bg-gold-subtle",
-      iconColor: "text-gold",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: `${conversionRate}%`,
       label: "Conversion",
       trend: undefined as string | undefined,
@@ -135,22 +127,13 @@ export default function OwnerHome({
 
   const quickActions = [
     { Icon: Plus, label: "Add Lead", color: "bg-crimson", textColor: "text-white", action: onAddLead },
-    { Icon: Megaphone, label: "Broadcast", color: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]", textColor: "text-info", action: undefined },
-    { Icon: ShieldCheck, label: "Verify", color: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]", textColor: "text-warning", action: onVerificationBanner },
+    { Icon: Megaphone, label: "Broadcast", color: "bg-elevated", textColor: "text-text-secondary", action: undefined },
+    { Icon: ShieldCheck, label: "Verify", color: "bg-elevated", textColor: "text-text-secondary", action: onVerificationBanner },
     { Icon: GearSix, label: "Settings", color: "bg-elevated", textColor: "text-text-secondary", action: undefined },
   ];
 
   return (
-    <>
-      <MobileShell
-        activeTab="home"
-        pageTitle="Dashboard"
-        verifyBadgeCount={pendingCount}
-        showLiveDot
-        onTabChange={(tab) => {
-          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
-        }}
-      >
+    <div>
       <div className="pb-6 space-y-5">
         {/* ── KPI Grid 2×2 ──────────────────────────────────── */}
         <section className="px-4 pt-4">
@@ -240,14 +223,12 @@ export default function OwnerHome({
             {leadsLoading
               ? [1, 2, 3, 4, 5].map((i) => <SkeletonActivityCard key={i} />)
               : leads.slice(0, 5).map((lead, idx) => {
-                  const accentColor = STATUS_COLORS[lead.status] ?? "var(--text-muted)";
-                  const eventIcon = EVENT_ICONS[lead.status] ?? "⚪";
                   return (
                     <Link key={lead.id} href={`/leads/${lead.id}`}>
                       <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm group">
                         {/* Timeline dot + connector */}
                         <div className="flex flex-col items-center self-stretch shrink-0">
-                          <span className="text-[14px] leading-none mt-0.5">{eventIcon}</span>
+                          <Circle size={8} weight="fill" className="text-text-muted mt-0.5 shrink-0" />
                           {idx < Math.min(leads.length, 5) - 1 && (
                             <span className="flex-1 w-px bg-border-subtle mt-1" />
                           )}
@@ -258,12 +239,9 @@ export default function OwnerHome({
                             <span className="font-sans font-semibold text-[14px] text-text-primary truncate">
                               {lead.displayName ?? "—"}
                             </span>
-                            <span
-                              className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-                              style={{ background: `color-mix(in srgb, ${accentColor} 15%, transparent)`, color: accentColor }}
-                            >
+                            <Badge variant="secondary" className="text-[10px] font-medium shrink-0">
                               {STATUS_LABELS[lead.status] ?? lead.status}
-                            </span>
+                            </Badge>
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="font-mono text-[12px] text-text-muted">
@@ -296,14 +274,12 @@ export default function OwnerHome({
       <button
         onClick={onAddLead}
         className="fixed right-5 flex items-center justify-center w-14 h-14 rounded-full bg-crimson shadow-lg active:scale-95 transition-transform z-30"
-        style={{ bottom: "calc(56px + env(safe-area-inset-bottom) + 20px)", boxShadow: "0 4px 24px var(--crimson-glow)" }}
+        style={{ bottom: "calc(60px + env(safe-area-inset-bottom) + 20px)", boxShadow: "0 4px 24px var(--crimson-glow)" }}
         aria-label="Add Lead"
       >
         <Plus size={24} color="white" weight="bold" />
       </button>
-      </MobileShell>
-      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
-    </>
+    </div>
   );
 }
 

@@ -17,6 +17,8 @@ import { useVerificationStore, type FilterTab } from "@/store/verificationStore"
 import { LeadStatus } from "@/types/enums";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileVerificationProps {
@@ -91,24 +93,24 @@ const FILTER_TABS: { id: FilterTab; label: string }[] = [
 // ── Skeleton Card ──────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="rounded-xl border border-border-subtle bg-card p-4 space-y-3 animate-pulse">
+    <div className="rounded-xl border border-border-subtle bg-card p-4 space-y-3">
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-full bg-elevated" />
+        <Skeleton className="w-11 h-11 rounded-full" />
         <div className="flex-1 space-y-1.5">
-          <div className="h-3.5 w-3/5 rounded bg-elevated" />
-          <div className="h-3 w-2/5 rounded bg-elevated" />
+          <Skeleton className="h-3.5 w-3/5" />
+          <Skeleton className="h-3 w-2/5" />
         </div>
-        <div className="w-16 h-5 rounded-full bg-elevated" />
+        <Skeleton className="w-16 h-5 rounded-full" />
       </div>
-      <div className="h-px bg-border-subtle" />
+      <Skeleton className="h-px w-full" />
       <div className="flex items-center justify-between">
-        <div className="h-4 w-24 rounded bg-elevated" />
-        <div className="w-10 h-10 rounded-lg bg-elevated" />
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="w-10 h-10 rounded-lg" />
       </div>
       <div className="flex gap-2">
-        <div className="flex-1 h-11 rounded-xl bg-elevated" />
-        <div className="flex-1 h-11 rounded-xl bg-elevated" />
-        <div className="flex-1 h-11 rounded-xl bg-elevated" />
+        <Skeleton className="flex-1 h-11 rounded-xl" />
+        <Skeleton className="flex-1 h-11 rounded-xl" />
+        <Skeleton className="flex-1 h-11 rounded-xl" />
       </div>
     </div>
   );
@@ -118,10 +120,10 @@ function SkeletonStats() {
   return (
     <div className="flex gap-3 px-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex-1 p-3 rounded-xl bg-card border border-border-subtle animate-pulse">
-          <div className="w-6 h-6 rounded-lg bg-elevated mb-2" />
-          <div className="h-5 w-8 rounded bg-elevated mb-1" />
-          <div className="h-3 w-14 rounded bg-elevated" />
+        <div key={i} className="flex-1 p-3 rounded-xl bg-card border border-border-subtle">
+          <Skeleton className="w-6 h-6 rounded-lg mb-2" />
+          <Skeleton className="h-5 w-8 mb-1" />
+          <Skeleton className="h-3 w-14" />
         </div>
       ))}
     </div>
@@ -151,9 +153,7 @@ function ReceiptThumbnail({ leadId, onView }: { leadId: string; onView: () => vo
   }, [leadId]);
 
   if (loading) {
-    return (
-      <div className="w-11 h-11 rounded-lg bg-elevated animate-pulse shrink-0" />
-    );
+    return <Skeleton className="w-11 h-11 rounded-lg shrink-0" />;
   }
 
   return (
@@ -296,15 +296,7 @@ function VerificationCard({
             <span className="font-mono text-[11px] text-text-muted">HFM: {item.hfmId}</span>
           </div>
         </div>
-        <span
-          className={cn(
-            "shrink-0 px-2.5 py-0.5 rounded-full font-sans text-[11px] font-medium",
-            meta.bg,
-            meta.color,
-          )}
-        >
-          {meta.label}
-        </span>
+        <Badge variant="secondary" className="text-[10px] font-medium shrink-0">{meta.label}</Badge>
       </div>
 
       {/* Deposit + date + receipt */}
@@ -312,7 +304,7 @@ function VerificationCard({
         <div className="h-px bg-border-subtle mb-3" />
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-sans font-bold text-[20px] text-gold leading-none">
+            <div className="font-sans font-bold text-[20px] text-text-primary leading-none">
               {item.depositAmount}
             </div>
             <div className="flex items-center gap-1 mt-1">
@@ -331,33 +323,33 @@ function VerificationCard({
             onClick={onApprove}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl font-sans font-semibold text-[13px]",
-              "bg-[color-mix(in_srgb,var(--success)_15%,transparent)] text-success",
+              "bg-elevated text-text-primary",
               "active:scale-[0.97] transition-transform",
             )}
           >
-            <CheckCircle size={16} weight="bold" />
+            <CheckCircle size={16} weight="bold" className="text-text-secondary" />
             Approve
           </button>
           <button
             onClick={onReject}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl font-sans font-semibold text-[13px]",
-              "bg-[color-mix(in_srgb,var(--danger)_15%,transparent)] text-danger",
+              "bg-elevated text-text-primary",
               "active:scale-[0.97] transition-transform",
             )}
           >
-            <XCircle size={16} weight="bold" />
+            <XCircle size={16} weight="bold" className="text-text-secondary" />
             Reject
           </button>
           <button
             onClick={onAskMore}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl font-sans font-semibold text-[13px]",
-              "bg-[color-mix(in_srgb,var(--info)_15%,transparent)] text-info",
+              "bg-elevated text-text-primary",
               "active:scale-[0.97] transition-transform",
             )}
           >
-            <ChatCircleDots size={16} weight="bold" />
+            <ChatCircleDots size={16} weight="bold" className="text-text-secondary" />
             Ask More
           </button>
         </div>
@@ -370,8 +362,8 @@ function VerificationCard({
 function EmptyState({ todayCount }: { todayCount: number }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-20 text-center px-6">
-      <div className="w-16 h-16 rounded-2xl bg-[color-mix(in_srgb,var(--success)_12%,transparent)] flex items-center justify-center">
-        <ShieldCheck size={36} className="text-success" weight="fill" />
+      <div className="w-16 h-16 rounded-2xl bg-elevated flex items-center justify-center">
+        <ShieldCheck size={36} className="text-text-secondary" weight="fill" />
       </div>
       <span className="font-sans font-bold text-[22px] text-text-primary">All caught up!</span>
       <span className="font-sans text-[14px] text-text-secondary leading-snug">
@@ -380,7 +372,7 @@ function EmptyState({ todayCount }: { todayCount: number }) {
         Check back when new deposits are reported.
       </span>
       {todayCount > 0 && (
-        <span className="font-sans font-medium text-[13px] text-success mt-1">
+        <span className="font-sans font-medium text-[13px] text-text-secondary mt-1">
           {todayCount} verified today
         </span>
       )}
@@ -483,7 +475,7 @@ export default function MobileVerification({
       <div className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border-subtle">
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2.5">
-            <ShieldCheck size={22} className="text-crimson" weight="fill" />
+            <ShieldCheck size={22} className="text-text-secondary" weight="fill" />
             <h1 className="font-sans font-bold text-[18px] text-text-primary">Verification</h1>
           </div>
           {pendingCount > 0 && (
@@ -523,8 +515,8 @@ export default function MobileVerification({
           <div className="flex gap-3 px-4">
             {/* Pending */}
             <div className="flex-1 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
-              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]">
-                <Clock size={16} className="text-warning" weight="fill" />
+              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated">
+                <Clock size={16} className="text-text-secondary" weight="fill" />
               </span>
               <p className="font-sans text-[22px] font-bold text-text-primary leading-none mt-2">
                 {pendingCount}
@@ -533,20 +525,20 @@ export default function MobileVerification({
             </div>
             {/* Approved */}
             <div className="flex-1 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
-              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-[color-mix(in_srgb,var(--success)_15%,transparent)]">
-                <CheckCircle size={16} className="text-success" weight="fill" />
+              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated">
+                <CheckCircle size={16} className="text-text-secondary" weight="fill" />
               </span>
-              <p className="font-sans text-[22px] font-bold text-success leading-none mt-2">
+              <p className="font-sans text-[22px] font-bold text-text-primary leading-none mt-2">
                 {approvedToday + todayCount}
               </p>
               <p className="font-sans text-[11px] text-text-muted mt-0.5">Approved</p>
             </div>
             {/* Rejected */}
             <div className="flex-1 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
-              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-[color-mix(in_srgb,var(--danger)_15%,transparent)]">
-                <XCircle size={16} className="text-danger" weight="fill" />
+              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated">
+                <XCircle size={16} className="text-text-secondary" weight="fill" />
               </span>
-              <p className="font-sans text-[22px] font-bold text-danger leading-none mt-2">
+              <p className="font-sans text-[22px] font-bold text-text-primary leading-none mt-2">
                 {rejectedToday}
               </p>
               <p className="font-sans text-[11px] text-text-muted mt-0.5">Rejected</p>

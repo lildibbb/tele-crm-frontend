@@ -12,52 +12,33 @@ import {
   Pulse,
   ClockCounterClockwise,
 } from "@phosphor-icons/react";
-import MobileShell from "./MobileShell";
-import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useSuperadminStore } from "@/store/superadminStore";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAdminDashboardProps {
-  readonly onMoreOpen?: () => void;
-}
+export interface MobileAdminDashboardProps {}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function SkeletonBar({ className }: { className?: string }) {
-  return <div className={cn("rounded-lg bg-elevated animate-pulse", className)} />;
+  return <Skeleton className={cn(className)} />;
 }
 
 function SkeletonHealthCard() {
   return (
     <div className="flex-shrink-0 w-[140px] rounded-2xl bg-card border border-border-subtle p-4 space-y-3">
-      <SkeletonBar className="h-4 w-16" />
-      <SkeletonBar className="h-3 w-10" />
+      <Skeleton className="h-4 w-16" />
+      <Skeleton className="h-3 w-10" />
     </div>
   );
 }
 
-const ACTION_COLOR: Record<string, string> = {
-  USER_CREATED:     "var(--success)",
-  USER_UPDATED:     "var(--info)",
-  USER_DEACTIVATED: "var(--danger)",
-  USER_REACTIVATED: "var(--success)",
-  LOGIN:            "var(--text-muted)",
-};
-
-const ACTION_BADGE_CLASS: Record<string, string> = {
-  USER_CREATED:     "bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-success",
-  USER_UPDATED:     "bg-[color-mix(in_srgb,var(--info)_12%,transparent)] text-info",
-  USER_DEACTIVATED: "bg-[color-mix(in_srgb,var(--danger)_12%,transparent)] text-danger",
-  USER_REACTIVATED: "bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-success",
-  LOGIN:            "bg-elevated text-text-muted",
-};
-
 // ── Component ──────────────────────────────────────────────────────────────────
-export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboardProps) {
+export default function MobileAdminDashboard(_props: MobileAdminDashboardProps) {
   const router = useRouter();
-  const [moreOpen, setMoreOpen] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const { users, auditLogs, ragStats, isLoadingUsers, isLoadingLogs, isLoadingRag, fetchUsers, fetchAuditLogs, fetchRagStats } = useSuperadminStore();
   const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
@@ -86,26 +67,16 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
   };
 
   const userStats = [
-    { Icon: Users,     label: "Total",  value: totalUsers,  color: "text-crimson",  bg: "bg-crimson-subtle" },
-    { Icon: ShieldStar, label: "Active", value: activeUsers, color: "text-success",  bg: "bg-[color-mix(in_srgb,var(--success)_12%,transparent)]" },
-    { Icon: Pulse,     label: "Leads",  value: kpi?.totalLeads?.current ?? 0, color: "text-gold", bg: "bg-gold-subtle" },
-    { Icon: Database,  label: "AI Reqs", value: ragStats?.totalRequests ?? 0, color: "text-info", bg: "bg-[color-mix(in_srgb,var(--info)_12%,transparent)]" },
+    { Icon: Users,     label: "Total",  value: totalUsers,  color: "text-text-secondary",  bg: "bg-elevated" },
+    { Icon: ShieldStar, label: "Active", value: activeUsers, color: "text-text-secondary",  bg: "bg-elevated" },
+    { Icon: Pulse,     label: "Leads",  value: kpi?.totalLeads?.current ?? 0, color: "text-text-secondary", bg: "bg-elevated" },
+    { Icon: Database,  label: "AI Reqs", value: ragStats?.totalRequests ?? 0, color: "text-text-secondary", bg: "bg-elevated" },
   ];
 
   const recentLogs = auditLogs.slice(0, 8);
 
   return (
-    <>
-      <MobileShell
-        role="SUPERADMIN"
-        activeTab="home"
-        pageTitle="Admin Panel"
-        showLiveDot
-        onTabChange={(tab) => {
-          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
-        }}
-      >
-        <div className="pb-8 space-y-6">
+    <div className="pb-8 space-y-6">
 
           {/* ── System Health ──────────────────────────────────────── */}
           <section className="px-4 pt-4">
@@ -159,7 +130,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                         <span className={cn("flex items-center justify-center w-8 h-8 rounded-xl", stat.bg)}>
                           <stat.Icon size={16} className={stat.color} weight="fill" />
                         </span>
-                        <p className={cn("font-display text-[24px] font-bold leading-none", stat.color)}>
+                        <p className="font-display text-[24px] font-bold leading-none text-text-primary">
                           {stat.value || "—"}
                         </p>
                       </div>
@@ -180,8 +151,8 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
             <div className="rounded-2xl bg-card border border-border-subtle p-4 shadow-[var(--shadow-card)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]">
-                    <Lightning size={20} className="text-warning" weight="fill" />
+                  <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-elevated">
+                    <Lightning size={20} className="text-text-secondary" weight="fill" />
                   </span>
                   <div>
                     <p className="font-sans text-[14px] font-semibold text-text-primary">Maintenance Mode</p>
@@ -230,7 +201,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                 <div className="divide-y divide-border-subtle">
                   <div className="flex items-center justify-between px-4 py-3.5">
                     <div className="flex items-center gap-2.5">
-                      <Brain size={18} className="text-info" weight="fill" />
+                      <Brain size={18} className="text-text-secondary" weight="fill" />
                       <span className="font-sans text-[13px] text-text-primary font-medium">Total Requests</span>
                     </div>
                     <span className="font-mono text-[14px] font-bold text-info">
@@ -239,7 +210,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                   </div>
                   <div className="flex items-center justify-between px-4 py-3.5">
                     <div className="flex items-center gap-2.5">
-                      <Lightning size={18} className="text-gold" weight="fill" />
+                      <Lightning size={18} className="text-text-secondary" weight="fill" />
                       <span className="font-sans text-[13px] text-text-primary font-medium">Cache Hit Rate</span>
                     </div>
                     <span className="font-mono text-[14px] font-bold text-gold">
@@ -279,12 +250,11 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                   {recentLogs.map((log) => (
                     <div key={log.id} className="flex items-start gap-3 px-4 py-3.5">
                       <span
-                        className={cn(
-                          "mt-0.5 shrink-0 inline-flex items-center px-2 py-0.5 rounded-md font-mono text-[10px] font-bold uppercase tracking-wide",
-                          ACTION_BADGE_CLASS[log.action] ?? "bg-elevated text-text-muted"
-                        )}
+                        className="mt-0.5 shrink-0"
                       >
-                        {log.action.replace(/_/g, " ")}
+                        <Badge variant="secondary" className="text-[10px] font-mono font-bold uppercase tracking-wide">
+                          {log.action.replace(/_/g, " ")}
+                        </Badge>
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="font-sans text-[12px] text-text-secondary truncate">
@@ -306,8 +276,5 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
             </div>
           </section>
         </div>
-      </MobileShell>
-      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
-    </>
   );
 }

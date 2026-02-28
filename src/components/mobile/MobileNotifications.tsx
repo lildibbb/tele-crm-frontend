@@ -42,8 +42,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: false,
     category: "leads",
     Icon: UserPlus,
-    iconColor: "var(--info)",
-    iconBg: "color-mix(in srgb, var(--info) 15%, transparent)",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     title: "New lead registered",
     body: "Muhammad Hafiz registered via Telegram",
     time: "2h ago",
@@ -53,8 +53,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: false,
     category: "verification",
     Icon: CurrencyDollar,
-    iconColor: "var(--warning)",
-    iconBg: "color-mix(in srgb, var(--warning) 15%, transparent)",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     title: "Deposit reported",
     body: "Siti Aminah submitted $800 deposit receipt",
     time: "4h ago",
@@ -64,8 +64,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: false,
     category: "verification",
     Icon: ShieldCheck,
-    iconColor: "var(--success)",
-    iconBg: "color-mix(in srgb, var(--success) 15%, transparent)",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     title: "Verification approved",
     body: "Lead #TJ-1279 deposit confirmed",
     time: "5h ago",
@@ -75,8 +75,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: true,
     category: "verification",
     Icon: XCircle,
-    iconColor: "var(--danger)",
-    iconBg: "color-mix(in srgb, var(--danger) 15%, transparent)",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     title: "Deposit rejected",
     body: "Lead #TJ-1277 rejected — poor image quality",
     time: "Yesterday",
@@ -86,8 +86,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: true,
     category: "leads",
     Icon: Users,
-    iconColor: "var(--text-secondary)",
-    iconBg: "color-mix(in srgb, var(--text-secondary) 15%, transparent)",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     title: "New team member",
     body: "Ahmad Razali added as Staff",
     time: "Jan 20",
@@ -97,8 +97,8 @@ const MOCK_NOTIFICATIONS: NotificationItem[] = [
     read: true,
     category: "system",
     Icon: Database,
-    iconColor: "var(--info)",
-    iconBg: "color-mix(in srgb, var(--info) 15%, transparent)",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     title: "KB processing complete",
     body: "knowledge-base-jan.pdf indexed",
     time: "Jan 19",
@@ -171,12 +171,12 @@ function NotificationCard({
         className={cn(
           "w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5",
           "ring-1 ring-border-subtle/50 transition-shadow",
+          notif.iconBg,
         )}
-        style={{ background: notif.iconBg }}
       >
         <notif.Icon
           size={20}
-          style={{ color: notif.iconColor }}
+          className={notif.iconColor}
           weight="fill"
         />
       </span>

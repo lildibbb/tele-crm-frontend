@@ -17,6 +17,8 @@ import {
   SmileySad,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { useT, K } from "@/i18n";
 import { followUpsApi } from "@/lib/api/followUps";
@@ -88,36 +90,25 @@ const STATUS_CHIP_MAP: Record<
 };
 
 function StatusChip({ status }: { status: FollowUp["status"] }) {
-  const { label, cls, Icon } =
-    STATUS_CHIP_MAP[status] ?? STATUS_CHIP_MAP[FollowUpStatus.PENDING];
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
-        cls,
-      )}
-    >
-      <Icon size={10} weight="fill" />
-      {label}
-    </span>
-  );
+  const { label } = STATUS_CHIP_MAP[status] ?? STATUS_CHIP_MAP[FollowUpStatus.PENDING];
+  return <Badge variant="secondary" className="text-[10px] font-medium">{label}</Badge>;
 }
 
 // ── Skeleton card ──────────────────────────────────────────────────────────────
 
 function SkeletonCard() {
   return (
-    <div className="rounded-xl bg-card border border-border-subtle p-4 space-y-3 animate-pulse">
+    <div className="rounded-xl bg-card border border-border-subtle p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <div className="h-4 w-28 rounded bg-elevated" />
-        <div className="h-5 w-16 rounded-full bg-elevated" />
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-5 w-16 rounded-full" />
       </div>
-      <div className="h-3 w-44 rounded bg-elevated" />
+      <Skeleton className="h-3 w-44" />
       <div className="flex items-center gap-2">
-        <div className="h-3 w-3 rounded bg-elevated" />
-        <div className="h-3 w-32 rounded bg-elevated" />
+        <Skeleton className="h-3 w-3" />
+        <Skeleton className="h-3 w-32" />
       </div>
-      <div className="h-8 w-20 rounded-lg bg-elevated" />
+      <Skeleton className="h-8 w-20 rounded-lg" />
     </div>
   );
 }
@@ -334,7 +325,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
       {/* ── Error banner ── */}
       {error && (
         <div className="mx-4 mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-danger/10 text-danger text-[13px] font-sans">
-          <Warning className="h-4 w-4 flex-shrink-0" weight="fill" />
+          <Warning className="h-4 w-4 flex-shrink-0 text-text-secondary" weight="fill" />
           <span className="flex-1">{error}</span>
           <button
             onClick={() => setError(null)}
@@ -352,25 +343,25 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
             Icon={Clock}
             value={stats.scheduled}
             label="Scheduled"
-            cls="bg-info/10 text-info"
+            cls="bg-elevated text-text-secondary"
           />
           <StatPill
             Icon={PaperPlaneTilt}
             value={stats.sent}
             label="Sent"
-            cls="bg-success/10 text-success"
+            cls="bg-elevated text-text-secondary"
           />
           <StatPill
             Icon={Prohibit}
             value={stats.cancelled}
             label="Cancelled"
-            cls="bg-muted/20 text-text-muted"
+            cls="bg-elevated text-text-secondary"
           />
           <StatPill
             Icon={Warning}
             value={stats.failed}
             label="Failed"
-            cls="bg-danger/10 text-danger"
+            cls="bg-elevated text-text-secondary"
           />
         </div>
       )}
@@ -390,10 +381,10 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
             ) : items.length === 0 ? (
               /* Empty state */
               <div className="flex flex-col items-center gap-4 py-20 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-info/10 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-elevated flex items-center justify-center">
                   <CalendarCheck
                     size={32}
-                    className="text-info"
+                    className="text-text-muted"
                     weight="duotone"
                   />
                 </div>
@@ -424,8 +415,8 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                       {/* Top row: type label + status chip */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <div className="w-7 h-7 rounded-lg bg-crimson/10 flex items-center justify-center shrink-0">
-                            <Lightning size={14} weight="fill" className="text-crimson" />
+                          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated shrink-0">
+                            <Lightning size={14} weight="fill" className="text-text-secondary" />
                           </div>
                           <span className="font-sans text-[14px] font-semibold text-text-primary truncate">
                             {typeLabel(item.type)}
@@ -454,7 +445,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                         </div>
 
                         {item.sentAt && (
-                          <div className="flex items-center gap-1.5 text-success">
+                          <div className="flex items-center gap-1.5 text-text-secondary">
                             <CheckCircle size={13} weight="fill" />
                             <span className="font-sans text-[12px]">
                               Sent {formatDate(item.sentAt)}
@@ -503,7 +494,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                       )}
 
                       {item.status === FollowUpStatus.SENT && (
-                        <div className="flex items-center gap-1.5 text-success pl-9 pt-0.5">
+                        <div className="flex items-center gap-1.5 text-text-secondary pl-9 pt-0.5">
                           <Check className="h-3.5 w-3.5" weight="bold" />
                           <span className="font-sans text-[12px] font-semibold">
                             Delivered
@@ -566,10 +557,10 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
             ) : failedJobs.length === 0 ? (
               /* Empty state */
               <div className="flex flex-col items-center gap-4 py-20 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-elevated flex items-center justify-center">
                   <CheckCircle
                     size={32}
-                    className="text-success"
+                    className="text-text-muted"
                     weight="duotone"
                   />
                 </div>
@@ -592,16 +583,13 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                   >
                     {/* Header row */}
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-danger/10 flex items-center justify-center shrink-0">
-                        <SmileySad size={14} weight="fill" className="text-danger" />
+                      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated shrink-0">
+                        <SmileySad size={14} weight="fill" className="text-text-secondary" />
                       </div>
                       <p className="font-sans text-[14px] font-semibold text-text-primary truncate flex-1">
                         {job.name}
                       </p>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-danger/10 text-danger whitespace-nowrap">
-                        <Warning size={10} weight="fill" />
-                        Failed
-                      </span>
+                      <Badge variant="secondary" className="text-[10px] font-medium">Failed</Badge>
                     </div>
 
                     {/* Error reason */}

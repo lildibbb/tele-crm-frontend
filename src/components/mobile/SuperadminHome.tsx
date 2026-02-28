@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   ChartBar,
   Users,
@@ -14,30 +14,30 @@ import {
   Clock,
   ShieldCheck,
 } from "@phosphor-icons/react";
-import MobileShell, { LiveDot } from "./MobileShell";
-import MobileMoreDrawer from "./MobileMoreDrawer";
+import { LiveDot } from "./MobileShell";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface SuperadminHomeProps {
-  readonly onMoreOpen?: () => void;
   readonly onOrgClick?: (orgId: string) => void;
 }
 
 // ── Skeleton components ────────────────────────────────────────────────────────
 function SkeletonKpiCard() {
   return (
-    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle animate-pulse min-h-[110px]">
-      <div className="w-10 h-10 rounded-xl bg-elevated" />
-      <div className="w-14 h-6 rounded bg-elevated mt-1" />
-      <div className="w-20 h-3 rounded bg-elevated" />
+    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle min-h-[110px]">
+      <Skeleton className="w-10 h-10 rounded-xl" />
+      <Skeleton className="w-14 h-6 rounded mt-1" />
+      <Skeleton className="w-20 h-3 rounded" />
     </div>
   );
 }
 
 function SkeletonRow() {
-  return <div className="h-[52px] rounded-lg bg-elevated animate-pulse" />;
+  return <Skeleton className="h-[52px] rounded-lg" />;
 }
 
 // ── Mock data for system-level info not in analytics store ──────────────────────
@@ -58,10 +58,8 @@ const AUDIT_EVENTS = [
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function SuperadminHome({
-  onMoreOpen,
   onOrgClick,
 }: SuperadminHomeProps) {
-  const [moreOpen, setMoreOpen] = useState(false);
   const { summary, isLoading, fetchSummary } = useAnalyticsStore();
 
   useEffect(() => {
@@ -75,45 +73,35 @@ export default function SuperadminHome({
   const kpiCards = [
     {
       Icon: ChartBar,
-      iconBg: "bg-gold-subtle",
-      iconColor: "text-gold",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: "—",
       label: "Total Orgs",
     },
     {
       Icon: Users,
-      iconBg: "bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]",
-      iconColor: "text-crimson",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(totalLeads || "—"),
       label: "Total Users",
     },
     {
       Icon: Pulse,
-      iconBg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]",
-      iconColor: "text-success",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(activeToday || "—"),
       label: "System Health",
     },
   ];
 
   const quickActions = [
-    { Icon: Users, label: "Manage Users", color: "bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]", textColor: "text-crimson" },
-    { Icon: Wrench, label: "Maintenance", color: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]", textColor: "text-warning" },
-    { Icon: ClipboardText, label: "Audit Logs", color: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]", textColor: "text-info" },
-    { Icon: Database, label: "Backups", color: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]", textColor: "text-success" },
+    { Icon: Users, label: "Manage Users", color: "bg-elevated", textColor: "text-text-secondary" },
+    { Icon: Wrench, label: "Maintenance", color: "bg-elevated", textColor: "text-text-secondary" },
+    { Icon: ClipboardText, label: "Audit Logs", color: "bg-elevated", textColor: "text-text-secondary" },
+    { Icon: Database, label: "Backups", color: "bg-elevated", textColor: "text-text-secondary" },
   ];
 
   return (
-    <>
-      <MobileShell
-        role="SUPERADMIN"
-        activeTab="home"
-        pageTitle="Platform Overview"
-        showLiveDot
-        onTabChange={(tab) => {
-          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
-        }}
-      >
       <div className="pb-6 space-y-5">
         {/* ── KPI Cards ─────────────────────────────────────── */}
         <section className="px-4 pt-4">
@@ -177,25 +165,17 @@ export default function SuperadminHome({
               : HEALTH_CHECKS.map((check) => (
                   <div key={check.name} className="flex items-center gap-3 px-4 py-3">
                     {check.status === "healthy" ? (
-                      <CheckCircle size={18} className="text-success shrink-0" weight="fill" />
+                      <CheckCircle size={18} className="text-text-secondary shrink-0" weight="fill" />
                     ) : (
-                      <WarningCircle size={18} className="text-warning shrink-0" weight="fill" />
+                      <WarningCircle size={18} className="text-text-secondary shrink-0" weight="fill" />
                     )}
                     <span className="font-sans text-[13px] text-text-primary flex-1">{check.name}</span>
-                    <span className={cn(
-                      "font-mono text-[12px]",
-                      check.status === "healthy" ? "text-success" : "text-warning"
-                    )}>
+                    <span className="font-mono text-[12px] text-text-secondary">
                       {check.latency}
                     </span>
-                    <span className={cn(
-                      "rounded-full px-2 py-0.5 text-[10px] font-medium",
-                      check.status === "healthy"
-                        ? "bg-[color-mix(in_srgb,var(--success)_15%,transparent)] text-success"
-                        : "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)] text-warning"
-                    )}>
+                    <Badge variant="secondary" className="text-[10px] font-medium">
                       {check.status === "healthy" ? "OK" : "SLOW"}
-                    </span>
+                    </Badge>
                   </div>
                 ))}
           </div>
@@ -211,13 +191,13 @@ export default function SuperadminHome({
           <div className="space-y-2">
             {isLoading
               ? [1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-[56px] rounded-xl bg-card border border-border-subtle animate-pulse" />
+                  <Skeleton key={i} className="h-[56px] rounded-xl" />
                 ))
               : AUDIT_EVENTS.map((event) => {
                   const typeConfig = {
-                    auth:   { icon: ShieldCheck, color: "text-info", bg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]" },
-                    data:   { icon: ClipboardText, color: "text-warning", bg: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]" },
-                    system: { icon: Wrench, color: "text-success", bg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]" },
+                    auth:   { icon: ShieldCheck, bg: "bg-elevated" },
+                    data:   { icon: ClipboardText, bg: "bg-elevated" },
+                    system: { icon: Wrench, bg: "bg-elevated" },
                   }[event.type];
                   const EventIcon = typeConfig.icon;
 
@@ -227,7 +207,7 @@ export default function SuperadminHome({
                       className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle shadow-sm"
                     >
                       <span className={cn("flex items-center justify-center w-8 h-8 rounded-lg shrink-0", typeConfig.bg)}>
-                        <EventIcon size={16} className={typeConfig.color} weight="fill" />
+                        <EventIcon size={16} className="text-text-secondary" weight="fill" />
                       </span>
                       <div className="flex-1 min-w-0">
                         <span className="font-sans font-medium text-[13px] text-text-primary truncate block">
@@ -251,9 +231,6 @@ export default function SuperadminHome({
           </div>
         </section>
       </div>
-      </MobileShell>
-      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
-    </>
   );
 }
 

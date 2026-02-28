@@ -22,6 +22,8 @@ import {
   CalendarBlank,
   Clock,
 } from "@phosphor-icons/react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -42,26 +44,12 @@ import { useT, K } from "@/i18n";
 import { formatDate } from "@/lib/format";
 import { showToast } from "@/lib/toast";
 
-// ── Role chip config ───────────────────────────────────────────────────────────
+// ── Role label ─────────────────────────────────────────────────────────────────
 const ROLE_LABEL: Record<UserRole, string> = {
   SUPERADMIN: "Superadmin",
   OWNER: "Owner",
   ADMIN: "Admin",
   STAFF: "Staff",
-};
-
-const ROLE_BORDER: Record<UserRole, string> = {
-  SUPERADMIN: "border-border-subtle",
-  OWNER: "border-border-subtle",
-  ADMIN: "border-border-subtle",
-  STAFF: "border-border-subtle",
-};
-
-const ROLE_CSS: Record<UserRole, { textClass: string; bgClass: string }> = {
-  SUPERADMIN: { textClass: "text-gold", bgClass: "bg-gold-subtle" },
-  OWNER: { textClass: "text-crimson", bgClass: "bg-crimson-subtle" },
-  ADMIN: { textClass: "text-info", bgClass: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]" },
-  STAFF: { textClass: "text-text-secondary", bgClass: "bg-elevated" },
 };
 
 // ── iOS-style section group ────────────────────────────────────────────────────
@@ -73,11 +61,11 @@ function SectionGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-4 mt-6">
-      <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
+    <div className="px-4 mt-6">
+      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.1em] mb-2">
         {header}
-      </h3>
-      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle shadow-[var(--shadow-card)]">
+      </p>
+      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
         {children}
       </div>
     </div>
@@ -87,15 +75,11 @@ function SectionGroup({
 // ── Account row ────────────────────────────────────────────────────────────────
 function AccountRow({
   Icon,
-  iconColor = "text-crimson",
-  iconBg = "bg-crimson-subtle",
   label,
   value,
   onClick,
 }: {
   Icon: React.ElementType;
-  iconColor?: string;
-  iconBg?: string;
   label: string;
   value?: string;
   onClick?: () => void;
@@ -103,17 +87,12 @@ function AccountRow({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-3.5 w-full px-4 min-h-[52px] active:bg-elevated/60 transition-colors group"
+      className="flex items-center gap-3 w-full px-4 min-h-[48px] active:bg-elevated/60 transition-colors group"
     >
-      <span
-        className={cn(
-          "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-          iconBg,
-        )}
-      >
-        <Icon size={18} className={iconColor} weight="fill" />
+      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
+        <Icon size={16} className="text-text-secondary" weight="regular" />
       </span>
-      <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">
+      <span className="flex-1 font-sans text-[14px] text-text-primary text-left">
         {label}
       </span>
       {value && (
@@ -306,7 +285,6 @@ export default function MobileProfile({
   const role = (user?.role ?? "STAFF") as UserRole;
   const email = user?.email ?? "user@example.com";
   const initials = email[0]?.toUpperCase() ?? "?";
-  const roleConfig = ROLE_CSS[role];
 
   const handleSignOut = async () => {
     await logout();
@@ -321,7 +299,7 @@ export default function MobileProfile({
       <header className="flex items-center h-[52px] px-4 bg-base border-b border-border-subtle sticky top-0 z-20">
         <button
           onClick={onBack}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-crimson active:opacity-70 transition-opacity"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-text-secondary active:opacity-70 transition-opacity"
           aria-label="Go back"
         >
           <CaretLeft size={22} weight="bold" />
@@ -336,23 +314,18 @@ export default function MobileProfile({
       <main className="flex-1 overflow-y-auto pb-[calc(32px+env(safe-area-inset-bottom))]">
         {/* ── Hero avatar card ─────────────────────────────────────── */}
         <div className="flex flex-col items-center gap-3 px-6 pt-8 pb-2">
-          {/* Avatar with role-colored ring */}
+          {/* Avatar */}
           <div className="relative">
-            <div
-              className={cn(
-                "w-[96px] h-[96px] rounded-full flex items-center justify-center border-[3px] bg-elevated shadow-[var(--shadow-card)]",
-                ROLE_BORDER[role],
-              )}
-            >
-              <span className="font-display font-bold text-[38px] text-text-primary select-none">
+            <Avatar className="w-24 h-24 border-2 border-border-subtle">
+              <AvatarFallback className="bg-elevated text-text-primary font-semibold text-sm">
                 {initials}
-              </span>
-            </div>
+              </AvatarFallback>
+            </Avatar>
             <button
               className="absolute -bottom-0.5 -right-0.5 w-8 h-8 rounded-full flex items-center justify-center border-[2.5px] border-void bg-crimson active:bg-crimson-hover transition-colors"
               aria-label="Change avatar"
             >
-              <Camera size={14} color="white" weight="fill" />
+              <Camera size={14} className="text-white" weight="fill" />
             </button>
           </div>
 
@@ -362,15 +335,9 @@ export default function MobileProfile({
           </span>
 
           {/* Role chip */}
-          <span
-            className={cn(
-              "rounded-full px-3.5 py-1 font-sans font-semibold text-[11px] uppercase tracking-wider border border-border-subtle",
-              roleConfig.textClass,
-              roleConfig.bgClass,
-            )}
-          >
+          <Badge variant="secondary" className="text-[10px]">
             {ROLE_LABEL[role]}
-          </span>
+          </Badge>
         </div>
 
         {/* ── Meta info pills ──────────────────────────────────────── */}
@@ -412,8 +379,6 @@ export default function MobileProfile({
           <AccountRow
             Icon={Monitor}
             label={t(K.settings.sessions)}
-            iconColor="text-info"
-            iconBg="bg-[color-mix(in_srgb,var(--info)_15%,transparent)]"
             onClick={onActiveSessions}
           />
         </SectionGroup>
@@ -423,12 +388,12 @@ export default function MobileProfile({
           {!showPasswordForm ? (
             <button
               onClick={() => setShowPasswordForm(true)}
-              className="flex items-center gap-3.5 w-full px-4 min-h-[52px] active:bg-elevated/60 transition-colors group"
+              className="flex items-center gap-3 w-full px-4 min-h-[48px] active:bg-elevated/60 transition-colors group"
             >
-              <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-crimson-subtle">
-                <LockKey size={18} className="text-crimson" weight="fill" />
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
+                <LockKey size={16} className="text-text-secondary" weight="regular" />
               </span>
-              <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">
+              <span className="flex-1 font-sans text-[14px] text-text-primary text-left">
                 {t(K.profile.changePassword)}
               </span>
               <CaretRight
@@ -449,9 +414,9 @@ export default function MobileProfile({
         <div className="mx-4 mt-8">
           <button
             onClick={() => setShowSignOutConfirm(true)}
-            className="w-full h-[52px] text-crimson font-semibold text-[15px] active:opacity-70 transition-opacity flex items-center justify-center gap-2"
+            className="w-full h-[52px] text-danger font-semibold text-[15px] active:opacity-70 transition-opacity flex items-center justify-center gap-2"
           >
-            <SignOut size={20} weight="bold" />
+            <SignOut size={20} weight="bold" className="text-text-secondary" />
             {t(K.nav.logout)}
           </button>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -12,16 +12,15 @@ import {
   CheckCircle,
   CircleNotch,
 } from "@phosphor-icons/react";
-import MobileShell from "./MobileShell";
-import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useLeadsStore } from "@/store/leadsStore";
 import { useAuthStore } from "@/store/authStore";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface StaffHomeProps {
-  readonly onMoreOpen?: () => void;
   readonly onVerificationQueue?: () => void;
   readonly onMyLeads?: () => void;
 }
@@ -44,25 +43,23 @@ const STATUS_LABEL: Record<string, string> = {
 // ── Skeleton components ────────────────────────────────────────────────────────
 function SkeletonKpiCard() {
   return (
-    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle animate-pulse min-h-[100px]">
-      <div className="w-10 h-10 rounded-xl bg-elevated" />
-      <div className="w-14 h-6 rounded bg-elevated mt-1" />
-      <div className="w-20 h-3 rounded bg-elevated" />
+    <div className="flex flex-col gap-2 p-4 rounded-2xl bg-card border border-border-subtle min-h-[100px]">
+      <Skeleton className="w-10 h-10 rounded-xl" />
+      <Skeleton className="w-14 h-6 rounded mt-1" />
+      <Skeleton className="w-20 h-3 rounded" />
     </div>
   );
 }
 
 function SkeletonLeadCard() {
-  return <div className="h-[64px] rounded-xl bg-card border border-border-subtle animate-pulse" />;
+  return <Skeleton className="h-[64px] rounded-xl" />;
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function StaffHome({
-  onMoreOpen,
   onVerificationQueue,
   onMyLeads,
 }: StaffHomeProps) {
-  const [moreOpen, setMoreOpen] = useState(false);
   const { user } = useAuthStore();
   const { leads, total, isLoading, fetchLeads } = useLeadsStore();
   const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
@@ -87,44 +84,34 @@ export default function StaffHome({
   const kpiCards = [
     {
       Icon: Users,
-      iconBg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]",
-      iconColor: "text-info",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(total || "—"),
       label: "My Leads",
     },
     {
       Icon: Timer,
-      iconBg: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]",
-      iconColor: "text-warning",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(pendingCount || "—"),
       label: "Pending Follow-ups",
     },
     {
       Icon: CheckCircle,
-      iconBg: "bg-[color-mix(in_srgb,var(--success)_15%,transparent)]",
-      iconColor: "text-success",
+      iconBg: "bg-elevated",
+      iconColor: "text-text-secondary",
       value: String(registeredToday || "—"),
       label: "Verified Today",
     },
   ];
 
   const quickActions = [
-    { Icon: Users, label: "View Leads", color: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]", textColor: "text-info", action: onMyLeads },
-    { Icon: ShieldCheck, label: "Follow-ups", color: "bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]", textColor: "text-warning", action: onVerificationQueue },
+    { Icon: Users, label: "View Leads", color: "bg-elevated", textColor: "text-text-secondary", action: onMyLeads },
+    { Icon: ShieldCheck, label: "Follow-ups", color: "bg-elevated", textColor: "text-text-secondary", action: onVerificationQueue },
   ];
 
   return (
-    <>
-      <MobileShell
-        role="STAFF"
-        activeTab="home"
-        pageTitle={`Hi, ${firstName}`}
-        verifyBadgeCount={pendingCount}
-        onTabChange={(tab) => {
-          if (tab === "more") { setMoreOpen(true); onMoreOpen?.(); }
-        }}
-      >
-      <div className="pb-6 space-y-5">
+    <div className="pb-6 space-y-5">
         {/* ── Greeting ──────────────────────────────────────── */}
         <section className="px-4 pt-4">
           <p className="font-sans text-[13px] text-text-muted">Welcome back</p>
@@ -189,10 +176,10 @@ export default function StaffHome({
           <section className="px-4">
             <button
               onClick={onVerificationQueue}
-              className="w-full flex items-center gap-3 p-4 rounded-2xl bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] active:scale-[0.97] transition-transform"
+              className="w-full flex items-center gap-3 p-4 rounded-2xl bg-elevated active:scale-[0.97] transition-transform"
             >
-              <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]">
-                <ShieldCheck size={20} className="text-warning" weight="fill" />
+              <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-elevated">
+                <ShieldCheck size={20} className="text-text-secondary" weight="fill" />
               </span>
               <div className="flex-1 text-left">
                 <span className="font-sans font-semibold text-[14px] text-text-primary block">
@@ -200,7 +187,7 @@ export default function StaffHome({
                 </span>
                 <span className="font-sans text-[12px] text-text-muted">Tap to open queue</span>
               </div>
-              <CaretRight size={16} className="text-warning shrink-0" />
+              <CaretRight size={16} className="text-text-muted shrink-0" />
             </button>
           </section>
         )}
@@ -221,7 +208,6 @@ export default function StaffHome({
             {isLoading
               ? [1, 2, 3, 4, 5].map((i) => <SkeletonLeadCard key={i} />)
               : leads.slice(0, 5).map((lead) => {
-                  const color = STATUS_COLOR[lead.status] ?? "var(--text-muted)";
                   return (
                     <Link key={lead.id} href={`/leads/${lead.id}`}>
                       <div
@@ -242,12 +228,9 @@ export default function StaffHome({
                             </span>
                           </div>
                         </div>
-                        <span
-                          className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-                          style={{ background: `color-mix(in srgb, ${color} 15%, transparent)`, color }}
-                        >
+                        <Badge variant="secondary" className="text-[10px] font-medium shrink-0">
                           {STATUS_LABEL[lead.status] ?? lead.status}
-                        </span>
+                        </Badge>
                         <CaretRight size={14} className="text-text-muted shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </Link>
@@ -262,10 +245,7 @@ export default function StaffHome({
             )}
           </div>
         </section>
-      </div>
-      </MobileShell>
-      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
-    </>
+    </div>
   );
 }
 

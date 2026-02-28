@@ -24,16 +24,13 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
-import MobileShell from "./MobileShell";
-import { LiveDot } from "./MobileShell";
-import MobileMoreDrawer from "./MobileMoreDrawer";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAnalyticsProps {
-  readonly onMoreOpen?: () => void;
-}
+export interface MobileAnalyticsProps {}
 
 type DateRange = "Today" | "7D" | "30D" | "Custom";
 
@@ -48,41 +45,22 @@ const TIMEFRAME_MAP: Record<DateRange, string> = {
 
 // ── Skeleton primitives ────────────────────────────────────────────────────────
 function SkeletonBox({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        "rounded-xl bg-elevated/60 animate-pulse",
-        className,
-      )}
-    />
-  );
+  return <Skeleton className={cn(className)} />;
 }
 
 function StatCardSkeleton() {
   return (
     <div className="flex flex-col gap-2.5 rounded-2xl bg-card border border-border-subtle p-4">
-      <SkeletonBox className="h-8 w-8 rounded-lg" />
-      <SkeletonBox className="h-7 w-20 rounded-md" />
-      <SkeletonBox className="h-3.5 w-16 rounded" />
-      <SkeletonBox className="h-3.5 w-14 rounded" />
+      <Skeleton className="h-8 w-8 rounded-lg" />
+      <Skeleton className="h-7 w-20 rounded-md" />
+      <Skeleton className="h-3.5 w-16 rounded" />
+      <Skeleton className="h-3.5 w-14 rounded" />
     </div>
   );
 }
 
 function ChartSkeleton({ height = "h-[180px]" }: { height?: string }) {
-  return (
-    <div className={cn("w-full rounded-xl bg-elevated/40 animate-pulse", height)}>
-      <div className="flex items-end justify-around h-full px-4 pb-4 pt-8 gap-2">
-        {[60, 80, 45, 90, 55, 70, 50].map((h, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-t-md bg-elevated/80"
-            style={{ height: `${h}%` }}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  return <Skeleton className={cn("w-full rounded-xl", height)} />;
 }
 
 // ── Section card wrapper ───────────────────────────────────────────────────────
@@ -179,9 +157,8 @@ function TrendBadge({
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
-export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
+export default function MobileAnalytics({}: MobileAnalyticsProps) {
   const [range, setRange] = useState<DateRange>("7D");
-  const [moreOpen, setMoreOpen] = useState(false);
   const chipScrollRef = useRef<HTMLDivElement>(null);
   const { summary, isLoading, fetchSummary } = useAnalyticsStore();
 
@@ -216,8 +193,8 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
       formatted: totalLeads.toLocaleString(),
       icon: <UsersThree size={20} weight="duotone" />,
       color: "#C4232D",
-      bgColor: "bg-[#C4232D]/10",
-      iconColor: "text-[#C4232D]",
+      bgColor: "bg-elevated",
+      iconColor: "text-text-secondary",
       trend: kpi?.totalLeads?.trend ?? "neutral",
       change: kpi?.totalLeads?.changePercentage ?? 0,
     },
@@ -228,8 +205,8 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
       formatted: (kpi?.registeredAccounts?.current ?? 0).toLocaleString(),
       icon: <UserCheck size={20} weight="duotone" />,
       color: "#60A5FA",
-      bgColor: "bg-[#60A5FA]/10",
-      iconColor: "text-[#60A5FA]",
+      bgColor: "bg-elevated",
+      iconColor: "text-text-secondary",
       trend: kpi?.registeredAccounts?.trend ?? "neutral",
       change: kpi?.registeredAccounts?.changePercentage ?? 0,
     },
@@ -240,8 +217,8 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
       formatted: depositors.toLocaleString(),
       icon: <Wallet size={20} weight="duotone" />,
       color: "#22D3A0",
-      bgColor: "bg-[#22D3A0]/10",
-      iconColor: "text-[#22D3A0]",
+      bgColor: "bg-elevated",
+      iconColor: "text-text-secondary",
       trend: kpi?.depositingClients?.trend ?? "neutral",
       change: kpi?.depositingClients?.changePercentage ?? 0,
     },
@@ -252,8 +229,8 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
       formatted: `${conversionRate.toFixed(1)}%`,
       icon: <Percent size={20} weight="duotone" />,
       color: "#E8B94F",
-      bgColor: "bg-[#E8B94F]/10",
-      iconColor: "text-[#E8B94F]",
+      bgColor: "bg-elevated",
+      iconColor: "text-text-secondary",
       trend:
         conversionRate > 0
           ? kpi?.depositingClients?.trend ?? "neutral"
@@ -305,19 +282,7 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
   }));
 
   return (
-    <>
-      <MobileShell
-        activeTab="home"
-        pageTitle="Analytics"
-        showLiveDot
-        onTabChange={(tab) => {
-          if (tab === "more") {
-            setMoreOpen(true);
-            onMoreOpen?.();
-          }
-        }}
-      >
-        <div className="pb-8">
+    <div className="pb-8">
           {/* ── Timeframe Chips ─────────────────────────────────────── */}
           <div
             ref={chipScrollRef}
@@ -331,8 +296,8 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
                   "shrink-0 snap-start h-[36px] min-w-[44px] px-5 rounded-full font-sans text-[13px] font-semibold",
                   "transition-all duration-200 active:scale-95 select-none",
                   range === r
-                    ? "bg-[#C4232D] text-white shadow-[0_2px_12px_rgba(196,35,45,0.35)]"
-                    : "bg-card text-text-secondary border border-border-subtle",
+                    ? "bg-elevated text-text-primary"
+                    : "bg-card text-text-muted border border-border-subtle",
                 )}
               >
                 {r === "Custom" && (
@@ -400,13 +365,13 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
               <ChartBar
                 size={16}
                 weight="duotone"
-                className="text-[#E8B94F]"
+                className="text-text-secondary"
               />
             }
             badge={
-              <span className="rounded-full px-2 py-0.5 font-sans text-[11px] font-medium text-[#22D3A0] bg-[#22D3A0]/10">
+              <Badge variant="secondary" className="text-[10px] font-medium">
                 {range === "Today" ? "Today" : range === "7D" ? "7 days" : "30 days"}
-              </span>
+              </Badge>
             }
           >
             {isLoading ? (
@@ -520,14 +485,14 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
               <TrendUp
                 size={16}
                 weight="duotone"
-                className="text-[#C4232D]"
+                className="text-text-secondary"
               />
             }
             badge={
               funnel?.conversionRates?.overall != null ? (
-                <span className="rounded-full px-2 py-0.5 font-mono text-[11px] font-semibold text-[#E8B94F] bg-[#E8B94F]/10">
+                <Badge variant="secondary" className="text-[10px] font-medium font-mono">
                   {funnel.conversionRates.overall.toFixed(1)}% overall
-                </span>
+                </Badge>
               ) : undefined
             }
           >
@@ -603,8 +568,5 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
             )}
           </SectionCard>
         </div>
-      </MobileShell>
-      <MobileMoreDrawer open={moreOpen} onClose={() => setMoreOpen(false)} />
-    </>
   );
 }

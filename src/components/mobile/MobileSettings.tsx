@@ -69,11 +69,11 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-4 mt-6">
-      <h3 className="text-[11px] font-bold text-text-secondary uppercase tracking-[0.1em] px-2 mb-2">
+    <div className="px-4 mt-6">
+      <p className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.1em] mb-2">
         {header}
-      </h3>
-      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle shadow-[var(--shadow-card)]">
+      </p>
+      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
         {children}
       </div>
     </div>
@@ -85,21 +85,16 @@ function NavRow({ item }: { item: SettingsItem }) {
   const inner = (
     <div
       className={cn(
-        "flex items-center gap-3.5 w-full px-4 min-h-[52px]",
+        "flex items-center gap-3 w-full px-4 min-h-[48px]",
         item.disabled
           ? "opacity-40"
           : "active:bg-elevated/60 transition-colors group",
       )}
     >
-      <span
-        className={cn(
-          "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-          item.iconBg,
-        )}
-      >
-        <item.Icon size={18} className={item.iconColor} weight="fill" />
+      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
+        <item.Icon size={16} className="text-text-secondary" weight="regular" />
       </span>
-      <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">
+      <span className="flex-1 font-sans text-[14px] text-text-primary text-left">
         {item.label}
       </span>
       {item.lockedReason ? (
@@ -130,30 +125,21 @@ function NavRow({ item }: { item: SettingsItem }) {
 // ── Toggle row (icon + label + switch) ─────────────────────────────────────────
 function ToggleRow({
   Icon,
-  iconColor,
-  iconBg,
   label,
   checked,
   onChange,
 }: {
   Icon: React.ElementType;
-  iconColor: string;
-  iconBg: string;
   label: string;
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="flex items-center gap-3.5 px-4 min-h-[52px]">
-      <span
-        className={cn(
-          "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-          iconBg,
-        )}
-      >
-        <Icon size={18} className={iconColor} weight="fill" />
+    <div className="flex items-center gap-3 px-4 min-h-[48px]">
+      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
+        <Icon size={16} className="text-text-secondary" weight="regular" />
       </span>
-      <span className="flex-1 font-sans font-medium text-[14px] text-text-primary">
+      <span className="flex-1 font-sans text-[14px] text-text-primary">
         {label}
       </span>
       <Switch
@@ -170,8 +156,8 @@ const BOT_ITEMS: SettingsItem[] = [
   {
     id: "bot-config",
     Icon: Robot,
-    iconColor: "text-info",
-    iconBg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     label: "Bot Config",
     href: "/settings",
   },
@@ -197,8 +183,8 @@ const TEAM_ITEMS_OWNER: SettingsItem[] = [
   {
     id: "team",
     Icon: Users,
-    iconColor: "text-info",
-    iconBg: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     label: "Team Members",
     href: "/settings/team",
   },
@@ -228,8 +214,8 @@ const ACCOUNT_ITEMS: SettingsItem[] = [
   {
     id: "password",
     Icon: LockKey,
-    iconColor: "text-crimson",
-    iconBg: "bg-crimson-subtle",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
     label: "Change Password",
     href: "/profile/password",
   },
@@ -299,7 +285,7 @@ export default function MobileSettings({
       <header className="flex items-center h-[52px] px-4 bg-base border-b border-border-subtle sticky top-0 z-20">
         <button
           onClick={handleBack}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-crimson active:opacity-70 transition-opacity"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-text-secondary active:opacity-70 transition-opacity"
           aria-label="Go back"
         >
           <CaretLeft size={22} weight="bold" />
@@ -339,24 +325,18 @@ export default function MobileSettings({
         <SectionCard header="Notification Preferences">
           <ToggleRow
             Icon={Bell}
-            iconColor="text-success"
-            iconBg="bg-[color-mix(in_srgb,var(--success)_15%,transparent)]"
             label="New Lead Alerts"
             checked={notifications.newLeadAlerts}
             onChange={() => toggleNotification("newLeadAlerts")}
           />
           <ToggleRow
             Icon={CurrencyDollar}
-            iconColor="text-gold"
-            iconBg="bg-gold-subtle"
             label="Deposit Reports"
             checked={notifications.depositReports}
             onChange={() => toggleNotification("depositReports")}
           />
           <ToggleRow
             Icon={ShieldCheck}
-            iconColor="text-info"
-            iconBg="bg-[color-mix(in_srgb,var(--info)_15%,transparent)]"
             label="Verification Updates"
             checked={notifications.verificationUpdates}
             onChange={() => toggleNotification("verificationUpdates")}
@@ -367,8 +347,6 @@ export default function MobileSettings({
         <SectionCard header="Appearance">
           <ToggleRow
             Icon={MoonStars}
-            iconColor="text-gold"
-            iconBg="bg-gold-subtle"
             label="Dark Mode"
             checked={darkMode}
             onChange={setDarkMode}
@@ -417,7 +395,7 @@ export default function MobileSettings({
                     {lang.label}
                   </span>
                   {lang.code === language && (
-                    <CheckCircle size={20} className="text-crimson" weight="fill" />
+                    <CheckCircle size={20} className="text-text-secondary" weight="fill" />
                   )}
                 </button>
               ))}
@@ -429,9 +407,9 @@ export default function MobileSettings({
         <div className="mx-4 mt-8 pb-8">
           <button
             onClick={() => setShowSignOutConfirm(true)}
-            className="w-full h-[52px] text-crimson font-semibold text-[15px] active:opacity-70 transition-opacity flex items-center justify-center gap-2"
+            className="w-full h-[52px] text-danger font-semibold text-[15px] active:opacity-70 transition-opacity flex items-center justify-center gap-2"
           >
-            <SignOut size={20} weight="bold" />
+            <SignOut size={20} weight="bold" className="text-text-secondary" />
             {t(K.nav.logout)}
           </button>
         </div>
