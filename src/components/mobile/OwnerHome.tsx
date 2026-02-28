@@ -210,7 +210,7 @@ export default function OwnerHome({
           <section className="px-4">
             <button
               onClick={onVerificationBanner}
-              className="w-full flex items-center gap-3 p-4 rounded-2xl border border-crimson bg-[color-mix(in_srgb,var(--crimson)_8%,transparent)] active:scale-[0.97] transition-transform"
+              className="w-full flex items-center gap-3 p-4 rounded-2xl bg-[color-mix(in_srgb,var(--crimson)_8%,transparent)] active:scale-[0.97] transition-transform"
             >
               <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]">
                 <ShieldCheck size={20} className="text-crimson" weight="fill" />

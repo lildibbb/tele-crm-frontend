@@ -189,7 +189,7 @@ export default function StaffHome({
           <section className="px-4">
             <button
               onClick={onVerificationQueue}
-              className="w-full flex items-center gap-3 p-4 rounded-2xl border border-warning bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] active:scale-[0.97] transition-transform"
+              className="w-full flex items-center gap-3 p-4 rounded-2xl bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] active:scale-[0.97] transition-transform"
             >
               <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--warning)_15%,transparent)]">
                 <ShieldCheck size={20} className="text-warning" weight="fill" />
@@ -226,7 +226,6 @@ export default function StaffHome({
                     <Link key={lead.id} href={`/leads/${lead.id}`}>
                       <div
                         className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle active:scale-[0.97] transition-transform shadow-sm group"
-                        style={{ borderLeft: `3px solid ${color}` }}
                       >
                         <div className="flex-1 min-w-0">
                           <span className="font-sans font-semibold text-[14px] text-text-primary truncate block">

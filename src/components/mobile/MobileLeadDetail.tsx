@@ -459,8 +459,8 @@ export default function MobileLeadDetail({
             {/* Avatar */}
             <div className="relative">
               <div
-                className="w-20 h-20 rounded-full flex items-center justify-center bg-card shadow-lg ring-2"
-                style={{ ["--tw-ring-color" as string]: cfg.color, boxShadow: `0 0 24px ${cfg.glow}` }}
+                className="w-20 h-20 rounded-full flex items-center justify-center bg-elevated shadow-lg"
+                style={{ boxShadow: `0 0 24px ${cfg.glow}` }}
               >
                 <span className="font-sans font-bold text-[28px] text-text-primary select-none">
                   {initials}
@@ -490,7 +490,6 @@ export default function MobileLeadDetail({
                 style={{
                   background: `color-mix(in srgb, ${cfg.color} 14%, transparent)`,
                   color: cfg.color,
-                  border: `1px solid color-mix(in srgb, ${cfg.color} 25%, transparent)`,
                 }}
               >
                 <span
@@ -504,8 +503,8 @@ export default function MobileLeadDetail({
                 className={cn(
                   "inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold",
                   lead.handoverMode
-                    ? "bg-[color-mix(in_srgb,var(--success)_12%,transparent)] text-success border border-[color-mix(in_srgb,var(--success)_25%,transparent)]"
-                    : "bg-elevated text-text-muted border border-border-subtle",
+                    ? "bg-success/12 text-success"
+                    : "bg-elevated text-text-muted",
                 )}
               >
                 <UserSwitch size={13} weight="bold" />
@@ -542,10 +541,7 @@ export default function MobileLeadDetail({
           <section className="px-4 mb-4">
             <div
               className={cn(
-                "rounded-2xl p-5 flex flex-col items-center gap-2 border",
-                status === "DEPOSIT_CONFIRMED"
-                  ? "bg-[color-mix(in_srgb,var(--success)_6%,var(--card))] border-[color-mix(in_srgb,var(--success)_20%,transparent)]"
-                  : "bg-[color-mix(in_srgb,var(--warning)_6%,var(--card))] border-[color-mix(in_srgb,var(--warning)_20%,transparent)]",
+                "rounded-2xl p-5 flex flex-col items-center gap-2 bg-elevated",
               )}
             >
               <div className="flex items-center justify-between w-full">
@@ -642,7 +638,7 @@ export default function MobileLeadDetail({
               Send Message
             </h2>
             <div className="flex gap-2 items-end">
-              <div className="flex-1 bg-card border border-border-subtle rounded-xl overflow-hidden focus-within:border-crimson/50 transition-colors">
+              <div className="flex-1 bg-card border border-border-subtle rounded-xl overflow-hidden transition-colors">
                 <textarea
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
@@ -682,7 +678,7 @@ export default function MobileLeadDetail({
             </button>
             <button
               onClick={onReject}
-              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] border-2 border-danger text-danger bg-danger/5 flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
+              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-danger/10 text-danger flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
             >
               <XCircle size={20} weight="bold" />
               Reject

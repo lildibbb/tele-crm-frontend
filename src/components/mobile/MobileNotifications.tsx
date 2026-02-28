@@ -155,7 +155,7 @@ function NotificationCard({
         "transition-all duration-200 active:scale-[0.985]",
         notif.read
           ? "bg-card"
-          : "bg-elevated border-l-[3px] border-l-crimson",
+          : "bg-elevated/50",
       )}
     >
       {/* Unread dot indicator */}
@@ -342,7 +342,7 @@ export default function MobileNotifications({
                   "font-sans text-[13px] font-medium",
                   "transition-all duration-200",
                   isActive
-                    ? "bg-crimson text-white shadow-sm"
+                    ? "bg-crimson/15 text-crimson shadow-sm"
                     : "bg-card text-text-secondary border border-border-subtle active:bg-elevated",
                 )}
               >
@@ -353,7 +353,7 @@ export default function MobileNotifications({
                     className={cn(
                       "min-w-[18px] h-[18px] px-1 rounded-full font-mono text-[10px] flex items-center justify-center leading-none",
                       isActive
-                        ? "bg-white/20 text-white"
+                        ? "bg-crimson/20 text-crimson"
                         : "bg-crimson/10 text-crimson",
                     )}
                   >

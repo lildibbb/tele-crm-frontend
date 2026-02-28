@@ -274,8 +274,10 @@ function VerificationCard({
 
   return (
     <div
-      className="rounded-xl border border-border-subtle bg-card shadow-sm"
-      style={isPending ? { borderLeft: "3px solid var(--warning)" } : undefined}
+      className={cn(
+        "rounded-xl border border-border-subtle bg-card shadow-sm",
+        isPending && "bg-warning/5",
+      )}
     >
       {/* Header row: avatar + name + status badge */}
       <div className="flex items-center gap-3 p-4 pb-0">
@@ -500,7 +502,7 @@ export default function MobileVerification({
               className={cn(
                 "shrink-0 rounded-full h-8 px-4 font-sans text-[13px] font-medium transition-colors",
                 filter === tab.id
-                  ? "bg-crimson-subtle text-crimson"
+                  ? "bg-crimson/15 text-crimson"
                   : "bg-card text-text-secondary border border-border-subtle",
               )}
             >

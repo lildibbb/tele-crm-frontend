@@ -72,17 +72,17 @@ const STATUS_CHIP_MAP: Record<
 > = {
   [FollowUpStatus.PENDING]: {
     label: "Scheduled",
-    cls: "bg-info/10 text-info border-info/20",
+    cls: "bg-info/10 text-info",
     Icon: Clock,
   },
   [FollowUpStatus.SENT]: {
     label: "Sent",
-    cls: "bg-success/10 text-success border-success/20",
+    cls: "bg-success/10 text-success",
     Icon: CheckCircle,
   },
   [FollowUpStatus.CANCELLED]: {
     label: "Cancelled",
-    cls: "bg-muted/20 text-text-muted border-border-subtle",
+    cls: "bg-elevated text-text-muted",
     Icon: Prohibit,
   },
 };
@@ -93,7 +93,7 @@ function StatusChip({ status }: { status: FollowUp["status"] }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap",
+        "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
         cls,
       )}
     >
@@ -333,7 +333,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
 
       {/* ── Error banner ── */}
       {error && (
-        <div className="mx-4 mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-[13px] font-sans">
+        <div className="mx-4 mt-3 flex items-center gap-2.5 p-3 rounded-xl bg-danger/10 text-danger text-[13px] font-sans">
           <Warning className="h-4 w-4 flex-shrink-0" weight="fill" />
           <span className="flex-1">{error}</span>
           <button
@@ -390,7 +390,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
             ) : items.length === 0 ? (
               /* Empty state */
               <div className="flex flex-col items-center gap-4 py-20 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-info/10 border border-info/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-info/10 flex items-center justify-center">
                   <CalendarCheck
                     size={32}
                     className="text-info"
@@ -467,7 +467,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                       {isPending && (
                         <div className="pt-1 pl-9">
                           {isConfirming ? (
-                            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-danger/5 border border-danger/10">
+                            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-danger/5">
                               <span className="font-sans text-[12px] text-text-secondary flex-1">
                                 Cancel this follow-up?
                               </span>
@@ -493,7 +493,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                           ) : (
                             <button
                               onClick={() => setCancelTargetId(item.id)}
-                              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg text-[12px] font-sans font-semibold bg-danger/10 text-danger border border-danger/20 active:scale-95 active:bg-danger/20 transition-all"
+                              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg text-[12px] font-sans font-semibold bg-danger/10 text-danger active:scale-95 active:bg-danger/20 transition-all"
                             >
                               <X className="h-3.5 w-3.5" weight="bold" />
                               {t(K.followUp.cancel)}
@@ -538,7 +538,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                       "h-11 flex-1 rounded-xl font-sans text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.97]",
                       !hasMore
                         ? "bg-elevated text-text-muted cursor-not-allowed"
-                        : "bg-crimson/10 border border-crimson/20 text-crimson",
+                        : "bg-crimson/10 text-crimson",
                     )}
                   >
                     {isLoading ? (
@@ -566,7 +566,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
             ) : failedJobs.length === 0 ? (
               /* Empty state */
               <div className="flex flex-col items-center gap-4 py-20 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center">
                   <CheckCircle
                     size={32}
                     className="text-success"
@@ -598,7 +598,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                       <p className="font-sans text-[14px] font-semibold text-text-primary truncate flex-1">
                         {job.name}
                       </p>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-danger/10 text-danger border-danger/20 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-danger/10 text-danger whitespace-nowrap">
                         <Warning size={10} weight="fill" />
                         Failed
                       </span>
@@ -606,7 +606,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
 
                     {/* Error reason */}
                     {job.failedReason ? (
-                      <div className="ml-9 p-2.5 rounded-lg bg-danger/5 border border-danger/10">
+                      <div className="ml-9 p-2.5 rounded-lg bg-danger/5">
                         <p className="font-mono text-[11px] text-danger/80 line-clamp-3 break-all leading-relaxed">
                           {job.failedReason}
                         </p>

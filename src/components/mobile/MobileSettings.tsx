@@ -429,7 +429,7 @@ export default function MobileSettings({
         <div className="mx-4 mt-8 pb-8">
           <button
             onClick={() => setShowSignOutConfirm(true)}
-            className="w-full h-[52px] border-2 border-danger/40 text-danger font-bold text-[15px] rounded-xl bg-danger/5 hover:bg-danger/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5"
+            className="w-full h-[52px] text-crimson font-semibold text-[15px] active:opacity-70 transition-opacity flex items-center justify-center gap-2"
           >
             <SignOut size={20} weight="bold" />
             {t(K.nav.logout)}

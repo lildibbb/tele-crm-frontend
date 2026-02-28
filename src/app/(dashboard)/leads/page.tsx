@@ -189,6 +189,28 @@ export default function LeadsPage() {
     { scope: tableRef, dependencies: [leads, statusFilter, isMobile] },
   );
 
+  // ── Must be declared BEFORE the isMobile early return to satisfy Rules of Hooks ──
+  const handleBulkStatus = useCallback(async () => {
+    const selected = table.getSelectedRowModel().rows;
+    if (selected.length === 0 || bulkStatusPending) return;
+    setBulkStatusPending(true);
+    try {
+      const ids = selected.map((r) => r.original.id);
+      await leadsApi.bulkStatus({ ids, status: bulkStatusValue });
+      table.resetRowSelection();
+      await fetchLeads({
+        skip: pageIndex * pageSize,
+        take: pageSize,
+        status: statusFilter === "ALL" ? undefined : statusFilter,
+        search: searchValue || undefined,
+        orderBy,
+        order,
+      });
+    } catch { showToast.error("Couldn't update the status. Please try again."); } finally {
+      setBulkStatusPending(false);
+    }
+  }, [table, bulkStatusValue, bulkStatusPending, pageIndex, pageSize, statusFilter, searchValue, orderBy, order, fetchLeads]);
+
   if (isMobile) {
     return <MobileLeadsList />;
   }
@@ -221,27 +243,6 @@ export default function LeadsPage() {
     }
     setTimeout(() => setExportStatus("idle"), 3000);
   };
-
-  const handleBulkStatus = useCallback(async () => {
-    const selected = table.getSelectedRowModel().rows;
-    if (selected.length === 0 || bulkStatusPending) return;
-    setBulkStatusPending(true);
-    try {
-      const ids = selected.map((r) => r.original.id);
-      await leadsApi.bulkStatus({ ids, status: bulkStatusValue });
-      table.resetRowSelection();
-      await fetchLeads({
-        skip: pageIndex * pageSize,
-        take: pageSize,
-        status: statusFilter === "ALL" ? undefined : statusFilter,
-        search: searchValue || undefined,
-        orderBy,
-        order,
-      });
-    } catch { showToast.error("Couldn't update the status. Please try again."); } finally {
-      setBulkStatusPending(false);
-    }
-  }, [table, bulkStatusValue, bulkStatusPending, pageIndex, pageSize, statusFilter, searchValue, orderBy, order, fetchLeads]);
 
   const handleStatusChange = (value: string) => {
     setStatusFilter(value as LeadStatus | "ALL");

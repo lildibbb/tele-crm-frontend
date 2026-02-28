@@ -144,15 +144,8 @@ export default function MobileShell({
       {/* ── Safe area top ─────────────────────────────────── */}
       <div className="pt-[env(safe-area-inset-top)]" />
 
-      {/* ── Header — glassmorphic sticky bar ──────────────── */}
-      <header
-        className="sticky top-0 z-40 flex items-center gap-2 px-4 h-[56px] border-b border-border-subtle/60"
-        style={{
-          background: "color-mix(in srgb, var(--base) 92%, transparent)",
-          backdropFilter: "blur(24px) saturate(1.5)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.5)",
-        }}
-      >
+      {/* ── Header ────────────────────────────────────────── */}
+      <header className="sticky top-0 z-40 flex items-center gap-2 px-4 h-[56px] border-b border-border-subtle bg-base">
         {/* Role icon + title */}
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           {onBack ? (
@@ -161,7 +154,7 @@ export default function MobileShell({
               className="flex items-center justify-center w-8 h-8 -ml-1 rounded-lg active:bg-elevated transition-colors"
               aria-label="Go back"
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-text-primary">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-crimson">
                 <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </button>
@@ -207,15 +200,10 @@ export default function MobileShell({
         {children}
       </main>
 
-      {/* ── Bottom tab bar — iOS UITabBar style ───────────── */}
+      {/* ── Bottom tab bar ────────────────────────────────── */}
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-subtle/50"
-        style={{
-          background: "color-mix(in srgb, var(--base) 92%, transparent)",
-          backdropFilter: "blur(24px) saturate(1.5)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.5)",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-subtle bg-base"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex items-center justify-around h-[56px]">
           {tabs.map((tab) => {
@@ -227,7 +215,7 @@ export default function MobileShell({
               <div
                 className={cn(
                   "relative flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 rounded-2xl min-h-[44px] transition-all duration-200",
-                  isActive ? "bg-crimson/10" : "bg-transparent active:bg-elevated/50",
+                  isActive ? "bg-crimson/15" : "bg-transparent active:bg-elevated/50",
                 )}
               >
                 <span className="relative">

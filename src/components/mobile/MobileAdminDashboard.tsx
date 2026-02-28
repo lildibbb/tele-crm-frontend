@@ -206,7 +206,7 @@ export default function MobileAdminDashboard({ onMoreOpen }: MobileAdminDashboar
                 </button>
               </div>
               {maintenanceMode && (
-                <div className="mt-3 rounded-xl bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] border border-[color-mix(in_srgb,var(--warning)_20%,transparent)] px-3 py-2.5">
+                <div className="mt-3 rounded-xl bg-[color-mix(in_srgb,var(--warning)_8%,transparent)] px-3 py-2.5">
                   <p className="font-sans text-[12px] text-warning font-medium">
                     ⚠ System is in maintenance mode. Users will see a maintenance page.
                   </p>

@@ -134,7 +134,7 @@ export default function MobileMoreDrawer({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="bottom"
-        className="p-0 border-t border-border-subtle rounded-t-[24px] focus:outline-none bg-base"
+        className="p-0 border-t border-border-subtle rounded-t-[24px] focus:outline-none bg-elevated"
         style={{ maxHeight: "80vh" }}
       >
         {/* ── Drag Handle ───────────────────────────────────────────── */}

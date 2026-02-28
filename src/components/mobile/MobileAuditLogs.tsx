@@ -278,7 +278,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
                 className={cn(
                   "shrink-0 rounded-full min-h-[32px] px-3.5 font-sans text-[12px] font-semibold transition-all",
                   isActive
-                    ? "bg-crimson text-white shadow-sm shadow-crimson/25"
+                    ? "bg-crimson/15 text-crimson"
                     : "bg-elevated text-text-secondary active:bg-card",
                 )}
               >
@@ -293,7 +293,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
       <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
         {/* Error banner */}
         {error && (
-          <div className="flex items-center gap-2.5 mx-4 mt-3 px-3.5 py-3 rounded-xl bg-danger/10 border border-danger/20">
+          <div className="flex items-center gap-2.5 mx-4 mt-3 px-3.5 py-3 rounded-xl bg-danger/10">
             <Warning size={18} weight="fill" className="text-danger shrink-0" />
             <span className="font-sans text-[13px] text-danger flex-1">
               {error}
@@ -409,7 +409,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
                       }
                       className={cn(
                         "flex-1 rounded-xl bg-card border border-border-subtle mb-3 text-left transition-all active:scale-[0.98]",
-                        isExpanded && "ring-1 ring-crimson/20 bg-elevated",
+                        isExpanded && "bg-elevated",
                       )}
                     >
                       <div className="p-3.5">

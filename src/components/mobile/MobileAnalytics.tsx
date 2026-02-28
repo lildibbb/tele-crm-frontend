@@ -332,7 +332,7 @@ export default function MobileAnalytics({ onMoreOpen }: MobileAnalyticsProps) {
                   "transition-all duration-200 active:scale-95 select-none",
                   range === r
                     ? "bg-[#C4232D] text-white shadow-[0_2px_12px_rgba(196,35,45,0.35)]"
-                    : "bg-card text-text-secondary border border-border-subtle hover:border-[#C4232D]/30",
+                    : "bg-card text-text-secondary border border-border-subtle",
                 )}
               >
                 {r === "Custom" && (

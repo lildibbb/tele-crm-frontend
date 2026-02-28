@@ -43,22 +43,22 @@ const STATUS_MAP: Record<
 > = {
   QUEUED: {
     label: "Queued",
-    cls: "bg-warning/10 text-warning border-warning/20",
+    cls: "bg-warning/10 text-warning",
     icon: <Clock className="h-2.5 w-2.5" weight="fill" />,
   },
   SENDING: {
     label: "Sending",
-    cls: "bg-info/10 text-info border-info/20",
+    cls: "bg-info/10 text-info",
     icon: <Spinner className="h-2.5 w-2.5 animate-spin" />,
   },
   SENT: {
     label: "Sent",
-    cls: "bg-success/10 text-success border-success/20",
+    cls: "bg-success/10 text-success",
     icon: <CheckCircle className="h-2.5 w-2.5" weight="fill" />,
   },
   FAILED: {
     label: "Failed",
-    cls: "bg-danger/10 text-danger border-danger/20",
+    cls: "bg-danger/10 text-danger",
     icon: <Warning className="h-2.5 w-2.5" weight="fill" />,
   },
 };
@@ -68,7 +68,7 @@ function StatusChip({ status }: { status: BroadcastStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0",
+        "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0",
         cls,
       )}
     >
@@ -114,7 +114,7 @@ function HistorySkeleton() {
 function EmptyHistory() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-8">
-      <div className="w-16 h-16 rounded-2xl bg-crimson/10 border border-crimson/20 flex items-center justify-center mb-1">
+      <div className="w-16 h-16 rounded-2xl bg-crimson/10 flex items-center justify-center mb-1">
         <Megaphone size={32} weight="fill" className="text-crimson" />
       </div>
       <span className="font-display font-bold text-[17px] text-text-primary">
@@ -144,7 +144,7 @@ function StatCard({
     <div className="bg-card rounded-xl border border-border-subtle p-3 flex items-center gap-2.5">
       <div
         className={cn(
-          "w-8 h-8 rounded-lg border flex items-center justify-center shrink-0",
+          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
           accentCls,
         )}
       >
@@ -196,7 +196,7 @@ function ConfirmSheet({
 
         {/* Icon + Title */}
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-crimson/10 flex items-center justify-center">
             <Megaphone size={20} weight="fill" className="text-crimson" />
           </div>
           <div>
@@ -313,7 +313,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
     <div className="flex flex-col gap-4 pb-6">
       {/* ── Page Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 pt-2">
-        <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-crimson/10 flex items-center justify-center shrink-0">
           <Megaphone size={20} weight="fill" className="text-crimson" />
         </div>
         <div>
@@ -328,7 +328,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
 
       {/* ── Alerts ──────────────────────────────────────────────────────────── */}
       {!broadcastEnabled && (
-        <div className="mx-4 rounded-xl bg-warning/10 border border-warning/20 p-3 flex items-start gap-2">
+        <div className="mx-4 rounded-xl bg-warning/10 p-3 flex items-start gap-2">
           <Warning size={18} className="text-warning shrink-0 mt-0.5" weight="fill" />
           <p className="font-sans text-[13px] text-warning leading-snug">
             Broadcast feature is currently disabled by your administrator.
@@ -337,7 +337,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
       )}
 
       {lastEnqueued !== null && lastEnqueued > 0 && (
-        <div className="mx-4 rounded-xl bg-success/10 border border-success/20 p-3 flex items-start gap-2">
+        <div className="mx-4 rounded-xl bg-success/10 p-3 flex items-start gap-2">
           <CheckCircle size={18} className="text-success shrink-0 mt-0.5" weight="fill" />
           <p className="font-sans text-[13px] text-success leading-snug">
             {t(K.broadcast.enqueuedFor)} {lastEnqueued} recipients
@@ -346,7 +346,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
       )}
 
       {error && (
-        <div className="mx-4 rounded-xl bg-danger/10 border border-danger/20 p-3 flex items-start gap-2">
+        <div className="mx-4 rounded-xl bg-danger/10 p-3 flex items-start gap-2">
           <Warning size={18} className="text-danger shrink-0 mt-0.5" weight="fill" />
           <p className="font-sans text-[13px] text-danger leading-snug">{error}</p>
         </div>
@@ -358,19 +358,19 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
           icon={<Megaphone className="h-3.5 w-3.5 text-crimson" weight="fill" />}
           value={historyTotal}
           label={t(K.broadcast.stats.total)}
-          accentCls="bg-crimson/10 border-crimson/20"
+          accentCls="bg-crimson/10"
         />
         <StatCard
           icon={<Clock className="h-3.5 w-3.5 text-warning" weight="fill" />}
           value={pendingCount}
           label={t(K.broadcast.stats.inProgress)}
-          accentCls="bg-warning/10 border-warning/20"
+          accentCls="bg-warning/10"
         />
         <StatCard
           icon={<CalendarBlank className="h-3.5 w-3.5 text-info" weight="fill" />}
           value={last7Days}
           label={t(K.broadcast.stats.last7d)}
-          accentCls="bg-info/10 border-info/20"
+          accentCls="bg-info/10"
         />
       </div>
 

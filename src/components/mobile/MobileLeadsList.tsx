@@ -43,14 +43,6 @@ const STATUS_DOT_COLOR: Record<string, string> = {
   REJECTED:          "bg-danger",
 };
 
-const AVATAR_RING: Record<string, string> = {
-  NEW:               "ring-info/40",
-  CONTACTED:         "ring-info/40",
-  REGISTERED:        "ring-[#A855F7]/40",
-  DEPOSIT_REPORTED:  "ring-warning/40",
-  DEPOSIT_CONFIRMED: "ring-success/40",
-  REJECTED:          "ring-danger/40",
-};
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -122,7 +114,6 @@ function LeadCard({ lead }: { lead: Lead }) {
   const status = lead.status ?? "NEW";
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.NEW;
   const dotColor = STATUS_DOT_COLOR[status] ?? "bg-text-muted";
-  const ringColor = AVATAR_RING[status] ?? "ring-border-subtle";
   const initials = getInitials(lead.displayName);
 
   return (
@@ -136,13 +127,7 @@ function LeadCard({ lead }: { lead: Lead }) {
       >
         {/* Avatar with status dot */}
         <div className="relative shrink-0">
-          <div
-            className={cn(
-              "flex items-center justify-center w-11 h-11 rounded-full",
-              "bg-elevated ring-2",
-              ringColor,
-            )}
-          >
+          <div className="flex items-center justify-center w-11 h-11 rounded-full bg-elevated">
             <span className="font-sans font-semibold text-[13px] text-text-primary select-none">
               {initials}
             </span>
@@ -336,11 +321,7 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
           {/* Search bar */}
           <div className="mx-4 mt-3">
             <div
-              className={cn(
-                "flex items-center gap-2.5 px-3.5 h-12 rounded-xl border bg-elevated transition-colors",
-                "focus-within:border-crimson/50 focus-within:ring-1 focus-within:ring-crimson/20",
-                "border-border-subtle",
-              )}
+              className="flex items-center gap-2.5 px-3.5 h-12 rounded-xl border border-border-subtle bg-elevated transition-colors focus-within:border-border-default"
             >
               <MagnifyingGlass
                 size={18}
@@ -393,8 +374,8 @@ export default function MobileLeadsList({ onMoreOpen, onAddLead }: MobileLeadsLi
                     "font-sans text-[12px] font-semibold tracking-wide",
                     "transition-all duration-150 min-w-[44px]",
                     filter === tab.id
-                      ? "bg-crimson text-white shadow-[0_0_12px_rgba(196,35,45,0.3)]"
-                      : "bg-card text-text-secondary border border-border-subtle active:bg-elevated",
+                      ? "bg-crimson/15 text-crimson"
+                      : "text-text-muted active:text-text-secondary",
                   )}
                 >
                   {tab.label}
