@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Users,
   UserCheck,
@@ -70,6 +71,7 @@ export default function OwnerHome({
   onViewAllLeads,
   onVerificationBanner,
 }: OwnerHomeProps) {
+  const router = useRouter();
   const { user } = useAuthStore();
   const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
   const { leads, isLoading: leadsLoading, fetchLeads } = useLeadsStore();
@@ -127,9 +129,9 @@ export default function OwnerHome({
 
   const quickActions = [
     { Icon: Plus, label: "Add Lead", color: "bg-crimson", textColor: "text-white", action: onAddLead },
-    { Icon: Megaphone, label: "Broadcast", color: "bg-elevated", textColor: "text-text-secondary", action: undefined },
+    { Icon: Megaphone, label: "Broadcast", color: "bg-elevated", textColor: "text-text-secondary", action: () => router.push("/broadcasts") },
     { Icon: ShieldCheck, label: "Verify", color: "bg-elevated", textColor: "text-text-secondary", action: onVerificationBanner },
-    { Icon: GearSix, label: "Settings", color: "bg-elevated", textColor: "text-text-secondary", action: undefined },
+    { Icon: GearSix, label: "Settings", color: "bg-elevated", textColor: "text-text-secondary", action: () => router.push("/settings") },
   ];
 
   return (

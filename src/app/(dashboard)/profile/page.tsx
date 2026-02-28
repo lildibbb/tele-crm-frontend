@@ -43,7 +43,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  if (isMobile) return <MobileProfile onBack={() => router.back()} onSignOut={() => router.replace("/login")} />;
+  if (isMobile) return <MobileProfile onBack={() => router.back()} onSignOut={() => router.replace("/login")} onActiveSessions={() => router.push("/settings/sessions")} />;
 
   const role = (user?.role ?? "STAFF") as UserRole;
   const roleStyle = ROLE_CSS[role];

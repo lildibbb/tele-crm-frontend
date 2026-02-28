@@ -5,20 +5,18 @@ import {
   ClipboardText,
   ArrowCounterClockwise,
   Warning,
-  CaretLeft,
   CaretDown,
   Lightning,
   Users,
   CalendarBlank,
 } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT, K } from "@/i18n";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
 import { AuditAction } from "@/types/enums";
-import { parseApiData } from "@/lib/api/parseResponse";
+import { parsePaginatedData } from "@/lib/api/parseResponse";
 import {
   auditIconMap,
   auditFallbackIcon,
@@ -175,7 +173,6 @@ export interface MobileAuditLogsProps {}
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function MobileAuditLogs({}: MobileAuditLogsProps) {
-  const router = useRouter();
   const t = useT();
 
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -197,7 +194,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
         if (actionFilter) params.action = actionFilter;
 
         const { data } = await auditLogsApi.findMany(params as never);
-        const items: AuditLog[] = parseApiData<AuditLog[]>(data) ?? [];
+        const items: AuditLog[] = parsePaginatedData<AuditLog>(data).data;
 
         setLogs((prev) => (replace ? items : [...prev, ...items]));
         setHasMore(items.length >= PAGE_SIZE);
@@ -236,61 +233,30 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col min-h-screen bg-background text-text-primary font-sans">
-      <div className="pt-[env(safe-area-inset-top)]" />
-
-      {/* ── Sticky header ─────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-card/80 backdrop-blur-xl border-b border-border-subtle">
-        <div className="flex items-center gap-2.5 px-4 h-[56px]">
-          <button
-            onClick={() => router.back()}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 rounded-xl active:bg-elevated transition-colors"
-          >
-            <CaretLeft size={22} weight="bold" className="text-text-primary" />
-          </button>
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-elevated shrink-0">
-              <ClipboardText
-                size={18}
-                weight="fill"
-                className="text-text-secondary"
-              />
-            </span>
-            <div className="min-w-0">
-              <h1 className="font-sans font-bold text-[17px] text-text-primary leading-tight truncate">
-                {t(K.auditLog.title)}
-              </h1>
-              <p className="font-mono text-[10px] text-text-muted leading-tight">
-                {logs.length > 0 ? `${logs.length} entries loaded` : "Activity trail"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Filter chips (horizontal scroll) ────────────────────────── */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-3 -mt-0.5">
-          {FILTER_CHIPS.map((chip) => {
-            const isActive = actionFilter === chip.value;
-            return (
-              <button
-                key={chip.label}
-                onClick={() => setActionFilter(chip.value)}
-                className={cn(
-                  "shrink-0 rounded-full min-h-[32px] px-3.5 font-sans text-[12px] font-semibold transition-all",
-                  isActive
-                    ? "bg-crimson/15 text-crimson"
-                    : "bg-elevated text-text-secondary active:bg-card",
-                )}
-              >
-                {chip.label}
-              </button>
-            );
-          })}
-        </div>
-      </header>
+    <div className="flex flex-col">
+      {/* ── Filter chips (horizontal scroll) ─────────────────────────── */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-3 pb-2 sticky top-0 z-10 bg-card/80 backdrop-blur-xl border-b border-border-subtle">
+        {FILTER_CHIPS.map((chip) => {
+          const isActive = actionFilter === chip.value;
+          return (
+            <button
+              key={chip.label}
+              onClick={() => setActionFilter(chip.value)}
+              className={cn(
+                "shrink-0 rounded-full min-h-[32px] px-3.5 font-sans text-[12px] font-semibold transition-all",
+                isActive
+                  ? "bg-crimson/15 text-crimson"
+                  : "bg-elevated text-text-secondary active:bg-card",
+              )}
+            >
+              {chip.label}
+            </button>
+          );
+        })}
+      </div>
 
       {/* ── Content ───────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+      <div>
         {/* Error banner */}
         {error && (
           <div className="flex items-center gap-2.5 mx-4 mt-3 px-3.5 py-3 rounded-xl bg-danger/10">

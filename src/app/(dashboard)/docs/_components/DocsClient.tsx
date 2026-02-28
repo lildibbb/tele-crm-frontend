@@ -453,10 +453,33 @@ export function DocsClient() {
   // ── Content ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex min-h-screen h-full bg-void">
+    <div className="flex bg-void lg:min-h-screen lg:h-full">
       {Sidebar}
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 lg:overflow-y-auto">
+        {/* Mobile chapter nav */}
+        <div className="lg:hidden sticky top-0 z-20 bg-base/95 backdrop-blur-xl border-b border-border-subtle">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2.5">
+            {CHAPTERS.map((ch) => {
+              const Icon = ch.icon;
+              const isActive = activeChapter === ch.id;
+              return (
+                <button
+                  key={ch.id}
+                  onClick={() => scrollTo(ch.id)}
+                  className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-sans font-medium transition-colors ${
+                    isActive
+                      ? "bg-crimson/15 text-crimson"
+                      : "bg-elevated text-text-secondary"
+                  }`}
+                >
+                  <Icon size={12} weight={isActive ? "fill" : "regular"} className="shrink-0" />
+                  {ch.title}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         {/* Hero header */}
         <div className="border-b border-border-subtle bg-base px-6 py-8">
           <div className="max-w-3xl mx-auto">

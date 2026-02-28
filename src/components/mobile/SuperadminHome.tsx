@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   ChartBar,
   Users,
@@ -60,6 +61,7 @@ const AUDIT_EVENTS = [
 export default function SuperadminHome({
   onOrgClick,
 }: SuperadminHomeProps) {
+  const router = useRouter();
   const { summary, isLoading, fetchSummary } = useAnalyticsStore();
 
   useEffect(() => {
@@ -95,10 +97,10 @@ export default function SuperadminHome({
   ];
 
   const quickActions = [
-    { Icon: Users, label: "Manage Users", color: "bg-elevated", textColor: "text-text-secondary" },
-    { Icon: Wrench, label: "Maintenance", color: "bg-elevated", textColor: "text-text-secondary" },
-    { Icon: ClipboardText, label: "Audit Logs", color: "bg-elevated", textColor: "text-text-secondary" },
-    { Icon: Database, label: "Backups", color: "bg-elevated", textColor: "text-text-secondary" },
+    { Icon: Users, label: "Manage Users", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/admin/users") },
+    { Icon: Wrench, label: "Maintenance", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/admin/maintenance") },
+    { Icon: ClipboardText, label: "Audit Logs", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/audit-logs") },
+    { Icon: Database, label: "Backups", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/admin/backup") },
   ];
 
   return (
@@ -136,6 +138,7 @@ export default function SuperadminHome({
             {quickActions.map((qa) => (
               <button
                 key={qa.label}
+                onClick={qa.onClick}
                 className="flex flex-col items-center gap-2 min-w-[56px] active:scale-95 transition-transform"
               >
                 <span className={cn("flex items-center justify-center w-14 h-14 rounded-2xl shadow-sm", qa.color)}>
