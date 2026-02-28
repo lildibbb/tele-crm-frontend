@@ -309,6 +309,7 @@ export default function MobileGlobalLayout({ children }: MobileGlobalLayoutProps
 
       {/* ── Page content ────────────────────────────────────────────── */}
       <main
+        id="mobile-main"
         className="flex-1 overflow-y-auto overscroll-y-contain"
         style={{ paddingBottom: "calc(60px + env(safe-area-inset-bottom))" }}
       >
