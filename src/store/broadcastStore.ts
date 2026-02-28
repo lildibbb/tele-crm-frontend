@@ -52,7 +52,7 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
       send: async () => {
         const { message, photoUrl } = get();
         if (!message.trim()) return;
-        set({ isSending: true, error: null }, false, "send/pending");
+        set({ isSending: true, error: null, lastEnqueued: null }, false, "send/pending");
         try {
           const input: BroadcastInput = { message: message.trim() };
           if (photoUrl.trim()) input.photoUrl = photoUrl.trim();
@@ -85,7 +85,7 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
           set({ isSending: false, lastEnqueued: enqueued, message: "", photoUrl: "" }, false, "send/success");
         } catch (err: unknown) {
           const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to send broadcast";
-          set({ isSending: false, error: msg }, false, "send/error");
+          set({ isSending: false, error: msg, lastEnqueued: null }, false, "send/error");
         }
       },
 
