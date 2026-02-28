@@ -59,3 +59,7 @@ export type { MobileFollowUpsProps } from "./MobileFollowUps";
 
 export { default as MobileBroadcasts } from "./MobileBroadcasts";
 export type { MobileBroadcastsProps } from "./MobileBroadcasts";
+
+export { default as MobileSessionsPage } from "./MobileSessionsPage";
+
+export { default as MobileDocsPage } from "./MobileDocsPage";

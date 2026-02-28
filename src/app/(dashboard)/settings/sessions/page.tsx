@@ -17,6 +17,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authApi } from "@/lib/api/auth";
 import type { Session } from "@/lib/schemas/auth.schema";
 import { showToast } from "@/lib/toast";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { MobileSessionsPage } from "@/components/mobile";
 
 const SETTINGS_TABS = [
   { label: "Bot Config", href: "/settings" },
@@ -42,17 +44,21 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export default function SessionsPage() {
+  const isMobile = useIsMobile();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [revokeId, setRevokeId] = useState<string | null>(null);
   const [revoking, setRevoking] = useState(false);
 
   useEffect(() => {
+    if (isMobile) return;
     authApi.getSessions()
       .then((res) => setSessions(res.data.data))
       .catch(() => showToast.error("Couldn't load sessions. Please try again."))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [isMobile]);
+
+  if (isMobile) return <MobileSessionsPage />;
 
   const revokeSession = async (id: string) => {
     setRevoking(true);
