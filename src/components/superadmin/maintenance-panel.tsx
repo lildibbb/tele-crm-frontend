@@ -98,26 +98,34 @@ export function MaintenancePanel() {
   const featureFlags = [
     {
       key: "feature.knowledgeBase.enabled",
-      label: "Knowledge Base Processing",
-      description: "Enable KB file uploads and vector processing",
+      label: "Knowledge Base",
+      description: "KB file uploads and vector processing",
+      icon: "🧠",
+      color: "blue",
       defaultOn: true,
     },
     {
       key: "feature.broadcast.enabled",
-      label: "Broadcast Messages",
-      description: "Enable bulk message blasts to leads",
+      label: "Broadcast",
+      description: "Bulk message blasts to leads",
+      icon: "📢",
+      color: "purple",
       defaultOn: true,
     },
     {
       key: "feature.commandMenu.enabled",
       label: "Command Menus",
-      description: "Enable command menu management and bot serving",
+      description: "Bot command menu management",
+      icon: "⚡",
+      color: "amber",
       defaultOn: true,
     },
     {
       key: "followUp.enabled",
       label: "Follow-Up Automation",
-      description: "Enable scheduled follow-up messages",
+      description: "Scheduled follow-up messages",
+      icon: "🔄",
+      color: "green",
       defaultOn: true,
     },
   ];
@@ -155,7 +163,7 @@ export function MaintenancePanel() {
 
       <div className="space-y-4">
         {/* ── Maintenance Mode Card ─────────────────────────────────────────── */}
-        <div className="page-panel rounded-xl overflow-hidden border border-amber-500/25 bg-amber-950/10">
+        <div className="page-panel rounded-xl overflow-hidden border border-amber-500/25 bg-amber-950/10 card-shadow">
           <div className="px-5 py-4 bg-amber-900/10 flex items-center justify-between border-b border-amber-500/20">
             <div>
               <h2 className="text-sm font-semibold text-amber-300 flex items-center gap-2">
@@ -248,7 +256,7 @@ export function MaintenancePanel() {
         </div>
 
         {/* ── Feature Flags Card ──────────────────────────────────────────────── */}
-        <div className="page-panel bg-elevated rounded-xl overflow-hidden">
+        <div className="page-panel bg-elevated rounded-xl overflow-hidden card-shadow">
           <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle">
             <div>
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
@@ -260,44 +268,88 @@ export function MaintenancePanel() {
               </p>
             </div>
           </div>
-          <div className="px-5 py-5 space-y-4">
-            {featureFlags.map((flag) => {
-              const isOn =
-                getVal(flag.key, flag.defaultOn ? "true" : "false") !== "false";
-              const isFlagSaved = saved === flag.key;
-              return (
-                <div
-                  key={flag.key}
-                  className="flex items-center justify-between gap-4"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-text-primary">
-                      {flag.label}
-                      {isFlagSaved && (
-                        <span className="ml-2 text-xs text-success">✓ Saved</span>
-                      )}
-                    </p>
-                    <p className="text-xs text-text-muted mt-0.5">
-                      {flag.description}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={isSaving}
-                    onClick={() => void saveFeatureFlag(flag.key, !isOn)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-                      isOn ? "bg-crimson" : "bg-border-subtle"
-                    }`}
+          <div className="px-5 py-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {featureFlags.map((flag) => {
+                const isOn =
+                  getVal(flag.key, flag.defaultOn ? "true" : "false") !== "false";
+                const isFlagSaved = saved === flag.key;
+
+                const colorMap: Record<string, string> = {
+                  blue:   isOn ? "border-blue-500/30 bg-blue-950/20"   : "border-border-subtle bg-elevated",
+                  purple: isOn ? "border-purple-500/30 bg-purple-950/20" : "border-border-subtle bg-elevated",
+                  amber:  isOn ? "border-amber-500/30 bg-amber-950/20"  : "border-border-subtle bg-elevated",
+                  green:  isOn ? "border-emerald-500/30 bg-emerald-950/20" : "border-border-subtle bg-elevated",
+                };
+                const dotMap: Record<string, string> = {
+                  blue:   "bg-blue-400",
+                  purple: "bg-purple-400",
+                  amber:  "bg-amber-400",
+                  green:  "bg-emerald-400",
+                };
+                const toggleMap: Record<string, string> = {
+                  blue:   "bg-blue-500",
+                  purple: "bg-purple-500",
+                  amber:  "bg-amber-500",
+                  green:  "bg-emerald-500",
+                };
+
+                return (
+                  <div
+                    key={flag.key}
+                    className={`relative flex flex-col gap-3 rounded-xl border p-4 transition-all duration-200 ${colorMap[flag.color]}`}
                   >
-                    <span
-                      className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
-                        isOn ? "translate-x-4.5" : "translate-x-0.5"
-                      }`}
-                    />
-                  </button>
-                </div>
-              );
-            })}
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-lg leading-none">{flag.icon}</span>
+                        <div>
+                          <p className="text-sm font-semibold text-text-primary leading-tight">
+                            {flag.label}
+                          </p>
+                          <p className="text-[11px] text-text-muted mt-0.5 leading-snug">
+                            {flag.description}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Type chip — ON/OFF status */}
+                      <span
+                        className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide border ${
+                          isOn
+                            ? "border-current text-emerald-400 bg-emerald-950/40"
+                            : "border-current text-text-muted bg-overlay/60"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${isOn ? dotMap[flag.color] : "bg-text-muted"}`} />
+                        {isOn ? "ON" : "OFF"}
+                        {isFlagSaved && <span className="ml-0.5 text-success">✓</span>}
+                      </span>
+                    </div>
+
+                    {/* Toggle button */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-text-muted">
+                        {isOn ? "Feature is active" : "Feature is disabled"}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => void saveFeatureFlag(flag.key, !isOn)}
+                        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+                          isOn ? toggleMap[flag.color] : "bg-border-subtle"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+                            isOn ? "translate-x-4.5" : "translate-x-0.5"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

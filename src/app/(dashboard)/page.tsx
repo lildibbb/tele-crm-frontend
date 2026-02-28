@@ -404,6 +404,7 @@ export default function DashboardPage() {
   const registeredLeads = summary?.kpi.registeredAccounts.current ?? 0;
   const depositConfirmed = summary?.kpi.depositingClients.current ?? 0;
   const pendingVerifications = summary?.kpi.pendingVerifications.current ?? 0;
+  const handoverLeadsCount = useMemo(() => leads.filter((l) => l.handoverMode).length, [leads]);
 
   useGSAP(
     () => {
@@ -683,7 +684,7 @@ export default function DashboardPage() {
               /* ── Funnel Donut + Live Activity ── */
               <div key="funnel-activity" className="page-section grid grid-cols-1 xl:grid-cols-7 gap-3 md:gap-4">
                 {/* Funnel Donut Chart */}
-                <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle">
+                <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle card-shadow">
                   <div className="flex items-center justify-between mb-1">
                     <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                       {t("dashboard.funnelOverview")}
@@ -852,7 +853,7 @@ export default function DashboardPage() {
 
             if (widget.id === "action-strip") return (
               /* ── Action Strip ── */
-              <div key="action-strip" className="page-section bg-elevated rounded-xl overflow-hidden border border-border-subtle">
+              <div key="action-strip" className="page-section bg-elevated rounded-xl overflow-hidden border border-border-subtle card-shadow">
                 <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border-subtle">
                   <Button
                     variant="ghost"
@@ -875,9 +876,16 @@ export default function DashboardPage() {
                           · {t("dashboard.awaitingReview")}
                         </span>
                       </div>
-                      <span className="flex items-center gap-0.5 text-warning text-[12px] font-medium flex-shrink-0 group-hover:gap-1.5 transition-all whitespace-nowrap">
-                        {t("common.review")} <CaretRight size={13} weight="bold" />
-                      </span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {pendingVerifications > 0 && (
+                          <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-warning/15 border border-warning/30 text-warning text-[11px] font-bold tabular-nums">
+                            {pendingVerifications}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-0.5 text-warning text-[12px] font-medium group-hover:gap-1.5 transition-all whitespace-nowrap">
+                          {t("common.review")} <CaretRight size={13} weight="bold" />
+                        </span>
+                      </div>
                     </Link>
                   </Button>
                   <Button
@@ -901,9 +909,16 @@ export default function DashboardPage() {
                           · {t("dashboard.manualReplies")}
                         </span>
                       </div>
-                      <span className="flex items-center gap-0.5 text-info text-[12px] font-medium flex-shrink-0 group-hover:gap-1.5 transition-all whitespace-nowrap">
-                        {t("common.view")} <CaretRight size={13} weight="bold" />
-                      </span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {handoverLeadsCount > 0 && (
+                          <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-info/15 border border-info/30 text-info text-[11px] font-bold tabular-nums">
+                            {handoverLeadsCount}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-0.5 text-info text-[12px] font-medium group-hover:gap-1.5 transition-all whitespace-nowrap">
+                          {t("common.view")} <CaretRight size={13} weight="bold" />
+                        </span>
+                      </div>
                     </Link>
                   </Button>
                 </div>

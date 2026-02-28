@@ -788,6 +788,39 @@
     transform: scale(0.995);
     background: var(--elevated);
   }
+
+  /* ── Dark-optimised card shadows ─────────────────────────────── */
+  .card-shadow {
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.45),
+      0 4px 16px rgba(0,0,0,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .card-shadow-md {
+    box-shadow:
+      0 2px 4px rgba(0,0,0,0.55),
+      0 8px 32px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .sidebar-shadow {
+    box-shadow:
+      4px 0 24px rgba(0,0,0,0.4),
+      1px 0 4px rgba(0,0,0,0.25);
+  }
+
+  /* ── Maintenance banner marquee ticker ───────────────────────── */
+  @keyframes marquee-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .marquee-ticker {
+    display: inline-flex;
+    animation: marquee-scroll 28s linear infinite;
+    will-change: transform;
+  }
+  .marquee-ticker:hover {
+    animation-play-state: paused;
+  }
 }
 
 /* ============================================================
