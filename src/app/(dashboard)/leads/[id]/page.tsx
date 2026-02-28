@@ -65,7 +65,7 @@ import {
   FileTypeChip,
 } from "@/components/ui/file-type-badge";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
-import { toast as sonnerToast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 gsap.registerPlugin(useGSAP);
 
@@ -291,7 +291,7 @@ export default function LeadDetailPage({
         const items = parseApiData<Attachment[]>(res.data) ?? [];
         setAttachments(items);
       })
-      .catch(() => sonnerToast.error('Failed to load attachments'));
+      .catch(() => showToast.error("Couldn't load attachments. Please try again."));
   }, [id]);
   const isMobile = useIsMobile();
 
@@ -416,7 +416,7 @@ export default function LeadDetailPage({
       showToastMsg(t("lead.toast.copied"), "info");
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      sonnerToast.error('Failed to copy');
+      showToast.error('Failed to copy');
     }
   };
 

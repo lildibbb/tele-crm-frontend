@@ -35,7 +35,7 @@ import type { AnalyticsSummaryParams } from "@/lib/schemas/analytics.schema";
 import type { RagStats } from "@/lib/schemas/analytics.schema";
 import { analyticsApi } from "@/lib/api/analytics";
 import { parseApiData } from "@/lib/api/parseResponse";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 gsap.registerPlugin(useGSAP);
 
@@ -380,7 +380,7 @@ export default function AnalyticsPage() {
         const d = parseApiData<RagStats>(res.data);
         setRagStats(d ?? null);
       })
-      .catch(() => toast.error('Failed to load analytics'))
+      .catch(() => showToast.error("Couldn't load analytics data. Please try again."))
       .finally(() => setRagLoading(false));
   // Mount-only effect — deps intentionally omitted (fetch RAG stats once when role is known)
   // eslint-disable-next-line react-hooks/exhaustive-deps

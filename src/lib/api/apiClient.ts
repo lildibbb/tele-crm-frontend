@@ -5,6 +5,7 @@ import axios, {
 } from "axios";
 
 import { getDeviceId } from "@/lib/deviceId";
+import { friendlyError } from "@/lib/errorMessages";
 
 /** Absolute API base URL for use with EventSource and other non-Axios clients. */
 export const API_BASE_URL =
@@ -74,6 +75,11 @@ function processQueue(error: unknown, token: string | null) {
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error) => {
+    // Transform error messages to user-friendly text before propagation
+    if (error.response?.data?.message && typeof error.response.data.message === 'string') {
+      error.response.data.message = friendlyError(error.response.data.message);
+    }
+
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };

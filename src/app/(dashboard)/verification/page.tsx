@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileVerification } from "@/components/mobile";
 import {
@@ -89,9 +89,9 @@ function ApproveDialog() {
     setIsSubmitting(true);
     try {
       await verify(activeId);
-      toast.success("Deposit verified — lead status updated to Confirmed.");
+      showToast.success("Deposit verified — lead status updated to Confirmed.");
     } catch {
-      toast.error("Failed to verify deposit. Please try again.");
+      showToast.error("Failed to verify deposit. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -195,7 +195,7 @@ function RejectDialog() {
     if (!activeId) return;
     updateStatus(activeId, { status: LeadStatus.NEW });
     closeModal();
-    toast.error("Submission rejected. Lead has been notified.");
+    showToast.error("Submission rejected. Lead has been notified.");
   };
 
   return (
@@ -283,7 +283,7 @@ function AskMoreDialog() {
 
   const handleSend = () => {
     closeModal();
-    toast.success(
+    showToast.success(
       `Message sent to ${req?.displayName ?? req?.username ?? "lead"}.`,
     );
   };

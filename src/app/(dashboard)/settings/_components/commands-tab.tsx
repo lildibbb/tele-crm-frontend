@@ -87,7 +87,7 @@ import {
   type CommandMenu,
   type TiptapDoc,
 } from "@/lib/schemas/commandMenu.schema";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
@@ -347,7 +347,7 @@ export function CommandsTab() {
   }, [fetchAll]);
 
   useEffect(() => {
-    if (error) toast.error(error);
+    if (error) showToast.error(error);
   }, [error]);
 
   // ── Form ──────────────────────────────────────────────────────────────────
@@ -378,10 +378,10 @@ export function CommandsTab() {
           showInMenu: data.showInMenu,
           showInKeyboard: data.showInKeyboard,
         });
-        toast.success("Command updated");
+        showToast.success("Command saved");
       } else {
         await create({ ...data, order: items.length });
-        toast.success("Command created");
+        showToast.success("New command created");
       }
       setDrawerOpen(false);
       setEditId(null);
@@ -390,7 +390,7 @@ export function CommandsTab() {
       setLiveContent(EMPTY_TIPTAP_DOC);
       await fetchAll();
     } catch {
-      toast.error("Failed to save command");
+      showToast.error("Couldn't save this command. Please try again.");
     } finally {
       isSubmittingRef.current = false;
     }
@@ -441,7 +441,7 @@ export function CommandsTab() {
         await update(id, { [field]: !current });
         await fetchAll();
       } catch {
-        toast.error(`Failed to update ${field}`);
+        showToast.error(`Couldn't update ${field}. Please try again.`);
       }
     },
     [update, fetchAll],
@@ -467,10 +467,10 @@ export function CommandsTab() {
     async (id: string) => {
       try {
         await remove(id);
-        toast.success("Command deleted");
+        showToast.success("Command removed");
         await fetchAll();
       } catch {
-        toast.error("Failed to delete command");
+        showToast.error("Couldn't delete this command. Please try again.");
       }
     },
     [remove, fetchAll],
@@ -506,9 +506,9 @@ export function CommandsTab() {
 
       try {
         await reorder({ items: orderItems });
-        toast.success("Order updated");
+        showToast.success("Order saved");
       } catch {
-        toast.error("Failed to reorder");
+        showToast.error("Couldn't reorder. Please try again.");
       }
     },
     [items, reorder],

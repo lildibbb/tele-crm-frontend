@@ -35,7 +35,7 @@ import {
   type InviteUserInput,
 } from "@/lib/schemas/user.schema";
 import { UserRole } from "@/types/enums";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 const ROLE_CONFIG: Record<string, { label: string; cls: string }> = {
   OWNER: { label: "Owner", cls: "badge-owner" },
@@ -77,9 +77,9 @@ export function TeamTab() {
       const inv = await inviteUser(data);
       setInviteLink(inv.telegramDeepLink);
       await fetchInvitations();
-      toast.success("Invite generated");
+      showToast.success("Invite generated");
     } catch {
-      toast.error("Failed to generate invite");
+      showToast.error("Couldn't create the invitation. Please try again.");
     }
   };
 
@@ -100,29 +100,29 @@ export function TeamTab() {
   const handleDeactivate = async (id: string) => {
     try {
       await deactivateUser(id);
-      toast.success("User deactivated");
+      showToast.success("User deactivated");
       await fetchUsers();
     } catch {
-      toast.error("Failed to deactivate user");
+      showToast.error("Couldn't deactivate this user. Please try again.");
     }
   };
 
   const handleReactivate = async (id: string) => {
     try {
       await reactivateUser(id);
-      toast.success("User reactivated");
+      showToast.success("User reactivated");
       await fetchUsers();
     } catch {
-      toast.error("Failed to reactivate user");
+      showToast.error("Couldn't reactivate this user. Please try again.");
     }
   };
 
   const handleDeleteInvitation = async (id: string) => {
     try {
       await deleteInvitation(id);
-      toast.success("Invitation revoked");
+      showToast.success("Invitation revoked");
     } catch {
-      toast.error("Failed to revoke invitation");
+      showToast.error("Couldn't revoke this invitation. Please try again.");
     }
   };
 

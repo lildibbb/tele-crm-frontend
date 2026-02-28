@@ -45,7 +45,7 @@ import { TelegramPreview } from "@/components/ui/telegram-preview";
 import { useKbStore } from "@/store/kbStore";
 import { CreateKbSchema, type CreateKbInput } from "@/lib/schemas/kb.schema";
 import { KbType, KbStatus } from "@/types/enums";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
@@ -136,7 +136,7 @@ export function KnowledgeBaseTab() {
   }, [fetchAll]);
 
   useEffect(() => {
-    if (error) toast.error(error);
+    if (error) showToast.error(error);
   }, [error]);
 
   const form = useForm<CreateKbInput>({
@@ -176,15 +176,15 @@ export function KnowledgeBaseTab() {
     try {
       if (editingId) {
         await update(editingId, { title: data.title, content: data.content, url: data.url });
-        toast.success("Content updated");
+        showToast.success("Changes saved successfully");
       } else {
         await createText(data);
-        toast.success("Content added");
+        showToast.success("New content added");
       }
       closeModal();
       await fetchAll();
     } catch {
-      toast.error(editingId ? "Failed to update content" : "Failed to add content");
+      showToast.error(editingId ? "Couldn't save your changes. Please try again." : "Couldn't add content. Please try again.");
     }
   };
 
@@ -201,7 +201,7 @@ export function KnowledgeBaseTab() {
         setShowModal(false);
       }, 1500);
     } catch {
-      toast.error("Upload failed. Check file type and size.");
+      showToast.error("Upload failed. Check file type and size.");
     } finally {
       setUploadLoading(false);
     }
@@ -225,16 +225,16 @@ export function KnowledgeBaseTab() {
       await update(id, { isActive: !isActive });
       await fetchAll();
     } catch {
-      toast.error("Failed to update entry");
+      showToast.error("Couldn't update this entry. Please try again.");
     }
   };
 
   const deleteEntry = async (id: string) => {
     try {
       await remove(id);
-      toast.success("Entry deleted");
+      showToast.success("Entry removed successfully");
     } catch {
-      toast.error("Failed to delete entry");
+      showToast.error("Couldn't delete this entry. Please try again.");
     }
   };
 

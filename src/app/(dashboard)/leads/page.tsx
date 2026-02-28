@@ -48,7 +48,7 @@ import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { getLeadsColumns } from "./_components/leads-columns";
 import { Input } from "@/components/ui/input";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 gsap.registerPlugin(useGSAP);
 
@@ -86,7 +86,7 @@ export default function LeadsPage() {
   const handleBulkHandover = useCallback(
     async (checked: boolean) => {
       setBulkHandoverPending(true);
-      await bulkSetHandover(checked).catch(() => toast.error('Failed to update lead'));
+      await bulkSetHandover(checked).catch(() => showToast.error("Couldn't update the lead. Please try again."));
       setBulkHandoverPending(false);
     },
     [bulkSetHandover],
@@ -238,7 +238,7 @@ export default function LeadsPage() {
         orderBy,
         order,
       });
-    } catch { toast.error('Failed to update status'); } finally {
+    } catch { showToast.error("Couldn't update the status. Please try again."); } finally {
       setBulkStatusPending(false);
     }
   }, [table, bulkStatusValue, bulkStatusPending, pageIndex, pageSize, statusFilter, searchValue, orderBy, order, fetchLeads]);

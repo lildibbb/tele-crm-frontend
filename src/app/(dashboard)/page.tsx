@@ -58,7 +58,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 gsap.registerPlugin(useGSAP);
 
@@ -308,7 +308,7 @@ export default function DashboardPage() {
   }, [fetchSummary, fetchLeads, period]);
 
   useEffect(() => {
-    if (error) toast.error(error);
+    if (error) showToast.error(error);
   }, [error]);
 
   // ── Derived chart data from real API ──────────────────────────

@@ -64,7 +64,7 @@ export default function RootLayout({
               <LocaleProvider>
                 <TooltipProvider delayDuration={300}>
                   {children}
-                  <Toaster richColors position="bottom-center" />
+                  <Toaster richColors position="bottom-right" visibleToasts={3} closeButton gap={8} />
                 </TooltipProvider>
               </LocaleProvider>
             </AuthProvider>
