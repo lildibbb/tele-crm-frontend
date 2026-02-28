@@ -21,7 +21,6 @@ import {
   HardDrives,
   LockKey,
   ChartLineUp,
-  BookOpen,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
@@ -110,17 +109,6 @@ const ALL_NAV_ITEMS = [
     href: "/settings",
     icon: Sliders,
     labelKey: "nav.settings",
-    roles: [
-      UserRole.OWNER,
-      UserRole.ADMIN,
-      UserRole.STAFF,
-      UserRole.SUPERADMIN,
-    ],
-  },
-  {
-    href: "/docs",
-    icon: BookOpen,
-    labelKey: "nav.docs",
     roles: [
       UserRole.OWNER,
       UserRole.ADMIN,
