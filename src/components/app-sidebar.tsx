@@ -20,6 +20,7 @@ import {
   Warning,
   HardDrives,
   LockKey,
+  ChartLineUp,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
@@ -47,23 +48,74 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const ADMIN_SUB_ITEMS = [
-  { href: "/admin/overview",    icon: SquaresFour, label: "Overview" },
-  { href: "/admin/users",       icon: Users,       label: "Users" },
-  { href: "/admin/maintenance", icon: Warning,     label: "Maintenance" },
-  { href: "/admin/system",      icon: Sliders,     label: "System Config" },
-  { href: "/admin/backup",      icon: HardDrives,  label: "Backup" },
-  { href: "/admin/secrets",     icon: LockKey,     label: "Secrets" },
+  { href: "/admin/overview", icon: SquaresFour, label: "Overview" },
+  { href: "/admin/users", icon: Users, label: "Users" },
+  { href: "/admin/maintenance", icon: Warning, label: "Maintenance" },
+  { href: "/admin/system", icon: Sliders, label: "System Config" },
+  { href: "/admin/backup", icon: HardDrives, label: "Backup" },
+  { href: "/admin/secrets", icon: LockKey, label: "Secrets" },
+  { href: "/admin/google", icon: ChartLineUp, label: "Google Analytics" },
 ];
 
 const ALL_NAV_ITEMS = [
-  { href: "/",             icon: SquaresFour, labelKey: "nav.commandCenter",    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
-  { href: "/leads",        icon: Users,       labelKey: "nav.leadIntelligence",  roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
-  { href: "/verification", icon: ShieldCheck, labelKey: "nav.verificationQueue", roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] },
-  { href: "/broadcasts",   icon: Megaphone,   labelKey: "nav.broadcasts",        roles: [UserRole.OWNER, UserRole.ADMIN] },
-  { href: "/follow-ups",   icon: Timer,       labelKey: "nav.followUps",         roles: [UserRole.OWNER, UserRole.ADMIN] },
-  { href: "/audit-logs",   icon: ClipboardText, labelKey: "nav.auditLogs",       roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN] },
-  { href: "/analytics",    icon: ChartBar,    labelKey: "nav.analytics",         roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
-  { href: "/settings",     icon: Sliders,     labelKey: "nav.settings",          roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF, UserRole.SUPERADMIN] },
+  {
+    href: "/",
+    icon: SquaresFour,
+    labelKey: "nav.commandCenter",
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF],
+  },
+  {
+    href: "/leads",
+    icon: Users,
+    labelKey: "nav.leadIntelligence",
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF],
+  },
+  {
+    href: "/verification",
+    icon: ShieldCheck,
+    labelKey: "nav.verificationQueue",
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF],
+  },
+  {
+    href: "/broadcasts",
+    icon: Megaphone,
+    labelKey: "nav.broadcasts",
+    roles: [UserRole.OWNER, UserRole.ADMIN],
+  },
+  {
+    href: "/follow-ups",
+    icon: Timer,
+    labelKey: "nav.followUps",
+    roles: [UserRole.OWNER, UserRole.ADMIN],
+  },
+  {
+    href: "/audit-logs",
+    icon: ClipboardText,
+    labelKey: "nav.auditLogs",
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
+  },
+  {
+    href: "/analytics",
+    icon: ChartBar,
+    labelKey: "nav.analytics",
+    roles: [
+      UserRole.OWNER,
+      UserRole.ADMIN,
+      UserRole.STAFF,
+      UserRole.SUPERADMIN,
+    ],
+  },
+  {
+    href: "/settings",
+    icon: Sliders,
+    labelKey: "nav.settings",
+    roles: [
+      UserRole.OWNER,
+      UserRole.ADMIN,
+      UserRole.STAFF,
+      UserRole.SUPERADMIN,
+    ],
+  },
 ];
 
 export const NAV_ITEMS = ALL_NAV_ITEMS;
@@ -102,7 +154,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-none mt-4  mb-4 ml-2 h-[calc(100svh-2rem)] [&>[data-sidebar=sidebar]]:rounded-xl [&>[data-sidebar=sidebar]]:bg-base [&>[data-sidebar=sidebar]]:border-none shadow-none z-40 group/app-sidebar"
+      className="border-none mt-4 mb-4 ml-2 h-[calc(100svh-2rem)] [&>[data-sidebar=sidebar]]:rounded-xl [&>[data-sidebar=sidebar]]:bg-base [&>[data-sidebar=sidebar]]:border-none shadow-none z-40 group/app-sidebar"
     >
       <SidebarHeader className="h-14 flex items-center justify-center px-5 flex-shrink-0 bg-transparent transition-all duration-300 group-data-[collapsible=icon]:px-0">
         <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">
@@ -159,7 +211,13 @@ export function AppSidebar() {
                               ? "bg-danger"
                               : "bg-text-muted/40"
                         }`}
-                        title={botOnline === true ? "Bot online" : botOnline === false ? "Bot offline" : "Checking..."}
+                        title={
+                          botOnline === true
+                            ? "Bot online"
+                            : botOnline === false
+                              ? "Bot offline"
+                              : "Checking..."
+                        }
                       />
                     )}
                   </Link>
@@ -220,7 +278,8 @@ export function AppSidebar() {
                 >
                   <SidebarMenuSub className="mt-0.5">
                     {ADMIN_SUB_ITEMS.map(({ href, icon: SubIcon, label }) => {
-                      const isSubActive = pathname === href || pathname.startsWith(href + "/");
+                      const isSubActive =
+                        pathname === href || pathname.startsWith(href + "/");
                       return (
                         <SidebarMenuSubItem key={href}>
                           <SidebarMenuSubButton
@@ -242,7 +301,9 @@ export function AppSidebar() {
                                 weight={isSubActive ? "fill" : "regular"}
                                 className="flex-shrink-0"
                               />
-                              <span className="text-xs font-medium">{label}</span>
+                              <span className="text-xs font-medium">
+                                {label}
+                              </span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -276,7 +337,10 @@ export function AppSidebar() {
                   {user?.role?.toUpperCase() ?? "—"}
                 </span>
               </div>
-              <CaretUpDown size={13} className="text-text-muted flex-shrink-0 group-data-[collapsible=icon]:hidden" />
+              <CaretUpDown
+                size={13}
+                className="text-text-muted flex-shrink-0 group-data-[collapsible=icon]:hidden"
+              />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -286,13 +350,18 @@ export function AppSidebar() {
             className="w-56 mb-1"
           >
             <div className="px-2 py-1.5 mb-1">
-              <p className="text-xs font-semibold text-text-primary truncate">{user?.email}</p>
+              <p className="text-xs font-semibold text-text-primary truncate">
+                {user?.email}
+              </p>
               <p className="text-[10px] text-text-muted">{user?.role}</p>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="gap-2 cursor-pointer"
-              onClick={() => { setOpenMobile(false); router.push("/profile"); }}
+              onClick={() => {
+                setOpenMobile(false);
+                router.push("/profile");
+              }}
             >
               <UserCircle size={15} className="text-text-secondary" />
               <span>My Profile</span>

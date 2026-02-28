@@ -7,13 +7,51 @@ import { Label } from "@/components/ui/label";
 import { useSystemConfigStore } from "@/store/systemConfigStore";
 import { integrationsApi } from "@/lib/api/integrations";
 import type { SecretMeta } from "@/lib/api/superadmin";
+import { Icon } from "@iconify/react";
 import {
   CheckCircle,
   ArrowClockwise,
   Warning,
   Eye,
   EyeSlash,
+  Question,
+  Lock,
 } from "@phosphor-icons/react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+// ── Google Product Icons ───────────────────────────────────────────────────────
+
+function GoogleSheetsIcon({ className }: { className?: string }) {
+  return <Icon icon="logos:google-sheets" className={className ?? "w-5 h-5"} />;
+}
+
+function GoogleDriveIcon({ className }: { className?: string }) {
+  return <Icon icon="logos:google-drive" className={className ?? "w-5 h-5"} />;
+}
+
+// ── Status pill ────────────────────────────────────────────────────────────────
+
+type ConnectionStatus = "ready" | "needs-id" | "awaiting-setup" | "disabled";
+
+function StatusPill({ status }: { status: ConnectionStatus }) {
+  const config = {
+    ready:            { dot: "bg-success",       text: "text-success",     label: "Ready to sync" },
+    "needs-id":       { dot: "bg-amber-400",     text: "text-amber-400",   label: "Paste your ID below to connect" },
+    "awaiting-setup": { dot: "bg-text-muted/40", text: "text-text-muted",  label: "Awaiting technical setup" },
+    disabled:         { dot: "bg-text-muted/30", text: "text-text-muted",  label: "Disabled" },
+  }[status];
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${config.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+      {config.label}
+    </span>
+  );
+}
 
 // ── Inline toggle ──────────────────────────────────────────────────────────────
 
@@ -40,21 +78,25 @@ function InlineToggle({
   );
 }
 
-// ── Credential input ───────────────────────────────────────────────────────────
+// ── ID Input (friendly, non-technical) ────────────────────────────────────────
 
-function CredentialInput({
+function IdInput({
   secretKey,
   label,
   placeholder,
-  hint,
+  helpTitle,
+  helpContent,
   existingMeta,
+  disabled,
   onSaved,
 }: {
   secretKey: string;
   label: string;
   placeholder?: string;
-  hint?: string;
+  helpTitle: string;
+  helpContent: React.ReactNode;
   existingMeta: SecretMeta | undefined;
+  disabled?: boolean;
   onSaved: () => void;
 }) {
   const [value, setValue] = useState("");
@@ -83,14 +125,24 @@ function CredentialInput({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-text-secondary">{label}</Label>
+      <div className="flex items-center gap-1.5">
+        <Label className="text-xs font-medium text-text-secondary">{label}</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button type="button" className="text-text-muted hover:text-text-secondary transition-colors">
+              <Question size={13} />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 text-xs space-y-1.5 p-3">
+            <p className="font-semibold text-text-primary">{helpTitle}</p>
+            <div className="text-text-secondary leading-snug">{helpContent}</div>
+          </PopoverContent>
+        </Popover>
+      </div>
       {existingMeta && (
         <p className="text-[10px] text-text-muted">
-          Last updated{" "}
-          {new Date(existingMeta.updatedAt).toLocaleDateString()}
+          ✓ Connected · Last updated {new Date(existingMeta.updatedAt).toLocaleDateString()}
           {existingMeta.updatedBy ? ` by ${existingMeta.updatedBy}` : ""}
-          {" · "}
-          <span className="text-amber-400">Value encrypted — enter new value to replace</span>
         </p>
       )}
       <div className="flex gap-2">
@@ -99,7 +151,8 @@ function CredentialInput({
             type={show ? "text" : "password"}
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={placeholder ?? (existingMeta ? "Enter new value to replace…" : "Paste value…")}
+            disabled={disabled}
+            placeholder={existingMeta ? "Paste new ID to update…" : (placeholder ?? "Paste ID here…")}
             className="h-8 text-xs pr-8"
           />
           <button
@@ -114,14 +167,13 @@ function CredentialInput({
           size="sm"
           variant="outline"
           onClick={handleSave}
-          disabled={!value.trim() || saving}
+          disabled={!value.trim() || saving || disabled}
           className={`h-8 px-3 text-xs shrink-0 ${saved ? "text-success border-success/40" : ""}`}
         >
           {saved ? <CheckCircle size={13} className="mr-1" /> : null}
-          {saving ? "Saving…" : saved ? "Saved!" : existingMeta ? "Update" : "Save"}
+          {saving ? "Saving…" : saved ? "Saved!" : existingMeta ? "Update" : "Connect"}
         </Button>
       </div>
-      {hint && <p className="text-[10px] text-text-muted leading-snug">{hint}</p>}
       {err && <p className="text-[10px] text-danger">{err}</p>}
     </div>
   );
@@ -143,7 +195,7 @@ export function IntegrationsTab() {
       const res = await integrationsApi.listCredentials();
       setCredentials((res.data as any).data ?? []);
     } catch {
-      // silently ignore — user may not have creds yet
+      // silently ignore — owner may not have creds yet
     } finally {
       setLoadingCreds(false);
     }
@@ -173,18 +225,37 @@ export function IntegrationsTab() {
   };
 
   const sheetsEnabled = getVal("integration.googleSheets.enabled") === "true";
-  const driveEnabled = getVal("integration.googleDrive.enabled") === "true";
+  const driveEnabled  = getVal("integration.googleDrive.enabled") === "true";
 
   const cred = (key: string) => credentials.find((c) => c.key === key);
+
+  // Service account is managed by Superadmin only.
+  // We detect setup status via the integration.serviceAccount.configured system config key.
+  const serviceAccountReady = getVal("integration.serviceAccount.configured") === "true";
+  const isAwaitingSetup = !serviceAccountReady;
+
+  const sheetsStatus = (): ConnectionStatus => {
+    if (!sheetsEnabled) return "disabled";
+    if (isAwaitingSetup) return "awaiting-setup";
+    if (!cred("google.sheetId")) return "needs-id";
+    return "ready";
+  };
+
+  const driveStatus = (): ConnectionStatus => {
+    if (!driveEnabled) return "disabled";
+    if (isAwaitingSetup) return "awaiting-setup";
+    if (!cred("google.driveFolderId")) return "needs-id";
+    return "ready";
+  };
 
   return (
     <div className="space-y-5 animate-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-text-primary">Integrations</h2>
+          <h2 className="text-xl font-bold text-text-primary">Google Integrations</h2>
           <p className="text-text-secondary text-sm font-sans mt-1">
-            Connect Google Sheets & Drive to sync leads and attachments
+            Sync your leads to Google Sheets and store files in Google Drive
           </p>
         </div>
         <button
@@ -201,17 +272,29 @@ export function IntegrationsTab() {
         </div>
       )}
 
+      {/* Awaiting setup banner */}
+      {isAwaitingSetup && (
+        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-elevated border border-border-subtle">
+          <Lock size={16} weight="duotone" className="text-text-muted shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-text-primary">Google connection not yet set up</p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Your technical admin needs to connect a Google account before you can use these features.
+              Contact your admin to complete the setup — then come back here to add your spreadsheet and folder.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Google Sheets ─────────────────────────────────────────────────────── */}
       <div className="page-panel bg-elevated rounded-xl overflow-hidden border border-border-subtle">
         <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-emerald-500/10">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-emerald-400 fill-current" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-            </div>
+          <div className="flex items-center gap-3">
+            <GoogleSheetsIcon className="w-7 h-7 shrink-0" />
             <div>
-              <h3 className="text-sm font-semibold text-text-primary">Google Sheets Sync</h3>
+              <h3 className="text-sm font-semibold text-text-primary">Google Sheets</h3>
               <p className="text-xs text-text-secondary mt-0.5">
-                Automatically sync leads to a Google Spreadsheet
+                Automatically copy your leads into a Google Spreadsheet
               </p>
             </div>
           </div>
@@ -230,20 +313,25 @@ export function IntegrationsTab() {
         </div>
 
         <div className="px-5 py-5 space-y-4">
-          <CredentialInput
+          <StatusPill status={sheetsStatus()} />
+
+          <IdInput
             secretKey="google.sheetId"
-            label="Google Sheet ID"
+            label="Your Spreadsheet"
             placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
-            hint="The spreadsheet ID from the Google Sheet URL: docs.google.com/spreadsheets/d/{ID}/..."
+            helpTitle="How to find your Spreadsheet ID"
+            helpContent={
+              <div className="space-y-1">
+                <p>1. Open your Google Sheets spreadsheet</p>
+                <p>2. Look at the URL bar — copy the long code:</p>
+                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all">
+                  docs.google.com/spreadsheets/d/<strong className="text-info">ID</strong>/edit
+                </p>
+                <p>3. Paste that code above</p>
+              </div>
+            }
             existingMeta={cred("google.sheetId")}
-            onSaved={loadCredentials}
-          />
-          <CredentialInput
-            secretKey="google.serviceAccount"
-            label="Service Account JSON"
-            placeholder='{"type":"service_account","project_id":"…"}'
-            hint="Paste your full Google Cloud service account JSON. The value is encrypted at rest and never displayed again."
-            existingMeta={cred("google.serviceAccount")}
+            disabled={isAwaitingSetup}
             onSaved={loadCredentials}
           />
         </div>
@@ -252,14 +340,12 @@ export function IntegrationsTab() {
       {/* ── Google Drive ──────────────────────────────────────────────────────── */}
       <div className="page-panel bg-elevated rounded-xl overflow-hidden border border-border-subtle">
         <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-blue-500/10">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 text-blue-400 fill-current" aria-hidden="true"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-            </div>
+          <div className="flex items-center gap-3">
+            <GoogleDriveIcon className="w-7 h-7 shrink-0" />
             <div>
-              <h3 className="text-sm font-semibold text-text-primary">Google Drive Sync</h3>
+              <h3 className="text-sm font-semibold text-text-primary">Google Drive</h3>
               <p className="text-xs text-text-secondary mt-0.5">
-                Automatically upload lead attachments to Google Drive
+                Automatically save lead attachments to a Google Drive folder
               </p>
             </div>
           </div>
@@ -278,23 +364,38 @@ export function IntegrationsTab() {
         </div>
 
         <div className="px-5 py-5 space-y-4">
-          <CredentialInput
+          <StatusPill status={driveStatus()} />
+
+          <IdInput
             secretKey="google.driveFolderId"
-            label="Drive Folder ID"
+            label="Your Drive Folder"
             placeholder="e.g. 1A2b3C4d5E6f7G8h9I0j"
-            hint="The folder ID from the Google Drive URL: drive.google.com/drive/folders/{ID}. Attachments will be uploaded here."
+            helpTitle="How to find your Drive Folder ID"
+            helpContent={
+              <div className="space-y-1">
+                <p>1. Open Google Drive and go to your folder</p>
+                <p>2. Look at the URL bar — copy the code at the end:</p>
+                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all">
+                  drive.google.com/drive/folders/<strong className="text-info">ID</strong>
+                </p>
+                <p>3. Paste that code above</p>
+              </div>
+            }
             existingMeta={cred("google.driveFolderId")}
+            disabled={isAwaitingSetup}
             onSaved={loadCredentials}
           />
+
           <p className="text-[11px] text-text-muted">
-            The same Service Account set in Google Sheets is used for Drive access. Set the Service Account JSON above.
+            Uses the same Google connection as Sheets — no separate setup needed.
           </p>
         </div>
       </div>
 
-      {/* Info note */}
+      {/* Footer note */}
       <p className="text-[11px] text-text-muted px-1">
-        ℹ️ All credentials are encrypted at rest using AES-256-GCM. Once saved, values cannot be retrieved — only replaced.
+        Your IDs are stored securely and never shared with third parties.
+        Changes take effect on the next sync cycle.
       </p>
     </div>
   );

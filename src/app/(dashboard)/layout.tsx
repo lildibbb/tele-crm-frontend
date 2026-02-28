@@ -34,6 +34,7 @@ const PAGE_TITLE_KEYS: Record<string, string> = {
   "/admin/system": "nav.superAdmin",
   "/admin/backup": "nav.superAdmin",
   "/admin/secrets": "nav.superAdmin",
+  "/admin/google": "nav.superAdmin",
 };
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
