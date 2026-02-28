@@ -68,4 +68,10 @@ export const usersApi = {
    */
   deleteInvitation: (id: string) =>
     apiClient.delete<void>(`/users/invitations/${id}`),
+
+  /**
+   * Updates the authenticated user's preferred IANA timezone.
+   */
+  updateTimezone: (timezone: string) =>
+    apiClient.patch<ApiResponse<UserResponse>>("/users/me/timezone", { timezone }),
 };

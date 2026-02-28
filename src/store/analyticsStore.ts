@@ -12,6 +12,7 @@ import type {
   AnalyticsSummary,
   AnalyticsSummaryParams,
 } from "@/lib/schemas/analytics.schema";
+import { useAuthStore } from "./authStore";
 
 // ── State & Actions ────────────────────────────────────────────────────────
 
@@ -52,7 +53,13 @@ export const useAnalyticsStore = create<AnalyticsState & AnalyticsActions>()(
       fetchSummary: async (params?: AnalyticsSummaryParams) => {
         set({ isLoading: true, error: null }, false, "fetchSummary/pending");
         try {
-          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          // Fallback chain: explicit params.timezone → user stored preference → browser Intl → UTC
+          const { user } = useAuthStore.getState();
+          const timezone =
+            params?.timezone ||
+            user?.timezone ||
+            Intl.DateTimeFormat().resolvedOptions().timeZone ||
+            "UTC";
           const res = await analyticsApi.getSummary({ ...params, timezone } as AnalyticsSummaryParams);
           set(
             { summary: res.data.data, isLoading: false },

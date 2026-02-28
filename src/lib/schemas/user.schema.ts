@@ -13,6 +13,7 @@ export const UserResponseSchema = z.object({
   telegramId: z.string().nullable(),
   lastLoginAt: z.string().nullable(),
   lastIpAddress: z.string().nullable(),
+  timezone: z.string().default("UTC"),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
