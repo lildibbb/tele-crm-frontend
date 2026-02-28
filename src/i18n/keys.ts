@@ -19,6 +19,7 @@ export const K = {
     analytics:         "nav.analytics",
     settings:          "nav.settings",
     superAdmin:        "nav.superAdmin",
+    docs:              "nav.docs",
     logout:            "nav.logout",
   },
 

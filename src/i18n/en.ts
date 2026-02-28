@@ -9,6 +9,7 @@ const en: Record<string, string> = {
   "nav.analytics":          "Analytics",
   "nav.settings":           "Settings",
   "nav.superAdmin":         "Super Admin",
+  "nav.docs":               "Documentation",
   "nav.logout":             "Sign out",
 
   /* ── Common ─────────────────────────────────────── */

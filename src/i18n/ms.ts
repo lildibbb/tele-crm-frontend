@@ -9,6 +9,7 @@ const ms: Record<string, string> = {
   "nav.analytics":          "Analitik",
   "nav.settings":           "Tetapan",
   "nav.superAdmin":         "Super Admin",
+  "nav.docs":               "Dokumentasi",
   "nav.logout":             "Log Keluar",
 
   /* ── Common ─────────────────────────────────────── */
