@@ -52,7 +52,8 @@ export const useAnalyticsStore = create<AnalyticsState & AnalyticsActions>()(
       fetchSummary: async (params?: AnalyticsSummaryParams) => {
         set({ isLoading: true, error: null }, false, "fetchSummary/pending");
         try {
-          const res = await analyticsApi.getSummary(params);
+          const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const res = await analyticsApi.getSummary({ ...params, timezone } as AnalyticsSummaryParams);
           set(
             { summary: res.data.data, isLoading: false },
             false,

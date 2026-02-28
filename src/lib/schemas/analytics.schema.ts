@@ -149,6 +149,7 @@ export const AnalyticsSummaryParamsSchema = z.object({
     .default("last_30_days"),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
+  timezone: z.string().optional(),
 });
 
 export type AnalyticsSummaryParams = z.infer<typeof AnalyticsSummaryParamsSchema>;
