@@ -73,6 +73,7 @@ export type SubmitLeadInfoInput = z.infer<typeof SubmitLeadInfoSchema>;
 
 export const ListLeadsParamsSchema = z.object({
   status: LeadStatusSchema.optional(),
+  statuses: z.string().optional(),
   contactId: z.string().optional(),
   registered: z.boolean().optional(),
   balanceMin: z.number().optional(),

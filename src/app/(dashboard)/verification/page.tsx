@@ -46,6 +46,7 @@ import { useDataTable } from "@/lib/hooks/use-data-table";
 import { useVerificationStore } from "@/store/verificationStore";
 import { Lead } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
+import { leadsApi } from "@/lib/api/leads";
 import { useLeadsStore } from "@/store/leadsStore";
 import { useT, K } from "@/i18n";
 import { getVerificationColumns } from "./_components/verification-columns";
@@ -604,13 +605,11 @@ export default function VerificationPage() {
     filter,
     openModal,
     setFilter,
-    getPendingVerifications,
     getVerifiedCount,
   } = useVerificationStore();
   const { leads, total, isLoading, fetchLeads, pageCount } = useLeadsStore();
   const { updateStatus } = useLeadsStore();
 
-  const pending = getPendingVerifications();
   const approvedCount = getVerifiedCount();
 
   const onApprove = useCallback(
@@ -653,13 +652,53 @@ export default function VerificationPage() {
 
   const { pageIndex, pageSize } = table.getState().pagination;
 
+  const VERIFICATION_STATUSES = `${LeadStatus.DEPOSIT_REPORTED},${LeadStatus.DEPOSIT_CONFIRMED},${LeadStatus.REJECTED}`;
+
+  // Track separate totals for each tab so counts are accurate
+  const [pendingTotal, setPendingTotal] = useState(0);
+  const [allTotal, setAllTotal] = useState(0);
+
   useEffect(() => {
     void fetchLeads({
       skip: pageIndex * pageSize,
       take: pageSize,
-      status: filter === "PENDING" ? LeadStatus.DEPOSIT_REPORTED : undefined,
+      ...(filter === "PENDING"
+        ? { status: LeadStatus.DEPOSIT_REPORTED }
+        : { statuses: VERIFICATION_STATUSES }),
     });
   }, [pageIndex, pageSize, filter, fetchLeads]);
+
+  // Sync tab-specific totals from API response
+  useEffect(() => {
+    if (filter === "PENDING") {
+      setPendingTotal(total);
+    } else {
+      setAllTotal(total);
+    }
+  }, [total, filter]);
+
+  // Fetch both totals on mount so inactive tab also shows a count
+  useEffect(() => {
+    const extractTotal = (r: { data: unknown }): number | undefined => {
+      const outer = r.data as { data?: { data?: unknown; meta?: { total?: number } } };
+      return outer?.data?.meta?.total;
+    };
+    leadsApi
+      .list({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_REPORTED })
+      .then((r) => {
+        const t = extractTotal(r);
+        if (t != null) setPendingTotal(t);
+      })
+      .catch(() => {});
+    leadsApi
+      .list({ take: 1, skip: 0, statuses: VERIFICATION_STATUSES })
+      .then((r) => {
+        const t = extractTotal(r);
+        if (t != null) setAllTotal(t);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // GSAP entrance stats
   useGSAP(
@@ -707,7 +746,7 @@ export default function VerificationPage() {
               <h1 className="text-2xl font-bold text-text-primary leading-none">
                 {t("verification.title")}
               </h1>
-              {pending.length > 0 && (
+              {pendingTotal > 0 && (
                 <Badge className="badge badge-warning gap-1.5">
                   <span
                     className="rounded-full bg-warning inline-block flex-shrink-0"
@@ -717,7 +756,7 @@ export default function VerificationPage() {
                       animation: "pulse-live 2.4s ease-in-out infinite",
                     }}
                   />
-                  {pending.length} {t("verification.pendingReview")}
+                  {pendingTotal} {t("verification.pendingReview")}
                 </Badge>
               )}
             </div>
@@ -737,7 +776,7 @@ export default function VerificationPage() {
               </span>
             </div>
             <p className="text-2xl font-bold data-mono text-warning leading-none mb-1.5 tracking-tight">
-              {pending.length}
+              {pendingTotal}
             </p>
             <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
               {t("verification.stats.pending")}
@@ -806,8 +845,8 @@ export default function VerificationPage() {
                   }
                 >
                   {f === "PENDING"
-                    ? `${t("verification.tabs.pending")} (${pending.length})`
-                    : `${t("verification.tabs.all")} (${total})`}
+                    ? `${t("verification.tabs.pending")} (${pendingTotal})`
+                    : `${t("verification.tabs.all")} (${allTotal})`}
                 </Button>
               ))}
             </div>

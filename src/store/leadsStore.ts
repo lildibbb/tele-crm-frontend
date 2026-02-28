@@ -25,6 +25,7 @@ interface LeadsActions {
     skip: number;
     take: number;
     status?: string;
+    statuses?: string;
     search?: string;
     orderBy?: string;
     order?: "asc" | "desc";
@@ -55,6 +56,7 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
         skip,
         take,
         status,
+        statuses,
         search,
         orderBy,
         order,
@@ -69,6 +71,7 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
             skip,
             take,
             status: status as LeadStatus | undefined,
+            statuses,
             search,
             orderBy,
             order,
