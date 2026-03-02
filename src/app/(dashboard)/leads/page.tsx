@@ -24,6 +24,7 @@ import {
   LeadStatus as LeadStatusEnum,
 } from "@/store/leadsStore";
 import { leadsApi } from "@/lib/api/leads";
+import type { ImportResult } from "@/lib/schemas/lead.schema";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -76,6 +77,12 @@ export default function LeadsPage() {
     "idle",
   );
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importStatus, setImportStatus] = useState<
+    "idle" | "uploading" | "done" | "error"
+  >("idle");
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [bulkHandoverPending, setBulkHandoverPending] = useState(false);
   const [searchRaw, setSearchRaw] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -247,16 +254,16 @@ export default function LeadsPage() {
     if (exportStatus !== "idle") return;
     setExportStatus("loading");
     try {
-      const res = await leadsApi.exportCsv(
+      const res = await leadsApi.exportExcel(
         statusFilter !== "ALL" ? { status: statusFilter } : undefined,
       );
       const blob = new Blob([res.data as BlobPart], {
-        type: "text/csv;charset=utf-8;",
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `leads_export_${new Date().toISOString().split("T")[0]}.csv`;
+      a.download = `leads_export_${new Date().toISOString().split("T")[0]}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
       setExportStatus("done");
@@ -264,6 +271,71 @@ export default function LeadsPage() {
       setExportStatus("idle");
     }
     setTimeout(() => setExportStatus("idle"), 3000);
+  };
+
+  const handleImportFileChange = (file: File | null) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      showToast.error("Only CSV files are accepted (.csv)");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast.error("File too large. Maximum size is 5 MB.");
+      return;
+    }
+    setImportFile(file);
+    setImportResult(null);
+    setImportStatus("idle");
+  };
+
+  const handleImportUpload = async () => {
+    if (!importFile || importStatus === "uploading") return;
+    setImportStatus("uploading");
+    try {
+      const res = await leadsApi.importCsv(importFile);
+      const result = res.data.data;
+      setImportResult(result);
+      setImportStatus("done");
+      if (result.imported > 0 || result.updated > 0) {
+        showToast.success(
+          `Import complete: ${result.imported} created, ${result.updated} updated${result.skipped > 0 ? `, ${result.skipped} skipped` : ""}`,
+        );
+        // Refresh the table
+        void fetchLeads({
+          skip: pageIndex * pageSize,
+          take: pageSize,
+          status: statusFilter === "ALL" ? undefined : statusFilter,
+          search: searchValue || undefined,
+          orderBy,
+          order,
+        });
+      }
+    } catch {
+      setImportStatus("error");
+      showToast.error("Import failed. Please check your file and try again.");
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const res = await leadsApi.downloadTemplate();
+      const blob = new Blob([res.data as BlobPart], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "leads-import-template.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      showToast.error("Failed to download template.");
+    }
+  };
+
+  const resetImportModal = () => {
+    setImportFile(null);
+    setImportResult(null);
+    setImportStatus("idle");
+    setIsDragOver(false);
   };
 
   const handleStatusChange = (value: string) => {
@@ -456,48 +528,171 @@ export default function LeadsPage() {
           </div>
         </div>
 
-        <Dialog open={showImportModal} onOpenChange={setShowImportModal}>
-          <DialogContent className="max-w-md">
+        <Dialog
+          open={showImportModal}
+          onOpenChange={(open) => {
+            setShowImportModal(open);
+            if (!open) resetImportModal();
+          }}
+        >
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="font-bold text-xl text-text-primary">
                 {t("leads.import.title")}
               </DialogTitle>
             </DialogHeader>
-            <div className="border-2 border-dashed border-border-default hover:border-crimson/40 rounded-xl p-8 flex flex-col items-center gap-3 transition-colors cursor-pointer group">
-              <div className="w-12 h-12 rounded-xl bg-crimson/10 flex items-center justify-center group-hover:bg-crimson/15 transition-colors">
-                <UploadSimple className="h-6 w-6 text-crimson" />
+
+            {/* Drop zone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragOver(true);
+              }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                const file = e.dataTransfer.files[0];
+                if (file) handleImportFileChange(file);
+              }}
+              onClick={() => document.getElementById("csv-file-input")?.click()}
+              className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center gap-3 transition-colors cursor-pointer group ${
+                isDragOver
+                  ? "border-crimson/60 bg-crimson/5"
+                  : importFile
+                    ? "border-success/40 bg-success/5"
+                    : "border-border-default hover:border-crimson/40"
+              }`}
+            >
+              <input
+                id="csv-file-input"
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) =>
+                  handleImportFileChange(e.target.files?.[0] ?? null)
+                }
+              />
+              <div
+                className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  importFile
+                    ? "bg-success/10"
+                    : "bg-crimson/10 group-hover:bg-crimson/15"
+                }`}
+              >
+                {importFile ? (
+                  <CheckCircle className="h-6 w-6 text-success" />
+                ) : (
+                  <UploadSimple className="h-6 w-6 text-crimson" />
+                )}
               </div>
-              <p className="font-sans font-medium text-text-primary text-sm">
-                {t("leads.import.drop")}
-              </p>
-              <p className="font-sans text-xs text-text-muted">
-                {t("leads.import.or")}{" "}
-                <span className="text-crimson cursor-pointer">
-                  {t("leads.import.browse")}
-                </span>{" "}
-                &middot; {t("leads.import.size")}
-              </p>
+              {importFile ? (
+                <div className="text-center">
+                  <p className="font-sans font-semibold text-text-primary text-sm">
+                    {importFile.name}
+                  </p>
+                  <p className="font-sans text-xs text-text-muted mt-0.5">
+                    {(importFile.size / 1024).toFixed(1)} KB · Click to change
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="font-sans font-medium text-text-primary text-sm">
+                    {t("leads.import.drop")}
+                  </p>
+                  <p className="font-sans text-xs text-text-muted">
+                    {t("leads.import.or")}{" "}
+                    <span className="text-crimson">
+                      {t("leads.import.browse")}
+                    </span>{" "}
+                    &middot; {t("leads.import.size")}
+                  </p>
+                </>
+              )}
             </div>
-            <p className="text-xs font-sans text-text-muted">
-              {t("leads.import.required")}{" "}
-              <span className="font-mono text-text-secondary">
-                telegram_id, name, phone, hfm_id, status
-              </span>
-            </p>
+
+            {/* Required fields note + template download */}
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-sans text-text-muted flex-1">
+                Required:{" "}
+                <span className="font-mono text-text-secondary">
+                  telegram_id
+                </span>{" "}
+                &middot; optional: username, display_name, email, phone, hfm_id,
+                status, deposit_balance
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleDownloadTemplate}
+                className="h-7 gap-1.5 text-xs text-crimson hover:text-crimson/80 hover:bg-crimson/5 flex-shrink-0"
+              >
+                <DownloadSimple className="h-3.5 w-3.5" />
+                Template
+              </Button>
+            </div>
+
+            {/* Import result */}
+            {importResult && (
+              <div className="rounded-xl bg-elevated border border-border-subtle p-4 space-y-2">
+                <div className="flex items-center gap-4 text-sm font-sans">
+                  <span className="text-success font-semibold">
+                    +{importResult.imported} created
+                  </span>
+                  <span className="text-text-secondary">
+                    {importResult.updated} updated
+                  </span>
+                  {importResult.skipped > 0 && (
+                    <span className="text-warning">
+                      {importResult.skipped} skipped
+                    </span>
+                  )}
+                </div>
+                {importResult.errors.length > 0 && (
+                  <div className="max-h-[140px] overflow-y-auto rounded-lg bg-card border border-border-subtle p-2 space-y-1">
+                    {importResult.errors.map((err, i) => (
+                      <p
+                        key={i}
+                        className="text-xs font-mono text-crimson leading-relaxed"
+                      >
+                        {err}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-3 pt-1">
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => setShowImportModal(false)}
+                onClick={() => {
+                  setShowImportModal(false);
+                  resetImportModal();
+                }}
               >
-                {t("common.cancel")}
+                {importStatus === "done"
+                  ? t("common.close")
+                  : t("common.cancel")}
               </Button>
-              <Button
-                className="flex-1 gap-2 bg-crimson hover:bg-crimson/90 text-white"
-                onClick={() => setShowImportModal(false)}
-              >
-                <UploadSimple className="h-4 w-4" /> {t("leads.import.title")}
-              </Button>
+              {importStatus !== "done" && (
+                <Button
+                  className="flex-1 gap-2 bg-crimson hover:bg-crimson/90 text-white"
+                  disabled={!importFile || importStatus === "uploading"}
+                  onClick={() => void handleImportUpload()}
+                >
+                  {importStatus === "uploading" ? (
+                    <SpinnerGap className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UploadSimple className="h-4 w-4" />
+                  )}
+                  {importStatus === "uploading"
+                    ? "Importing..."
+                    : t("leads.import.title")}
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>

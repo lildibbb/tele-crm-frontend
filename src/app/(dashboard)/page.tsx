@@ -145,11 +145,7 @@ function useScrollReveal() {
 }
 
 // ── Chart Tooltip components ─────────────────────────────────────
-function ChartTooltip({
-  active,
-  payload,
-  label,
-}: ChartTooltipProps) {
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-sm">
@@ -172,11 +168,7 @@ function ChartTooltip({
   );
 }
 
-function BarTooltip({
-  active,
-  payload,
-  label,
-}: ChartTooltipProps) {
+function BarTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-sm">
@@ -189,10 +181,7 @@ function BarTooltip({
   );
 }
 
-function FunnelTooltip({
-  active,
-  payload,
-}: ChartTooltipProps) {
+function FunnelTooltip({ active, payload }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   const item = payload[0];
   return (
@@ -202,7 +191,9 @@ function FunnelTooltip({
       </p>
       <p
         className="font-bold text-[18px] leading-tight data-mono"
-        style={{ color: (item.payload?.["color"] as string | undefined) ?? item.color }}
+        style={{
+          color: (item.payload?.["color"] as string | undefined) ?? item.color,
+        }}
       >
         {item.value.toLocaleString()}
       </p>
@@ -276,7 +267,9 @@ export default function DashboardPage() {
   const leads = useLeadsStore((s) => s.leads);
   const fetchLeads = useLeadsStore((s) => s.fetchLeads);
   const widgets = useDashboardLayoutStore((s) => s.widgets);
-  const visibleWidgets = [...widgets].sort((a, b) => a.order - b.order).filter((w) => w.visible);
+  const visibleWidgets = [...widgets]
+    .sort((a, b) => a.order - b.order)
+    .filter((w) => w.visible);
 
   // Fetch on mount or period change
   useEffect(() => {
@@ -363,8 +356,8 @@ export default function DashboardPage() {
         subtitle: l.phoneNumber
           ? l.phoneNumber
           : l.username
-          ? `@${l.username}`
-          : `#${String(l.telegramUserId).slice(0, 10)}`,
+            ? `@${l.username}`
+            : `#${String(l.telegramUserId).slice(0, 10)}`,
         status: l.status as ActivityRow["status"],
         amount: l.depositBalance
           ? `$${Number(l.depositBalance).toLocaleString()}`
@@ -381,17 +374,20 @@ export default function DashboardPage() {
   const contactedLeads = summary?.kpi.contactedLeads.current ?? 0;
   const depositConfirmed = summary?.kpi.verifiedClients.current ?? 0;
   const pendingVerifications = summary?.kpi.formSubmissions.current ?? 0;
-  const handoverLeadsCount = useMemo(() => leads.filter((l) => l.handoverMode).length, [leads]);
+  const handoverLeadsCount = useMemo(
+    () => leads.filter((l) => l.handoverMode).length,
+    [leads],
+  );
 
   const periodLabel = (v: PeriodValue): string => {
     const map: Record<PeriodValue, string> = {
-      yesterday:    t(K.common.period.yesterday),
-      today:        t(K.common.period.today),
-      this_week:    t(K.common.period.weekly),
-      this_month:   t(K.common.period.monthly),
+      yesterday: t(K.common.period.yesterday),
+      today: t(K.common.period.today),
+      this_week: t(K.common.period.weekly),
+      this_month: t(K.common.period.monthly),
       last_30_days: t(K.common.period.last30Days),
       last_90_days: t(K.common.period.last90Days),
-      all_time:     t(K.common.period.allTime),
+      all_time: t(K.common.period.allTime),
     };
     return map[v];
   };
@@ -470,8 +466,7 @@ export default function DashboardPage() {
   // ── Mobile: role-based home screens ──
   if (isMobile) {
     if (user?.role === UserRole.SUPERADMIN) return <SuperadminHome />;
-    if (user?.role === UserRole.STAFF)
-      return <StaffHome />;
+    if (user?.role === UserRole.STAFF) return <StaffHome />;
     return <OwnerHome />;
   }
 
@@ -604,441 +599,562 @@ export default function DashboardPage() {
 
         <div className="space-y-4 md:space-y-5">
           {visibleWidgets.map((widget) => {
-            if (widget.id === "kpi-cards") return (
-              <div key="kpi-cards">
-                {/* ── KPI Cards ── */}
-                <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
-                  {isLoading && !summary ? (
-                    Array.from({ length: 4 }).map((_, i) => (
-                      <Skeleton key={i} className="h-[120px] rounded-2xl" />
-                    ))
-                  ) : (
-                    <>
-                      <KpiCard
-                        icon={Users}
-                        label={t("dashboard.totalLeads")}
-                        value={String(totalLeads)}
-                        delta={`${summary?.kpi.totalLeads.changePercentage ?? 0}%`}
-                        deltaPositive={
-                          (summary?.kpi.totalLeads.changePercentage ?? 0) >= 0
-                        }
-                      />
-                      <KpiCard
-                        icon={ChatText}
-                        label={t(K.dashboard.contactedLeads)}
-                        value={String(contactedLeads)}
-                        delta={`${summary?.kpi.contactedLeads.changePercentage ?? 0}%`}
-                        deltaPositive={
-                          (summary?.kpi.contactedLeads.changePercentage ?? 0) >= 0
-                        }
-                      />
-                      <KpiCard
-                        icon={Wallet}
-                        label={t("analytics.totalDepositors")}
-                        value={String(depositConfirmed)}
-                        delta={`${summary?.kpi.verifiedClients.changePercentage ?? 0}%`}
-                        deltaPositive={
-                          (summary?.kpi.verifiedClients.changePercentage ?? 0) >= 0
-                        }
-                        goldValue
-                      />
-                      <KpiCard
-                        icon={TrendUp}
-                        label={t("dashboard.pendingVerifications")}
-                        value={String(pendingVerifications)}
-                        delta={`${summary?.kpi.formSubmissions.changePercentage ?? 0}%`}
-                        deltaPositive={
-                          (summary?.kpi.formSubmissions.changePercentage ?? 0) >= 0
-                        }
-                      />
-                    </>
-                  )}
-                  {/* View all link row */}
-                  <div className="col-span-2 xl:col-span-4 flex justify-end">
-                    <Button
-                      variant="link"
-                      asChild
-                      className="text-crimson p-0 h-auto text-xs font-sans font-medium"
-                    >
-                      <Link href="/leads">
-                        {t("dashboard.viewAllLeads")}{" "}
-                        <ArrowUpRight size={12} weight="bold" className="ml-1" />
-                      </Link>
-                    </Button>
+            if (widget.id === "kpi-cards")
+              return (
+                <div key="kpi-cards">
+                  {/* ── KPI Cards ── */}
+                  <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+                    {isLoading && !summary ? (
+                      Array.from({ length: 4 }).map((_, i) => (
+                        <Skeleton key={i} className="h-[120px] rounded-2xl" />
+                      ))
+                    ) : (
+                      <>
+                        <KpiCard
+                          icon={Users}
+                          label={t("dashboard.totalLeads")}
+                          value={String(totalLeads)}
+                          delta={`${summary?.kpi.totalLeads.changePercentage ?? 0}%`}
+                          deltaPositive={
+                            (summary?.kpi.totalLeads.changePercentage ?? 0) >= 0
+                          }
+                        />
+                        <KpiCard
+                          icon={ChatText}
+                          label={t(K.dashboard.contactedLeads)}
+                          value={String(contactedLeads)}
+                          delta={`${summary?.kpi.contactedLeads.changePercentage ?? 0}%`}
+                          deltaPositive={
+                            (summary?.kpi.contactedLeads.changePercentage ??
+                              0) >= 0
+                          }
+                        />
+                        <KpiCard
+                          icon={Wallet}
+                          label={t("analytics.totalDepositors")}
+                          value={String(depositConfirmed)}
+                          delta={`${summary?.kpi.verifiedClients.changePercentage ?? 0}%`}
+                          deltaPositive={
+                            (summary?.kpi.verifiedClients.changePercentage ??
+                              0) >= 0
+                          }
+                          goldValue
+                        />
+                        <KpiCard
+                          icon={TrendUp}
+                          label={t("dashboard.pendingVerifications")}
+                          value={String(pendingVerifications)}
+                          delta={`${summary?.kpi.formSubmissions.changePercentage ?? 0}%`}
+                          deltaPositive={
+                            (summary?.kpi.formSubmissions.changePercentage ??
+                              0) >= 0
+                          }
+                        />
+                      </>
+                    )}
+                    {/* View all link row */}
+                    <div className="col-span-2 xl:col-span-4 flex justify-end">
+                      <Button
+                        variant="link"
+                        asChild
+                        className="text-crimson p-0 h-auto text-xs font-sans font-medium"
+                      >
+                        <Link href="/leads">
+                          {t("dashboard.viewAllLeads")}{" "}
+                          <ArrowUpRight
+                            size={12}
+                            weight="bold"
+                            className="ml-1"
+                          />
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
+              );
 
-            if (widget.id === "funnel-activity") return (
-              /* ── Funnel Donut + Live Activity ── */
-              <div key="funnel-activity" className="page-section grid grid-cols-1 xl:grid-cols-7 gap-3 md:gap-4">
-                {/* Funnel Donut Chart */}
-                <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-sans font-semibold text-[15px] text-text-primary">
-                      {t("dashboard.funnelOverview")}
-                    </h2>
-                    <span className="text-xs font-sans text-text-muted">
-                      {period === "today"
-                        ? "Daily"
-                        : period === "this_week"
-                          ? "Weekly"
-                          : "Last 30 Days"}
-                    </span>
-                  </div>
-                  <p className="text-xs font-sans mb-5 text-text-muted">
-                    {t("dashboard.funnelSubtitle")}
-                  </p>
+            if (widget.id === "funnel-activity")
+              return (
+                /* ── Funnel Donut + Live Activity ── */
+                <div
+                  key="funnel-activity"
+                  className="page-section grid grid-cols-1 xl:grid-cols-7 gap-3 md:gap-4"
+                >
+                  {/* Funnel Donut Chart */}
+                  <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="font-sans font-semibold text-[15px] text-text-primary">
+                        {t("dashboard.funnelOverview")}
+                      </h2>
+                      <span className="text-xs font-sans text-text-muted">
+                        {period === "today"
+                          ? "Daily"
+                          : period === "this_week"
+                            ? "Weekly"
+                            : "Last 30 Days"}
+                      </span>
+                    </div>
+                    <p className="text-xs font-sans mb-5 text-text-muted">
+                      {t("dashboard.funnelSubtitle")}
+                    </p>
 
-                  <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8">
-                    {/* Donut */}
-                    <div className="relative flex-shrink-0">
-                      <ResponsiveContainer width={180} height={180}>
-                        <PieChart>
-                          <Pie
-                            data={funnelDonut}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={58}
-                            outerRadius={84}
-                            paddingAngle={3}
-                            dataKey="value"
-                            strokeWidth={0}
-                          >
-                            {funnelDonut.map((entry) => (
-                              <Cell key={entry.name} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            content={<FunnelTooltip />}
-                            offset={12}
-                            isAnimationActive={false}
-                            wrapperStyle={{ pointerEvents: "none" }}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-xl font-bold data-mono text-text-primary leading-none">
-                          {totalLeads.toLocaleString()}
-                        </span>
-                        <span className="text-[11px] mt-0.5 text-text-muted">
-                          {t("dashboard.totalLeads")}
-                        </span>
+                    <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8">
+                      {/* Donut */}
+                      <div className="relative flex-shrink-0">
+                        <ResponsiveContainer width={180} height={180}>
+                          <PieChart>
+                            <Pie
+                              data={funnelDonut}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={58}
+                              outerRadius={84}
+                              paddingAngle={3}
+                              dataKey="value"
+                              strokeWidth={0}
+                            >
+                              {funnelDonut.map((entry) => (
+                                <Cell key={entry.name} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              content={<FunnelTooltip />}
+                              offset={12}
+                              isAnimationActive={false}
+                              wrapperStyle={{ pointerEvents: "none" }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                          <span className="text-xl font-bold data-mono text-text-primary leading-none">
+                            {totalLeads.toLocaleString()}
+                          </span>
+                          <span className="text-[11px] mt-0.5 text-text-muted">
+                            {t("dashboard.totalLeads")}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Stats list */}
+                      <div className="flex-1 space-y-3.5 w-full">
+                        {funnelDonut.map((item) => {
+                          const pct =
+                            totalLeads > 0
+                              ? Math.round((item.value / totalLeads) * 100)
+                              : 0;
+                          return (
+                            <div key={item.name}>
+                              <div className="flex items-center gap-3 mb-1.5">
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                                  style={{ background: item.color }}
+                                />
+                                <span className="text-[13px] font-sans flex-1 text-text-secondary">
+                                  {item.name}
+                                </span>
+                                <span className="data-mono text-[13px] text-text-primary">
+                                  {item.value.toLocaleString()}
+                                </span>
+                                <span className="text-[11px] w-9 text-right text-text-muted">
+                                  {pct}%
+                                </span>
+                              </div>
+                              <div
+                                className="h-1.5 rounded-full overflow-hidden"
+                                style={{ background: "var(--border-subtle)" }}
+                              >
+                                <div
+                                  className="funnel-bar h-full rounded-full"
+                                  style={{
+                                    width: `${pct}%`,
+                                    background: item.color,
+                                    opacity: 0.85,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
+                  </div>
 
-                    {/* Stats list */}
-                    <div className="flex-1 space-y-3.5 w-full">
-                      {funnelDonut.map((item) => {
-                        const pct =
-                          totalLeads > 0
-                            ? Math.round((item.value / totalLeads) * 100)
-                            : 0;
-                        return (
-                          <div key={item.name}>
-                            <div className="flex items-center gap-3 mb-1.5">
-                              <span
-                                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                                style={{ background: item.color }}
-                              />
-                              <span className="text-[13px] font-sans flex-1 text-text-secondary">
-                                {item.name}
-                              </span>
-                              <span className="data-mono text-[13px] text-text-primary">
-                                {item.value.toLocaleString()}
-                              </span>
-                              <span className="text-[11px] w-9 text-right text-text-muted">
-                                {pct}%
-                              </span>
-                            </div>
-                            <div
-                              className="h-1.5 rounded-full overflow-hidden"
-                              style={{ background: "var(--border-subtle)" }}
+                  {/* Live Activity Feed */}
+                  <div className="xl:col-span-3 bg-elevated rounded-[20px] border border-border-subtle flex flex-col overflow-hidden shadow-sm">
+                    <div className="flex flex-row items-center justify-between px-5 py-4 bg-card shadow-sm">
+                      <span className="font-sans font-semibold text-[15px] text-text-primary">
+                        {t("dashboard.liveActivity")}
+                      </span>
+                      <Badge className="badge badge-live flex items-center gap-1.5">
+                        <span className="live-dot !w-1.5 !h-1.5" />
+                        LIVE
+                      </Badge>
+                    </div>
+                    <div className="flex-1 p-0">
+                      <div className="space-y-0.5 px-3 py-2">
+                        {recentActivity.map((row) => {
+                          const badge = LEAD_STATUS_BADGE[row.status];
+                          return (
+                            <Link
+                              key={row.id}
+                              href={`/leads/${row.id}`}
+                              className="activity-row flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-void/40 transition-colors group"
                             >
                               <div
-                                className="funnel-bar h-full rounded-full"
-                                style={{
-                                  width: `${pct}%`,
-                                  background: item.color,
-                                  opacity: 0.85,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 border ${
+                                  row.status === "DEPOSIT_CONFIRMED"
+                                    ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400"
+                                    : row.status === "DEPOSIT_REPORTED"
+                                      ? "bg-amber-500/15 border-amber-500/25 text-amber-400"
+                                      : row.status === "CONTACTED"
+                                        ? "bg-blue-500/15 border-blue-500/25 text-blue-400"
+                                        : row.status === "REJECTED"
+                                          ? "bg-red-500/15 border-red-500/25 text-red-400"
+                                          : "bg-crimson/15 border-crimson/20 text-crimson"
+                                }`}
+                              >
+                                {row.name
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                                  .slice(0, 2)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-sans font-medium text-text-primary truncate">
+                                  {row.name}
+                                </p>
+                                <p className="data-mono text-[11px] text-text-muted truncate">
+                                  {row.subtitle}
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                <Badge
+                                  className={`badge text-[10px] ${badge.cls}`}
+                                >
+                                  {t(badge.labelKey)}
+                                </Badge>
+                                {row.amount && row.amount !== "—" && (
+                                  <span className="data-mono text-[11px] text-gold">
+                                    {row.amount}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="hidden sm:flex items-center gap-1 text-text-muted text-[11px] font-sans flex-shrink-0">
+                                <Clock size={11} weight="regular" />
+                                {row.time}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="px-5 py-3 border-t border-border-subtle">
+                      <Button
+                        variant="link"
+                        asChild
+                        className="text-crimson p-0 h-auto text-xs font-sans font-medium"
+                      >
+                        <Link href="/leads">
+                          {t("dashboard.viewAllLeads")}
+                          <ArrowUpRight
+                            size={12}
+                            weight="bold"
+                            className="ml-1"
+                          />
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 </div>
+              );
 
-                {/* Live Activity Feed */}
-                <div className="xl:col-span-3 bg-elevated rounded-[20px] border border-border-subtle flex flex-col overflow-hidden shadow-sm">
-                  <div className="flex flex-row items-center justify-between px-5 py-4 bg-card shadow-sm">
-                    <span className="font-sans font-semibold text-[15px] text-text-primary">
-                      {t("dashboard.liveActivity")}
-                    </span>
-                    <Badge className="badge badge-live flex items-center gap-1.5">
-                      <span className="live-dot !w-1.5 !h-1.5" />
-                      LIVE
-                    </Badge>
-                  </div>
-                  <div className="flex-1 p-0">
-                    <div className="space-y-0.5 px-3 py-2">
-                      {recentActivity.map((row) => {
-                        const badge = LEAD_STATUS_BADGE[row.status];
-                        return (
-                          <Link
-                            key={row.id}
-                            href={`/leads/${row.id}`}
-                            className="activity-row flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-void/40 transition-colors group"
-                          >
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 border ${
-                              row.status === "DEPOSIT_CONFIRMED" ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400" :
-                              row.status === "DEPOSIT_REPORTED" ? "bg-amber-500/15 border-amber-500/25 text-amber-400" :
-                              row.status === "CONTACTED" ? "bg-blue-500/15 border-blue-500/25 text-blue-400" :
-                              row.status === "REJECTED" ? "bg-red-500/15 border-red-500/25 text-red-400" :
-                              "bg-crimson/15 border-crimson/20 text-crimson"
-                            }`}>
-                              {row.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .slice(0, 2)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[13px] font-sans font-medium text-text-primary truncate">
-                                {row.name}
-                              </p>
-                              <p className="data-mono text-[11px] text-text-muted truncate">{row.subtitle}</p>
-                            </div>
-                            <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                              <Badge className={`badge text-[10px] ${badge.cls}`}>
-                                {t(badge.labelKey)}
-                              </Badge>
-                              {row.amount && row.amount !== "—" && (
-                                <span className="data-mono text-[11px] text-gold">
-                                  {row.amount}
-                                </span>
-                              )}
-                            </div>
-                            <div className="hidden sm:flex items-center gap-1 text-text-muted text-[11px] font-sans flex-shrink-0">
-                              <Clock size={11} weight="regular" />
-                              {row.time}
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="px-5 py-3 border-t border-border-subtle">
+            if (widget.id === "action-strip")
+              return (
+                /* ── Action Strip ── */
+                <div
+                  key="action-strip"
+                  className="page-section bg-elevated rounded-xl overflow-hidden border border-border-subtle shadow-sm"
+                >
+                  <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border-subtle">
                     <Button
-                      variant="link"
+                      variant="ghost"
                       asChild
-                      className="text-crimson p-0 h-auto text-xs font-sans font-medium"
+                      className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-void/40 gap-3"
                     >
-                      <Link href="/leads">
-                        {t("dashboard.viewAllLeads")}
-                        <ArrowUpRight size={12} weight="bold" className="ml-1" />
+                      <Link href="/verification">
+                        <div className="flex-shrink-0">
+                          <Warning
+                            size={16}
+                            weight="duotone"
+                            className="text-warning"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <span className="font-sans font-semibold text-[13px] text-text-primary">
+                            {t("dashboard.pendingVerifications")}
+                          </span>
+                          <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
+                            · {t("dashboard.awaitingReview")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {pendingVerifications > 0 && (
+                            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-warning/15 border border-warning/30 text-warning text-[11px] font-bold tabular-nums">
+                              {pendingVerifications}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-0.5 text-warning text-[12px] font-medium group-hover:gap-1.5 transition-all whitespace-nowrap">
+                            {t("common.review")}{" "}
+                            <CaretRight size={13} weight="bold" />
+                          </span>
+                        </div>
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      asChild
+                      className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-void/40 gap-3"
+                    >
+                      <Link href="/leads?handover=true">
+                        <div className="flex-shrink-0">
+                          <ArrowsLeftRight
+                            size={16}
+                            weight="duotone"
+                            className="text-info"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <span className="font-sans font-semibold text-[13px] text-text-primary">
+                            {t("dashboard.handoverLeads")}
+                          </span>
+                          <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
+                            · {t("dashboard.manualReplies")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {handoverLeadsCount > 0 && (
+                            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-info/15 border border-info/30 text-info text-[11px] font-bold tabular-nums">
+                              {handoverLeadsCount}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-0.5 text-info text-[12px] font-medium group-hover:gap-1.5 transition-all whitespace-nowrap">
+                            {t("common.view")}{" "}
+                            <CaretRight size={13} weight="bold" />
+                          </span>
+                        </div>
                       </Link>
                     </Button>
                   </div>
                 </div>
-              </div>
-            );
+              );
 
-            if (widget.id === "action-strip") return (
-              /* ── Action Strip ── */
-              <div key="action-strip" className="page-section bg-elevated rounded-xl overflow-hidden border border-border-subtle shadow-sm">
-                <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border-subtle">
-                  <Button
-                    variant="ghost"
-                    asChild
-                    className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-void/40 gap-3"
-                  >
-                    <Link href="/verification">
-                      <div className="flex-shrink-0">
-                        <Warning size={16} weight="duotone" className="text-warning" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <span className="font-sans font-semibold text-[13px] text-text-primary">
-                          {t("dashboard.pendingVerifications")}
-                        </span>
-                        <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
-                          · {t("dashboard.awaitingReview")}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {pendingVerifications > 0 && (
-                          <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-warning/15 border border-warning/30 text-warning text-[11px] font-bold tabular-nums">
-                            {pendingVerifications}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-0.5 text-warning text-[12px] font-medium group-hover:gap-1.5 transition-all whitespace-nowrap">
-                          {t("common.review")} <CaretRight size={13} weight="bold" />
-                        </span>
-                      </div>
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    asChild
-                    className="flex-1 h-auto px-5 py-3.5 justify-start rounded-none hover:bg-void/40 gap-3"
-                  >
-                    <Link href="/leads?handover=true">
-                      <div className="flex-shrink-0">
-                        <ArrowsLeftRight size={16} weight="duotone" className="text-info" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <span className="font-sans font-semibold text-[13px] text-text-primary">
-                          {t("dashboard.handoverLeads")}
-                        </span>
-                        <span className="hidden sm:inline text-text-muted text-[12px] font-sans ml-2">
-                          · {t("dashboard.manualReplies")}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {handoverLeadsCount > 0 && (
-                          <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-info/15 border border-info/30 text-info text-[11px] font-bold tabular-nums">
-                            {handoverLeadsCount}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-0.5 text-info text-[12px] font-medium group-hover:gap-1.5 transition-all whitespace-nowrap">
-                          {t("common.view")} <CaretRight size={13} weight="bold" />
-                        </span>
-                      </div>
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            );
-
-            if (widget.id === "trend-charts") return (
-              /* ── Trend + Weekly Charts ── */
-              <div key="trend-charts" className="page-section grid grid-cols-1 xl:grid-cols-5 gap-3 md:gap-4">
-                {/* Area Chart — Lead Acquisition Trend */}
-                <div className="xl:col-span-3 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-sans font-semibold text-[15px] text-text-primary">
-                      {t("dashboard.acquisitionTrend")}
-                    </h2>
-                    <span className="flex items-center gap-1.5 text-xs text-text-muted">
-                      <Pulse size={13} weight="regular" />
-                      {period === "today"
-                        ? "Daily"
-                        : period === "this_week"
-                          ? "Weekly"
-                          : "Last 30 Days"}
-                    </span>
-                  </div>
-                  <p className="text-xs font-sans mb-5 text-text-muted">
-                    {t("dashboard.trendSubtitle")}
-                  </p>
-
-                  <ResponsiveContainer width="100%" height={160}>
-                    <AreaChart
-                      data={trendData}
-                      margin={{ top: 0, right: 0, left: -22, bottom: 0 }}
-                    >
-                      <defs>
-                        <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#C4232D" stopOpacity={0.45} />
-                          <stop offset="95%" stopColor="#C4232D" stopOpacity={0.02} />
-                        </linearGradient>
-                        <linearGradient id="gradConf" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#22D3A0" stopOpacity={0.38} />
-                          <stop offset="95%" stopColor="#22D3A0" stopOpacity={0.02} />
-                        </linearGradient>
-                      </defs>
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 11, fill: "var(--text-muted)", fontFamily: "inherit" }}
-                        axisLine={false}
-                        tickLine={false}
-                        minTickGap={20}
-                      />
-                      <YAxis hide />
-                      <Tooltip
-                        content={<ChartTooltip />}
-                        offset={12}
-                        isAnimationActive={false}
-                        wrapperStyle={{ pointerEvents: "none" }}
-                      />
-                      <Area type="monotone" dataKey="Leads" stroke="#C4232D" strokeWidth={2} fill="url(#gradLeads)" />
-                      <Area type="monotone" dataKey="Confirmed" stroke="#22D3A0" strokeWidth={2} fill="url(#gradConf)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-
-                  <div className="flex items-center gap-5 mt-4 pt-3.5 border-t border-border-subtle">
-                    {(
-                      [
-                        ["#C4232D", "Leads"],
-                        ["#22D3A0", "Confirmed"],
-                      ] as const
-                    ).map(([color, label]) => (
-                      <div key={label} className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                        <span className="text-[11px] text-text-muted">{label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bar Chart — Deposits Trend */}
-                <div className="xl:col-span-2 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
-                  <div className="flex items-center justify-between mb-1">
-                    <h2 className="font-sans font-semibold text-[15px] text-text-primary">
-                      Deposits Trend
-                    </h2>
-                    <span className="text-xs font-sans text-text-muted">Count</span>
-                  </div>
-                  <p className="text-xs font-sans mb-5 text-text-muted">
-                    Confirmed deposits per period
-                  </p>
-
-                  <ResponsiveContainer width="100%" height={148}>
-                    <BarChart
-                      data={depositsData}
-                      margin={{ top: 0, right: 0, left: -22, bottom: 0 }}
-                      maxBarSize={32}
-                    >
-                      <defs>
-                        <linearGradient id="gradBar" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#E8B94F" stopOpacity={0.9} />
-                          <stop offset="100%" stopColor="#E8B94F" stopOpacity={0.25} />
-                        </linearGradient>
-                      </defs>
-                      <XAxis
-                        dataKey="label"
-                        tick={{ fontSize: 11, fill: "var(--text-muted)", fontFamily: "inherit" }}
-                        axisLine={false}
-                        tickLine={false}
-                        minTickGap={20}
-                      />
-                      <YAxis hide />
-                      <Tooltip
-                        content={<BarTooltip />}
-                        offset={12}
-                        isAnimationActive={false}
-                        wrapperStyle={{ pointerEvents: "none" }}
-                      />
-                      <Bar dataKey="Deposits" fill="url(#gradBar)" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-
-                  <div className="mt-4 pt-3.5 border-t border-border-subtle flex items-center justify-between">
-                    <div>
-                      <p className="text-[11px] text-text-muted">Average</p>
-                      <p className="data-mono text-xl text-gold leading-tight">{avgDeposits}</p>
+            if (widget.id === "trend-charts")
+              return (
+                /* ── Trend + Weekly Charts ── */
+                <div
+                  key="trend-charts"
+                  className="page-section grid grid-cols-1 xl:grid-cols-5 gap-3 md:gap-4"
+                >
+                  {/* Area Chart — Lead Acquisition Trend */}
+                  <div className="xl:col-span-3 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="font-sans font-semibold text-[15px] text-text-primary">
+                        {t("dashboard.acquisitionTrend")}
+                      </h2>
+                      <span className="flex items-center gap-1.5 text-xs text-text-muted">
+                        <Pulse size={13} weight="regular" />
+                        {period === "today"
+                          ? "Daily"
+                          : period === "this_week"
+                            ? "Weekly"
+                            : "Last 30 Days"}
+                      </span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[11px] text-text-muted">Best</p>
-                      <p className="data-mono text-xl text-text-primary leading-tight">{bestDeposits}</p>
+                    <p className="text-xs font-sans mb-5 text-text-muted">
+                      {t("dashboard.trendSubtitle")}
+                    </p>
+
+                    <ResponsiveContainer width="100%" height={160}>
+                      <AreaChart
+                        data={trendData}
+                        margin={{ top: 0, right: 0, left: -22, bottom: 0 }}
+                      >
+                        <defs>
+                          <linearGradient
+                            id="gradLeads"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#C4232D"
+                              stopOpacity={0.45}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#C4232D"
+                              stopOpacity={0.02}
+                            />
+                          </linearGradient>
+                          <linearGradient
+                            id="gradConf"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor="#22D3A0"
+                              stopOpacity={0.38}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor="#22D3A0"
+                              stopOpacity={0.02}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="date"
+                          tick={{
+                            fontSize: 11,
+                            fill: "var(--text-muted)",
+                            fontFamily: "inherit",
+                          }}
+                          axisLine={false}
+                          tickLine={false}
+                          minTickGap={20}
+                        />
+                        <YAxis hide />
+                        <Tooltip
+                          content={<ChartTooltip />}
+                          offset={12}
+                          isAnimationActive={false}
+                          wrapperStyle={{ pointerEvents: "none" }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="Leads"
+                          stroke="#C4232D"
+                          strokeWidth={2}
+                          fill="url(#gradLeads)"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="Confirmed"
+                          stroke="#22D3A0"
+                          strokeWidth={2}
+                          fill="url(#gradConf)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+
+                    <div className="flex items-center gap-5 mt-4 pt-3.5 border-t border-border-subtle">
+                      {(
+                        [
+                          ["#C4232D", "Leads"],
+                          ["#22D3A0", "Confirmed"],
+                        ] as const
+                      ).map(([color, label]) => (
+                        <div key={label} className="flex items-center gap-1.5">
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{ background: color }}
+                          />
+                          <span className="text-[11px] text-text-muted">
+                            {label}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
+
+                  {/* Bar Chart — Deposits Trend */}
+                  <div className="xl:col-span-2 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="font-sans font-semibold text-[15px] text-text-primary">
+                        Deposits Trend
+                      </h2>
+                      <span className="text-xs font-sans text-text-muted">
+                        Count
+                      </span>
+                    </div>
+                    <p className="text-xs font-sans mb-5 text-text-muted">
+                      Confirmed deposits per period
+                    </p>
+
+                    <ResponsiveContainer width="100%" height={148}>
+                      <BarChart
+                        data={depositsData}
+                        margin={{ top: 0, right: 0, left: -22, bottom: 0 }}
+                        maxBarSize={32}
+                      >
+                        <defs>
+                          <linearGradient
+                            id="gradBar"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="#E8B94F"
+                              stopOpacity={0.9}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#E8B94F"
+                              stopOpacity={0.25}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="label"
+                          tick={{
+                            fontSize: 11,
+                            fill: "var(--text-muted)",
+                            fontFamily: "inherit",
+                          }}
+                          axisLine={false}
+                          tickLine={false}
+                          minTickGap={20}
+                        />
+                        <YAxis hide />
+                        <Tooltip
+                          content={<BarTooltip />}
+                          offset={12}
+                          isAnimationActive={false}
+                          wrapperStyle={{ pointerEvents: "none" }}
+                        />
+                        <Bar
+                          dataKey="Deposits"
+                          fill="url(#gradBar)"
+                          radius={[6, 6, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+
+                    <div className="mt-4 pt-3.5 border-t border-border-subtle flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] text-text-muted">Average</p>
+                        <p className="data-mono text-xl text-gold leading-tight">
+                          {avgDeposits}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[11px] text-text-muted">Best</p>
+                        <p className="data-mono text-xl text-text-primary leading-tight">
+                          {bestDeposits}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
+              );
 
             return null;
           })}

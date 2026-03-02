@@ -9,6 +9,7 @@ import type {
   SubmitLeadInfoInput,
   LeaderboardParams,
   ExportLeadsParams,
+  ImportResult,
   Interaction,
   ListInteractionsParams,
 } from "@/lib/schemas/lead.schema";
@@ -39,6 +40,14 @@ export const leadsApi = {
     apiClient.patch<ApiResponse<Lead>>(`/leads/${id}/status`, data),
 
   /**
+   * Update lead info (hfmBrokerId, email, phoneNumber).
+   */
+  updateInfo: (
+    id: string,
+    data: { hfmBrokerId?: string; email?: string; phoneNumber?: string },
+  ) => apiClient.patch<ApiResponse<Lead>>(`/leads/${id}/info`, data),
+
+  /**
    * Enable/disable human handover mode for a lead.
    */
   setHandover: (id: string, data: UpdateHandoverInput) =>
@@ -67,10 +76,42 @@ export const leadsApi = {
 
   /**
    * Streams a CSV file of all leads matching optional filters.
+   * @deprecated Use exportExcel for the new multi-sheet XLSX format.
    */
   exportCsv: (params?: ExportLeadsParams) =>
     apiClient.get("/leads/export", {
       params,
+      responseType: "blob" as const,
+    }),
+
+  /**
+   * Downloads a multi-sheet Excel (.xlsx) file.
+   * - No status filter → 5 sheets: All Leads + one per status.
+   * - With status filter → single sheet for that status.
+   */
+  exportExcel: (params?: ExportLeadsParams) =>
+    apiClient.get("/leads/export", {
+      params: { ...params, format: "xlsx" },
+      responseType: "blob" as const,
+    }),
+
+  /**
+   * Imports leads from a CSV file (upsert by telegram_id).
+   * Returns { imported, updated, skipped, errors }.
+   */
+  importCsv: (file: File): Promise<{ data: ApiResponse<ImportResult> }> => {
+    const form = new FormData();
+    form.append("file", file);
+    return apiClient.post<ApiResponse<ImportResult>>("/leads/import", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
+  /**
+   * Downloads a prefilled CSV template for import.
+   */
+  downloadTemplate: () =>
+    apiClient.get("/leads/import/template", {
       responseType: "blob" as const,
     }),
 
@@ -92,5 +133,7 @@ export const leadsApi = {
    * Send a manual reply to a lead via Telegram from the dashboard.
    */
   reply: (id: string, message: string) =>
-    apiClient.post<ApiResponse<{ sent: boolean }>>(`/leads/${id}/reply`, { message }),
+    apiClient.post<ApiResponse<{ sent: boolean }>>(`/leads/${id}/reply`, {
+      message,
+    }),
 };

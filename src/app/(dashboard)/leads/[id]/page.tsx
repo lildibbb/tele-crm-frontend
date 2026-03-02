@@ -349,6 +349,10 @@ export default function LeadDetailPage({
   const [showRevertModal, setShowRevertModal] = useState(false);
   const [showReopenModal, setShowReopenModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [editHfmId, setEditHfmId] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [toast, setToast] = useState<{
     msg: string;
     type: "success" | "danger" | "info";
@@ -800,7 +804,13 @@ export default function LeadDetailPage({
                       <button
                         disabled={isBlocked}
                         className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border-default bg-card text-text-secondary text-xs font-medium hover:border-text-muted hover:text-text-primary active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => !isBlocked && setShowEditModal(true)}
+                        onClick={() => {
+                          if (isBlocked) return;
+                          setEditHfmId(lead.hfmBrokerId ?? "");
+                          setEditEmail(lead.email ?? "");
+                          setEditPhone(lead.phoneNumber ?? "");
+                          setShowEditModal(true);
+                        }}
                       >
                         <PencilSimple className="h-3.5 w-3.5" />
                         {t(K.lead.edit)}
@@ -1276,48 +1286,68 @@ export default function LeadDetailPage({
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 my-4">
-                {[
-                  {
-                    label: t("lead.edit.hfm"),
-                    defaultValue: lead.hfmBrokerId ?? "",
-                    placeholder: "HFM-XXXXX",
-                  },
-                  {
-                    label: t("lead.edit.email"),
-                    defaultValue: lead.email ?? "",
-                    placeholder: "email@domain.com",
-                  },
-                  {
-                    label: t("lead.edit.phone"),
-                    defaultValue: lead.phoneNumber ?? "",
-                    placeholder: "+60XXXXXXXXX",
-                  },
-                ].map(({ label, defaultValue, placeholder }) => (
-                  <div key={label}>
-                    <label className="block text-xs font-sans font-medium text-text-secondary mb-1.5">
-                      {label}
-                    </label>
-                    <Input
-                      defaultValue={defaultValue}
-                      placeholder={placeholder}
-                      className="text-sm"
-                    />
-                  </div>
-                ))}
+                <div>
+                  <label className="block text-xs font-sans font-medium text-text-secondary mb-1.5">
+                    {t("lead.edit.hfm")}
+                  </label>
+                  <Input
+                    value={editHfmId}
+                    onChange={(e) => setEditHfmId(e.target.value)}
+                    placeholder="HFM-XXXXX"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-sans font-medium text-text-secondary mb-1.5">
+                    {t("lead.edit.email")}
+                  </label>
+                  <Input
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    placeholder="email@domain.com"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-sans font-medium text-text-secondary mb-1.5">
+                    {t("lead.edit.phone")}
+                  </label>
+                  <Input
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="+60XXXXXXXXX"
+                    className="text-sm"
+                  />
+                </div>
               </div>
               <DialogFooter className="flex gap-3 sm:flex-row">
                 <Button
                   variant="outline"
                   className="flex-1"
                   onClick={() => setShowEditModal(false)}
+                  disabled={isSavingEdit}
                 >
                   {t("common.cancel")}
                 </Button>
                 <Button
                   className="flex-1 gap-2 bg-crimson hover:bg-crimson/90 text-white font-semibold"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    showToastMsg(t("lead.toast.edited"), "success");
+                  disabled={isSavingEdit}
+                  onClick={async () => {
+                    setIsSavingEdit(true);
+                    try {
+                      await leadsApi.updateInfo(id, {
+                        hfmBrokerId: editHfmId || undefined,
+                        email: editEmail || undefined,
+                        phoneNumber: editPhone || undefined,
+                      });
+                      await useLeadsStore.getState().fetchLead(id);
+                      setShowEditModal(false);
+                      showToastMsg(t("lead.toast.edited"), "success");
+                    } catch {
+                      showToastMsg(t("common.error.updateLead"), "danger");
+                    } finally {
+                      setIsSavingEdit(false);
+                    }
                   }}
                 >
                   {t("common.save")}

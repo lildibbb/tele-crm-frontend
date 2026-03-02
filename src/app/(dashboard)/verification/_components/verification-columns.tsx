@@ -10,6 +10,7 @@ import {
   Receipt,
   CaretRight,
 } from "@phosphor-icons/react";
+import { Icon } from "@iconify/react";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,18 +99,22 @@ export function getVerificationColumns({
                     <span className="data-mono">{lead.displayName}</span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <span className="text-blue-500 text-[12px]">
-                      @{lead.username ?? "-"}
-                    </span>
-                    <p className="text-text-muted text-[12px]">
-                      Telegram ID: {lead.telegramUserId}
-                    </p>
+                    <p className="data-mono text-[11px]">ID: {lead.telegramUserId}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <p className="text-[11px] font-sans text-text-muted data-mono truncate">
-                {lead.email ?? "-"}
-              </p>
+              {lead.username ? (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Icon icon="logos:telegram" className="h-3 w-3 flex-shrink-0" />
+                  <span className="text-[11px] font-semibold text-[#229ED9] data-mono">
+                    @{lead.username}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-[11px] font-sans text-text-muted data-mono truncate">
+                  {lead.email ?? "-"}
+                </p>
+              )}
             </div>
           </div>
         );

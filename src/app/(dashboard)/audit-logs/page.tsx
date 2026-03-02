@@ -322,6 +322,7 @@ export default function AuditLogsPage() {
   }
 
   return (
+    <>
     <div className="space-y-6 animate-in-up">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
@@ -689,11 +690,12 @@ export default function AuditLogsPage() {
           </div>
         )}
       </div>
-
-      {/* ── Drawer ── */}
-      {selected && (
-        <AuditDrawer log={selected} onClose={() => setSelected(null)} />
-      )}
     </div>
+
+    {/* ── Drawer (outside animated container to allow proper fixed positioning) ── */}
+    {selected && (
+      <AuditDrawer log={selected} onClose={() => setSelected(null)} />
+    )}
+    </>
   );
 }

@@ -7,8 +7,8 @@ import {
   ToggleRight,
   Eye,
   Hash,
-  TelegramLogo,
 } from "@phosphor-icons/react";
+import { Icon } from "@iconify/react";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
 import type { Lead } from "@/store/leadsStore";
@@ -79,18 +79,17 @@ export function getLeadsColumns({
         const lead = row.original;
         return (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-info text-[12px] font-medium">
-              <TelegramLogo
-                className="h-3.5 w-3.5 text-info/80"
-                weight="fill"
-              />
+            <div className="flex items-center gap-1.5">
+              <Icon icon="logos:telegram" className="h-3.5 w-3.5 flex-shrink-0" />
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="data-mono">@{lead.username}</span>
+                    <span className="text-[12px] font-semibold text-[#229ED9] data-mono cursor-default">
+                      @{lead.username ?? "—"}
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Telegram ID: {lead.telegramUserId}</p>
+                    <p className="data-mono text-[11px]">ID: {lead.telegramUserId}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
