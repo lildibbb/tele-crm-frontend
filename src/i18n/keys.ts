@@ -334,6 +334,33 @@ export const K = {
     sessions:       "settings.sessions",
   },
 
+  /* ── Bot Config Tab ──────────────────────────────── */
+  botConfig: {
+    title:                   "botConfig.title",
+    subtitle:                "botConfig.subtitle",
+    saving:                  "botConfig.saving",
+    saveChanges:             "botConfig.saveChanges",
+    generalSettings:         "botConfig.generalSettings",
+    botName:                 "botConfig.botName",
+    botNamePlaceholder:      "botConfig.botNamePlaceholder",
+    greeting:                "botConfig.greeting",
+    greetingPlaceholder:     "botConfig.greetingPlaceholder",
+    greetingHint:            "botConfig.greetingHint",
+    groupId:                 "botConfig.groupId",
+    groupIdPlaceholder:      "botConfig.groupIdPlaceholder",
+    groupIdHint:             "botConfig.groupIdHint",
+    groupThread:             "botConfig.groupThread",
+    groupThreadHint:         "botConfig.groupThreadHint",
+    aiBehavior:              "botConfig.aiBehavior",
+    systemPrompt:            "botConfig.systemPrompt",
+    systemPromptPlaceholder: "botConfig.systemPromptPlaceholder",
+    systemPromptHint:        "botConfig.systemPromptHint",
+    autoFollowUps:           "botConfig.autoFollowUps",
+    autoFollowUpsHint:       "botConfig.autoFollowUpsHint",
+    forwardMessages:         "botConfig.forwardMessages",
+    forwardMessagesHint:     "botConfig.forwardMessagesHint",
+  },
+
   /* ── Broadcasts ──────────────────────────────────── */
   broadcast: {
     title:           "broadcast.title",

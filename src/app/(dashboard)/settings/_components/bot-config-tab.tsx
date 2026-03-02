@@ -10,10 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileSettings } from "@/components/mobile";
 import { useSystemConfigStore } from "@/store/systemConfigStore";
+import { useT, K } from "@/i18n";
 
 export function BotConfigTab() {
   const { entries, isLoading, isSaving, fetchAll, upsertMany } = useSystemConfigStore();
   const isMobile = useIsMobile();
+  const t = useT();
 
   // Local draft state (initialised from store once loaded)
   const [draft, setDraft] = useState({
@@ -72,15 +74,15 @@ export function BotConfigTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold text-text-primary">
-            Bot Configuration
+            {t(K.botConfig.title)}
           </h2>
           <p className="text-text-secondary text-sm font-sans mt-1">
-            Manage your AI assistant&apos;s behavior and tone
+            {t(K.botConfig.subtitle)}
           </p>
         </div>
         <Button onClick={() => void handleSave()} disabled={isSaving || isLoading} className="gap-2">
           <Save className="h-4 w-4" />
-          {isSaving ? "Saving..." : "Save Changes"}
+          {isSaving ? t(K.botConfig.saving) : t(K.botConfig.saveChanges)}
         </Button>
       </div>
 
@@ -89,60 +91,59 @@ export function BotConfigTab() {
         <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
           <div className="px-5 py-4 bg-card rounded-t-xl shadow-sm">
             <h3 className="font-sans font-semibold text-[14px] text-text-primary">
-              General Settings
+              {t(K.botConfig.generalSettings)}
             </h3>
           </div>
           <div className="px-5 pb-5 pt-4 space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="bot-name">Bot Name</Label>
+              <Label htmlFor="bot-name">{t(K.botConfig.botName)}</Label>
               <Input
                 id="bot-name"
                 value={draft.name}
                 onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-                placeholder="e.g. Sales Assistant"
+                placeholder={t(K.botConfig.botNamePlaceholder)}
                 className="text-sm"
                 disabled={isLoading}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="bot-greeting">Greeting Message</Label>
+              <Label htmlFor="bot-greeting">{t(K.botConfig.greeting)}</Label>
               <Textarea
                 id="bot-greeting"
                 value={draft.greeting}
                 onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
-                placeholder="e.g. Hi there! How can I assist you today?"
+                placeholder={t(K.botConfig.greetingPlaceholder)}
                 rows={3}
                 className="resize-none"
                 disabled={isLoading}
               />
               <p className="text-[11px] text-text-muted mt-1 font-sans">
-                This is the first message the bot sends to new Telegram leads.
+                {t(K.botConfig.greetingHint)}
               </p>
             </div>
 
             {/* Telegram Group Forum */}
             <div className="space-y-1.5 border-t border-border-subtle pt-4">
-              <Label htmlFor="group-id">Telegram Group Forum ID</Label>
+              <Label htmlFor="group-id">{t(K.botConfig.groupId)}</Label>
               <Input
                 id="group-id"
                 value={draft.groupId}
                 onChange={(e) => setDraft({ ...draft, groupId: e.target.value })}
-                placeholder="e.g. -1001234567890"
+                placeholder={t(K.botConfig.groupIdPlaceholder)}
                 className="text-sm font-mono"
                 disabled={isLoading}
               />
               <p className="text-[11px] text-text-muted mt-1 font-sans">
-                Supergroup ID for thread mirroring — each lead gets their own topic.
-                Enable <strong>Topics</strong> in your group settings and add the bot as admin first.
+                {t(K.botConfig.groupIdHint)}
               </p>
             </div>
 
             {/* Group Thread Enable toggle */}
             <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
               <div>
-                <p className="font-sans text-sm font-medium text-text-primary">Enable Group Thread Mirroring</p>
+                <p className="font-sans text-sm font-medium text-text-primary">{t(K.botConfig.groupThread)}</p>
                 <p className="font-sans text-xs text-text-muted mt-0.5">
-                  Mirror lead conversations into the group forum topics. Disabled by default — requires Group Forum ID above.
+                  {t(K.botConfig.groupThreadHint)}
                 </p>
               </div>
               <Switch
@@ -158,7 +159,7 @@ export function BotConfigTab() {
         <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
           <div className="px-5 py-4 bg-card rounded-t-xl flex items-center justify-between shadow-sm">
             <h3 className="font-sans font-semibold text-[14px] text-text-primary">
-              AI Behavior
+              {t(K.botConfig.aiBehavior)}
             </h3>
             <Switch
               checked={draft.active}
@@ -168,26 +169,26 @@ export function BotConfigTab() {
           </div>
           <div className="px-5 pb-5 pt-4 space-y-4">
             <div className="space-y-1.5">
-              <Label>System Prompt</Label>
+              <Label>{t(K.botConfig.systemPrompt)}</Label>
               <Textarea
                 value={draft.systemPrompt}
                 onChange={(e) => setDraft({ ...draft, systemPrompt: e.target.value })}
-                placeholder="Instructions for the AI..."
+                placeholder={t(K.botConfig.systemPromptPlaceholder)}
                 rows={5}
                 className="resize-none font-mono text-xs"
                 disabled={isLoading}
               />
               <p className="text-[11px] text-text-muted mt-1 font-sans">
-                Define the bot&apos;s personality, expertise, and boundaries.
+                {t(K.botConfig.systemPromptHint)}
               </p>
             </div>
 
             {/* Follow-up toggle */}
             <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
               <div>
-                <p className="font-sans text-sm font-medium text-text-primary">Auto Follow-ups</p>
+                <p className="font-sans text-sm font-medium text-text-primary">{t(K.botConfig.autoFollowUps)}</p>
                 <p className="font-sans text-xs text-text-muted mt-0.5">
-                  Send AI-personalised Telegram messages to leads after status changes
+                  {t(K.botConfig.autoFollowUpsHint)}
                 </p>
               </div>
               <Switch
@@ -200,9 +201,9 @@ export function BotConfigTab() {
             {/* Forward to admin toggle */}
             <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
               <div>
-                <p className="font-sans text-sm font-medium text-text-primary">Forward Messages to Admin</p>
+                <p className="font-sans text-sm font-medium text-text-primary">{t(K.botConfig.forwardMessages)}</p>
                 <p className="font-sans text-xs text-text-muted mt-0.5">
-                  Forward every lead message to the admin Telegram ID for monitoring
+                  {t(K.botConfig.forwardMessagesHint)}
                 </p>
               </div>
               <Switch
