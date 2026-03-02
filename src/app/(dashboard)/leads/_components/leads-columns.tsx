@@ -19,13 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-const BADGE_MAP: Record<string, { labelKey: string; cls: string }> = {
-  NEW: { labelKey: "status.new", cls: "badge-new" },
-  CONTACTED: { labelKey: "status.contacted", cls: "badge-contacted" },
-  DEPOSIT_REPORTED: { labelKey: "status.proofPending", cls: "badge-pending" },
-  DEPOSIT_CONFIRMED: { labelKey: "status.confirmed", cls: "badge-confirmed" },
-};
+import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 
 interface LeadsColumnsProps {
   onHandoverToggle: (id: string, current: boolean) => void;
@@ -116,7 +110,7 @@ export function getLeadsColumns({
       accessorKey: "status",
       header: t("leads.col.status"),
       cell: ({ row }) => {
-        const badgeInfo = BADGE_MAP[row.original.status];
+        const badgeInfo = LEAD_STATUS_BADGE[row.original.status];
         const label = badgeInfo
           ? t(badgeInfo.labelKey)
           : row.original.status.replace(/_/g, " ");

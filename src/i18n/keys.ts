@@ -50,6 +50,21 @@ export const K = {
     page:       "common.page",
     of:         "common.of",
     clear:      "common.clear",
+    period: {
+      today:      "common.period.today",
+      yesterday:  "common.period.yesterday",
+      weekly:     "common.period.weekly",
+      monthly:    "common.period.monthly",
+      last30Days: "common.period.last30Days",
+      last90Days: "common.period.last90Days",
+      allTime:    "common.period.allTime",
+      custom:     "common.period.custom",
+    },
+    error: {
+      updateStatus:  "common.error.updateStatus",
+      updateLead:    "common.error.updateLead",
+      loadAnalytics: "common.error.loadAnalytics",
+    },
   },
 
   /* ── Dashboard ───────────────────────────────────── */
@@ -100,6 +115,7 @@ export const K = {
       "7d":   "dashboard.range.7d",
       month:  "dashboard.range.month",
     },
+    contactedLeads: "dashboard.contactedLeads",
   },
 
   /* ── Leads ───────────────────────────────────────── */
@@ -114,6 +130,7 @@ export const K = {
     filter: {
       all:        "leads.filter.all",
       new:        "leads.filter.new",
+      contacted:  "leads.filter.contacted",
       registered: "leads.filter.registered",
       proof:      "leads.filter.proof",
       confirmed:  "leads.filter.confirmed",
@@ -216,9 +233,30 @@ export const K = {
       all:     "verification.tabs.all",
     },
     stats: {
-      pending:       "verification.stats.pending",
-      approvedToday: "verification.stats.approvedToday",
-      rejectedToday: "verification.stats.rejectedToday",
+      pending:        "verification.stats.pending",
+      totalApproved:  "verification.stats.totalApproved",
+      totalRejected:  "verification.stats.totalRejected",
+    },
+  },
+
+  /* ── Verify (queue column/action labels) ──────────── */
+  verify: {
+    title:     "verify.title",
+    subtitle:  "verify.subtitle",
+    pending:   "verify.pending",
+    search:    "verify.search",
+    approve:   "verify.approve",
+    reject:    "verify.reject",
+    askMore:   "verify.askMore",
+    empty:     "verify.empty",
+    emptyDesc: "verify.emptyDesc",
+    col: {
+      lead:       "verify.col.lead",
+      amount:     "verify.col.amount",
+      submitted:  "verify.col.submitted",
+      attachment: "verify.col.attachment",
+      status:     "verify.col.status",
+      actions:    "verify.col.actions",
     },
   },
 

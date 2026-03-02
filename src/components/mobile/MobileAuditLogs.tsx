@@ -23,6 +23,8 @@ import {
   formatAuditAction,
   computeChangeSummary,
 } from "@/lib/audit-utils";
+import { timeAgo, isToday } from "@/lib/format";
+import { roleBadgeCls } from "@/lib/badge-config";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 20;
@@ -36,23 +38,7 @@ const FILTER_CHIPS: { label: string; value: AuditAction | null }[] = [
   { label: "User Created", value: AuditAction.USER_CREATED },
 ];
 
-const ROLE_BADGE: Record<string, string> = {
-  SUPERADMIN: "bg-crimson/10 text-crimson",
-  OWNER: "bg-gold/10 text-gold",
-  ADMIN: "bg-info/10 text-info",
-  STAFF: "bg-success/10 text-success",
-};
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
 
 function buildDiffEntries(
   before: Record<string, unknown> | null | undefined,
@@ -69,16 +55,6 @@ function buildDiffEntries(
     if (bv !== av) entries.push({ key: k, from: bv, to: av });
   }
   return entries;
-}
-
-function isToday(iso: string): boolean {
-  const d = new Date(iso);
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  );
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────────
@@ -386,8 +362,7 @@ export default function MobileAuditLogs({}: MobileAuditLogsProps) {
                                 <span
                                   className={cn(
                                     "font-mono text-[10px] px-1.5 py-0.5 rounded-full font-semibold leading-none",
-                                    ROLE_BADGE[log.userRole] ??
-                                      "bg-elevated text-text-muted",
+                                    roleBadgeCls(log.userRole),
                                   )}
                                 >
                                   {log.userRole}

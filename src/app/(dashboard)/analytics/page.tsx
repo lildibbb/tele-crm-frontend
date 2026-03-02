@@ -33,6 +33,7 @@ import { useT, K } from "@/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AnalyticsSummaryParams } from "@/lib/schemas/analytics.schema";
 import type { RagStats } from "@/lib/schemas/analytics.schema";
+import type { ChartTooltipEntry, ChartTooltipProps } from "@/lib/types/chart";
 import { analyticsApi } from "@/lib/api/analytics";
 import { parseApiData } from "@/lib/api/parseResponse";
 import { showToast } from "@/lib/toast";
@@ -52,16 +53,6 @@ const TIMEFRAMES: Timeframe[] = [
   "all_time",
 ];
 
-const TIMEFRAME_LABELS: Record<Timeframe, string> = {
-  today: "Today",
-  yesterday: "Yesterday",
-  this_week: "Weekly",
-  this_month: "Monthly",
-  last_30_days: "30 Days",
-  last_90_days: "90 Days",
-  all_time: "All Time",
-  custom: "Custom",
-};
 
 /**
  * Format a trendSeries date string for x-axis based on granularity.
@@ -133,11 +124,7 @@ function AreaTip({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) {
+}: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div
@@ -159,7 +146,7 @@ function AreaTip({
       >
         {label}
       </p>
-      {payload.map((e: any) => (
+      {payload.map((e: ChartTooltipEntry) => (
         <div
           key={e.name}
           style={{
@@ -208,11 +195,7 @@ function BarTip({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) {
+}: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div
@@ -379,7 +362,7 @@ export default function AnalyticsPage() {
         const d = parseApiData<RagStats>(res.data);
         setRagStats(d ?? null);
       })
-      .catch(() => showToast.error("Couldn't load analytics data. Please try again."))
+      .catch(() => showToast.error(t(K.common.error.loadAnalytics)))
       .finally(() => setRagLoading(false));
   // Mount-only effect — deps intentionally omitted (fetch RAG stats once when role is known)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -419,6 +402,20 @@ export default function AnalyticsPage() {
   const conversionRate = kpi?.totalLeads.current
     ? ((depositConfirmed / kpi.totalLeads.current) * 100).toFixed(1) + "%"
     : "—";
+
+  const timeframeLabel = (tf: Timeframe): string => {
+    const map: Record<Timeframe, string> = {
+      today:        t(K.common.period.today),
+      yesterday:    t(K.common.period.yesterday),
+      this_week:    t(K.common.period.weekly),
+      this_month:   t(K.common.period.monthly),
+      last_30_days: t(K.common.period.last30Days),
+      last_90_days: t(K.common.period.last90Days),
+      all_time:     t(K.common.period.allTime),
+      custom:       t(K.common.period.custom),
+    };
+    return map[tf];
+  };
 
   useGSAP(
     () => {
@@ -466,7 +463,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center gap-2 mt-3 flex-wrap">
             <div className="flex items-center gap-1 text-[11px] text-text-muted">
               <CalendarBlank size={13} weight="regular" />
-              <span>{TIMEFRAME_LABELS[timeframe]}</span>
+              <span>{timeframeLabel(timeframe)}</span>
             </div>
             <span className="w-px h-3.5 bg-border-subtle" />
             <StatChipBadge
@@ -502,7 +499,7 @@ export default function AnalyticsPage() {
                   : "text-text-secondary hover:text-text-primary")
               }
             >
-              {TIMEFRAME_LABELS[tf]}
+              {timeframeLabel(tf)}
             </button>
           ))}
         </div>
@@ -578,7 +575,7 @@ export default function AnalyticsPage() {
               </h2>
               <span className="flex items-center gap-1.5 text-xs text-text-muted">
                 <Pulse size={14} weight="regular" />
-                {TIMEFRAME_LABELS[timeframe]}
+                {timeframeLabel(timeframe)}
               </span>
             </div>
             <p className="text-xs font-sans mb-5 text-text-muted">
@@ -757,7 +754,7 @@ export default function AnalyticsPage() {
               <ChartBar size={22} weight="duotone" />
             </div>
             <p className="text-xs font-sans mb-5 text-text-muted">
-              {t("analytics.source.title")} — {TIMEFRAME_LABELS[timeframe]}
+              {t("analytics.source.title")} — {timeframeLabel(timeframe)}
             </p>
             <ResponsiveContainer width="100%" height={140}>
               <BarChart
@@ -912,18 +909,20 @@ export default function AnalyticsPage() {
                     />
                     <YAxis hide />
                     <Tooltip
-                      content={({ active, payload, label }: any) =>
-                        active && payload?.length ? (
+                      content={(props) => {
+                        const { active, payload, label } = props as unknown as ChartTooltipProps;
+                        if (!active || !payload?.length) return null;
+                        return (
                           <div style={{ background: "var(--elevated)", border: "1px solid var(--border-subtle)", borderRadius: 10, padding: "8px 12px" }}>
                             <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{label}</p>
-                            {payload.map((p: any) => (
+                            {payload.map((p: ChartTooltipEntry) => (
                               <p key={p.name} style={{ fontSize: 12, color: p.fill, fontFamily: "var(--font-jetbrains-mono, monospace)" }}>
                                 {p.name}: {p.value ?? "—"} {t(K.analytics.velocity.days)}
                               </p>
                             ))}
                           </div>
-                        ) : null
-                      }
+                        );
+                      }}
                     />
                     <Bar dataKey="p25" name={t(K.analytics.velocity.p25)} fill="#a855f7" fillOpacity={0.4} radius={[4,4,0,0]} />
                     <Bar dataKey="p50" name={t(K.analytics.velocity.p50)} fill="#a855f7" fillOpacity={0.8} radius={[4,4,0,0]} />

@@ -190,7 +190,7 @@ function RejectDialog() {
     rejectReason,
     setRejectReason,
   } = useVerificationStore();
-  const { updateStatus } = useLeadsStore();
+  const updateStatus = useLeadsStore((s) => s.updateStatus);
   const req = getActiveRequest();
 
   const handleReject = () => {
@@ -635,16 +635,21 @@ export default function VerificationPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const {
-    filter,
-    openModal,
-    setFilter,
-    getVerifiedCount,
-  } = useVerificationStore();
-  const { leads, total, isLoading, fetchLeads, pageCount } = useLeadsStore();
-  const { updateStatus } = useLeadsStore();
+  const filter = useVerificationStore((s) => s.filter);
+  const openModal = useVerificationStore((s) => s.openModal);
+  const setFilter = useVerificationStore((s) => s.setFilter);
+  const leads = useLeadsStore((s) => s.leads);
+  const total = useLeadsStore((s) => s.total);
+  const isLoading = useLeadsStore((s) => s.isLoading);
+  const fetchLeads = useLeadsStore((s) => s.fetchLeads);
+  const pageCount = useLeadsStore((s) => s.pageCount);
+  const updateStatus = useLeadsStore((s) => s.updateStatus);
 
-  const approvedCount = getVerifiedCount();
+  // Stat card totals — fetched from API on mount for accuracy
+  const [pendingTotal, setPendingTotal] = useState(0);
+  const [allTotal, setAllTotal] = useState(0);
+  const [approvedTotal, setApprovedTotal] = useState(0);
+  const [rejectedTotal, setRejectedTotal] = useState(0);
 
   const onApprove = useCallback(
     (id: string) => {
@@ -673,7 +678,8 @@ export default function VerificationPage() {
 
   const columns = useMemo(
     () =>
-      getVerificationColumns({ onApprove, onReject, onAskMore, onViewReceipt }),
+      getVerificationColumns({ onApprove, onReject, onAskMore, onViewReceipt, t }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onApprove, onReject, onAskMore, onViewReceipt],
   );
 
@@ -688,10 +694,6 @@ export default function VerificationPage() {
 
   const VERIFICATION_STATUSES = `${LeadStatus.DEPOSIT_REPORTED},${LeadStatus.DEPOSIT_CONFIRMED},${LeadStatus.REJECTED}`;
 
-  // Track separate totals for each tab so counts are accurate
-  const [pendingTotal, setPendingTotal] = useState(0);
-  const [allTotal, setAllTotal] = useState(0);
-
   useEffect(() => {
     void fetchLeads({
       skip: pageIndex * pageSize,
@@ -702,7 +704,7 @@ export default function VerificationPage() {
     });
   }, [pageIndex, pageSize, filter, fetchLeads]);
 
-  // Sync tab-specific totals from API response
+  // Sync tab-specific totals from active API response
   useEffect(() => {
     if (filter === "PENDING") {
       setPendingTotal(total);
@@ -711,7 +713,7 @@ export default function VerificationPage() {
     }
   }, [total, filter]);
 
-  // Fetch both totals on mount so inactive tab also shows a count
+  // Fetch all stat totals on mount so counts are accurate regardless of active tab
   useEffect(() => {
     const extractTotal = (r: { data: unknown }): number | undefined => {
       const outer = r.data as { data?: { data?: unknown; meta?: { total?: number } } };
@@ -719,17 +721,19 @@ export default function VerificationPage() {
     };
     leadsApi
       .list({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_REPORTED })
-      .then((r) => {
-        const t = extractTotal(r);
-        if (t != null) setPendingTotal(t);
-      })
+      .then((r) => { const n = extractTotal(r); if (n != null) setPendingTotal(n); })
       .catch(() => {});
     leadsApi
       .list({ take: 1, skip: 0, statuses: VERIFICATION_STATUSES })
-      .then((r) => {
-        const t = extractTotal(r);
-        if (t != null) setAllTotal(t);
-      })
+      .then((r) => { const n = extractTotal(r); if (n != null) setAllTotal(n); })
+      .catch(() => {});
+    leadsApi
+      .list({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_CONFIRMED })
+      .then((r) => { const n = extractTotal(r); if (n != null) setApprovedTotal(n); })
+      .catch(() => {});
+    leadsApi
+      .list({ take: 1, skip: 0, status: LeadStatus.REJECTED })
+      .then((r) => { const n = extractTotal(r); if (n != null) setRejectedTotal(n); })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -763,7 +767,7 @@ export default function VerificationPage() {
         });
       }
     },
-    { scope: containerRef, dependencies: [leads, filter] },
+    { scope: containerRef, dependencies: [leads.length, filter] },
   );
 
   if (isMobile) {
@@ -821,7 +825,7 @@ export default function VerificationPage() {
               {pendingTotal}
             </p>
             <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
-              {t("verification.stats.pending")}
+              {t(K.verification.stats.pending)}
             </p>
           </div>
 
@@ -832,30 +836,24 @@ export default function VerificationPage() {
                 weight="duotone"
                 className="text-text-muted"
               />
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-card border border-border-subtle text-text-secondary">
-                Today
-              </span>
             </div>
             <p className="text-2xl font-bold data-mono text-text-primary leading-none mb-1.5 tracking-tight">
-              {approvedCount}
+              {approvedTotal}
             </p>
             <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
-              {t("verification.stats.approvedToday")}
+              {t(K.verification.stats.totalApproved)}
             </p>
           </div>
 
           <div className="verify-stat kpi-stat-card bg-elevated rounded-xl p-5 shadow-sm border border-border-subtle">
             <div className="flex items-start justify-between mb-4">
               <XCircle size={22} weight="duotone" className="text-text-muted" />
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-card border border-border-subtle text-text-secondary">
-                Today
-              </span>
             </div>
             <p className="text-2xl font-bold data-mono text-text-primary leading-none mb-1.5 tracking-tight">
-              0
+              {rejectedTotal}
             </p>
             <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
-              {t("verification.stats.rejectedToday")}
+              {t(K.verification.stats.totalRejected)}
             </p>
           </div>
         </div>

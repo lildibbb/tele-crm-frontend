@@ -17,6 +17,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
+import { K } from "@/i18n/keys";
 import {
   useLeadsStore,
   type LeadStatus,
@@ -91,7 +92,7 @@ export default function LeadsPage() {
     async (checked: boolean) => {
       setBulkHandoverPending(true);
       await bulkSetHandover(checked).catch(() =>
-        showToast.error("Couldn't update the lead. Please try again."),
+        showToast.error(t(K.common.error.updateLead)),
       );
       setBulkHandoverPending(false);
     },
@@ -192,7 +193,7 @@ export default function LeadsPage() {
         );
       }
     },
-    { scope: tableRef, dependencies: [leads, statusFilter, isMobile] },
+    { scope: tableRef, dependencies: [leads.length, statusFilter, isMobile] },
   );
 
   // ── Must be declared BEFORE the isMobile early return to satisfy Rules of Hooks ──
@@ -213,7 +214,7 @@ export default function LeadsPage() {
         order,
       });
     } catch {
-      showToast.error("Couldn't update the status. Please try again.");
+      showToast.error(t(K.common.error.updateStatus));
     } finally {
       setBulkStatusPending(false);
     }
@@ -237,10 +238,7 @@ export default function LeadsPage() {
   const TAB_FILTERS = [
     { key: "ALL" as const, label: t("leads.filter.all") },
     { key: "NEW" as const, label: t("leads.filter.new") },
-    {
-      key: "CONTACTED" as const,
-      label: t("leads.filter.contacted") || "Contacted",
-    },
+    { key: "CONTACTED" as const, label: t(K.leads.filter.contacted) },
     { key: "DEPOSIT_REPORTED" as const, label: t("leads.filter.proof") },
     { key: "DEPOSIT_CONFIRMED" as const, label: t("leads.filter.confirmed") },
   ];

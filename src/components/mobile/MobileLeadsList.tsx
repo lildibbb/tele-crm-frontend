@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { timeAgo, getInitials } from "@/lib/format";
+import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadsListProps {
@@ -23,34 +25,6 @@ export interface MobileLeadsListProps {
 }
 
 type FilterTab = LeadStatus | "ALL";
-
-// ── Status display helpers ─────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string }> = {
-  NEW: { label: "New" },
-  CONTACTED: { label: "Contacted" },
-  DEPOSIT_REPORTED: { label: "Deposit" },
-  DEPOSIT_CONFIRMED: { label: "Verified" },
-  REJECTED: { label: "Rejected" },
-};
-
-function timeAgo(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return `${Math.floor(days / 7)}w ago`;
-}
-
-function getInitials(name: string | null | undefined): string {
-  if (!name) return "??";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
-}
 
 function formatDeposit(val: string): string {
   const num = parseFloat(val);
@@ -99,7 +73,7 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
 // ── Lead Card ──────────────────────────────────────────────────────────────────
 function LeadCard({ lead }: { lead: Lead }) {
   const status = lead.status ?? "NEW";
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.NEW;
+  const cfg = LEAD_STATUS_BADGE[status] ?? LEAD_STATUS_BADGE.NEW;
   const initials = getInitials(lead.displayName);
 
   return (
@@ -127,9 +101,9 @@ function LeadCard({ lead }: { lead: Lead }) {
             </span>
             <Badge
               variant="secondary"
-              className="shrink-0 text-[10px] font-medium"
+              className={cn("shrink-0 text-[10px] font-medium", cfg.cls)}
             >
-              {cfg.label}
+              {status.replace(/_/g, " ")}
             </Badge>
           </div>
 

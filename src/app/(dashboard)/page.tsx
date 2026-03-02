@@ -41,7 +41,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { useT } from "@/i18n";
+import { useT, K } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -59,24 +59,23 @@ import {
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showToast } from "@/lib/toast";
+import type { ChartTooltipEntry, ChartTooltipProps } from "@/lib/types/chart";
+import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 
 gsap.registerPlugin(useGSAP);
 
 // ── Period options ──────────────────────────────────────────────
 const PERIODS = [
-  { value: "yesterday", label: "Yesterday" },
-  { value: "today", label: "Today" },
-  { value: "this_week", label: "Weekly" },
-  { value: "this_month", label: "Monthly" },
-  { value: "last_30_days", label: "30 Days" },
-  { value: "last_90_days", label: "90 Days" },
-  { value: "all_time", label: "All Time" },
+  "yesterday",
+  "today",
+  "this_week",
+  "this_month",
+  "last_30_days",
+  "last_90_days",
+  "all_time",
 ] as const;
 
-type PeriodValue = (typeof PERIODS)[number]["value"];
-const PERIOD_LABEL: Record<PeriodValue, string> = Object.fromEntries(
-  PERIODS.map((p) => [p.value, p.label]),
-) as Record<PeriodValue, string>;
+type PeriodValue = (typeof PERIODS)[number];
 
 // ── Types ──────────────────────────────────────────────────────
 interface KpiCardProps {
@@ -101,15 +100,6 @@ interface ActivityRow {
   amount?: string;
   time: string;
 }
-
-const BADGE_MAP: Record<ActivityRow["status"], { label: string; cls: string }> =
-  {
-    NEW: { label: "New", cls: "badge-new" },
-    CONTACTED: { label: "Contacted", cls: "badge-contacted" },
-    DEPOSIT_REPORTED: { label: "Proof Pending", cls: "badge-pending" },
-    DEPOSIT_CONFIRMED: { label: "Confirmed", cls: "badge-confirmed" },
-    REJECTED: { label: "Rejected", cls: "badge-danger" },
-  };
 
 // ── Count-up hook ───────────────────────────────────────────────
 function useCountUp(target: number, duration = 1200) {
@@ -159,16 +149,12 @@ function ChartTooltip({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) {
+}: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-sm">
       <p className="text-[11px] text-text-secondary mb-2 font-sans">{label}</p>
-      {payload.map((entry: any) => (
+      {payload.map((entry: ChartTooltipEntry) => (
         <div key={entry.name} className="flex items-center gap-2 mb-[3px]">
           <span
             className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -190,11 +176,7 @@ function BarTooltip({
   active,
   payload,
   label,
-}: {
-  active?: boolean;
-  payload?: any[];
-  label?: string;
-}) {
+}: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border-default rounded-[14px] px-[14px] py-[10px] shadow-sm">
@@ -210,10 +192,7 @@ function BarTooltip({
 function FunnelTooltip({
   active,
   payload,
-}: {
-  active?: boolean;
-  payload?: any[];
-}) {
+}: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   const item = payload[0];
   return (
@@ -223,7 +202,7 @@ function FunnelTooltip({
       </p>
       <p
         className="font-bold text-[18px] leading-tight data-mono"
-        style={{ color: item.payload.color }}
+        style={{ color: (item.payload?.["color"] as string | undefined) ?? item.color }}
       >
         {item.value.toLocaleString()}
       </p>
@@ -287,7 +266,7 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState<PeriodValue>("last_30_days");
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuthStore();
+  const user = useAuthStore((s) => s.user);
   const isMobile = useIsMobile();
 
   const summary = useAnalyticsStore((s) => s.summary);
@@ -371,7 +350,8 @@ export default function DashboardPage() {
   }, [depositsData]);
 
   const recentActivity: ActivityRow[] = useMemo(() => {
-    return [...leads]
+    return leads
+      .slice()
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
@@ -394,13 +374,27 @@ export default function DashboardPage() {
           month: "short",
         }),
       }));
-  }, [leads]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leads.length]);
 
   const totalLeads = summary?.kpi.totalLeads.current ?? 0;
   const contactedLeads = summary?.kpi.contactedLeads.current ?? 0;
   const depositConfirmed = summary?.kpi.verifiedClients.current ?? 0;
   const pendingVerifications = summary?.kpi.formSubmissions.current ?? 0;
   const handoverLeadsCount = useMemo(() => leads.filter((l) => l.handoverMode).length, [leads]);
+
+  const periodLabel = (v: PeriodValue): string => {
+    const map: Record<PeriodValue, string> = {
+      yesterday:    t(K.common.period.yesterday),
+      today:        t(K.common.period.today),
+      this_week:    t(K.common.period.weekly),
+      this_month:   t(K.common.period.monthly),
+      last_30_days: t(K.common.period.last30Days),
+      last_90_days: t(K.common.period.last90Days),
+      all_time:     t(K.common.period.allTime),
+    };
+    return map[v];
+  };
 
   useGSAP(
     () => {
@@ -571,7 +565,7 @@ export default function DashboardPage() {
                       size="sm"
                       className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm border-transparent  text-white/80 hover:bg-white/20 hover:text-white/90 h-[30px] px-3 text-xs font-medium"
                     >
-                      {PERIOD_LABEL[period]}
+                      {periodLabel(period)}
                       <CaretDown
                         size={11}
                         weight="bold"
@@ -586,18 +580,18 @@ export default function DashboardPage() {
                   >
                     {PERIODS.map((p) => (
                       <PeriodDropdownItem
-                        key={p.value}
-                        onClick={() => setPeriod(p.value)}
+                        key={p}
+                        onClick={() => setPeriod(p)}
                         className="gap-2 cursor-pointer text-xs"
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-opacity ${
-                            period === p.value
+                            period === p
                               ? "bg-crimson opacity-100"
                               : "opacity-0"
                           }`}
                         />
-                        {p.label}
+                        {periodLabel(p)}
                       </PeriodDropdownItem>
                     ))}
                   </PeriodDropdownContent>
@@ -631,7 +625,7 @@ export default function DashboardPage() {
                       />
                       <KpiCard
                         icon={ChatText}
-                        label={t("analytics.contactedLeads")}
+                        label={t(K.dashboard.contactedLeads)}
                         value={String(contactedLeads)}
                         delta={`${summary?.kpi.contactedLeads.changePercentage ?? 0}%`}
                         deltaPositive={
@@ -792,7 +786,7 @@ export default function DashboardPage() {
                   <div className="flex-1 p-0">
                     <div className="space-y-0.5 px-3 py-2">
                       {recentActivity.map((row) => {
-                        const badge = BADGE_MAP[row.status];
+                        const badge = LEAD_STATUS_BADGE[row.status];
                         return (
                           <Link
                             key={row.id}
@@ -820,7 +814,7 @@ export default function DashboardPage() {
                             </div>
                             <div className="flex flex-col items-end gap-1 flex-shrink-0">
                               <Badge className={`badge text-[10px] ${badge.cls}`}>
-                                {badge.label}
+                                {t(badge.labelKey)}
                               </Badge>
                               {row.amount && row.amount !== "—" && (
                                 <span className="data-mono text-[11px] text-gold">

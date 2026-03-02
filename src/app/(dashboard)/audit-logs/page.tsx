@@ -20,6 +20,8 @@ import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
 import { AuditAction } from "@/types/enums";
 import { parsePaginatedData } from "@/lib/api/parseResponse";
+import { formatDateTime, timeAgo, isToday } from "@/lib/format";
+import { roleBadgeCls } from "@/lib/badge-config";
 import { useT, K } from "@/i18n";
 import {
   auditIconMap,
@@ -36,47 +38,9 @@ const ALL_ACTIONS = Object.values(AuditAction);
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return (
-    d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) +
-    " " +
-    d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
-  );
-}
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
-function isToday(iso: string) {
-  const d = new Date(iso);
-  const now = new Date();
-  return d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate();
-}
-
 function getInitials(email: string | null | undefined): string {
   if (!email) return "?";
   return email.slice(0, 2).toUpperCase();
-}
-
-function roleBadgeCls(role: string | null | undefined): string {
-  if (!role) return "bg-text-muted/10 text-text-muted";
-  switch (role.toUpperCase()) {
-    case "SUPERADMIN": return "bg-crimson/10 text-crimson";
-    case "OWNER":      return "bg-gold/10 text-gold";
-    case "ADMIN":      return "bg-info/10 text-info";
-    case "STAFF":      return "bg-success/10 text-success";
-    default:           return "bg-text-muted/10 text-text-muted";
-  }
 }
 
 /* ── Drawer ───────────────────────────────────────────────────────────────── */
@@ -96,26 +60,35 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
   }
 
   const beforeKeys = Object.keys(log.before ?? {});
-  const afterKeys  = Object.keys(log.after  ?? {});
+  const afterKeys = Object.keys(log.after ?? {});
   const diffKeys = [...new Set([...beforeKeys, ...afterKeys])];
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-[100] flex justify-end">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-base/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
       {/* Panel */}
-      <div className="relative w-full max-w-lg bg-card border-l border-border-subtle flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 shadow-2xl">
+      <div className="relative w-[500px] max-w-[100vw] bg-card border-l border-border-subtle flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-card flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-elevated border border-border-subtle flex items-center justify-center">
-              <IconComp size={16} weight="duotone" className="text-text-secondary" />
+              <IconComp
+                size={16}
+                weight="duotone"
+                className="text-text-secondary"
+              />
             </div>
             <div>
               <h3 className="font-sans font-semibold text-[14px] text-text-primary">
                 {formatAuditAction(log.action)}
               </h3>
-              <p className="text-[11px] text-text-muted font-sans">{formatDate(log.createdAt)}</p>
+              <p className="text-[11px] text-text-muted font-sans">
+                {formatDateTime(log.createdAt)}
+              </p>
             </div>
           </div>
           <button
@@ -134,7 +107,9 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
             </p>
             <div className="flex items-center gap-3 p-3 rounded-xl bg-elevated border border-border-subtle">
               <div className="w-9 h-9 rounded-full bg-accent/10 border border-border-subtle flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-bold text-accent">{getInitials(log.userEmail)}</span>
+                <span className="text-xs font-bold">
+                  {getInitials(log.userEmail)}
+                </span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-text-primary truncate">
@@ -142,12 +117,16 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
                   {log.userRole && (
-                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${roleBadgeCls(log.userRole)}`}>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${roleBadgeCls(log.userRole)}`}
+                    >
                       {log.userRole}
                     </span>
                   )}
                   {log.ipAddress && (
-                    <span className="text-[10px] text-text-muted font-mono">{log.ipAddress}</span>
+                    <span className="text-[10px] text-text-muted font-mono">
+                      {log.ipAddress}
+                    </span>
                   )}
                 </div>
               </div>
@@ -162,9 +141,13 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
               </p>
               <div className="flex items-center justify-between p-3 rounded-xl bg-elevated border border-border-subtle">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-text-primary">{log.resourceType}</p>
+                  <p className="text-xs font-semibold text-text-primary">
+                    {log.resourceType}
+                  </p>
                   {log.resourceId && (
-                    <p className="text-[10px] font-mono text-text-muted break-all">{log.resourceId}</p>
+                    <p className="text-[10px] font-mono text-text-muted break-all">
+                      {log.resourceId}
+                    </p>
                   )}
                 </div>
                 {log.resourceId && (
@@ -172,8 +155,14 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
                     onClick={copyId}
                     className="ml-2 flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-sans text-text-muted hover:text-text-primary hover:bg-card transition-colors shadow-sm"
                   >
-                    {copied ? <Check size={11} className="text-success" /> : <Copy size={11} />}
-                    {copied ? t(K.auditLog.drawer.copied) : t(K.auditLog.drawer.copyId)}
+                    {copied ? (
+                      <Check size={11} className="text-success" />
+                    ) : (
+                      <Copy size={11} />
+                    )}
+                    {copied
+                      ? t(K.auditLog.drawer.copied)
+                      : t(K.auditLog.drawer.copyId)}
                   </button>
                 )}
               </div>
@@ -190,15 +179,21 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
                 {/* Header row */}
                 <div className="grid grid-cols-3 text-[10px] font-semibold uppercase tracking-widest text-text-muted bg-card border-b border-border-subtle shadow-sm">
                   <div className="px-3 py-2">Key</div>
-                  <div className="px-3 py-2 border-l border-border-subtle">{t(K.auditLog.drawer.before)}</div>
-                  <div className="px-3 py-2 border-l border-border-subtle">{t(K.auditLog.drawer.after)}</div>
+                  <div className="px-3 py-2 border-l border-border-subtle">
+                    {t(K.auditLog.drawer.before)}
+                  </div>
+                  <div className="px-3 py-2 border-l border-border-subtle">
+                    {t(K.auditLog.drawer.after)}
+                  </div>
                 </div>
                 {diffKeys.length === 0 ? (
-                  <p className="px-3 py-3 text-xs text-text-muted font-sans">{t(K.auditLog.drawer.noChange)}</p>
+                  <p className="px-3 py-3 text-xs text-text-muted font-sans">
+                    {t(K.auditLog.drawer.noChange)}
+                  </p>
                 ) : (
                   diffKeys.map((k) => {
                     const bv = log.before ? String(log.before[k] ?? "") : "";
-                    const av = log.after  ? String(log.after[k]  ?? "") : "";
+                    const av = log.after ? String(log.after[k] ?? "") : "";
                     const changed = bv !== av;
                     return (
                       <div
@@ -206,10 +201,14 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
                         className={`grid grid-cols-3 text-[11px] font-mono border-b border-border-subtle/50 last:border-0 ${changed ? "bg-warning/5" : ""}`}
                       >
                         <div className="px-3 py-2 text-text-muted">{k}</div>
-                        <div className={`px-3 py-2 border-l border-border-subtle/50 ${changed ? "text-danger" : "text-text-secondary"}`}>
+                        <div
+                          className={`px-3 py-2 border-l border-border-subtle/50 ${changed ? "text-danger" : "text-text-secondary"}`}
+                        >
                           {bv || "—"}
                         </div>
-                        <div className={`px-3 py-2 border-l border-border-subtle/50 ${changed ? "text-success" : "text-text-secondary"}`}>
+                        <div
+                          className={`px-3 py-2 border-l border-border-subtle/50 ${changed ? "text-success" : "text-text-secondary"}`}
+                        >
                           {av || "—"}
                         </div>
                       </div>
@@ -231,7 +230,7 @@ export default function AuditLogsPage() {
   const isMobile = useIsMobile();
   const t = useT();
 
-  const [items, setItems]= useState<AuditLog[]>([]);
+  const [items, setItems] = useState<AuditLog[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -246,7 +245,13 @@ export default function AuditLogsPage() {
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
 
   const load = useCallback(
-    async (skip: number, action?: string, email?: string, from?: string, to?: string) => {
+    async (
+      skip: number,
+      action?: string,
+      email?: string,
+      from?: string,
+      to?: string,
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
@@ -258,7 +263,9 @@ export default function AuditLogsPage() {
           ...(from ? { from } : {}),
           ...(to ? { to } : {}),
         });
-        const { data: arr, total: count } = parsePaginatedData<AuditLog>(res.data);
+        const { data: arr, total: count } = parsePaginatedData<AuditLog>(
+          res.data,
+        );
         setItems(arr);
         setTotal(count);
       } catch {
@@ -272,13 +279,26 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     if (isMobile) return;
-    void load(page * PAGE_SIZE, filterAction, filterEmail, filterFrom, filterTo);
+    void load(
+      page * PAGE_SIZE,
+      filterAction,
+      filterEmail,
+      filterFrom,
+      filterTo,
+    );
   }, [page, load, filterAction, filterEmail, filterFrom, filterTo, isMobile]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const hasActiveFilters = filterAction !== "" || filterEmail !== "" || filterFrom !== "" || filterTo !== "";
+  const hasActiveFilters =
+    filterAction !== "" ||
+    filterEmail !== "" ||
+    filterFrom !== "" ||
+    filterTo !== "";
 
-  const todayCount = useMemo(() => items.filter((l) => isToday(l.createdAt)).length, [items]);
+  const todayCount = useMemo(
+    () => items.filter((l) => isToday(l.createdAt)).length,
+    [items],
+  );
   const mostCommonAction = useMemo(() => {
     if (items.length === 0) return "—";
     const freq: Record<string, number> = {};
@@ -286,12 +306,19 @@ export default function AuditLogsPage() {
     const top = Object.entries(freq).sort((a, b) => b[1] - a[1])[0];
     return top ? formatAuditAction(top[0]) : "—";
   }, [items]);
-  const uniqueActors = useMemo(() => new Set(items.map((l) => l.userEmail ?? l.userId ?? "system")).size, [items]);
+  const uniqueActors = useMemo(
+    () => new Set(items.map((l) => l.userEmail ?? l.userId ?? "system")).size,
+    [items],
+  );
 
   if (isMobile) return <MobileAuditLogs />;
 
   function clearFilters() {
-    setFilterAction(""); setFilterEmail(""); setFilterFrom(""); setFilterTo(""); setPage(0);
+    setFilterAction("");
+    setFilterEmail("");
+    setFilterFrom("");
+    setFilterTo("");
+    setPage(0);
   }
 
   return (
@@ -300,20 +327,40 @@ export default function AuditLogsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-text-muted/10 border border-border-subtle flex items-center justify-center flex-shrink-0">
-            <ClipboardText size={18} className="text-text-primary" weight="fill" />
+            <ClipboardText
+              size={18}
+              className="text-text-primary"
+              weight="fill"
+            />
           </div>
           <div>
-            <h1 className="font-display font-bold text-xl text-text-primary">{t(K.auditLog.title)}</h1>
-            <p className="font-sans text-sm text-text-secondary">{t(K.auditLog.subtitle)}</p>
+            <h1 className="font-display font-bold text-xl text-text-primary">
+              {t(K.auditLog.title)}
+            </h1>
+            <p className="font-sans text-sm text-text-secondary">
+              {t(K.auditLog.subtitle)}
+            </p>
           </div>
         </div>
         <Button
-          variant="outline" size="sm"
-          onClick={() => void load(page * PAGE_SIZE, filterAction, filterEmail, filterFrom, filterTo)}
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            void load(
+              page * PAGE_SIZE,
+              filterAction,
+              filterEmail,
+              filterFrom,
+              filterTo,
+            )
+          }
           disabled={isLoading}
           className="gap-1.5 text-xs"
         >
-          <ArrowCounterClockwise size={13} className={isLoading ? "animate-spin" : ""} />
+          <ArrowCounterClockwise
+            size={13}
+            className={isLoading ? "animate-spin" : ""}
+          />
           {t(K.auditLog.refresh)}
         </Button>
       </div>
@@ -321,18 +368,51 @@ export default function AuditLogsPage() {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { icon: Hash,     color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.total),     value: total.toLocaleString() },
-          { icon: Calendar, color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.today),     value: String(todayCount) },
-          { icon: ChartBar, color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.topAction), value: mostCommonAction },
-          { icon: Users,    color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.actors),    value: String(uniqueActors) },
+          {
+            icon: Hash,
+            color: "text-text-muted",
+            bg: "bg-elevated",
+            label: t(K.auditLog.stats.total),
+            value: total.toLocaleString(),
+          },
+          {
+            icon: Calendar,
+            color: "text-text-muted",
+            bg: "bg-elevated",
+            label: t(K.auditLog.stats.today),
+            value: String(todayCount),
+          },
+          {
+            icon: ChartBar,
+            color: "text-text-muted",
+            bg: "bg-elevated",
+            label: t(K.auditLog.stats.topAction),
+            value: mostCommonAction,
+          },
+          {
+            icon: Users,
+            color: "text-text-muted",
+            bg: "bg-elevated",
+            label: t(K.auditLog.stats.actors),
+            value: String(uniqueActors),
+          },
         ].map(({ icon: Icon, color, bg, label, value }) => (
-          <div key={label} className="bg-elevated rounded-xl border border-border-subtle shadow-sm px-4 py-3 flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg ${bg} border border-border-subtle flex items-center justify-center flex-shrink-0`}>
+          <div
+            key={label}
+            className="bg-elevated rounded-xl border border-border-subtle shadow-sm px-4 py-3 flex items-center gap-3"
+          >
+            <div
+              className={`w-8 h-8 rounded-lg ${bg} border border-border-subtle flex items-center justify-center flex-shrink-0`}
+            >
               <Icon size={15} className={color} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">{label}</p>
-              <p className="text-sm font-bold text-text-primary font-display leading-tight truncate">{value}</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">
+                {label}
+              </p>
+              <p className="text-sm font-bold text-text-primary font-display leading-tight truncate">
+                {value}
+              </p>
             </div>
           </div>
         ))}
@@ -342,12 +422,18 @@ export default function AuditLogsPage() {
       <div className="flex flex-wrap items-center gap-2">
         {/* Email search */}
         <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <MagnifyingGlass size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+          <MagnifyingGlass
+            size={13}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+          />
           <input
             type="text"
             placeholder={t(K.auditLog.filter.email)}
             value={filterEmail}
-            onChange={(e) => { setFilterEmail(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setFilterEmail(e.target.value);
+              setPage(0);
+            }}
             className="w-full pl-8 pr-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-colors"
           />
         </div>
@@ -358,14 +444,22 @@ export default function AuditLogsPage() {
             onClick={() => setActionMenuOpen((o) => !o)}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary hover:border-accent/50 transition-colors"
           >
-            <span>{filterAction ? formatAuditAction(filterAction) : t(K.auditLog.allActions)}</span>
+            <span>
+              {filterAction
+                ? formatAuditAction(filterAction)
+                : t(K.auditLog.allActions)}
+            </span>
             <CaretDown size={11} className="text-text-muted" />
           </button>
           {actionMenuOpen && (
             <div className="absolute top-full left-0 mt-1 z-20 bg-card border border-border-subtle rounded-xl min-w-[200px] py-1 max-h-64 overflow-y-auto shadow-sm">
               <button
                 className="w-full text-left px-3 py-1.5 text-xs font-sans text-text-muted hover:bg-elevated hover:text-text-primary transition-colors"
-                onClick={() => { setFilterAction(""); setActionMenuOpen(false); setPage(0); }}
+                onClick={() => {
+                  setFilterAction("");
+                  setActionMenuOpen(false);
+                  setPage(0);
+                }}
               >
                 {t(K.auditLog.allActions)}
               </button>
@@ -373,7 +467,11 @@ export default function AuditLogsPage() {
                 <button
                   key={a}
                   className={`w-full text-left px-3 py-1.5 text-xs font-sans transition-colors hover:bg-elevated ${filterAction === a ? "text-accent font-semibold" : "text-text-secondary hover:text-text-primary"}`}
-                  onClick={() => { setFilterAction(a); setActionMenuOpen(false); setPage(0); }}
+                  onClick={() => {
+                    setFilterAction(a);
+                    setActionMenuOpen(false);
+                    setPage(0);
+                  }}
                 >
                   {formatAuditAction(a)}
                 </button>
@@ -387,7 +485,10 @@ export default function AuditLogsPage() {
           <input
             type="date"
             value={filterFrom}
-            onChange={(e) => { setFilterFrom(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setFilterFrom(e.target.value);
+              setPage(0);
+            }}
             className="px-2 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/50 transition-colors"
             title={t(K.auditLog.filter.from)}
           />
@@ -395,7 +496,10 @@ export default function AuditLogsPage() {
           <input
             type="date"
             value={filterTo}
-            onChange={(e) => { setFilterTo(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setFilterTo(e.target.value);
+              setPage(0);
+            }}
             className="px-2 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/50 transition-colors"
             title={t(K.auditLog.filter.to)}
           />
@@ -435,18 +539,33 @@ export default function AuditLogsPage() {
             <table className="w-full text-sm font-sans">
               <thead>
                 <tr className="bg-card border-b border-border-subtle shadow-sm">
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.actor)}</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.action)}</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.entity)}</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.change)}</th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">{t(K.auditLog.col.timestamp)}</th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                    {t(K.auditLog.col.actor)}
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                    {t(K.auditLog.col.action)}
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                    {t(K.auditLog.col.entity)}
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                    {t(K.auditLog.col.change)}
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                    {t(K.auditLog.col.timestamp)}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((log) => {
-                  const IconComp = auditIconMap[log.action] ?? auditFallbackIcon;
-                  const colorCls = auditColorMap[log.action] ?? "text-text-secondary";
-                  const changeSummary = computeChangeSummary(log.before, log.after);
+                  const IconComp =
+                    auditIconMap[log.action] ?? auditFallbackIcon;
+                  const colorCls =
+                    auditColorMap[log.action] ?? "text-text-secondary";
+                  const changeSummary = computeChangeSummary(
+                    log.before,
+                    log.after,
+                  );
                   return (
                     <tr
                       key={log.id}
@@ -458,27 +577,41 @@ export default function AuditLogsPage() {
                         {log.userEmail ? (
                           <div className="flex items-center gap-2.5">
                             <div className="w-7 h-7 rounded-full bg-accent/10 border border-border-subtle flex items-center justify-center flex-shrink-0">
-                              <span className="text-[9px] font-bold text-accent">{getInitials(log.userEmail)}</span>
+                              <span className="text-[9px] font-bold">
+                                {getInitials(log.userEmail)}
+                              </span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-medium text-text-primary truncate max-w-[140px]">{log.userEmail}</p>
+                              <p className="text-xs font-medium text-text-primary truncate max-w-[140px]">
+                                {log.userEmail}
+                              </p>
                               {log.userRole && (
-                                <span className={`text-[8px] font-bold px-1 py-0.5 rounded ${roleBadgeCls(log.userRole)}`}>
+                                <span
+                                  className={`text-[8px] font-bold px-1 py-0.5 rounded ${roleBadgeCls(log.userRole)}`}
+                                >
                                   {log.userRole}
                                 </span>
                               )}
                             </div>
                           </div>
                         ) : (
-                          <span className="text-xs font-sans text-text-muted italic">{t(K.auditLog.system)}</span>
+                          <span className="text-xs font-sans text-text-muted italic">
+                            {t(K.auditLog.system)}
+                          </span>
                         )}
                       </td>
 
                       {/* Action */}
                       <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <IconComp size={13} weight="duotone" className={colorCls} />
-                          <span className="text-xs font-sans text-text-primary">{formatAuditAction(log.action)}</span>
+                          <IconComp
+                            size={13}
+                            weight="duotone"
+                            className={colorCls}
+                          />
+                          <span className="text-xs font-sans text-text-primary">
+                            {formatAuditAction(log.action)}
+                          </span>
                         </div>
                       </td>
 
@@ -486,7 +619,9 @@ export default function AuditLogsPage() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         {log.resourceType ? (
                           <div>
-                            <span className="text-xs font-medium text-text-primary">{log.resourceType}</span>
+                            <span className="text-xs font-medium text-text-primary">
+                              {log.resourceType}
+                            </span>
                             {log.resourceId && (
                               <span className="ml-1.5 text-[10px] font-mono text-text-muted">
                                 {log.resourceId.slice(0, 8)}…
@@ -500,14 +635,22 @@ export default function AuditLogsPage() {
 
                       {/* Change summary */}
                       <td className="px-4 py-3 max-w-[200px]">
-                        <span className="text-[11px] font-mono text-text-muted truncate block" title={changeSummary !== "—" ? changeSummary : undefined}>
+                        <span
+                          className="text-[11px] font-mono text-text-muted truncate block"
+                          title={
+                            changeSummary !== "—" ? changeSummary : undefined
+                          }
+                        >
                           {changeSummary}
                         </span>
                       </td>
 
                       {/* Timestamp */}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-xs font-mono text-text-muted" title={formatDate(log.createdAt)}>
+                        <span
+                          className="text-xs font-mono text-text-muted"
+                          title={formatDateTime(log.createdAt)}
+                        >
                           {timeAgo(log.createdAt)}
                         </span>
                       </td>
@@ -522,13 +665,25 @@ export default function AuditLogsPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="px-5 py-3 border-t border-border-subtle flex items-center justify-between">
-            <Button variant="ghost" size="sm" disabled={page === 0} onClick={() => setPage((p) => p - 1)} className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={page === 0}
+              onClick={() => setPage((p) => p - 1)}
+              className="text-xs"
+            >
               {t(K.auditLog.prev)}
             </Button>
             <span className="font-sans text-xs text-text-muted">
               {t(K.auditLog.page)} {page + 1} {t(K.auditLog.of)} {totalPages}
             </span>
-            <Button variant="ghost" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage((p) => p + 1)} className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage((p) => p + 1)}
+              className="text-xs"
+            >
               {t(K.auditLog.next)}
             </Button>
           </div>
@@ -536,8 +691,9 @@ export default function AuditLogsPage() {
       </div>
 
       {/* ── Drawer ── */}
-      {selected && <AuditDrawer log={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <AuditDrawer log={selected} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }
-

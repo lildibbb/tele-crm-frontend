@@ -32,6 +32,8 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate, formatDateTime, timeAgo, getInitials } from "@/lib/format";
+import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadDetailProps {
@@ -59,56 +61,6 @@ interface TimelineEntry {
   description: string;
   time: string;
   type: "system" | "action" | "milestone";
-}
-
-// ── Status helpers ─────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<string, { label: string }> = {
-  NEW: { label: "New" },
-  CONTACTED: { label: "Contacted" },
-  DEPOSIT_REPORTED: { label: "Proof Pending" },
-  DEPOSIT_CONFIRMED: { label: "Confirmed" },
-  REJECTED: { label: "Rejected" },
-};
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-function fmt(dateStr: string | null | undefined): string {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function fmtTime(dateStr: string | null | undefined): string {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleString("en-GB", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function fmtRelative(dateStr: string | null | undefined): string {
-  if (!dateStr) return "—";
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return fmt(dateStr);
 }
 
 // ── Skeleton Pulse Block ──────────────────────────────────────────────────────
@@ -311,7 +263,7 @@ export default function MobileLeadDetail({
   if (isLoading || !lead) return <LoadingSkeleton />;
 
   const status = lead.status ?? "NEW";
-  const cfg = STATUS_CONFIG[status] ?? { label: status };
+  const cfg = LEAD_STATUS_BADGE[status] ?? LEAD_STATUS_BADGE.NEW;
   const name = lead.displayName ?? lead.username ?? "Unknown";
   const initials = getInitials(name);
 
@@ -323,7 +275,7 @@ export default function MobileLeadDetail({
       color: "var(--info)",
       icon: <Star size={14} weight="fill" className="text-text-secondary" />,
       description: "Lead created via Telegram bot",
-      time: fmtTime(lead.createdAt),
+      time: formatDateTime(lead.createdAt),
       type: "milestone",
     });
   }
@@ -339,7 +291,7 @@ export default function MobileLeadDetail({
         />
       ),
       description: "Lead first contacted by team",
-      time: fmtTime(lead.contactedAt),
+      time: formatDateTime(lead.contactedAt),
       type: "milestone",
     });
   }
@@ -355,7 +307,7 @@ export default function MobileLeadDetail({
         />
       ),
       description: `Account registered on HFM${lead.hfmBrokerId ? ` (ID: ${lead.hfmBrokerId})` : ""}`,
-      time: fmtTime(lead.registeredAt),
+      time: formatDateTime(lead.registeredAt),
       type: "milestone",
     });
   }
@@ -371,7 +323,7 @@ export default function MobileLeadDetail({
         />
       ),
       description: `Deposit proof submitted — ${lead.depositBalance}`,
-      time: fmtTime(lead.depositReportedAt ?? lead.updatedAt),
+      time: formatDateTime(lead.depositReportedAt ?? lead.updatedAt),
       type: "action",
     });
   }
@@ -383,7 +335,7 @@ export default function MobileLeadDetail({
         <ShieldCheck size={14} weight="fill" className="text-text-secondary" />
       ),
       description: "Deposit verified by team",
-      time: fmtTime(lead.verifiedAt),
+      time: formatDateTime(lead.verifiedAt),
       type: "milestone",
     });
   }
@@ -393,7 +345,7 @@ export default function MobileLeadDetail({
       color: "var(--danger)",
       icon: <XCircle size={14} weight="fill" className="text-text-secondary" />,
       description: "Lead status set to Rejected",
-      time: fmtTime(lead.updatedAt),
+      time: formatDateTime(lead.updatedAt),
       type: "action",
     });
   }
@@ -447,7 +399,7 @@ export default function MobileLeadDetail({
         />
       ),
       label: "Registered",
-      value: lead.registeredAt ? fmt(lead.registeredAt) : "Not yet",
+      value: lead.registeredAt ? formatDate(lead.registeredAt) : "Not yet",
     },
     {
       icon: (
@@ -504,7 +456,7 @@ export default function MobileLeadDetail({
             Lead Detail
           </span>
           <span className="font-mono text-[10px] text-text-muted leading-tight">
-            {fmtRelative(lead.updatedAt)}
+            {timeAgo(lead.updatedAt)}
           </span>
         </div>
         <button
@@ -550,9 +502,9 @@ export default function MobileLeadDetail({
             <div className="flex items-center gap-2 flex-wrap justify-center">
               <Badge
                 variant="secondary"
-                className="text-[11px] font-bold uppercase tracking-wider"
+                className={cn("text-[11px] font-bold uppercase tracking-wider", cfg.cls)}
               >
-                {cfg.label}
+                {status.replace(/_/g, " ")}
               </Badge>
 
               {lead.handoverMode ? (
@@ -637,7 +589,7 @@ export default function MobileLeadDetail({
                 {lead.depositBalance}
               </span>
               <span className="font-sans text-[12px] text-text-muted">
-                Last updated {fmtRelative(lead.updatedAt)}
+                Last updated {timeAgo(lead.updatedAt)}
               </span>
             </div>
           </section>
@@ -782,3 +734,4 @@ export default function MobileLeadDetail({
     </div>
   );
 }
+
