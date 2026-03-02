@@ -8,7 +8,7 @@ export default function NotFound() {
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       {/* Icon */}
-      <div className="w-20 h-20 rounded-[24px] bg-[#141422] border border-white/8 flex items-center justify-center mb-6 shadow-[0_0_48px_rgba(196,35,45,0.15)]">
+      <div className="w-20 h-20 rounded-[24px] bg-[#141422] bg-clip-padding overflow-hidden border border-white/8 flex items-center justify-center mb-6 shadow-[0_0_48px_rgba(196,35,45,0.15)]">
         <Ghost size={36} weight="duotone" className="text-[#C4232D]" />
       </div>
 
@@ -26,8 +26,8 @@ export default function NotFound() {
       </h1>
 
       <p className="text-[14px] text-white/40 max-w-[340px] leading-relaxed mb-8">
-        The page you&apos;re looking for doesn&apos;t exist or has been moved. Double-check
-        the URL or head back to the dashboard.
+        The page you&apos;re looking for doesn&apos;t exist or has been moved.
+        Double-check the URL or head back to the dashboard.
       </p>
 
       {/* CTA */}

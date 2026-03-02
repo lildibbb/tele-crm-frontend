@@ -94,7 +94,6 @@ interface ActivityRow {
   subtitle: string;
   status:
     | "NEW"
-    | "REGISTERED"
     | "DEPOSIT_REPORTED"
     | "DEPOSIT_CONFIRMED"
     | "CONTACTED"
@@ -107,7 +106,6 @@ const BADGE_MAP: Record<ActivityRow["status"], { label: string; cls: string }> =
   {
     NEW: { label: "New", cls: "badge-new" },
     CONTACTED: { label: "Contacted", cls: "badge-contacted" },
-    REGISTERED: { label: "Registered", cls: "badge-registered" },
     DEPOSIT_REPORTED: { label: "Proof Pending", cls: "badge-pending" },
     DEPOSIT_CONFIRMED: { label: "Confirmed", cls: "badge-confirmed" },
     REJECTED: { label: "Rejected", cls: "badge-danger" },
@@ -321,14 +319,9 @@ export default function DashboardPage() {
         color: "#22D3A0",
       },
       {
-        name: "Pending",
-        value: summary.funnel.depositReported,
+        name: "Submitted",
+        value: summary.funnel.formSubmitted,
         color: "#F59E0B",
-      },
-      {
-        name: "Registered",
-        value: summary.funnel.registered,
-        color: "#60a5fa",
       },
       { name: "New", value: summary.funnel.new, color: "#C4232D" },
     ];
@@ -347,7 +340,6 @@ export default function DashboardPage() {
             month: "short",
           }), // e.g. "24 Feb"
       Leads: s.newLeads,
-      Registered: s.registered,
       Confirmed: s.confirmed,
     }));
   }, [summary]);
@@ -405,9 +397,9 @@ export default function DashboardPage() {
   }, [leads]);
 
   const totalLeads = summary?.kpi.totalLeads.current ?? 0;
-  const registeredLeads = summary?.kpi.registeredAccounts.current ?? 0;
-  const depositConfirmed = summary?.kpi.depositingClients.current ?? 0;
-  const pendingVerifications = summary?.kpi.pendingVerifications.current ?? 0;
+  const registeredLeads = summary?.kpi.formSubmissions.current ?? 0;
+  const depositConfirmed = summary?.kpi.verifiedClients.current ?? 0;
+  const pendingVerifications = summary?.kpi.formSubmissions.current ?? 0;
   const handoverLeadsCount = useMemo(() => leads.filter((l) => l.handoverMode).length, [leads]);
 
   useGSAP(
@@ -641,18 +633,18 @@ export default function DashboardPage() {
                         icon={UserCheck}
                         label={t("dashboard.registered")}
                         value={String(registeredLeads)}
-                        delta={`${summary?.kpi.registeredAccounts.changePercentage ?? 0}%`}
+                        delta={`${summary?.kpi.formSubmissions.changePercentage ?? 0}%`}
                         deltaPositive={
-                          (summary?.kpi.registeredAccounts.changePercentage ?? 0) >= 0
+                          (summary?.kpi.formSubmissions.changePercentage ?? 0) >= 0
                         }
                       />
                       <KpiCard
                         icon={Wallet}
                         label={t("dashboard.depositClients")}
                         value={String(depositConfirmed)}
-                        delta={`${summary?.kpi.depositingClients.changePercentage ?? 0}%`}
+                        delta={`${summary?.kpi.verifiedClients.changePercentage ?? 0}%`}
                         deltaPositive={
-                          (summary?.kpi.depositingClients.changePercentage ?? 0) >= 0
+                          (summary?.kpi.verifiedClients.changePercentage ?? 0) >= 0
                         }
                         goldValue
                       />
@@ -660,9 +652,9 @@ export default function DashboardPage() {
                         icon={TrendUp}
                         label={t("dashboard.pendingVerifications")}
                         value={String(pendingVerifications)}
-                        delta={`${summary?.kpi.pendingVerifications.changePercentage ?? 0}%`}
+                        delta={`${summary?.kpi.formSubmissions.changePercentage ?? 0}%`}
                         deltaPositive={
-                          (summary?.kpi.pendingVerifications.changePercentage ?? 0) >= 0
+                          (summary?.kpi.formSubmissions.changePercentage ?? 0) >= 0
                         }
                       />
                     </>
@@ -810,7 +802,6 @@ export default function DashboardPage() {
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0 border ${
                               row.status === "DEPOSIT_CONFIRMED" ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400" :
                               row.status === "DEPOSIT_REPORTED" ? "bg-amber-500/15 border-amber-500/25 text-amber-400" :
-                              row.status === "REGISTERED" ? "bg-purple-500/15 border-purple-500/25 text-purple-400" :
                               row.status === "CONTACTED" ? "bg-blue-500/15 border-blue-500/25 text-blue-400" :
                               row.status === "REJECTED" ? "bg-red-500/15 border-red-500/25 text-red-400" :
                               "bg-crimson/15 border-crimson/20 text-crimson"
@@ -960,10 +951,6 @@ export default function DashboardPage() {
                           <stop offset="5%" stopColor="#C4232D" stopOpacity={0.45} />
                           <stop offset="95%" stopColor="#C4232D" stopOpacity={0.02} />
                         </linearGradient>
-                        <linearGradient id="gradReg" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.38} />
-                          <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.02} />
-                        </linearGradient>
                         <linearGradient id="gradConf" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#22D3A0" stopOpacity={0.38} />
                           <stop offset="95%" stopColor="#22D3A0" stopOpacity={0.02} />
@@ -984,7 +971,6 @@ export default function DashboardPage() {
                         wrapperStyle={{ pointerEvents: "none" }}
                       />
                       <Area type="monotone" dataKey="Leads" stroke="#C4232D" strokeWidth={2} fill="url(#gradLeads)" />
-                      <Area type="monotone" dataKey="Registered" stroke="#60a5fa" strokeWidth={2} fill="url(#gradReg)" />
                       <Area type="monotone" dataKey="Confirmed" stroke="#22D3A0" strokeWidth={2} fill="url(#gradConf)" />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -993,7 +979,6 @@ export default function DashboardPage() {
                     {(
                       [
                         ["#C4232D", "Leads"],
-                        ["#60a5fa", "Registered"],
                         ["#22D3A0", "Confirmed"],
                       ] as const
                     ).map(([color, label]) => (

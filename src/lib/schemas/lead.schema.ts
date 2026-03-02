@@ -6,7 +6,6 @@ import { LeadStatus } from "@/types/enums";
 export const LeadStatusSchema = z.enum([
   LeadStatus.NEW,
   LeadStatus.CONTACTED,
-  LeadStatus.REGISTERED,
   LeadStatus.DEPOSIT_REPORTED,
   LeadStatus.DEPOSIT_CONFIRMED,
   LeadStatus.REJECTED,

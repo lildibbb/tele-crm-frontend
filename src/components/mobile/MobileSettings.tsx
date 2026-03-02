@@ -73,7 +73,7 @@ function SectionCard({
       <p className="text-[10px] font-semibold text-text-muted uppercase tracking-[0.1em] mb-2">
         {header}
       </p>
-      <div className="rounded-xl bg-card border border-border-subtle overflow-hidden divide-y divide-border-subtle">
+      <div className="rounded-xl bg-card bg-clip-padding border border-border-subtle overflow-hidden divide-y divide-border-subtle">
         {children}
       </div>
     </div>
@@ -275,7 +275,12 @@ export default function MobileSettings({
     router.replace("/login");
   };
 
-  const teamItems = role === "OWNER" ? TEAM_ITEMS_OWNER : role === "ADMIN" ? TEAM_ITEMS_ADMIN : [];
+  const teamItems =
+    role === "OWNER"
+      ? TEAM_ITEMS_OWNER
+      : role === "ADMIN"
+        ? TEAM_ITEMS_ADMIN
+        : [];
 
   return (
     <div className="flex flex-col min-h-screen bg-void text-text-primary font-sans">
@@ -361,7 +366,11 @@ export default function MobileSettings({
               className="flex items-center gap-3.5 w-full px-4 min-h-[52px] active:bg-elevated/60 transition-colors group"
             >
               <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-elevated">
-                <Translate size={18} className="text-text-secondary" weight="fill" />
+                <Translate
+                  size={18}
+                  className="text-text-secondary"
+                  weight="fill"
+                />
               </span>
               <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">
                 Language
@@ -389,13 +398,21 @@ export default function MobileSettings({
                   )}
                 >
                   <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-elevated">
-                    <Globe size={18} className="text-text-secondary" weight="fill" />
+                    <Globe
+                      size={18}
+                      className="text-text-secondary"
+                      weight="fill"
+                    />
                   </span>
                   <span className="flex-1 font-sans font-medium text-[14px] text-text-primary text-left">
                     {lang.label}
                   </span>
                   {lang.code === language && (
-                    <CheckCircle size={20} className="text-text-secondary" weight="fill" />
+                    <CheckCircle
+                      size={20}
+                      className="text-text-secondary"
+                      weight="fill"
+                    />
                   )}
                 </button>
               ))}
@@ -416,13 +433,16 @@ export default function MobileSettings({
       </main>
 
       {/* ── Sign-out confirmation dialog ───────────────────────────── */}
-      <AlertDialog open={showSignOutConfirm} onOpenChange={setShowSignOutConfirm}>
+      <AlertDialog
+        open={showSignOutConfirm}
+        onOpenChange={setShowSignOutConfirm}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Sign out?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will be signed out of this device. You can sign back in at
-              any time.
+              You will be signed out of this device. You can sign back in at any
+              time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -439,4 +459,3 @@ export default function MobileSettings({
     </div>
   );
 }
-

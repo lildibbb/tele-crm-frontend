@@ -11,7 +11,6 @@ import {
   Crown,
   DiamondsFour,
   Circle,
-  Bell,
 } from "@phosphor-icons/react";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
@@ -25,14 +24,11 @@ export interface MobileShellProps {
   readonly children: ReactNode;
   readonly activeTab: MobileTab;
   readonly pageTitle: string;
-  /** Total unread notifications for bell badge */
-  readonly notificationCount?: number;
   /** Badge count on Verify tab */
   readonly verifyBadgeCount?: number;
   /** Override user initials (defaults to auth user email initial) */
   readonly userInitials?: string;
   readonly onTabChange?: (tab: MobileTab) => void;
-  readonly onNotificationsClick?: () => void;
   readonly onAvatarClick?: () => void;
   readonly showLiveDot?: boolean;
   /** Optional back button handler — shows back arrow instead of role icon */
@@ -42,12 +38,37 @@ export interface MobileShellProps {
 // ── Role badge config ──────────────────────────────────────────────────────────
 const ROLE_CONFIG: Record<
   UserRole,
-  { Icon: React.ElementType; label: string; iconClass: string; avatarBorder: string }
+  {
+    Icon: React.ElementType;
+    label: string;
+    iconClass: string;
+    avatarBorder: string;
+  }
 > = {
-  SUPERADMIN: { Icon: Crown,         label: "Superadmin", iconClass: "text-gold",            avatarBorder: "border-gold/40" },
-  OWNER:      { Icon: DiamondsFour,  label: "Owner",      iconClass: "text-crimson",         avatarBorder: "border-crimson/40" },
-  ADMIN:      { Icon: ShieldCheck,   label: "Admin",      iconClass: "text-info",            avatarBorder: "border-info/40" },
-  STAFF:      { Icon: Circle,        label: "Staff",      iconClass: "text-text-secondary",  avatarBorder: "border-border-subtle" },
+  SUPERADMIN: {
+    Icon: Crown,
+    label: "Superadmin",
+    iconClass: "text-gold",
+    avatarBorder: "border-gold/40",
+  },
+  OWNER: {
+    Icon: DiamondsFour,
+    label: "Owner",
+    iconClass: "text-crimson",
+    avatarBorder: "border-crimson/40",
+  },
+  ADMIN: {
+    Icon: ShieldCheck,
+    label: "Admin",
+    iconClass: "text-info",
+    avatarBorder: "border-info/40",
+  },
+  STAFF: {
+    Icon: Circle,
+    label: "Staff",
+    iconClass: "text-text-secondary",
+    avatarBorder: "border-border-subtle",
+  },
 };
 
 // ── Tab config per role ────────────────────────────────────────────────────────
@@ -61,10 +82,10 @@ interface TabItem {
 function getTabsForRole(role: UserRole): TabItem[] {
   if (role === "SUPERADMIN") {
     return [
-      { id: "home",   label: "Overview", Icon: SquaresFour,     href: "/" },
-      { id: "leads",  label: "Orgs",     Icon: Users,           href: "/admin/orgs" },
-      { id: "verify", label: "Admin",    Icon: Crown,           href: "/admin" },
-      { id: "more",   label: "More",     Icon: DotsThreeOutline, href: "#more" },
+      { id: "home", label: "Overview", Icon: SquaresFour, href: "/" },
+      { id: "leads", label: "Orgs", Icon: Users, href: "/admin/orgs" },
+      { id: "verify", label: "Admin", Icon: Crown, href: "/admin" },
+      { id: "more", label: "More", Icon: DotsThreeOutline, href: "#more" },
     ];
   }
   return [
@@ -74,9 +95,9 @@ function getTabsForRole(role: UserRole): TabItem[] {
       Icon: SquaresFour,
       href: "/",
     },
-    { id: "leads",  label: "Leads",  Icon: Users,            href: "/leads" },
-    { id: "verify", label: "Verify", Icon: ShieldCheck,      href: "/verification" },
-    { id: "more",   label: "More",   Icon: DotsThreeOutline, href: "#more" },
+    { id: "leads", label: "Leads", Icon: Users, href: "/leads" },
+    { id: "verify", label: "Verify", Icon: ShieldCheck, href: "/verification" },
+    { id: "more", label: "More", Icon: DotsThreeOutline, href: "#more" },
   ];
 }
 
@@ -84,15 +105,6 @@ function getTabsForRole(role: UserRole): TabItem[] {
 function TabBadge({ count }: { count: number }) {
   return (
     <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-crimson flex items-center justify-center font-mono text-[9px] text-white leading-none shadow-sm shadow-crimson/30">
-      {count >= 10 ? "9+" : count}
-    </span>
-  );
-}
-
-function BellBadge({ count }: { count: number }) {
-  if (count <= 0) return null;
-  return (
-    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-crimson flex items-center justify-center font-mono text-[9px] text-white leading-none animate-in fade-in duration-200 shadow-sm shadow-crimson/30">
       {count >= 10 ? "9+" : count}
     </span>
   );
@@ -118,11 +130,9 @@ export default function MobileShell({
   children,
   activeTab,
   pageTitle,
-  notificationCount = 0,
   verifyBadgeCount = 0,
   userInitials: userInitialsProp,
   onTabChange,
-  onNotificationsClick,
   onAvatarClick,
   showLiveDot = false,
   onBack,
@@ -136,8 +146,7 @@ export default function MobileShell({
 
   // Derive initials from auth user email if not provided
   const initials =
-    userInitialsProp ??
-    (user?.email ? user.email[0].toUpperCase() : "TJ");
+    userInitialsProp ?? (user?.email ? user.email[0].toUpperCase() : "TJ");
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background text-text-primary font-sans">
@@ -154,12 +163,29 @@ export default function MobileShell({
               className="flex items-center justify-center w-8 h-8 -ml-1 rounded-lg active:bg-elevated transition-colors"
               aria-label="Go back"
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-crimson">
-                <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                className="text-crimson"
+              >
+                <path
+                  d="M12.5 15L7.5 10L12.5 5"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           ) : (
-            <span className={cn("flex items-center justify-center w-7 h-7 rounded-lg shrink-0", roleConfig.iconClass)}>
+            <span
+              className={cn(
+                "flex items-center justify-center w-7 h-7 rounded-lg shrink-0",
+                roleConfig.iconClass,
+              )}
+            >
               <roleConfig.Icon size={18} weight="fill" />
             </span>
           )}
@@ -171,14 +197,6 @@ export default function MobileShell({
 
         {/* Bell + avatar */}
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={onNotificationsClick}
-            className="relative min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl active:bg-elevated/60 transition-colors"
-            aria-label="Notifications"
-          >
-            <Bell size={21} weight="regular" className="text-text-secondary" />
-            <BellBadge count={notificationCount} />
-          </button>
           <button
             onClick={onAvatarClick}
             className={cn(
@@ -215,7 +233,9 @@ export default function MobileShell({
               <div
                 className={cn(
                   "relative flex flex-col items-center justify-center gap-0.5 px-4 py-1.5 rounded-2xl min-h-[44px] transition-all duration-200",
-                  isActive ? "bg-crimson/15" : "bg-transparent active:bg-elevated/50",
+                  isActive
+                    ? "bg-crimson/15"
+                    : "bg-transparent active:bg-elevated/50",
                 )}
               >
                 <span className="relative">
@@ -232,7 +252,9 @@ export default function MobileShell({
                 <span
                   className={cn(
                     "font-sans text-[10px] leading-tight transition-colors duration-200",
-                    isActive ? "font-semibold text-crimson" : "font-medium text-text-muted",
+                    isActive
+                      ? "font-semibold text-crimson"
+                      : "font-medium text-text-muted",
                   )}
                 >
                   {tab.label}
@@ -270,4 +292,3 @@ export default function MobileShell({
 }
 
 export { LiveDot };
-

@@ -181,7 +181,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
 
   // KPI stat card definitions
   const totalLeads = kpi?.totalLeads?.current ?? 0;
-  const depositors = kpi?.depositingClients?.current ?? 0;
+  const depositors = kpi?.verifiedClients?.current ?? 0;
   const conversionRate =
     totalLeads > 0 ? ((depositors / totalLeads) * 100) : 0;
 
@@ -199,16 +199,28 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
       change: kpi?.totalLeads?.changePercentage ?? 0,
     },
     {
-      id: "registered",
-      label: "Registered",
-      value: kpi?.registeredAccounts?.current ?? 0,
-      formatted: (kpi?.registeredAccounts?.current ?? 0).toLocaleString(),
-      icon: <UserCheck size={20} weight="duotone" />,
-      color: "#60A5FA",
+      id: "contacted",
+      label: "Contacted Leads",
+      value: kpi?.contactedLeads?.current ?? 0,
+      formatted: (kpi?.contactedLeads?.current ?? 0).toLocaleString(),
+      icon: <UsersThree size={20} weight="duotone" />,
+      color: "#3b82f6",
       bgColor: "bg-elevated",
       iconColor: "text-text-secondary",
-      trend: kpi?.registeredAccounts?.trend ?? "neutral",
-      change: kpi?.registeredAccounts?.changePercentage ?? 0,
+      trend: kpi?.contactedLeads?.trend ?? "neutral",
+      change: kpi?.contactedLeads?.changePercentage ?? 0,
+    },
+    {
+      id: "formSubmissions",
+      label: "Form Submissions",
+      value: kpi?.formSubmissions?.current ?? 0,
+      formatted: (kpi?.formSubmissions?.current ?? 0).toLocaleString(),
+      icon: <UserCheck size={20} weight="duotone" />,
+      color: "#F59E0B",
+      bgColor: "bg-elevated",
+      iconColor: "text-text-secondary",
+      trend: kpi?.formSubmissions?.trend ?? "neutral",
+      change: kpi?.formSubmissions?.changePercentage ?? 0,
     },
     {
       id: "deposits",
@@ -219,8 +231,8 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
       color: "#22D3A0",
       bgColor: "bg-elevated",
       iconColor: "text-text-secondary",
-      trend: kpi?.depositingClients?.trend ?? "neutral",
-      change: kpi?.depositingClients?.changePercentage ?? 0,
+      trend: kpi?.verifiedClients?.trend ?? "neutral",
+      change: kpi?.verifiedClients?.changePercentage ?? 0,
     },
     {
       id: "conversion",
@@ -233,9 +245,9 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
       iconColor: "text-text-secondary",
       trend:
         conversionRate > 0
-          ? kpi?.depositingClients?.trend ?? "neutral"
+          ? kpi?.verifiedClients?.trend ?? "neutral"
           : "neutral",
-      change: kpi?.depositingClients?.changePercentage ?? 0,
+      change: kpi?.verifiedClients?.changePercentage ?? 0,
     },
   ];
 
@@ -246,7 +258,6 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
       day: "numeric",
     }),
     "New Leads": d.newLeads,
-    Registered: d.registered,
     Confirmed: d.confirmed,
   }));
 
@@ -255,19 +266,17 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
   const funnelData = funnel
     ? [
         { stage: "Leads", count: funnel.new, color: "#C4232D" },
-        { stage: "Registered", count: funnel.registered, color: "#60A5FA" },
-        { stage: "Deposited", count: funnel.depositReported, color: "#22D3A0" },
-        { stage: "Confirmed", count: funnel.depositConfirmed, color: "#E8B94F" },
+        { stage: "Submitted", count: funnel.formSubmitted, color: "#F59E0B" },
+        { stage: "Confirmed", count: funnel.depositConfirmed, color: "#22D3A0" },
       ]
     : [
         { stage: "Leads", count: totalLeads, color: "#C4232D" },
         {
-          stage: "Registered",
-          count: kpi?.registeredAccounts?.current ?? 0,
-          color: "#60A5FA",
+          stage: "Submitted",
+          count: kpi?.formSubmissions?.current ?? 0,
+          color: "#F59E0B",
         },
-        { stage: "Deposited", count: depositors, color: "#22D3A0" },
-        { stage: "Confirmed", count: 0, color: "#E8B94F" },
+        { stage: "Confirmed", count: depositors, color: "#22D3A0" },
       ];
 
   // Funnel drop-off percentages
@@ -387,10 +396,6 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
                       <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.35} />
                       <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.02} />
                     </linearGradient>
-                    <linearGradient id="maReg" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#a855f7" stopOpacity={0.02} />
-                    </linearGradient>
                     <linearGradient id="maDep" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#22D3A0" stopOpacity={0.3} />
                       <stop offset="95%" stopColor="#22D3A0" stopOpacity={0.02} />
@@ -429,15 +434,6 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
                   />
                   <Area
                     type="monotone"
-                    dataKey="Registered"
-                    stroke="#a855f7"
-                    strokeWidth={2}
-                    fill="url(#maReg)"
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0, fill: "#a855f7" }}
-                  />
-                  <Area
-                    type="monotone"
                     dataKey="Confirmed"
                     stroke="#22D3A0"
                     strokeWidth={2}
@@ -460,7 +456,6 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
               <div className="flex items-center justify-center gap-4 mt-3">
                 {[
                   { label: "Leads", color: "#60A5FA" },
-                  { label: "Registered", color: "#a855f7" },
                   { label: "Confirmed", color: "#22D3A0" },
                 ].map((l) => (
                   <span

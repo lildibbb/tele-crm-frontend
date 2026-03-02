@@ -382,7 +382,6 @@ export function Ch03DashboardAnalytics({ role }: { role?: UserRole }) {
         {[
           { label: "NEW",               color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
           { label: "CONTACTED",         color: "bg-purple-500/10 text-purple-400 border-purple-500/20" },
-          { label: "REGISTERED",        color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20" },
           { label: "DEPOSIT_REPORTED",  color: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
           { label: "DEPOSIT_CONFIRMED", color: "bg-success/10 text-success border-success/20" },
           { label: "CLOSED",            color: "bg-elevated text-text-muted border-border-default" },
@@ -466,8 +465,7 @@ export function Ch04LeadManagement({ role }: { role?: UserRole }) {
             {[
               ["NEW",               "bg-blue-500/10 text-blue-400 border-blue-500/20",      "Lead just started a conversation with the bot. No contact made yet."],
               ["CONTACTED",         "bg-purple-500/10 text-purple-400 border-purple-500/20","Team has reached out or bot has initiated a conversation."],
-              ["REGISTERED",        "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",       "Lead has completed account registration on the trading platform."],
-              ["DEPOSIT_REPORTED",  "bg-amber-500/10 text-amber-400 border-amber-500/20",    "Lead submitted deposit proof (screenshot/video) for review."],
+              ["DEPOSIT_REPORTED",  "bg-amber-500/10 text-amber-400 border-amber-500/20",    "Lead submitted the combined form with deposit proof for review."],
               ["DEPOSIT_CONFIRMED", "bg-success/10 text-success border-success/20",          "Deposit has been verified. Lead is a converted client."],
               ["CLOSED",            "bg-elevated text-text-muted border-border-default",    "Lead has been closed (no longer in active pipeline)."],
               ["LOST",              "bg-danger/10 text-danger border-danger/20",            "Lead disengaged or chose not to proceed."],

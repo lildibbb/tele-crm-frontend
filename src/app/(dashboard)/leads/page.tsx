@@ -218,7 +218,6 @@ export default function LeadsPage() {
   const TAB_FILTERS = [
     { key: "ALL" as const, label: t("leads.filter.all") },
     { key: "NEW" as const, label: t("leads.filter.new") },
-    { key: "REGISTERED" as const, label: t("leads.filter.registered") },
     { key: "DEPOSIT_REPORTED" as const, label: t("leads.filter.proof") },
     { key: "DEPOSIT_CONFIRMED" as const, label: t("leads.filter.confirmed") },
   ];

@@ -28,7 +28,6 @@ type FilterTab = LeadStatus | "ALL";
 const STATUS_CONFIG: Record<string, { label: string }> = {
   NEW:               { label: "New" },
   CONTACTED:         { label: "Contacted" },
-  REGISTERED:        { label: "Registered" },
   DEPOSIT_REPORTED:  { label: "Deposit" },
   DEPOSIT_CONFIRMED: { label: "Verified" },
   REJECTED:          { label: "Rejected" },
@@ -169,7 +168,6 @@ function LeadCard({ lead }: { lead: Lead }) {
 const FILTER_TABS: { id: FilterTab; label: string }[] = [
   { id: "ALL", label: "All" },
   { id: LeadStatus.NEW, label: "New" },
-  { id: LeadStatus.REGISTERED, label: "Registered" },
   { id: LeadStatus.DEPOSIT_REPORTED, label: "Deposit" },
   { id: LeadStatus.DEPOSIT_CONFIRMED, label: "Verified" },
   { id: LeadStatus.REJECTED, label: "Rejected" },

@@ -33,6 +33,7 @@ const en: Record<string, string> = {
   "common.noData": "—",
   "common.review": "Review",
   "common.view": "View",
+  "common.maintenance": "MAINTENANCE",
 
   /* ── Dashboard ───────────────────────────────────── */
   "dashboard.title": "Command Center",
@@ -231,6 +232,7 @@ const en: Record<string, string> = {
   "analytics.conversionRate": "Conversion Rate",
   "analytics.avgDeposit": "Avg Deposit Time",
   "analytics.totalLeads": "Total Leads",
+  "analytics.contactedLeads": "Contacted Leads",
   "analytics.totalDepositors": "Total Depositors",
   "analytics.totalAum": "Total AUM",
   "analytics.charts.depositTrend": "Deposit Trend",
@@ -244,8 +246,8 @@ const en: Record<string, string> = {
   "analytics.velocity.title": "Lead Velocity",
   "analytics.velocity.subtitle": "Median days per pipeline stage",
   "analytics.velocity.distribution": "Time Distribution",
-  "analytics.velocity.newToReg": "New → Registered",
-  "analytics.velocity.regToConfirm": "Registered → Confirmed",
+  "analytics.velocity.newToSubmit": "New → Submitted",
+  "analytics.velocity.submitToConfirm": "Submitted → Confirmed",
   "analytics.velocity.newToConfirm": "New → Confirmed",
   "analytics.velocity.days": "days",
   "analytics.velocity.noData": "Insufficient data (min. 5 leads required)",

@@ -33,6 +33,7 @@ const ms: Record<string, string> = {
   "common.noData": "—",
   "common.review": "Semak",
   "common.view": "Lihat",
+  "common.maintenance": "PENYELENGGARAAN",
 
   /* ── Dashboard ───────────────────────────────────── */
   "dashboard.title": "Pusat Kawalan",

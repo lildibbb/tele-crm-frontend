@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   ChartBar,
   Sliders,
-  Bell,
   User,
   Crown,
   SignOut,
@@ -25,7 +24,6 @@ import { useAuthStore } from "@/store/authStore";
 export interface MobileMoreDrawerProps {
   readonly open: boolean;
   readonly onClose: () => void;
-  readonly notificationCount?: number;
 }
 
 interface QuickLink {
@@ -38,37 +36,74 @@ interface QuickLink {
 }
 
 // ── Role config ────────────────────────────────────────────────────────────────
-const ROLE_CHIP_CONFIG: Record<UserRole, { label: string; textClass: string; bgClass: string }> = {
-  SUPERADMIN: { label: "Superadmin", textClass: "text-gold",           bgClass: "bg-gold-subtle" },
-  OWNER:      { label: "Owner",      textClass: "text-crimson",        bgClass: "bg-crimson-subtle" },
-  ADMIN:      { label: "Admin",      textClass: "text-info",           bgClass: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]" },
-  STAFF:      { label: "Staff",      textClass: "text-text-secondary", bgClass: "bg-elevated" },
+const ROLE_CHIP_CONFIG: Record<
+  UserRole,
+  { label: string; textClass: string; bgClass: string }
+> = {
+  SUPERADMIN: {
+    label: "Superadmin",
+    textClass: "text-gold",
+    bgClass: "bg-gold-subtle",
+  },
+  OWNER: {
+    label: "Owner",
+    textClass: "text-crimson",
+    bgClass: "bg-crimson-subtle",
+  },
+  ADMIN: {
+    label: "Admin",
+    textClass: "text-info",
+    bgClass: "bg-[color-mix(in_srgb,var(--info)_15%,transparent)]",
+  },
+  STAFF: {
+    label: "Staff",
+    textClass: "text-text-secondary",
+    bgClass: "bg-elevated",
+  },
 };
 
 function getQuickLinks(role: UserRole, notifCount: number): QuickLink[] {
   const analytics: QuickLink = {
-    Icon: ChartBar, label: "Analytics", href: "/analytics",
-    iconColor: "text-info", iconBg: "bg-[color-mix(in_srgb,var(--info)_12%,transparent)]",
+    Icon: ChartBar,
+    label: "Analytics",
+    href: "/analytics",
+    iconColor: "text-info",
+    iconBg: "bg-[color-mix(in_srgb,var(--info)_12%,transparent)]",
   };
   const auditLogs: QuickLink = {
-    Icon: ClipboardText, label: "Audit Logs", href: "/audit-logs",
-    iconColor: "text-text-primary", iconBg: "bg-elevated",
+    Icon: ClipboardText,
+    label: "Audit Logs",
+    href: "/audit-logs",
+    iconColor: "text-text-primary",
+    iconBg: "bg-elevated",
   };
   const followUps: QuickLink = {
-    Icon: Timer, label: "Follow-ups", href: "/follow-ups",
-    iconColor: "text-gold", iconBg: "bg-gold-subtle",
+    Icon: Timer,
+    label: "Follow-ups",
+    href: "/follow-ups",
+    iconColor: "text-gold",
+    iconBg: "bg-gold-subtle",
   };
   const broadcasts: QuickLink = {
-    Icon: Megaphone, label: "Broadcasts", href: "/broadcasts",
-    iconColor: "text-crimson", iconBg: "bg-crimson-subtle",
+    Icon: Megaphone,
+    label: "Broadcasts",
+    href: "/broadcasts",
+    iconColor: "text-crimson",
+    iconBg: "bg-crimson-subtle",
   };
   const settings: QuickLink = {
-    Icon: GearSix, label: "Settings", href: "/settings",
-    iconColor: "text-text-secondary", iconBg: "bg-elevated",
+    Icon: GearSix,
+    label: "Settings",
+    href: "/settings",
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
   };
   const profile: QuickLink = {
-    Icon: User, label: "Profile", href: "/profile",
-    iconColor: "text-success", iconBg: "bg-[color-mix(in_srgb,var(--success)_12%,transparent)]",
+    Icon: User,
+    label: "Profile",
+    href: "/profile",
+    iconColor: "text-success",
+    iconBg: "bg-[color-mix(in_srgb,var(--success)_12%,transparent)]",
   };
 
   if (role === "SUPERADMIN") {
@@ -81,13 +116,24 @@ function getQuickLinks(role: UserRole, notifCount: number): QuickLink[] {
 }
 
 // ── Quick Link Cell ────────────────────────────────────────────────────────────
-function QuickLinkCell({ link, onNavigate }: { link: QuickLink; onNavigate: (href: string) => void }) {
+function QuickLinkCell({
+  link,
+  onNavigate,
+}: {
+  link: QuickLink;
+  onNavigate: (href: string) => void;
+}) {
   return (
     <button
       onClick={() => onNavigate(link.href)}
       className="flex flex-col items-center gap-2 py-3 active:scale-[0.95] transition-transform min-h-[44px]"
     >
-      <span className={cn("relative flex items-center justify-center w-12 h-12 rounded-2xl", link.iconBg)}>
+      <span
+        className={cn(
+          "relative flex items-center justify-center w-12 h-12 rounded-2xl",
+          link.iconBg,
+        )}
+      >
         <link.Icon size={22} className={link.iconColor} weight="fill" />
         {link.badge !== undefined && link.badge > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-crimson font-mono text-[10px] text-white flex items-center justify-center font-bold">
@@ -106,7 +152,6 @@ function QuickLinkCell({ link, onNavigate }: { link: QuickLink; onNavigate: (hre
 export default function MobileMoreDrawer({
   open,
   onClose,
-  notificationCount = 0,
 }: MobileMoreDrawerProps) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
@@ -117,7 +162,7 @@ export default function MobileMoreDrawer({
   const userInitials = userName[0]?.toUpperCase() ?? "U";
 
   const chip = ROLE_CHIP_CONFIG[role];
-  const quickLinks = getQuickLinks(role, notificationCount);
+  const quickLinks = getQuickLinks(role, 0);
 
   const handleNavigate = (href: string) => {
     onClose();
@@ -149,7 +194,11 @@ export default function MobileMoreDrawer({
           </p>
           <div className="grid grid-cols-3 gap-x-2 gap-y-1">
             {quickLinks.map((link) => (
-              <QuickLinkCell key={link.href} link={link} onNavigate={handleNavigate} />
+              <QuickLinkCell
+                key={link.href}
+                link={link}
+                onNavigate={handleNavigate}
+              />
             ))}
           </div>
         </div>
@@ -173,10 +222,20 @@ export default function MobileMoreDrawer({
                 {userInitials}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-sans font-semibold text-[14px] text-text-primary truncate">{userName}</p>
+                <p className="font-sans font-semibold text-[14px] text-text-primary truncate">
+                  {userName}
+                </p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="font-sans text-[12px] text-text-muted truncate">{userEmail}</span>
-                  <span className={cn("inline-flex items-center gap-1 shrink-0 rounded-full px-2 py-0.5 font-sans font-bold text-[10px]", chip.bgClass, chip.textClass)}>
+                  <span className="font-sans text-[12px] text-text-muted truncate">
+                    {userEmail}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 shrink-0 rounded-full px-2 py-0.5 font-sans font-bold text-[10px]",
+                      chip.bgClass,
+                      chip.textClass,
+                    )}
+                  >
                     {chip.label}
                   </span>
                 </div>
@@ -193,7 +252,9 @@ export default function MobileMoreDrawer({
                 <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] shrink-0">
                   <SignOut size={18} className="text-danger" weight="bold" />
                 </span>
-                <span className="font-sans font-semibold text-[14px] text-danger">Sign Out</span>
+                <span className="font-sans font-semibold text-[14px] text-danger">
+                  Sign Out
+                </span>
               </button>
             </div>
           </div>

@@ -11,12 +11,14 @@ import {
   CheckCircle,
   XCircle,
   Chat,
-  MagnifyingGlass,
   Image as PhosphorImage,
   X,
   Warning,
   ShieldCheck,
   Check,
+  Hash,
+  CalendarBlank,
+  ArrowSquareOut,
 } from "@phosphor-icons/react";
 
 import {
@@ -69,7 +71,7 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
   const sz = `${size}px`;
   return (
     <div
-      className="rounded-full bg-crimson/12 border border-crimson/20 flex items-center justify-center text-crimson font-bold select-none flex-shrink-0"
+      className="rounded-full bg-elevated border border-border-default flex items-center justify-center text-text-secondary font-semibold select-none flex-shrink-0"
       style={{ width: sz, height: sz, fontSize: size * 0.28 }}
     >
       {initials}
@@ -134,11 +136,10 @@ function ApproveDialog() {
                   {req.hfmBrokerId ?? "—"}
                 </p>
               </div>
-              <p className="font-bold text-gold data-mono text-[18px]">
-                ${Number(req.depositBalance ?? 0).toLocaleString()}
+              <p className="font-bold text-gold data-mono text-[13px]">
+                ${Number(req.depositBalance ?? 0).toLocaleString()}{" "}
+                <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
               </p>
-            </div>
-            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-warning/8 border border-warning/18">
               <Warning
                 weight="duotone"
                 size={14}
@@ -231,8 +232,9 @@ function RejectDialog() {
                   {req.hfmBrokerId ?? "—"}
                 </p>
               </div>
-              <p className="font-bold data-mono text-[18px] text-text-primary">
-                ${Number(req.depositBalance ?? 0).toLocaleString()}
+              <p className="font-bold data-mono text-[13px] text-text-primary">
+                ${Number(req.depositBalance ?? 0).toLocaleString()}{" "}
+                <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
               </p>
             </div>
             <div>
@@ -476,8 +478,9 @@ function AttachmentPreviewDialog({
                     </p>
                   </div>
                 </div>
-                <p className="font-bold text-gold data-mono text-[18px]">
-                  ${Number(req.depositBalance ?? 0).toLocaleString()}
+                <p className="font-bold text-gold data-mono text-[13px]">
+                  ${Number(req.depositBalance ?? 0).toLocaleString()}{" "}
+                  <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
                 </p>
               </div>
             )}
@@ -496,93 +499,124 @@ function ReceiptDialog() {
   const req = getActiveRequest();
   const [attachmentOpen, setAttachmentOpen] = useState(false);
 
+  const isVerified = req?.status === LeadStatus.DEPOSIT_CONFIRMED;
+  const isPending  = req?.status === LeadStatus.DEPOSIT_REPORTED;
+
+  const submittedDisplay = req?.updatedAt
+    ? new Date(req.updatedAt).toLocaleDateString("en-US", {
+        month: "short", day: "numeric", year: "numeric",
+      })
+    : "—";
+
   return (
     <>
       <Dialog
         open={modalKind === "receipt"}
         onOpenChange={(open) => !open && closeModal()}
       >
-        <DialogContent className="sm:max-w-md rounded-3xl border-border-subtle bg-card gap-0 shadow-sm">
-          <DialogHeader className="p-5 pb-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-info/12 border border-info/25 flex items-center justify-center flex-shrink-0">
-                <PhosphorImage
-                  weight="duotone"
-                  size={20}
-                  className="text-info"
-                />
-              </div>
-              <div>
-                <DialogTitle className="font-bold text-[18px] text-text-primary leading-tight">
-                  {t(K.verification.depositReceipt)}
-                </DialogTitle>
-                <DialogDescription className="sr-only">
-                  View deposit receipt details for this submission
-                </DialogDescription>
-              </div>
-            </div>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-[400px] rounded-3xl border border-border-subtle bg-card gap-0 p-0 overflow-hidden shadow-[var(--shadow-modal)]">
+          <DialogDescription className="sr-only">
+            View deposit receipt details for this submission
+          </DialogDescription>
+
+          {/* ── Header bar ── */}
+          <div className="flex items-center justify-between px-5 pt-5 pb-4">
+            <DialogTitle className="font-bold text-[15px] text-text-primary leading-tight">
+              {t(K.verification.depositReceipt)}
+            </DialogTitle>
+            {isVerified && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/8 border border-success/20 text-success text-[11px] font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
+                Verified
+              </span>
+            )}
+          </div>
 
           {req && (
-            <div className="p-5 space-y-4">
-              <button
-                onClick={() => setAttachmentOpen(true)}
-                className="w-full rounded-2xl bg-elevated border border-border-subtle overflow-hidden flex items-center justify-center aspect-video hover:border-info/40 transition-colors group"
-              >
-                <div className="flex flex-col items-center gap-2 text-text-muted group-hover:text-info transition-colors">
-                  <PhosphorImage weight="duotone" size={32} />
-                  <span className="text-[12px] font-sans">
-                    {t(K.verification.viewReceipt)}
-                  </span>
+            <>
+              {/* ── Lead identity row ── */}
+              <div className="mx-5 mb-4 flex items-center gap-3 p-3 rounded-2xl bg-elevated border border-border-subtle">
+                <Avatar name={req.displayName ?? req.username ?? "—"} size={36} />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-[13px] text-text-primary truncate">
+                    {req.displayName ?? req.username ?? "—"}
+                  </p>
+                  <p className="data-mono text-[11px] text-text-muted truncate">
+                    @{req.username ?? req.telegramUserId ?? "—"}
+                  </p>
                 </div>
-              </button>
-              <div className="space-y-2 text-[13px] font-sans text-text-secondary">
-                <div className="flex justify-between">
-                  <span>{t(K.verification.amount)}</span>
-                  <span className="font-bold text-gold data-mono">
-                    ${Number(req.depositBalance ?? 0).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>{t(K.verification.hfmAccount)}</span>
-                  <span className="data-mono text-text-primary">
+              </div>
+
+              {/* ── Hero amount panel ── */}
+              <div className="mx-5 mb-4 rounded-2xl bg-elevated border border-border-subtle p-4 flex flex-col items-center gap-1">
+                <p className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  {t(K.verification.amount)}
+                </p>
+                <p className="font-display font-bold text-[28px] text-gold data-mono leading-none tracking-tight">
+                  ${Number(req.depositBalance ?? 0).toLocaleString()}
+                </p>
+                <span className="text-[10px] font-semibold text-text-muted tracking-widest uppercase">
+                  USD
+                </span>
+              </div>
+
+              {/* ── Meta rows ── */}
+              <div className="mx-5 mb-4 rounded-2xl bg-elevated border border-border-subtle overflow-hidden divide-y divide-border-subtle">
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <Hash size={13} weight="regular" className="text-text-muted flex-shrink-0" />
+                  <span className="text-[12px] text-text-secondary flex-1">{t(K.verification.hfmAccount)}</span>
+                  <span className="data-mono text-[12px] text-text-primary font-medium">
                     {req.hfmBrokerId ?? "—"}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>{t(K.verification.submitted)}</span>
-                  <span className="data-mono text-text-primary">
-                    {req.updatedAt ?? "—"}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <CalendarBlank size={13} weight="regular" className="text-text-muted flex-shrink-0" />
+                  <span className="text-[12px] text-text-secondary flex-1">{t(K.verification.submitted)}</span>
+                  <span className="data-mono text-[12px] text-text-primary font-medium">
+                    {submittedDisplay}
                   </span>
                 </div>
               </div>
-            </div>
+
+              {/* ── View proof CTA ── */}
+              <div className="mx-5 mb-5">
+                <button
+                  onClick={() => setAttachmentOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-card border border-border-default text-text-secondary hover:text-text-primary hover:border-border-default transition-colors text-[12px] font-medium"
+                >
+                  <PhosphorImage weight="duotone" size={15} />
+                  {t(K.verification.viewReceipt)}
+                  <ArrowSquareOut size={12} weight="regular" className="ml-0.5 opacity-60" />
+                </button>
+              </div>
+            </>
           )}
 
-          <DialogFooter className="p-5 pt-0 gap-2">
+          {/* ── Footer ── */}
+          <div className="px-5 pb-5 flex gap-2 border-t border-border-subtle pt-4">
             <DialogClose asChild>
-              <Button variant="outline" className="flex-1 rounded-xl h-11">
+              <Button variant="outline" className="flex-1 rounded-xl h-10 text-[13px]">
                 {t(K.common.close)}
               </Button>
             </DialogClose>
-            {req?.status === LeadStatus.DEPOSIT_REPORTED ? (
+            {isPending ? (
               <Button
                 onClick={() => {
                   closeModal();
                   openModal(req?.id ?? "", "approve");
                 }}
-                className="flex-1 rounded-xl h-11 bg-success hover:bg-success/90 text-white font-semibold gap-2"
+                className="flex-1 rounded-xl h-10 bg-success hover:bg-success/90 text-white font-semibold gap-1.5 text-[13px]"
               >
-                <CheckCircle weight="duotone" size={15} />
+                <CheckCircle weight="duotone" size={14} />
                 {t(K.verification.approve)}
               </Button>
             ) : (
-              <div className="flex-1 flex items-center justify-center gap-2 rounded-xl h-11 bg-elevated border border-border-subtle text-text-muted text-sm font-medium">
-                <ShieldCheck size={15} weight="duotone" className="text-success" />
+              <div className="flex-1 flex items-center justify-center gap-2 rounded-xl h-10 bg-elevated border border-border-subtle text-text-muted text-[13px] font-medium">
+                <ShieldCheck size={14} weight="duotone" className="text-success" />
                 {t(K.verification.alreadyVerified)}
               </div>
             )}
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -747,12 +781,12 @@ export default function VerificationPage() {
                 {t("verification.title")}
               </h1>
               {pendingTotal > 0 && (
-                <Badge className="badge badge-warning gap-1.5">
+                <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border-default text-text-secondary text-[11px] font-semibold shadow-none">
                   <span
                     className="rounded-full bg-warning inline-block flex-shrink-0"
                     style={{
-                      width: 6,
-                      height: 6,
+                      width: 5,
+                      height: 5,
                       animation: "pulse-live 2.4s ease-in-out infinite",
                     }}
                   />
@@ -768,14 +802,22 @@ export default function VerificationPage() {
 
         {/* ── Stats Strip ── */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="verify-stat kpi-stat-card bg-elevated rounded-xl p-5">
+          <div className="verify-stat kpi-stat-card bg-elevated rounded-xl p-5 shadow-sm border border-border-subtle">
             <div className="flex items-start justify-between mb-4">
-              <Clock size={22} weight="duotone" className="text-warning" />
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-warning/10 text-warning">
+              <Clock size={22} weight="duotone" className="text-text-muted" />
+              <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-card border border-border-subtle text-text-secondary">
+                <span
+                  className="rounded-full bg-warning inline-block flex-shrink-0"
+                  style={{
+                    width: 5,
+                    height: 5,
+                    animation: "pulse-live 2.4s ease-in-out infinite",
+                  }}
+                />
                 Live
               </span>
             </div>
-            <p className="text-2xl font-bold data-mono text-warning leading-none mb-1.5 tracking-tight">
+            <p className="text-2xl font-bold data-mono text-text-primary leading-none mb-1.5 tracking-tight">
               {pendingTotal}
             </p>
             <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
@@ -783,18 +825,18 @@ export default function VerificationPage() {
             </p>
           </div>
 
-          <div className="verify-stat kpi-stat-card bg-elevated rounded-xl p-5">
+          <div className="verify-stat kpi-stat-card bg-elevated rounded-xl p-5 shadow-sm border border-border-subtle">
             <div className="flex items-start justify-between mb-4">
               <CheckCircle
                 size={22}
                 weight="duotone"
-                className="text-success"
+                className="text-text-muted"
               />
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-success/10 text-success">
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-card border border-border-subtle text-text-secondary">
                 Today
               </span>
             </div>
-            <p className="text-2xl font-bold data-mono text-success leading-none mb-1.5 tracking-tight">
+            <p className="text-2xl font-bold data-mono text-text-primary leading-none mb-1.5 tracking-tight">
               {approvedCount}
             </p>
             <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
@@ -802,14 +844,14 @@ export default function VerificationPage() {
             </p>
           </div>
 
-          <div className="verify-stat kpi-stat-card bg-elevated rounded-xl p-5">
+          <div className="verify-stat kpi-stat-card bg-elevated rounded-xl p-5 shadow-sm border border-border-subtle">
             <div className="flex items-start justify-between mb-4">
-              <XCircle size={22} weight="duotone" className="text-danger" />
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-danger/10 text-danger">
+              <XCircle size={22} weight="duotone" className="text-text-muted" />
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-card border border-border-subtle text-text-secondary">
                 Today
               </span>
             </div>
-            <p className="text-2xl font-bold data-mono text-danger leading-none mb-1.5 tracking-tight">
+            <p className="text-2xl font-bold data-mono text-text-primary leading-none mb-1.5 tracking-tight">
               0
             </p>
             <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">

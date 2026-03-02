@@ -35,7 +35,7 @@ export interface OwnerHomeProps {
 
 const STATUS_COLORS: Record<string, string> = {
   NEW:               "var(--info)",
-  REGISTERED:        "#A855F7",
+  CONTACTED:         "#60A5FA",
   DEPOSIT_REPORTED:  "var(--warning)",
   DEPOSIT_CONFIRMED: "var(--success)",
   REJECTED:          "var(--danger)",
@@ -43,7 +43,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   NEW:               "NEW",
-  REGISTERED:        "REGISTERED",
+  CONTACTED:         "CONTACTED",
   DEPOSIT_REPORTED:  "PROOF PENDING",
   DEPOSIT_CONFIRMED: "CONFIRMED",
   REJECTED:          "REJECTED",
@@ -82,10 +82,10 @@ export default function OwnerHome({
   }, [fetchSummary, fetchLeads]);
 
   const kpi = summary?.kpi;
-  const pendingCount = kpi?.pendingVerifications?.current ?? 0;
+  const pendingCount = kpi?.formSubmissions?.current ?? 0;
   const totalLeads = kpi?.totalLeads?.current ?? 0;
-  const registered = kpi?.registeredAccounts?.current ?? 0;
-  const depositing = kpi?.depositingClients?.current ?? 0;
+  const registered = kpi?.formSubmissions?.current ?? 0;
+  const depositing = kpi?.verifiedClients?.current ?? 0;
   const conversionRate = totalLeads > 0 ? ((depositing / totalLeads) * 100).toFixed(1) : "0.0";
 
   const kpiCards = [
@@ -104,8 +104,8 @@ export default function OwnerHome({
       iconColor: "text-text-secondary",
       value: String(registered || "—"),
       label: "Verified",
-      trend: kpi?.registeredAccounts?.trend,
-      trendPct: kpi?.registeredAccounts?.changePercentage,
+      trend: kpi?.formSubmissions?.trend,
+      trendPct: kpi?.formSubmissions?.changePercentage,
     },
     {
       Icon: CurrencyDollar,
@@ -113,8 +113,8 @@ export default function OwnerHome({
       iconColor: "text-text-secondary",
       value: String(depositing || "—"),
       label: "Deposits",
-      trend: kpi?.depositingClients?.trend,
-      trendPct: kpi?.depositingClients?.changePercentage,
+      trend: kpi?.verifiedClients?.trend,
+      trendPct: kpi?.verifiedClients?.changePercentage,
     },
     {
       Icon: TrendUp,

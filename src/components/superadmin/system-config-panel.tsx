@@ -58,7 +58,7 @@ export const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: s
     title: "Follow-Up Delays", icon: Timer, color: "text-warning",
     fields: [
       { key: "bot.followUpContactedDelayHours", label: "Contacted Delay (h)", description: "Hours after CONTACTED before follow-up", type: "number" },
-      { key: "bot.followUpRegisteredDelayHours", label: "Registered Delay (h)", description: "Hours after REGISTERED before follow-up", type: "number" },
+      { key: "bot.followUpContactedDelayHours", label: "Contacted Delay (h)", description: "Hours after CONTACTED before follow-up", type: "number" },
       { key: "bot.followUpDepositReportedDelayHours", label: "Deposit Delay (h)", description: "Hours after DEPOSIT_REPORTED before follow-up", type: "number" },
       { key: "bot.followUpMaxRetries", label: "Max Retries", description: "Maximum follow-up retry attempts", type: "number" },
     ],

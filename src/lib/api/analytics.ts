@@ -20,9 +20,9 @@ export interface VelocityDistribution {
   count: number;
 }
 export interface VelocityData {
-  newToRegistered: VelocityDistribution;
+  newToSubmitted: VelocityDistribution;
   newToConfirmed:  VelocityDistribution;
-  registeredToConfirmed: { p50: number | null; count: number };
+  submittedToConfirmed: { p50: number | null; count: number };
 }
 
 export const analyticsApi = {

@@ -36,12 +36,6 @@ export type { MobileMoreDrawerProps } from "./MobileMoreDrawer";
 export { default as MobileSettings } from "./MobileSettings";
 export type { MobileSettingsProps } from "./MobileSettings";
 
-export { default as MobileNotifications } from "./MobileNotifications";
-export type {
-  MobileNotificationsProps,
-  NotificationItem,
-} from "./MobileNotifications";
-
 export { default as MobileProfile } from "./MobileProfile";
 export type { MobileProfileProps } from "./MobileProfile";
 

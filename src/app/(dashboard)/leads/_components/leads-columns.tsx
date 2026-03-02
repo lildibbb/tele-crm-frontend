@@ -12,7 +12,7 @@ import {
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
 import type { Lead } from "@/store/leadsStore";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -23,7 +23,6 @@ import {
 const BADGE_MAP: Record<string, { label: string; cls: string }> = {
   NEW: { label: "New", cls: "badge-new" },
   CONTACTED: { label: "Contacted", cls: "badge-contacted" },
-  REGISTERED: { label: "Registered", cls: "badge-registered" },
   DEPOSIT_REPORTED: { label: "Proof Pending", cls: "badge-pending" },
   DEPOSIT_CONFIRMED: { label: "Confirmed", cls: "badge-confirmed" },
 };
@@ -56,13 +55,10 @@ export function getLeadsColumns({
         return (
           <Link href={`/leads/${lead.id}`} className="flex items-center gap-3">
             <div className="relative">
-              <Avatar>
-                <AvatarImage
-                  src="https://github.com/shadcn.png"
-                  alt="@shadcn"
-                  className="grayscale"
-                />
-                <AvatarFallback>{initials}</AvatarFallback>
+              <Avatar className="h-8 w-8 rounded-full bg-elevated border border-border-default flex-shrink-0">
+                <AvatarFallback className="text-[11px] font-semibold text-text-secondary bg-transparent">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-card" />
             </div>
@@ -176,8 +172,9 @@ export function getLeadsColumns({
         if (!balance || balance === "—")
           return <span className="text-text-muted data-mono">—</span>;
         return (
-          <span className="data-mono text-gold font-semibold text-[13.5px]">
-            {balance}
+          <span className="data-mono text-gold font-semibold text-[13px]">
+            ${Number(balance).toLocaleString()}{" "}
+            <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
           </span>
         );
       },

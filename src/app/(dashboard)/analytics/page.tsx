@@ -124,8 +124,7 @@ void _unused;
 // ── Funnel fill colours ──────────────────────────────────────────
 const FUNNEL_FILLS = {
   new: "#C4232D",
-  registered: "#a855f7",
-  depositReported: "#F59E0B",
+  formSubmitted: "#F59E0B",
   depositConfirmed: "#22d3a0",
 };
 
@@ -320,7 +319,7 @@ function KpiCard({
   iconColor: string;
 }) {
   return (
-    <div className="kpi-stat-card bg-elevated rounded-xl p-5">
+    <div className="kpi-stat-card bg-elevated rounded-xl p-5 shadow-sm border border-border-subtle">
       <div className="flex items-start justify-between mb-4">
         <Icon size={22} weight="duotone" />
 
@@ -392,14 +391,9 @@ export default function AnalyticsPage() {
     return [
       { name: "New", value: summary.funnel.new, fill: FUNNEL_FILLS.new },
       {
-        name: "Registered",
-        value: summary.funnel.registered,
-        fill: FUNNEL_FILLS.registered,
-      },
-      {
-        name: "Dep. Reported",
-        value: summary.funnel.depositReported,
-        fill: FUNNEL_FILLS.depositReported,
+        name: "Form Submitted",
+        value: summary.funnel.formSubmitted,
+        fill: FUNNEL_FILLS.formSubmitted,
       },
       {
         name: "Confirmed",
@@ -415,14 +409,13 @@ export default function AnalyticsPage() {
     return summary.trendSeries.map((pt) => ({
       date: formatXLabel(pt.date, timeframe),
       "New Leads": pt.newLeads,
-      Registered: pt.registered,
       Confirmed: pt.confirmed,
     }));
   }, [summary, timeframe]);
 
   const kpi = summary?.kpi;
   const totalLeads = kpi?.totalLeads.current ?? 0;
-  const depositConfirmed = kpi?.depositingClients.current ?? 0;
+  const depositConfirmed = kpi?.verifiedClients.current ?? 0;
   const conversionRate = kpi?.totalLeads.current
     ? ((depositConfirmed / kpi.totalLeads.current) * 100).toFixed(1) + "%"
     : "—";
@@ -516,7 +509,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* ── KPI cards ── */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
         {isLoading && !summary ? (
           Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-[120px] rounded-2xl" />
@@ -532,26 +525,34 @@ export default function AnalyticsPage() {
               iconColor="#60a5fa"
             />
             <KpiCard
+              label={t("analytics.contactedLeads")}
+              value={(kpi?.contactedLeads.current ?? 0).toLocaleString()}
+              change={`${kpi?.contactedLeads.changePercentage ?? 0}%`}
+              up={(kpi?.contactedLeads.trend ?? "up") === "up"}
+              icon={TrendUp}
+              iconColor="#A78BFA"
+            />
+            <KpiCard
               label={t("analytics.totalDepositors")}
-              value={(kpi?.depositingClients.current ?? 0).toLocaleString()}
-              change={`${kpi?.depositingClients.changePercentage ?? 0}%`}
-              up={(kpi?.depositingClients.trend ?? "up") === "up"}
+              value={(kpi?.verifiedClients.current ?? 0).toLocaleString()}
+              change={`${kpi?.verifiedClients.changePercentage ?? 0}%`}
+              up={(kpi?.verifiedClients.trend ?? "up") === "up"}
               icon={Wallet}
               iconColor="#22d3a0"
             />
             <KpiCard
               label={t(K.analytics.pendingVerification)}
-              value={(kpi?.pendingVerifications.current ?? 0).toLocaleString()}
-              change={`${kpi?.pendingVerifications.changePercentage ?? 0}%`}
-              up={(kpi?.pendingVerifications.trend ?? "up") === "up"}
+              value={(kpi?.formSubmissions.current ?? 0).toLocaleString()}
+              change={`${kpi?.formSubmissions.changePercentage ?? 0}%`}
+              up={(kpi?.formSubmissions.trend ?? "up") === "up"}
               icon={TrendUp}
               iconColor="#E8B94F"
             />
             <KpiCard
               label={t("analytics.conversionRate")}
               value={conversionRate}
-              change={`${kpi?.registeredAccounts.changePercentage ?? 0}%`}
-              up={(kpi?.registeredAccounts.trend ?? "up") === "up"}
+              change={`${kpi?.verifiedClients.changePercentage ?? 0}%`}
+              up={(kpi?.verifiedClients.trend ?? "up") === "up"}
               icon={Target}
               iconColor="#C4232D"
             />
@@ -593,10 +594,6 @@ export default function AnalyticsPage() {
                     <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.45} />
                     <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.02} />
                   </linearGradient>
-                  <linearGradient id="gReg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.38} />
-                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0.02} />
-                  </linearGradient>
                   <linearGradient id="gDep" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#22d3a0" stopOpacity={0.38} />
                     <stop offset="95%" stopColor="#22d3a0" stopOpacity={0.02} />
@@ -624,13 +621,6 @@ export default function AnalyticsPage() {
                 />
                 <Area
                   type="monotone"
-                  dataKey="Registered"
-                  stroke="#a855f7"
-                  strokeWidth={2}
-                  fill="url(#gReg)"
-                />
-                <Area
-                  type="monotone"
                   dataKey="Confirmed"
                   stroke="#22d3a0"
                   strokeWidth={2}
@@ -642,7 +632,6 @@ export default function AnalyticsPage() {
               {(
                 [
                   ["#60a5fa", "New Leads"],
-                  ["#a855f7", "Registered"],
                   ["#22d3a0", "Confirmed"],
                 ] as const
               ).map(([color, label]) => (
@@ -732,16 +721,16 @@ export default function AnalyticsPage() {
               <div className="mt-4 pt-3 border-t border-border-subtle space-y-1">
                 {[
                   [
-                    "New → Registered",
-                    summary.funnel.conversionRates.newToRegistered,
+                    "New → Submitted",
+                    summary.funnel.conversionRates.newToSubmitted,
                   ],
                   [
-                    "Reg → Reported",
-                    summary.funnel.conversionRates.registeredToReported,
+                    "Submitted → Confirmed",
+                    summary.funnel.conversionRates.submittedToConfirmed,
                   ],
                   [
-                    "Reported → Confirmed",
-                    summary.funnel.conversionRates.reportedToConfirmed,
+                    "Overall",
+                    summary.funnel.conversionRates.overall,
                   ],
                 ].map(([label, val]) => (
                   <div key={label as string} className="flex justify-between">
@@ -840,20 +829,20 @@ export default function AnalyticsPage() {
                 <ArrowsLeftRight size={20} weight="duotone" className="text-text-muted" />
               </div>
               <p className="text-xs font-sans mb-5 text-text-muted">{t(K.analytics.velocity.subtitle)}</p>
-              {!velocityData || velocityData.newToRegistered.count < 5 ? (
+              {!velocityData || velocityData.newToSubmitted.count < 5 ? (
                 <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
                   {t(K.analytics.velocity.noData)}
                 </div>
               ) : (
                 <div className="space-y-3">
                   {[
-                    { label: t(K.analytics.velocity.newToReg),     value: velocityData.newToRegistered.p50,     color: "#a855f7" },
-                    { label: t(K.analytics.velocity.regToConfirm), value: velocityData.registeredToConfirmed.p50, color: "#22d3a0" },
-                    { label: t(K.analytics.velocity.newToConfirm), value: velocityData.newToConfirmed.p50,      color: "#C4232D" },
+                    { label: t(K.analytics.velocity.newToSubmit),      value: velocityData.newToSubmitted.p50,         color: "#a855f7" },
+                    { label: t(K.analytics.velocity.submitToConfirm),  value: velocityData.submittedToConfirmed.p50,   color: "#22d3a0" },
+                    { label: t(K.analytics.velocity.newToConfirm),     value: velocityData.newToConfirmed.p50,         color: "#C4232D" },
                   ].map(({ label, value, color }) => {
                     const max = Math.max(
-                      velocityData.newToRegistered.p50 ?? 0,
-                      velocityData.registeredToConfirmed.p50 ?? 0,
+                      velocityData.newToSubmitted.p50 ?? 0,
+                      velocityData.submittedToConfirmed.p50 ?? 0,
                       velocityData.newToConfirmed.p50 ?? 0,
                       1,
                     );
@@ -890,7 +879,7 @@ export default function AnalyticsPage() {
               <p className="text-xs font-sans mb-5 text-text-muted">
                 {t(K.analytics.velocity.p25)} · {t(K.analytics.velocity.p50)} · {t(K.analytics.velocity.p75)}
               </p>
-              {!velocityData || velocityData.newToRegistered.count < 5 ? (
+              {!velocityData || velocityData.newToSubmitted.count < 5 ? (
                 <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
                   {t(K.analytics.velocity.noData)}
                 </div>
@@ -899,10 +888,10 @@ export default function AnalyticsPage() {
                   <BarChart
                     data={[
                       {
-                        name: t(K.analytics.velocity.newToReg),
-                        p25:  velocityData.newToRegistered.p25,
-                        p50:  velocityData.newToRegistered.p50,
-                        p75:  velocityData.newToRegistered.p75,
+                        name: t(K.analytics.velocity.newToSubmit),
+                        p25:  velocityData.newToSubmitted.p25,
+                        p50:  velocityData.newToSubmitted.p50,
+                        p75:  velocityData.newToSubmitted.p75,
                       },
                       {
                         name: t(K.analytics.velocity.newToConfirm),

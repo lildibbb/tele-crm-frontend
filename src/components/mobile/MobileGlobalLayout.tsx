@@ -9,7 +9,6 @@
 import React, { ReactNode, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  Bell,
   SquaresFour,
   Users,
   ShieldCheck,
@@ -30,8 +29,10 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/authStore";
+import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
+import { useT } from "@/i18n";
 
 // ── Page titles ────────────────────────────────────────────────────────────────
 
@@ -45,7 +46,6 @@ const PAGE_TITLES: Record<string, string> = {
   "/analytics": "Analytics",
   "/settings": "Settings",
   "/profile": "Profile",
-  "/notifications": "Notifications",
   "/admin": "Admin",
   "/admin/overview": "Overview",
   "/admin/users": "Users",
@@ -79,17 +79,22 @@ interface Tab {
 function getTabsForRole(role: UserRole): Tab[] {
   if (role === "SUPERADMIN") {
     return [
-      { id: "home",   label: "Overview", Icon: SquaresFour,      href: "/" },
-      { id: "leads",  label: "Orgs",     Icon: Users,            href: "/admin/users" },
-      { id: "verify", label: "Admin",    Icon: Crown,            href: "/admin/overview" },
-      { id: "more",   label: "More",     Icon: DotsThreeOutline },
+      { id: "home", label: "Overview", Icon: SquaresFour, href: "/" },
+      { id: "leads", label: "Orgs", Icon: Users, href: "/admin/users" },
+      { id: "verify", label: "Admin", Icon: Crown, href: "/admin/overview" },
+      { id: "more", label: "More", Icon: DotsThreeOutline },
     ];
   }
   return [
-    { id: "home",   label: role === "STAFF" ? "Tasks" : "Home", Icon: SquaresFour, href: "/" },
-    { id: "leads",  label: "Leads",  Icon: Users,            href: "/leads" },
-    { id: "verify", label: "Verify", Icon: ShieldCheck,      href: "/verification" },
-    { id: "more",   label: "More",   Icon: DotsThreeOutline },
+    {
+      id: "home",
+      label: role === "STAFF" ? "Tasks" : "Home",
+      Icon: SquaresFour,
+      href: "/",
+    },
+    { id: "leads", label: "Leads", Icon: Users, href: "/leads" },
+    { id: "verify", label: "Verify", Icon: ShieldCheck, href: "/verification" },
+    { id: "more", label: "More", Icon: DotsThreeOutline },
   ];
 }
 
@@ -109,12 +114,12 @@ interface QuickLink {
 
 function getQuickLinks(role: UserRole): QuickLink[] {
   const common: QuickLink[] = [
-    { label: "Analytics",   href: "/analytics",   Icon: ChartBar },
-    { label: "Broadcasts",  href: "/broadcasts",  Icon: Megaphone },
-    { label: "Follow-ups",  href: "/follow-ups",  Icon: Timer },
-    { label: "Audit Logs",  href: "/audit-logs",  Icon: ClipboardText },
-    { label: "Settings",    href: "/settings",    Icon: Sliders },
-    { label: "Docs",        href: "/docs",        Icon: BookOpen },
+    { label: "Analytics", href: "/analytics", Icon: ChartBar },
+    { label: "Broadcasts", href: "/broadcasts", Icon: Megaphone },
+    { label: "Follow-ups", href: "/follow-ups", Icon: Timer },
+    { label: "Audit Logs", href: "/audit-logs", Icon: ClipboardText },
+    { label: "Settings", href: "/settings", Icon: Sliders },
+    { label: "Docs", href: "/docs", Icon: BookOpen },
   ];
   if (role === "STAFF") {
     return common.filter((l) => !["Audit Logs"].includes(l.label));
@@ -124,24 +129,18 @@ function getQuickLinks(role: UserRole): QuickLink[] {
 
 const ROLE_LABEL: Record<UserRole, string> = {
   SUPERADMIN: "Superadmin",
-  OWNER:      "Owner",
-  ADMIN:      "Admin",
-  STAFF:      "Staff",
+  OWNER: "Owner",
+  ADMIN: "Admin",
+  STAFF: "Staff",
 };
 
-function MoreDrawer({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
 
-  const role    = (user?.role as UserRole) ?? "STAFF";
-  const email   = user?.email ?? "";
-  const name    = email.split("@")[0] ?? "User";
+  const role = (user?.role as UserRole) ?? "STAFF";
+  const email = user?.email ?? "";
+  const name = email.split("@")[0] ?? "User";
   const initials = name[0]?.toUpperCase() ?? "U";
   const roleLabel = ROLE_LABEL[role];
   const links = getQuickLinks(role);
@@ -185,7 +184,11 @@ function MoreDrawer({
                 className="flex flex-col items-center gap-2 py-3 rounded-xl active:bg-elevated transition-colors min-h-[72px]"
               >
                 <span className="flex items-center justify-center w-11 h-11 rounded-2xl bg-elevated">
-                  <link.Icon size={20} weight="regular" className="text-text-secondary" />
+                  <link.Icon
+                    size={20}
+                    weight="regular"
+                    className="text-text-secondary"
+                  />
                 </span>
                 <span className="font-sans text-[11px] text-text-secondary text-center leading-tight">
                   {link.label}
@@ -216,38 +219,42 @@ function MoreDrawer({
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-sans font-semibold text-[13px] text-text-primary truncate">{name}</p>
+              <p className="font-sans font-semibold text-[13px] text-text-primary truncate">
+                {name}
+              </p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="font-sans text-[11px] text-text-muted truncate">{email}</span>
-                <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 shrink-0 font-medium">
+                <span className="font-sans text-[11px] text-text-muted truncate">
+                  {email}
+                </span>
+                <Badge
+                  variant="secondary"
+                  className="text-[9px] px-1.5 py-0 h-4 shrink-0 font-medium"
+                >
                   {roleLabel}
                 </Badge>
               </div>
             </div>
-            <CaretRight size={14} weight="regular" className="text-text-muted shrink-0" />
+            <CaretRight
+              size={14}
+              weight="regular"
+              className="text-text-muted shrink-0"
+            />
           </button>
 
-          {/* Notifications row */}
-          <button
-            onClick={() => navigate("/notifications")}
-            className="flex items-center gap-3 w-full px-3.5 py-3 mt-1 rounded-xl bg-card border border-border-subtle active:bg-elevated transition-colors text-left min-h-[48px]"
-          >
-            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-elevated shrink-0">
-              <Bell size={18} weight="regular" className="text-text-secondary" />
-            </span>
-            <span className="flex-1 font-sans text-[13px] text-text-primary">Notifications</span>
-            <CaretRight size={14} weight="regular" className="text-text-muted shrink-0" />
-          </button>
-
-          {/* Sign out */}
           <button
             onClick={handleSignOut}
             className="flex items-center gap-3 w-full px-3.5 py-3 mt-1 rounded-xl active:bg-elevated transition-colors min-h-[48px]"
           >
             <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-elevated shrink-0">
-              <SignOut size={18} weight="regular" className="text-text-secondary" />
+              <SignOut
+                size={18}
+                weight="regular"
+                className="text-text-secondary"
+              />
             </span>
-            <span className="font-sans text-[13px] text-danger font-medium">Sign Out</span>
+            <span className="font-sans text-[13px] text-danger font-medium">
+              Sign Out
+            </span>
           </button>
         </div>
 
@@ -263,17 +270,22 @@ interface MobileGlobalLayoutProps {
   readonly children: ReactNode;
 }
 
-export default function MobileGlobalLayout({ children }: MobileGlobalLayoutProps) {
+export default function MobileGlobalLayout({
+  children,
+}: MobileGlobalLayoutProps) {
+  const t = useT();
   const pathname = usePathname();
-  const router   = useRouter();
+  const router = useRouter();
   const { user } = useAuthStore();
 
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const role     = (user?.role as UserRole) ?? "STAFF";
-  const tabs     = getTabsForRole(role);
-  const title    = getPageTitle(pathname);
+  const role = (user?.role as UserRole) ?? "STAFF";
+  const tabs = getTabsForRole(role);
+  const title = getPageTitle(pathname);
   const initials = user?.email ? user.email[0].toUpperCase() : "TJ";
+
+  const maintenanceMode = useMaintenanceStore((s) => s.maintenanceMode);
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-void text-text-primary font-sans">
@@ -282,17 +294,37 @@ export default function MobileGlobalLayout({ children }: MobileGlobalLayoutProps
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 flex items-center gap-3 px-4 h-14 border-b border-border-subtle bg-base/90 backdrop-blur-xl shrink-0">
-        <h1 className="flex-1 font-display font-semibold text-[17px] text-text-primary truncate leading-tight">
-          {title}
-        </h1>
-        <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => router.push("/notifications")}
-            className="relative w-11 h-11 flex items-center justify-center rounded-xl active:bg-elevated transition-colors"
-            aria-label="Notifications"
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          <h1 className="font-display font-semibold text-[17px] text-text-primary truncate leading-tight">
+            {title}
+          </h1>
+          <div
+            className={cn(
+              "flex items-center gap-1 px-1.5 py-0.5 rounded-full border transition-colors shrink-0",
+              maintenanceMode
+                ? "bg-warning/10 border-warning/15"
+                : "bg-live/10 border-live/15",
+            )}
           >
-            <Bell size={20} weight="regular" className="text-text-secondary" />
-          </button>
+            <span
+              className={cn(
+                "w-1 h-1 rounded-full",
+                maintenanceMode
+                  ? "bg-warning animate-pulse"
+                  : "bg-live animate-pulse",
+              )}
+            />
+            <span
+              className={cn(
+                "text-[9px] font-sans font-bold tracking-wider",
+                maintenanceMode ? "text-warning" : "text-live",
+              )}
+            >
+              {maintenanceMode ? t("common.maintenance") : t("common.live")}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={() => router.push("/profile")}
             className="ml-0.5"
@@ -324,7 +356,8 @@ export default function MobileGlobalLayout({ children }: MobileGlobalLayoutProps
       >
         <div className="flex h-[60px]">
           {tabs.map((tab) => {
-            const isActive = isTabActive(tab, pathname) || (tab.id === "more" && moreOpen);
+            const isActive =
+              isTabActive(tab, pathname) || (tab.id === "more" && moreOpen);
 
             const handleClick = () => {
               if (tab.id === "more") {

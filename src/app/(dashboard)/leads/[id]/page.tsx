@@ -72,35 +72,46 @@ gsap.registerPlugin(useGSAP);
 // ── Interaction → display mappings ───────────────────────────────────────────
 
 const INTERACTION_META = {
-  MESSAGE_RECEIVED:    { Icon: Chat,        color: "text-info" },
-  AUTO_REPLY_SENT:     { Icon: Robot,       color: "text-text-muted" },
-  MANUAL_REPLY_SENT:   { Icon: UserCircle,  color: "text-crimson" },
-  SYSTEM_STATUS_CHANGE:{ Icon: Lightning,   color: "text-success" },
+  MESSAGE_RECEIVED: { Icon: Chat, color: "text-info" },
+  AUTO_REPLY_SENT: { Icon: Robot, color: "text-text-muted" },
+  MANUAL_REPLY_SENT: { Icon: UserCircle, color: "text-crimson" },
+  SYSTEM_STATUS_CHANGE: { Icon: Lightning, color: "text-success" },
 } as const;
 
 function mapToMessage(ix: Interaction) {
   const side =
-    ix.type === "MESSAGE_RECEIVED"  ? "user"   :
-    ix.type === "AUTO_REPLY_SENT"   ? "bot"    :
-    ix.type === "MANUAL_REPLY_SENT" ? "agent"  : "system";
+    ix.type === "MESSAGE_RECEIVED"
+      ? "user"
+      : ix.type === "AUTO_REPLY_SENT"
+        ? "bot"
+        : ix.type === "MANUAL_REPLY_SENT"
+          ? "agent"
+          : "system";
   return {
     id: ix.id,
     side,
-    time: new Date(ix.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    time: new Date(ix.createdAt).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
     content: ix.content ?? "",
     metadata: ix.metadata,
   };
 }
 
 function mapToTimelineEvent(ix: Interaction, idx: number) {
-  const meta = INTERACTION_META[ix.type as keyof typeof INTERACTION_META]
-    ?? { Icon: Lightning, color: "text-text-muted" };
+  const meta = INTERACTION_META[ix.type as keyof typeof INTERACTION_META] ?? {
+    Icon: Lightning,
+    color: "text-text-muted",
+  };
   const dt = new Date(ix.createdAt);
   return {
     id: idx,
     type: ix.type,
-    time: dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) + " " +
-          dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+    time:
+      dt.toLocaleDateString("en-GB", { day: "numeric", month: "short" }) +
+      " " +
+      dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
     msg: ix.content ?? ix.type.replace(/_/g, " "),
     Icon: meta.Icon,
     color: meta.color,
@@ -156,7 +167,13 @@ function ToastMsg({
 
 // ── Media Lightbox ───────────────────────────────────────────────────────────
 
-type MediaItem = { url: string; type: "image" | "video" | "file"; name: string; mimeType?: string | null; size?: number | null };
+type MediaItem = {
+  url: string;
+  type: "image" | "video" | "file";
+  name: string;
+  mimeType?: string | null;
+  size?: number | null;
+};
 
 function MediaLightbox({
   item,
@@ -203,8 +220,14 @@ function MediaLightbox({
             ) : (
               <div className="flex flex-col items-center gap-4 p-12 text-text-muted">
                 <FileTypeBadge mimeType={item.mimeType} size={56} />
-                <p className="text-sm font-sans text-text-secondary">{item.name}</p>
-                {item.size && <p className="text-xs text-text-muted">{formatFileSize(item.size)}</p>}
+                <p className="text-sm font-sans text-text-secondary">
+                  {item.name}
+                </p>
+                {item.size && (
+                  <p className="text-xs text-text-muted">
+                    {formatFileSize(item.size)}
+                  </p>
+                )}
                 <p className="text-xs text-text-muted">Preview not available</p>
               </div>
             )}
@@ -216,7 +239,8 @@ function MediaLightbox({
                 {item.name}
               </p>
               <p className="text-[11px] font-sans text-text-muted capitalize">
-                {item.mimeType ?? item.type}{item.size ? ` · ${formatFileSize(item.size)}` : ""}
+                {item.mimeType ?? item.type}
+                {item.size ? ` · ${formatFileSize(item.size)}` : ""}
               </p>
             </div>
             <Button
@@ -271,34 +295,47 @@ export default function LeadDetailPage({
     const loadInteractions = async () => {
       try {
         const res = await leadsApi.getInteractions(id, { skip: 0, take: 50 });
-        const items: Interaction[] = parseApiData<Interaction[]>(res.data) ?? [];
+        const items: Interaction[] =
+          parseApiData<Interaction[]>(res.data) ?? [];
         const sorted = [...items].reverse(); // API returns newest-first; we show oldest-first
         if (!cancelled) {
           setMessages(sorted.map(mapToMessage));
           setTimeline(sorted.map(mapToTimelineEvent));
         }
-      } catch { /* silent */ }
+      } catch {
+        /* silent */
+      }
     };
     void loadInteractions();
     const interval = setInterval(() => void loadInteractions(), 5000);
-    return () => { cancelled = true; clearInterval(interval); };
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [id]);
 
   // Load attachments once
   useEffect(() => {
-    attachmentsApi.findByLead(id)
+    attachmentsApi
+      .findByLead(id)
       .then((res) => {
         const items = parseApiData<Attachment[]>(res.data) ?? [];
         setAttachments(items);
       })
-      .catch(() => showToast.error("Couldn't load attachments. Please try again."));
+      .catch(() =>
+        showToast.error("Couldn't load attachments. Please try again."),
+      );
   }, [id]);
   const isMobile = useIsMobile();
 
   const [handover, setHandover] = useState(lead?.handoverMode ?? false);
   const [replyText, setReplyText] = useState("");
-  const [messages, setMessages] = useState<ReturnType<typeof mapToMessage>[]>([]);
-  const [timeline, setTimeline] = useState<ReturnType<typeof mapToTimelineEvent>[]>([]);
+  const [messages, setMessages] = useState<ReturnType<typeof mapToMessage>[]>(
+    [],
+  );
+  const [timeline, setTimeline] = useState<
+    ReturnType<typeof mapToTimelineEvent>[]
+  >([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   // Auto-scroll to latest message
@@ -416,7 +453,7 @@ export default function LeadDetailPage({
       showToastMsg(t("lead.toast.copied"), "info");
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      showToast.error('Failed to copy');
+      showToast.error("Failed to copy");
     }
   };
 
@@ -429,7 +466,10 @@ export default function LeadDetailPage({
     const optimisticMsg = {
       id: `opt-${Date.now()}`,
       side: "agent" as const,
-      time: now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+      time: now.toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       content: text,
       metadata: null as Record<string, unknown> | null,
     };
@@ -437,7 +477,12 @@ export default function LeadDetailPage({
     try {
       await leadsApi.reply(id, text);
     } catch {
-      showToastMsg(t("lead.toast.sendFailed") === "lead.toast.sendFailed" ? "Failed to send message" : t("lead.toast.sendFailed"), "danger");
+      showToastMsg(
+        t("lead.toast.sendFailed") === "lead.toast.sendFailed"
+          ? "Failed to send message"
+          : t("lead.toast.sendFailed"),
+        "danger",
+      );
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
     }
   };
@@ -481,7 +526,6 @@ export default function LeadDetailPage({
   const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
     NEW: { label: "New", cls: "badge-new" },
     CONTACTED: { label: "Contacted", cls: "badge-contacted" },
-    REGISTERED: { label: "Registered", cls: "badge-registered" },
     DEPOSIT_REPORTED: { label: "Proof Submitted", cls: "badge-pending" },
     DEPOSIT_CONFIRMED: { label: "Verified", cls: "badge-confirmed" },
   };
@@ -535,9 +579,15 @@ export default function LeadDetailPage({
                         <span className={`badge ${statusBadge.cls}`}>
                           {statusBadge.label}
                         </span>
-                        <span className="badge badge-live flex items-center gap-1">
-                          <Robot className="h-3 w-3" /> Bot Active
-                        </span>
+                        {handover ? (
+                          <span className="badge flex items-center gap-1 bg-card border border-border-default text-text-secondary shadow-sm">
+                            <UserCircle className="h-3 w-3" /> Handover
+                          </span>
+                        ) : (
+                          <span className="badge badge-live flex items-center gap-1">
+                            <Robot className="h-3 w-3" /> Bot Active
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -576,7 +626,7 @@ export default function LeadDetailPage({
                       Icon: Phone,
                     },
                     {
-                      label: "Registered",
+                      label: "Form Submitted",
                       value: lead.registeredAt ?? "—",
                       Icon: CalendarCheck,
                     },
@@ -670,7 +720,9 @@ export default function LeadDetailPage({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {isBlocked ? "Read-only during maintenance" : "Edit lead details"}
+                      {isBlocked
+                        ? "Read-only during maintenance"
+                        : "Edit lead details"}
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
@@ -728,23 +780,32 @@ export default function LeadDetailPage({
               ) : (
                 <div className="p-4">
                   {/* Horizontal scroll carousel */}
-                  <div className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory" style={{ scrollbarWidth: "none" }}>
+                  <div
+                    className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory"
+                    style={{ scrollbarWidth: "none" }}
+                  >
                     {attachments.map((file) => {
                       const name = getFileName(file);
                       const img = isImage(file.mimeType);
                       const vid = isVideo(file.mimeType);
-                      const mediaType: "image" | "video" | "file" = img ? "image" : vid ? "video" : "file";
+                      const mediaType: "image" | "video" | "file" = img
+                        ? "image"
+                        : vid
+                          ? "video"
+                          : "file";
                       return (
                         <button
                           key={file.id}
                           type="button"
-                          onClick={() => setMediaPreview({
-                            url: file.fileUrl,
-                            type: mediaType,
-                            name,
-                            mimeType: file.mimeType,
-                            size: file.size,
-                          })}
+                          onClick={() =>
+                            setMediaPreview({
+                              url: file.fileUrl,
+                              type: mediaType,
+                              name,
+                              mimeType: file.mimeType,
+                              size: file.size,
+                            })
+                          }
                           className="group flex-shrink-0 snap-start w-44 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 rounded-xl"
                         >
                           {/* Thumbnail / icon area */}
@@ -759,18 +820,28 @@ export default function LeadDetailPage({
                             ) : vid && file.fileUrl ? (
                               <div className="w-full h-full flex items-center justify-center bg-black/50">
                                 <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                                  <Play size={14} className="text-white ml-0.5" weight="fill" />
+                                  <Play
+                                    size={14}
+                                    className="text-white ml-0.5"
+                                    weight="fill"
+                                  />
                                 </div>
                               </div>
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-card/60 shadow-sm">
-                                <FileTypeBadge mimeType={file.mimeType} size={36} />
+                                <FileTypeBadge
+                                  mimeType={file.mimeType}
+                                  size={36}
+                                />
                               </div>
                             )}
                             {/* Hover overlay */}
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
                               <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full p-1.5">
-                                <ArrowSquareOut size={12} className="text-white" />
+                                <ArrowSquareOut
+                                  size={12}
+                                  className="text-white"
+                                />
                               </div>
                             </div>
                           </div>
@@ -778,14 +849,21 @@ export default function LeadDetailPage({
                           <div className="px-0.5">
                             <div className="flex items-center gap-1.5 mb-0.5">
                               <FileTypeChip mimeType={file.mimeType} />
-                              <p className="text-[11px] font-sans font-medium text-text-primary truncate flex-1">{name}</p>
+                              <p className="text-[11px] font-sans font-medium text-text-primary truncate flex-1">
+                                {name}
+                              </p>
                             </div>
                             <div className="flex items-center justify-between">
                               {file.size && (
-                                <span className="text-[10px] font-mono text-text-muted">{formatFileSize(file.size)}</span>
+                                <span className="text-[10px] font-mono text-text-muted">
+                                  {formatFileSize(file.size)}
+                                </span>
                               )}
                               <span className="text-[10px] font-mono text-text-muted ml-auto">
-                                {new Date(file.uploadedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                                {new Date(file.uploadedAt).toLocaleDateString(
+                                  "en-GB",
+                                  { day: "numeric", month: "short" },
+                                )}
                               </span>
                             </div>
                           </div>
@@ -795,7 +873,8 @@ export default function LeadDetailPage({
                   </div>
                   {attachments.length > 3 && (
                     <p className="text-[10px] text-text-muted font-sans text-center mt-1.5 flex items-center justify-center gap-1">
-                      <CaretRight size={10} /> Scroll to see {attachments.length - 3} more
+                      <CaretRight size={10} /> Scroll to see{" "}
+                      {attachments.length - 3} more
                     </p>
                   )}
                 </div>
@@ -809,7 +888,9 @@ export default function LeadDetailPage({
                   {t("lead.history")}
                 </h3>
                 {timeline.length > 0 && (
-                  <span className="text-[10px] font-mono text-text-muted">{timeline.length} events</span>
+                  <span className="text-[10px] font-mono text-text-muted">
+                    {timeline.length} events
+                  </span>
                 )}
               </div>
               <div className="p-5">
@@ -817,43 +898,45 @@ export default function LeadDetailPage({
                   className="overflow-y-auto pr-1"
                   style={{ maxHeight: 256, scrollbarWidth: "thin" }}
                 >
-                <div className="relative" ref={timelineRef}>
-                  <div className="absolute left-[11px] top-0 bottom-0 w-px bg-border-subtle" />
-                  <div className="space-y-4">
-                    {timeline.length === 0 ? (
-                      <p className="text-xs font-sans text-text-muted pl-8">No activity yet.</p>
-                    ) : (
-                      timeline.map((event) => {
-                        const Icon = event.Icon;
-                        return (
-                          <div
-                            key={event.id}
-                            className="timeline-item flex gap-4 relative"
-                          >
-                            <div className="w-[22px] h-[22px] rounded-full bg-card border border-border-default flex items-center justify-center flex-shrink-0 z-10 shadow-sm">
-                              <Icon className={`h-3 w-3 ${event.color}`} />
-                            </div>
-                            <div className="flex-1 pb-1">
-                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                <span
-                                  className={`text-[10px] font-mono font-semibold uppercase tracking-wider ${event.color}`}
-                                >
-                                  {event.type.replace(/_/g, " ")}
-                                </span>
-                                <span className="data-mono text-[10px] text-text-muted">
-                                  {event.time}
-                                </span>
+                  <div className="relative" ref={timelineRef}>
+                    <div className="absolute left-[11px] top-0 bottom-0 w-px bg-border-subtle" />
+                    <div className="space-y-4">
+                      {timeline.length === 0 ? (
+                        <p className="text-xs font-sans text-text-muted pl-8">
+                          No activity yet.
+                        </p>
+                      ) : (
+                        timeline.map((event) => {
+                          const Icon = event.Icon;
+                          return (
+                            <div
+                              key={event.id}
+                              className="timeline-item flex gap-4 relative"
+                            >
+                              <div className="w-[22px] h-[22px] rounded-full bg-card border border-border-default flex items-center justify-center flex-shrink-0 z-10 shadow-sm">
+                                <Icon className={`h-3 w-3 ${event.color}`} />
                               </div>
-                              <p className="text-sm font-sans text-text-secondary">
-                                {event.msg}
-                              </p>
+                              <div className="flex-1 pb-1">
+                                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                  <span
+                                    className={`text-[10px] font-mono font-semibold uppercase tracking-wider ${event.color}`}
+                                  >
+                                    {event.type.replace(/_/g, " ")}
+                                  </span>
+                                  <span className="data-mono text-[10px] text-text-muted">
+                                    {event.time}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-sans text-text-secondary">
+                                  {event.msg}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })
-                    )}
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
-                </div>
                 </div>
               </div>
             </div>
@@ -912,7 +995,10 @@ export default function LeadDetailPage({
             </div>
 
             {/* Messages */}
-            <div className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
+            <div
+              className="flex-1 min-h-0 overflow-y-auto"
+              style={{ scrollbarWidth: "thin" }}
+            >
               <div className="p-4 space-y-3">
                 {messages.map((msg, i) => {
                   if (msg.side === "system")
@@ -928,9 +1014,14 @@ export default function LeadDetailPage({
                   const isBot = msg.side === "bot";
 
                   // Detect attachment in metadata
-                  const meta = msg.metadata as Record<string, unknown> | null | undefined;
+                  const meta = msg.metadata as
+                    | Record<string, unknown>
+                    | null
+                    | undefined;
                   const attachMime = meta?.mimeType as string | undefined;
-                  const attachName = (meta?.fileName ?? meta?.file_name ?? meta?.caption) as string | undefined;
+                  const attachName = (meta?.fileName ??
+                    meta?.file_name ??
+                    meta?.caption) as string | undefined;
                   const hasAttachment = !!(attachMime ?? attachName);
 
                   return (
@@ -959,7 +1050,9 @@ export default function LeadDetailPage({
                         )}
                         {/* Attachment chip */}
                         {hasAttachment && (
-                          <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${isUser ? "bg-elevated" : "bg-card/40"}`}>
+                          <div
+                            className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${isUser ? "bg-elevated" : "bg-card/40"}`}
+                          >
                             <FileTypeChip mimeType={attachMime} />
                             <span className="text-[11px] font-sans text-text-secondary truncate max-w-[140px]">
                               {attachName ?? attachMime ?? "Attachment"}

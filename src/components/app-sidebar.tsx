@@ -154,7 +154,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="border-none mt-4 mb-4 ml-2 h-[calc(100svh-2rem)] [&>[data-sidebar=sidebar]]:rounded-xl [&>[data-sidebar=sidebar]]:bg-base [&>[data-sidebar=sidebar]]:border-none [&>[data-sidebar=sidebar]]:shadow-[2px_0_12px_rgba(0,0,0,0.12),1px_0_3px_rgba(0,0,0,0.08)] z-40 group/app-sidebar"
+      className="border-none mt-4 mb-4 ml-2 h-[calc(100svh-2rem)] [&>[data-sidebar=sidebar]]:rounded-xl [&>[data-sidebar=sidebar]]:bg-base [&>[data-sidebar=sidebar]]:border-none [&>[data-sidebar=sidebar]]:shadow-[var(--sidebar-shadow)] z-40 group/app-sidebar"
     >
       <SidebarHeader className="h-14 flex items-center justify-center px-5 flex-shrink-0 bg-transparent transition-all duration-300 group-data-[collapsible=icon]:px-0">
         <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">

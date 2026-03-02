@@ -6,8 +6,7 @@ export const DailyStatsSchema = z.object({
   id: z.string(),
   date: z.string().datetime(),
   newLeads: z.number(),
-  registeredLeads: z.number(),
-  depositReported: z.number(),
+  formSubmissions: z.number(),
   conversions: z.number(),
   tokensUsed: z.number(),
   totalLeads: z.number(),
@@ -20,8 +19,8 @@ export type DailyStats = z.infer<typeof DailyStatsSchema>;
 export const AnalyticsDashboardSchema = z.object({
   totalLeads: z.number(),
   newLeads: z.number(),
-  registeredLeads: z.number(),
-  depositReported: z.number(),
+  contactedLeads: z.number(),
+  formSubmissions: z.number(),
   depositConfirmed: z.number(),
   recentStats: z.array(DailyStatsSchema),
 });
@@ -31,8 +30,7 @@ export type AnalyticsDashboard = z.infer<typeof AnalyticsDashboardSchema>;
 export const WeeklyStatsSchema = z.object({
   weekStart: z.string(),
   newLeads: z.number(),
-  registeredLeads: z.number(),
-  depositReported: z.number(),
+  formSubmissions: z.number(),
   depositConfirmed: z.number(),
 });
 
@@ -41,8 +39,7 @@ export type WeeklyStats = z.infer<typeof WeeklyStatsSchema>;
 export const MonthlyStatsSchema = z.object({
   monthStart: z.string(),
   newLeads: z.number(),
-  registeredLeads: z.number(),
-  depositReported: z.number(),
+  formSubmissions: z.number(),
   depositConfirmed: z.number(),
 });
 
@@ -61,17 +58,16 @@ export type KpiStat = z.infer<typeof KpiStatSchema>;
 
 export const AnalyticsKpiSchema = z.object({
   totalLeads: KpiStatSchema,
-  registeredAccounts: KpiStatSchema,
-  depositingClients: KpiStatSchema,
-  pendingVerifications: KpiStatSchema,
+  contactedLeads: KpiStatSchema,
+  verifiedClients: KpiStatSchema,
+  formSubmissions: KpiStatSchema,
 });
 
 export type AnalyticsKpi = z.infer<typeof AnalyticsKpiSchema>;
 
 export const FunnelConversionRatesSchema = z.object({
-  newToRegistered: z.number(),
-  registeredToReported: z.number(),
-  reportedToConfirmed: z.number(),
+  newToSubmitted: z.number(),
+  submittedToConfirmed: z.number(),
   overall: z.number(),
 });
 
@@ -79,8 +75,7 @@ export type FunnelConversionRates = z.infer<typeof FunnelConversionRatesSchema>;
 
 export const AnalyticsFunnelSchema = z.object({
   new: z.number(),
-  registered: z.number(),
-  depositReported: z.number(),
+  formSubmitted: z.number(),
   depositConfirmed: z.number(),
   conversionRates: FunnelConversionRatesSchema,
 });
@@ -90,7 +85,6 @@ export type AnalyticsFunnel = z.infer<typeof AnalyticsFunnelSchema>;
 export const TrendSeriesDataSchema = z.object({
   date: z.string(),
   newLeads: z.number(),
-  registered: z.number(),
   confirmed: z.number(),
 });
 

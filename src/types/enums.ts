@@ -11,7 +11,6 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 export const LeadStatus = {
   NEW: "NEW",
   CONTACTED: "CONTACTED",
-  REGISTERED: "REGISTERED",
   DEPOSIT_REPORTED: "DEPOSIT_REPORTED",
   DEPOSIT_CONFIRMED: "DEPOSIT_CONFIRMED",
   REJECTED: "REJECTED",

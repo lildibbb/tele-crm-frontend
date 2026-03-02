@@ -27,7 +27,7 @@ export interface StaffHomeProps {
 
 const STATUS_COLOR: Record<string, string> = {
   NEW:               "var(--info)",
-  REGISTERED:        "#A855F7",
+  CONTACTED:         "#60A5FA",
   DEPOSIT_REPORTED:  "var(--warning)",
   DEPOSIT_CONFIRMED: "var(--success)",
   REJECTED:          "var(--danger)",
@@ -35,7 +35,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 const STATUS_LABEL: Record<string, string> = {
   NEW:               "NEW",
-  REGISTERED:        "REGISTERED",
+  CONTACTED:         "CONTACTED",
   DEPOSIT_REPORTED:  "PROOF PENDING",
   DEPOSIT_CONFIRMED: "CONFIRMED",
 };
@@ -70,8 +70,8 @@ export default function StaffHome({
   }, [fetchLeads, fetchSummary]);
 
   const firstName = user?.email?.split("@")[0] ?? "Staff";
-  const pendingCount = summary?.kpi?.pendingVerifications?.current ?? 0;
-  const registeredToday = summary?.kpi?.registeredAccounts?.current ?? 0;
+  const pendingCount = summary?.kpi?.formSubmissions?.current ?? 0;
+  const registeredToday = summary?.kpi?.formSubmissions?.current ?? 0;
   const loading = isLoading || analyticsLoading;
 
   const today = new Date().toLocaleDateString("en-MY", {

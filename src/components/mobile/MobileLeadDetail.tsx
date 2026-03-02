@@ -24,6 +24,7 @@ import {
   ArrowsClockwise,
   Copy,
   Star,
+  Robot,
 } from "@phosphor-icons/react";
 import type { Lead } from "@/store/leadsStore";
 import { useAuthStore } from "@/store/authStore";
@@ -62,12 +63,11 @@ interface TimelineEntry {
 
 // ── Status helpers ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string }> = {
-  NEW:               { label: "New" },
-  CONTACTED:         { label: "Contacted" },
-  REGISTERED:        { label: "Registered" },
-  DEPOSIT_REPORTED:  { label: "Deposit Reported" },
+  NEW: { label: "New" },
+  CONTACTED: { label: "Contacted" },
+  DEPOSIT_REPORTED: { label: "Proof Pending" },
   DEPOSIT_CONFIRMED: { label: "Confirmed" },
-  REJECTED:          { label: "Rejected" },
+  REJECTED: { label: "Rejected" },
 };
 
 function getInitials(name: string): string {
@@ -156,7 +156,11 @@ function InfoCard({ card }: { card: InfoCardData }) {
           {card.copyable && card.value !== "—" && (
             <span className="shrink-0 text-text-muted">
               {copied ? (
-                <CheckCircle size={13} weight="fill" className="text-text-secondary" />
+                <CheckCircle
+                  size={13}
+                  weight="fill"
+                  className="text-text-secondary"
+                />
               ) : (
                 <Copy size={13} />
               )}
@@ -169,14 +173,23 @@ function InfoCard({ card }: { card: InfoCardData }) {
 }
 
 // ── Timeline Bubble ───────────────────────────────────────────────────────────
-function TimelineBubble({ entry, isLast }: { entry: TimelineEntry; isLast: boolean }) {
+function TimelineBubble({
+  entry,
+  isLast,
+}: {
+  entry: TimelineEntry;
+  isLast: boolean;
+}) {
   return (
     <div className="flex gap-3">
       {/* Vertical track */}
       <div className="flex flex-col items-center w-5 shrink-0">
         <div className="w-[10px] h-[10px] rounded-full mt-1.5 ring-2 ring-background bg-border-default shrink-0" />
         {!isLast && (
-          <div className="w-px flex-1 bg-border-subtle mt-1" style={{ minHeight: 24 }} />
+          <div
+            className="w-px flex-1 bg-border-subtle mt-1"
+            style={{ minHeight: 24 }}
+          />
         )}
       </div>
       {/* Bubble */}
@@ -194,7 +207,9 @@ function TimelineBubble({ entry, isLast }: { entry: TimelineEntry; isLast: boole
             <span className="font-sans text-[13px] text-text-primary leading-snug">
               {entry.description}
             </span>
-            <span className="font-mono text-[11px] text-text-muted">{entry.time}</span>
+            <span className="font-mono text-[11px] text-text-muted">
+              {entry.time}
+            </span>
           </div>
         </div>
       </div>
@@ -279,7 +294,10 @@ export default function MobileLeadDetail({
   const [messageText, setMessageText] = useState("");
 
   const handleBack = useCallback(() => {
-    if (onBack) { onBack(); return; }
+    if (onBack) {
+      onBack();
+      return;
+    }
     router.back();
   }, [onBack, router]);
 
@@ -313,7 +331,13 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "registered",
       color: "#A855F7",
-      icon: <IdentificationBadge size={14} weight="fill" className="text-text-secondary" />,
+      icon: (
+        <IdentificationBadge
+          size={14}
+          weight="fill"
+          className="text-text-secondary"
+        />
+      ),
       description: `Account registered on HFM${lead.hfmBrokerId ? ` (ID: ${lead.hfmBrokerId})` : ""}`,
       time: fmtTime(lead.registeredAt),
       type: "milestone",
@@ -323,7 +347,13 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "deposit",
       color: "var(--warning)",
-      icon: <CurrencyDollar size={14} weight="fill" className="text-text-secondary" />,
+      icon: (
+        <CurrencyDollar
+          size={14}
+          weight="fill"
+          className="text-text-secondary"
+        />
+      ),
       description: `Deposit proof submitted — ${lead.depositBalance}`,
       time: fmtTime(lead.updatedAt),
       type: "action",
@@ -333,7 +363,9 @@ export default function MobileLeadDetail({
     timeline.push({
       id: "verified",
       color: "var(--success)",
-      icon: <ShieldCheck size={14} weight="fill" className="text-text-secondary" />,
+      icon: (
+        <ShieldCheck size={14} weight="fill" className="text-text-secondary" />
+      ),
       description: "Deposit verified by team",
       time: fmtTime(lead.verifiedAt),
       type: "milestone",
@@ -352,39 +384,71 @@ export default function MobileLeadDetail({
 
   const infoCards: InfoCardData[] = [
     {
-      icon: <IdentificationBadge size={16} weight="duotone" className="text-text-secondary" />,
+      icon: (
+        <IdentificationBadge
+          size={16}
+          weight="duotone"
+          className="text-text-secondary"
+        />
+      ),
       label: "Lead ID",
       value: `#${lead.id?.slice(-8) ?? "—"}`,
       mono: true,
       copyable: true,
     },
     {
-      icon: <IdentificationBadge size={16} weight="duotone" className="text-text-secondary" />,
+      icon: (
+        <IdentificationBadge
+          size={16}
+          weight="duotone"
+          className="text-text-secondary"
+        />
+      ),
       label: "HFM Broker ID",
       value: lead.hfmBrokerId ?? "—",
       mono: true,
       copyable: true,
     },
     {
-      icon: <TelegramLogo size={16} weight="duotone" className="text-text-secondary" />,
+      icon: (
+        <TelegramLogo
+          size={16}
+          weight="duotone"
+          className="text-text-secondary"
+        />
+      ),
       label: "Telegram ID",
       value: lead.telegramUserId ?? "—",
       mono: true,
       copyable: true,
     },
     {
-      icon: <CalendarBlank size={16} weight="duotone" className="text-text-secondary" />,
+      icon: (
+        <CalendarBlank
+          size={16}
+          weight="duotone"
+          className="text-text-secondary"
+        />
+      ),
       label: "Registered",
       value: lead.registeredAt ? fmt(lead.registeredAt) : "Not yet",
     },
     {
-      icon: <EnvelopeSimple size={16} weight="duotone" className="text-text-secondary" />,
+      icon: (
+        <EnvelopeSimple
+          size={16}
+          weight="duotone"
+          className="text-text-secondary"
+        />
+      ),
       label: "Email",
       value: lead.email ?? "—",
       copyable: !!lead.email,
     },
     {
-      icon: <Phone size={16} weight="duotone" className="text-text-secondary" />,
+      icon: (
+        <Phone size={16} weight="duotone" className="text-text-secondary" />
+      ),
       label: "Phone",
       value: lead.phoneNumber ?? "—",
       copyable: !!lead.phoneNumber,
@@ -460,20 +524,42 @@ export default function MobileLeadDetail({
                 {name}
               </h1>
               {lead.username && (
-                <p className="font-mono text-[13px] text-text-secondary mt-0.5">@{lead.username}</p>
+                <p className="font-mono text-[13px] text-text-secondary mt-0.5">
+                  @{lead.username}
+                </p>
               )}
             </div>
 
             {/* Status badge + Handover badge */}
             <div className="flex items-center gap-2 flex-wrap justify-center">
-              <Badge variant="secondary" className="text-[11px] font-bold uppercase tracking-wider">
+              <Badge
+                variant="secondary"
+                className="text-[11px] font-bold uppercase tracking-wider"
+              >
                 {cfg.label}
               </Badge>
 
-              <Badge variant="secondary" className="text-[11px] font-semibold gap-1">
-                <UserSwitch size={13} weight="bold" className="text-text-secondary" />
-                {lead.handoverMode ? "Handover ON" : "Handover OFF"}
-              </Badge>
+              {lead.handoverMode ? (
+                <Badge
+                  variant="secondary"
+                  className="text-[11px] font-semibold gap-1"
+                >
+                  <UserSwitch
+                    size={13}
+                    weight="bold"
+                    className="text-text-secondary"
+                  />
+                  Handover
+                </Badge>
+              ) : (
+                <Badge
+                  variant="secondary"
+                  className="text-[11px] font-semibold gap-1 bg-crimson/10 text-crimson border-crimson/20"
+                >
+                  <Robot size={13} weight="bold" />
+                  Bot Active
+                </Badge>
+              )}
             </div>
 
             {/* Quick contact chips */}
@@ -483,7 +569,11 @@ export default function MobileLeadDetail({
                   href={`tel:${lead.phoneNumber}`}
                   className="flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-card border border-border-subtle text-text-secondary text-[12px] font-medium active:scale-[0.96] transition-transform"
                 >
-                  <Phone size={14} weight="bold" className="text-text-secondary" />
+                  <Phone
+                    size={14}
+                    weight="bold"
+                    className="text-text-secondary"
+                  />
                   {lead.phoneNumber}
                 </a>
               )}
@@ -492,7 +582,11 @@ export default function MobileLeadDetail({
                   href={`mailto:${lead.email}`}
                   className="flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-card border border-border-subtle text-text-secondary text-[12px] font-medium active:scale-[0.96] transition-transform"
                 >
-                  <EnvelopeSimple size={14} weight="bold" className="text-text-secondary" />
+                  <EnvelopeSimple
+                    size={14}
+                    weight="bold"
+                    className="text-text-secondary"
+                  />
                   Email
                 </a>
               )}
@@ -555,13 +649,25 @@ export default function MobileLeadDetail({
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
               {/* Deposit proof placeholder */}
               <div className="shrink-0 w-[120px] h-[90px] rounded-xl bg-card border border-border-subtle flex flex-col items-center justify-center gap-1 snap-start active:scale-[0.96] transition-transform">
-                <ImageIcon size={24} weight="duotone" className="text-text-muted" />
-                <span className="text-[10px] font-sans text-text-muted">Deposit Proof</span>
+                <ImageIcon
+                  size={24}
+                  weight="duotone"
+                  className="text-text-muted"
+                />
+                <span className="text-[10px] font-sans text-text-muted">
+                  Deposit Proof
+                </span>
               </div>
               {lead.hfmBrokerId && (
                 <div className="shrink-0 w-[120px] h-[90px] rounded-xl bg-card border border-border-subtle flex flex-col items-center justify-center gap-1 snap-start active:scale-[0.96] transition-transform">
-                  <FileText size={24} weight="duotone" className="text-text-muted" />
-                  <span className="text-[10px] font-sans text-text-muted">HFM Statement</span>
+                  <FileText
+                    size={24}
+                    weight="duotone"
+                    className="text-text-muted"
+                  />
+                  <span className="text-[10px] font-sans text-text-muted">
+                    HFM Statement
+                  </span>
                 </div>
               )}
             </div>
@@ -637,7 +743,11 @@ export default function MobileLeadDetail({
               onClick={onReject}
               className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-text-secondary border border-border-subtle flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
             >
-              <XCircle size={20} weight="bold" className="text-text-secondary" />
+              <XCircle
+                size={20}
+                weight="bold"
+                className="text-text-secondary"
+              />
               Reject
             </button>
           </div>

@@ -6,7 +6,6 @@ import {
   CheckCircle,
   XCircle,
   Chat,
-  Eye,
   Clock,
   Receipt,
   CaretRight,
@@ -16,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Lead } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -27,21 +26,24 @@ import {
 function StatusBadge({ status }: { status: string }) {
   if (status === LeadStatus.DEPOSIT_CONFIRMED)
     return (
-      <Badge className="badge badge-success gap-1">
-        <CheckCircle weight="duotone" size={11} />
+      <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/8 border border-success/20 text-success text-[11px] font-semibold shadow-none">
+        <span className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
         Approved
       </Badge>
     );
   if (status === LeadStatus.REJECTED)
     return (
-      <Badge className="badge badge-danger gap-1">
-        <XCircle weight="duotone" size={11} />
+      <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-danger/8 border border-danger/20 text-danger text-[11px] font-semibold shadow-none">
+        <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
         Rejected
       </Badge>
     );
   return (
-    <Badge className="badge badge-warning gap-1">
-      <Clock weight="regular" size={11} />
+    <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border-default text-text-secondary text-[11px] font-semibold shadow-none">
+      <span
+        className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0"
+        style={{ animation: "pulse-live 2.4s ease-in-out infinite" }}
+      />
       Pending
     </Badge>
   );
@@ -81,13 +83,10 @@ export function getVerificationColumns({
           .toUpperCase();
         return (
           <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarImage
-                src="https://github.com/shadcn.png"
-                alt="@shadcn"
-                className="grayscale"
-              />
-              <AvatarFallback>{initials}</AvatarFallback>
+            <Avatar className="h-8 w-8 rounded-full bg-elevated border border-border-default flex-shrink-0">
+              <AvatarFallback className="text-[11px] font-semibold text-text-secondary bg-transparent">
+                {initials}
+              </AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0">
               <TooltipProvider>
@@ -138,8 +137,9 @@ export function getVerificationColumns({
         if (!balance || balance === "—")
           return <span className="text-text-muted data-mono">—</span>;
         return (
-          <span className="font-display font-bold text-gold data-mono text-[16px]">
-            ${Number(balance).toLocaleString()}
+          <span className="font-display font-bold text-gold data-mono text-[13px]">
+            ${Number(balance).toLocaleString()}{" "}
+            <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
           </span>
         );
       },

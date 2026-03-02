@@ -70,7 +70,7 @@ export default function SuperadminHome({
 
   const kpi = summary?.kpi;
   const totalLeads = kpi?.totalLeads?.current ?? 0;
-  const activeToday = kpi?.depositingClients?.current ?? 0;
+  const activeToday = kpi?.verifiedClients?.current ?? 0;
 
   const kpiCards = [
     {
