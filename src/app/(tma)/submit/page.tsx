@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Shield,
@@ -13,8 +13,9 @@ import {
   FileVideo,
   ImageIcon,
   Plus,
+  Clock,
 } from "lucide-react";
-import { submitForm } from "@/lib/api/leads.public";
+import { submitForm, getLeadStatus } from "@/lib/api/leads.public";
 
 type FileItem = {
   file: File;
@@ -82,7 +83,25 @@ export default function TMASubmitPage() {
   // Submission state
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // On mount: check if lead already submitted via this token
+  useEffect(() => {
+    if (!token) return;
+    getLeadStatus(token)
+      .then(({ data }) => {
+        if (
+          data.status === "DEPOSIT_REPORTED" ||
+          data.status === "DEPOSIT_CONFIRMED"
+        ) {
+          setAlreadySubmitted(true);
+        }
+      })
+      .catch(() => {
+        // Token invalid/expired — handled at submit time; don't block the page
+      });
+  }, [token]);
 
   // File handling
   const handleFiles = (selected: FileList | null) => {
@@ -116,9 +135,13 @@ export default function TMASubmitPage() {
       });
       setDone(true);
     } catch (err: unknown) {
-      setSubmitError(
-        err instanceof Error ? err.message : "Submission failed. Please try again.",
-      );
+      const msg = err instanceof Error ? err.message : "Submission failed. Please try again.";
+      // Treat "already submitted" conflict as success state
+      if (msg.toLowerCase().includes("already been received") || msg.toLowerCase().includes("already submitted")) {
+        setAlreadySubmitted(true);
+      } else {
+        setSubmitError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -145,6 +168,35 @@ export default function TMASubmitPage() {
         </h2>
         <p className="font-sans text-sm text-center" style={{ color: textSub }}>
           This link is invalid or missing. Please request a new link from the Telegram bot.
+        </p>
+      </div>
+    );
+  }
+
+  // ── Already submitted state ──────────────────────────────────────────────────
+  if (alreadySubmitted) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center p-6"
+        style={{ background: bg }}
+      >
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+          style={{ background: "#EFF6FF" }}
+        >
+          <Clock className="h-8 w-8" style={{ color: "#3B82F6" }} />
+        </div>
+        <h2
+          className="font-display font-bold text-2xl text-center mb-2"
+          style={{ color: textMain }}
+        >
+          Already Submitted
+        </h2>
+        <p
+          className="font-sans text-sm text-center"
+          style={{ color: textSub }}
+        >
+          Your registration and deposit proof have already been received. Our team is reviewing it and will update you via Telegram shortly.
         </p>
       </div>
     );
