@@ -14,9 +14,9 @@ import { SuperadminHome, OwnerHome, StaffHome } from "@/components/mobile";
 import { CustomisePanelTrigger } from "@/components/dashboard/CustomisePanel";
 import {
   Users,
-  UserCheck,
   Wallet,
   TrendUp,
+  ChatText,
   ArrowUpRight,
   ArrowDownRight,
   Clock,
@@ -397,7 +397,7 @@ export default function DashboardPage() {
   }, [leads]);
 
   const totalLeads = summary?.kpi.totalLeads.current ?? 0;
-  const registeredLeads = summary?.kpi.formSubmissions.current ?? 0;
+  const contactedLeads = summary?.kpi.contactedLeads.current ?? 0;
   const depositConfirmed = summary?.kpi.verifiedClients.current ?? 0;
   const pendingVerifications = summary?.kpi.formSubmissions.current ?? 0;
   const handoverLeadsCount = useMemo(() => leads.filter((l) => l.handoverMode).length, [leads]);
@@ -630,17 +630,17 @@ export default function DashboardPage() {
                         }
                       />
                       <KpiCard
-                        icon={UserCheck}
-                        label={t("dashboard.registered")}
-                        value={String(registeredLeads)}
-                        delta={`${summary?.kpi.formSubmissions.changePercentage ?? 0}%`}
+                        icon={ChatText}
+                        label={t("analytics.contactedLeads")}
+                        value={String(contactedLeads)}
+                        delta={`${summary?.kpi.contactedLeads.changePercentage ?? 0}%`}
                         deltaPositive={
-                          (summary?.kpi.formSubmissions.changePercentage ?? 0) >= 0
+                          (summary?.kpi.contactedLeads.changePercentage ?? 0) >= 0
                         }
                       />
                       <KpiCard
                         icon={Wallet}
-                        label={t("dashboard.depositClients")}
+                        label={t("analytics.totalDepositors")}
                         value={String(depositConfirmed)}
                         delta={`${summary?.kpi.verifiedClients.changePercentage ?? 0}%`}
                         deltaPositive={

@@ -327,6 +327,22 @@ export default function MobileLeadDetail({
       type: "milestone",
     });
   }
+  if (lead.contactedAt) {
+    timeline.push({
+      id: "contacted",
+      color: "#3b82f6",
+      icon: (
+        <IdentificationBadge
+          size={14}
+          weight="fill"
+          className="text-text-secondary"
+        />
+      ),
+      description: "Lead first contacted by team",
+      time: fmtTime(lead.contactedAt),
+      type: "milestone",
+    });
+  }
   if (lead.registeredAt) {
     timeline.push({
       id: "registered",
@@ -355,7 +371,7 @@ export default function MobileLeadDetail({
         />
       ),
       description: `Deposit proof submitted — ${lead.depositBalance}`,
-      time: fmtTime(lead.updatedAt),
+      time: fmtTime(lead.depositReportedAt ?? lead.updatedAt),
       type: "action",
     });
   }

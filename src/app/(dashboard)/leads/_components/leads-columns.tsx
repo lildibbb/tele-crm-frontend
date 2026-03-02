@@ -20,26 +20,28 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const BADGE_MAP: Record<string, { label: string; cls: string }> = {
-  NEW: { label: "New", cls: "badge-new" },
-  CONTACTED: { label: "Contacted", cls: "badge-contacted" },
-  DEPOSIT_REPORTED: { label: "Proof Pending", cls: "badge-pending" },
-  DEPOSIT_CONFIRMED: { label: "Confirmed", cls: "badge-confirmed" },
+const BADGE_MAP: Record<string, { labelKey: string; cls: string }> = {
+  NEW: { labelKey: "status.new", cls: "badge-new" },
+  CONTACTED: { labelKey: "status.contacted", cls: "badge-contacted" },
+  DEPOSIT_REPORTED: { labelKey: "status.proofPending", cls: "badge-pending" },
+  DEPOSIT_CONFIRMED: { labelKey: "status.confirmed", cls: "badge-confirmed" },
 };
 
 interface LeadsColumnsProps {
   onHandoverToggle: (id: string, current: boolean) => void;
+  t: (key: string) => string;
 }
 
 export function getLeadsColumns({
   onHandoverToggle,
+  t,
 }: LeadsColumnsProps): ColumnDef<Lead>[] {
   return [
     {
       id: "lead",
       accessorKey: "displayName",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label="Lead" />
+        <DataTableColumnHeader column={column} label={t("leads.col.lead")} />
       ),
       cell: ({ row }) => {
         const lead = row.original;
@@ -78,7 +80,7 @@ export function getLeadsColumns({
     },
     {
       id: "contactIds",
-      header: "Contact IDs",
+      header: t("leads.col.contactIds"),
       cell: ({ row }) => {
         const lead = row.original;
         return (
@@ -112,19 +114,20 @@ export function getLeadsColumns({
     {
       id: "status",
       accessorKey: "status",
-      header: "Status",
+      header: t("leads.col.status"),
       cell: ({ row }) => {
-        const badge = BADGE_MAP[row.original.status] ?? {
-          label: row.original.status,
-          cls: "",
-        };
+        const badgeInfo = BADGE_MAP[row.original.status];
+        const label = badgeInfo
+          ? t(badgeInfo.labelKey)
+          : row.original.status.replace(/_/g, " ");
+        const cls = badgeInfo ? badgeInfo.cls : "";
         return (
           <div
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-current ${badge.cls} bg-opacity-10 shadow-sm`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-current ${cls} bg-opacity-10 shadow-sm`}
           >
             <div className="w-1.5 h-1.5 rounded-full bg-current" />
             <span className="text-[11.5px] font-medium tracking-wide">
-              {badge.label}
+              {label}
             </span>
           </div>
         );
@@ -136,7 +139,10 @@ export function getLeadsColumns({
       id: "registeredAt",
       accessorKey: "registeredAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label="Registered" />
+        <DataTableColumnHeader
+          column={column}
+          label={t("leads.col.registered")}
+        />
       ),
       cell: ({ row }) => {
         const val = row.original.registeredAt;
@@ -165,7 +171,7 @@ export function getLeadsColumns({
       id: "depositBalance",
       accessorKey: "depositBalance",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label="Balance" />
+        <DataTableColumnHeader column={column} label={t("leads.col.balance")} />
       ),
       cell: ({ row }) => {
         const balance = row.original.depositBalance;
@@ -174,7 +180,9 @@ export function getLeadsColumns({
         return (
           <span className="data-mono text-gold font-semibold text-[13px]">
             ${Number(balance).toLocaleString()}{" "}
-            <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
+            <span className="text-[10px] text-text-muted font-normal tracking-wide">
+              USD
+            </span>
           </span>
         );
       },
@@ -183,14 +191,14 @@ export function getLeadsColumns({
     },
     {
       id: "actions",
-      header: () => <div className="text-right">Actions</div>,
+      header: () => <div className="text-right">{t("leads.col.actions")}</div>,
       cell: ({ row }) => {
         const lead = row.original;
         return (
           <div className="flex items-center justify-end gap-2">
             <div className="flex items-center gap-2 mr-1">
               <span className="text-[9.5px] uppercase font-bold text-text-muted tracking-wider">
-                Handover
+                {t("leads.col.handover")}
               </span>
               <button
                 type="button"

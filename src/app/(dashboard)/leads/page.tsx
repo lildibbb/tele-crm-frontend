@@ -17,7 +17,11 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
-import { useLeadsStore, type LeadStatus, LeadStatus as LeadStatusEnum } from "@/store/leadsStore";
+import {
+  useLeadsStore,
+  type LeadStatus,
+  LeadStatus as LeadStatusEnum,
+} from "@/store/leadsStore";
 import { leadsApi } from "@/lib/api/leads";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -86,7 +90,9 @@ export default function LeadsPage() {
   const handleBulkHandover = useCallback(
     async (checked: boolean) => {
       setBulkHandoverPending(true);
-      await bulkSetHandover(checked).catch(() => showToast.error("Couldn't update the lead. Please try again."));
+      await bulkSetHandover(checked).catch(() =>
+        showToast.error("Couldn't update the lead. Please try again."),
+      );
       setBulkHandoverPending(false);
     },
     [bulkSetHandover],
@@ -100,8 +106,8 @@ export default function LeadsPage() {
   );
 
   const columns = useMemo(
-    () => getLeadsColumns({ onHandoverToggle }),
-    [onHandoverToggle],
+    () => getLeadsColumns({ onHandoverToggle, t }),
+    [onHandoverToggle, t],
   );
 
   const { table } = useDataTable({
@@ -206,10 +212,23 @@ export default function LeadsPage() {
         orderBy,
         order,
       });
-    } catch { showToast.error("Couldn't update the status. Please try again."); } finally {
+    } catch {
+      showToast.error("Couldn't update the status. Please try again.");
+    } finally {
       setBulkStatusPending(false);
     }
-  }, [table, bulkStatusValue, bulkStatusPending, pageIndex, pageSize, statusFilter, searchValue, orderBy, order, fetchLeads]);
+  }, [
+    table,
+    bulkStatusValue,
+    bulkStatusPending,
+    pageIndex,
+    pageSize,
+    statusFilter,
+    searchValue,
+    orderBy,
+    order,
+    fetchLeads,
+  ]);
 
   if (isMobile) {
     return <MobileLeadsList />;
@@ -218,6 +237,10 @@ export default function LeadsPage() {
   const TAB_FILTERS = [
     { key: "ALL" as const, label: t("leads.filter.all") },
     { key: "NEW" as const, label: t("leads.filter.new") },
+    {
+      key: "CONTACTED" as const,
+      label: t("leads.filter.contacted") || "Contacted",
+    },
     { key: "DEPOSIT_REPORTED" as const, label: t("leads.filter.proof") },
     { key: "DEPOSIT_CONFIRMED" as const, label: t("leads.filter.confirmed") },
   ];
@@ -229,7 +252,9 @@ export default function LeadsPage() {
       const res = await leadsApi.exportCsv(
         statusFilter !== "ALL" ? { status: statusFilter } : undefined,
       );
-      const blob = new Blob([res.data as BlobPart], { type: "text/csv;charset=utf-8;" });
+      const blob = new Blob([res.data as BlobPart], {
+        type: "text/csv;charset=utf-8;",
+      });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -259,7 +284,7 @@ export default function LeadsPage() {
                 {t("nav.leadIntelligence")}
               </h1>
               <p className="text-sm text-text-secondary font-sans mt-0.5">
-                {total.toLocaleString()} total leads
+                {total.toLocaleString()} {t("leads.totalLeads")}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -270,9 +295,10 @@ export default function LeadsPage() {
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
+                      if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        if (!bulkHandoverPending) void handleBulkHandover(!globalHandoverOn);
+                        if (!bulkHandoverPending)
+                          void handleBulkHandover(!globalHandoverOn);
                       }
                     }}
                     className={`flex items-center gap-2 px-3 h-8 rounded-lg border transition-colors cursor-pointer select-none ${
@@ -302,10 +328,12 @@ export default function LeadsPage() {
                       }`}
                     >
                       {globalHandoverPartial
-                        ? `Handover (${handoverCount})`
+                        ? t("leads.handover.partial", {
+                            count: handoverCount.toString(),
+                          })
                         : globalHandoverOn
-                          ? "All Handover"
-                          : "Global Handover"}
+                          ? t("leads.handover.all")
+                          : t("leads.handover.global")}
                     </span>
                     <Switch
                       size="sm"
@@ -320,10 +348,12 @@ export default function LeadsPage() {
                   className="text-xs max-w-[180px] text-center"
                 >
                   {globalHandoverOn
-                    ? "Click to return all leads to bot mode"
+                    ? t("leads.handover.globalTooltipOn")
                     : globalHandoverPartial
-                      ? `${handoverCount} leads in human mode — click to toggle all`
-                      : "Click to put all leads into human handover mode"}
+                      ? t("leads.handover.globalTooltipPartial", {
+                          count: handoverCount.toString(),
+                        })
+                      : t("leads.handover.globalTooltipOff")}
                 </TooltipContent>
               </Tooltip>
 
@@ -355,22 +385,6 @@ export default function LeadsPage() {
                     ? t("common.exportReady")
                     : t("common.export")}
               </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button
-                      size="sm"
-                      disabled={isBlocked}
-                      className="h-8 gap-1.5 text-xs bg-crimson hover:bg-crimson-hover text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Plus className="h-3.5 w-3.5 font-bold" /> Add Lead
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {isBlocked && (
-                  <TooltipContent>Read-only during maintenance</TooltipContent>
-                )}
-              </Tooltip>
             </div>
           </div>
 
@@ -409,7 +423,7 @@ export default function LeadsPage() {
                   type="text"
                   value={searchRaw}
                   onChange={(e) => handleSearch(e.target.value)}
-                  placeholder="Search name, @username, email, HFM ID…"
+                  placeholder={t("leads.search")}
                   className="pl-9 pr-12 h-9 w-full bg-elevated/50 hover:bg-elevated border-border-default/50 hover:border-border-default text-sm shadow-none transition-all placeholder:text-text-muted rounded-xl focus-visible:bg-background focus-visible:border-crimson/50 focus-visible:ring-[3px] focus-visible:ring-crimson/10"
                 />
                 <div className="absolute inset-y-0 right-1.5 flex items-center justify-center">
@@ -494,7 +508,8 @@ export default function LeadsPage() {
         {table.getSelectedRowModel().rows.length > 0 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-card border border-border-default rounded-2xl px-4 py-2.5 animate-in slide-in-from-bottom-4 duration-200 shadow-sm">
             <span className="text-sm font-sans font-medium text-text-primary whitespace-nowrap">
-              {table.getSelectedRowModel().rows.length} selected
+              {table.getSelectedRowModel().rows.length}{" "}
+              {t("leads.bulk.selected")}
             </span>
             <div className="h-4 w-px bg-border-default" />
             <Select
@@ -505,11 +520,29 @@ export default function LeadsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(LeadStatusEnum).map((s) => (
-                  <SelectItem key={s} value={s} className="text-xs">
-                    {s.replace(/_/g, " ")}
-                  </SelectItem>
-                ))}
+                {Object.values(LeadStatusEnum).map((s) => {
+                  const labelKey =
+                    s === "NEW"
+                      ? "status.new"
+                      : s === "CONTACTED"
+                        ? "status.contacted"
+                        : s === "DEPOSIT_REPORTED"
+                          ? "status.proofPending"
+                          : s === "DEPOSIT_CONFIRMED"
+                            ? "status.confirmed"
+                            : `status.${s.toLowerCase()}`;
+
+                  let label = t(labelKey);
+                  if (label === labelKey) {
+                    label = s.replace(/_/g, " ");
+                  }
+
+                  return (
+                    <SelectItem key={s} value={s} className="text-xs">
+                      {label}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
             <Button
@@ -523,7 +556,7 @@ export default function LeadsPage() {
               ) : (
                 <CheckCircle className="h-3.5 w-3.5" />
               )}
-              Apply
+              {t("leads.bulk.apply")}
             </Button>
             <Button
               size="sm"

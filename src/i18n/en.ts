@@ -98,7 +98,7 @@ const en: Record<string, string> = {
   /* ── Leads ───────────────────────────────────────── */
   "leads.title": "Lead Intelligence",
   "leads.subtitle": "Manage and track your IB funnel leads",
-  "leads.search": "Search name, Telegram ID, HFM ID…",
+  "leads.search": "Search name, @username, email, HFM ID…",
   "leads.filter.all": "All Leads",
   "leads.filter.new": "New",
   "leads.filter.registered": "Registered",
@@ -112,6 +112,19 @@ const en: Record<string, string> = {
   "leads.col.registered": "Registered",
   "leads.col.balance": "Balance",
   "leads.col.handover": "Handover",
+  "leads.col.contactIds": "Contact IDs",
+  "leads.col.actions": "Actions",
+  "leads.totalLeads": "total leads",
+  "leads.handover.global": "Global Handover",
+  "leads.handover.all": "All Handover",
+  "leads.handover.partial": "Handover ({{count}})",
+  "leads.handover.globalTooltipOn": "Click to return all leads to bot mode",
+  "leads.handover.globalTooltipPartial":
+    "{{count}} leads in human mode — click to toggle all",
+  "leads.handover.globalTooltipOff":
+    "Click to put all leads into human handover mode",
+  "leads.bulk.selected": "selected",
+  "leads.bulk.apply": "Apply",
   "leads.showing": "Showing",
   "leads.of": "of",
   "leads.page": "Page",

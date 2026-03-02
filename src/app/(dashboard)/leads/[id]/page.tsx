@@ -626,6 +626,11 @@ export default function LeadDetailPage({
                       Icon: Phone,
                     },
                     {
+                      label: "First Contacted",
+                      value: lead.contactedAt ?? "—",
+                      Icon: CalendarCheck,
+                    },
+                    {
                       label: "Form Submitted",
                       value: lead.registeredAt ?? "—",
                       Icon: CalendarCheck,

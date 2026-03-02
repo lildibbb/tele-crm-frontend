@@ -26,13 +26,12 @@ type FilterTab = LeadStatus | "ALL";
 
 // ── Status display helpers ─────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string }> = {
-  NEW:               { label: "New" },
-  CONTACTED:         { label: "Contacted" },
-  DEPOSIT_REPORTED:  { label: "Deposit" },
+  NEW: { label: "New" },
+  CONTACTED: { label: "Contacted" },
+  DEPOSIT_REPORTED: { label: "Deposit" },
   DEPOSIT_CONFIRMED: { label: "Verified" },
-  REJECTED:          { label: "Rejected" },
+  REJECTED: { label: "Rejected" },
 };
-
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -126,7 +125,10 @@ function LeadCard({ lead }: { lead: Lead }) {
             <span className="font-sans font-semibold text-[15px] text-text-primary truncate">
               {lead.displayName ?? "Unknown Lead"}
             </span>
-            <Badge variant="secondary" className="shrink-0 text-[10px] font-medium">
+            <Badge
+              variant="secondary"
+              className="shrink-0 text-[10px] font-medium"
+            >
               {cfg.label}
             </Badge>
           </div>
@@ -168,6 +170,7 @@ function LeadCard({ lead }: { lead: Lead }) {
 const FILTER_TABS: { id: FilterTab; label: string }[] = [
   { id: "ALL", label: "All" },
   { id: LeadStatus.NEW, label: "New" },
+  { id: LeadStatus.CONTACTED, label: "Contacted" },
   { id: LeadStatus.DEPOSIT_REPORTED, label: "Deposit" },
   { id: LeadStatus.DEPOSIT_CONFIRMED, label: "Verified" },
   { id: LeadStatus.REJECTED, label: "Rejected" },
@@ -278,149 +281,149 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-          {/* Pull-to-refresh indicator */}
-          <PullIndicator visible={isRefreshing} />
+        {/* Pull-to-refresh indicator */}
+        <PullIndicator visible={isRefreshing} />
 
-          {/* Search bar */}
-          <div className="mx-4 mt-3">
-            <div
-              className="flex items-center gap-2.5 px-3.5 h-12 rounded-xl border border-border-subtle bg-elevated transition-colors focus-within:border-border-default"
-            >
-              <MagnifyingGlass
-                size={18}
-                className="shrink-0 text-text-muted"
-                weight="bold"
-              />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search leads, IDs, names…"
-                className={cn(
-                  "flex-1 bg-transparent outline-none",
-                  "font-sans text-[14px] text-text-primary",
-                  "placeholder:text-text-muted",
-                )}
-              />
-              {search && (
-                <button
-                  onClick={clearSearch}
-                  className={cn(
-                    "shrink-0 flex items-center justify-center",
-                    "w-7 h-7 rounded-full bg-border-subtle/60",
-                    "active:bg-border-default transition-colors",
-                  )}
-                  aria-label="Clear search"
-                >
-                  <X size={14} className="text-text-secondary" weight="bold" />
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Filter chips — horizontal scroll */}
-          <div className="relative mt-3">
-            <div
+        {/* Search bar */}
+        <div className="mx-4 mt-3">
+          <div className="flex items-center gap-2.5 px-3.5 h-12 rounded-xl border border-border-subtle bg-elevated transition-colors focus-within:border-border-default">
+            <MagnifyingGlass
+              size={18}
+              className="shrink-0 text-text-muted"
+              weight="bold"
+            />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Search leads, IDs, names…"
               className={cn(
-                "flex gap-2 overflow-x-auto px-4 pb-1",
-                "scrollbar-hide snap-x snap-mandatory",
-                /* fade-out gradient on right edge */
-                "[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]",
+                "flex-1 bg-transparent outline-none",
+                "font-sans text-[14px] text-text-primary",
+                "placeholder:text-text-muted",
               )}
-            >
-              {FILTER_TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => handleFilter(tab.id)}
-                  className={cn(
-                    "shrink-0 snap-start rounded-full h-8 px-4",
-                    "font-sans text-[12px] font-semibold tracking-wide",
-                    "transition-all duration-150 min-w-[44px]",
-                    filter === tab.id
-                      ? "bg-elevated text-text-primary"
-                      : "text-text-muted active:text-text-secondary",
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
-              {/* Scroll padding */}
-              <div className="shrink-0 w-4" aria-hidden />
-            </div>
-          </div>
-
-          {/* Results header */}
-          <div className="flex items-center justify-between px-4 mt-3 mb-2">
-            <span className="font-sans text-[13px] text-text-secondary tabular-nums">
-              {isLoading ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-border-default animate-pulse" />
-                  Loading…
-                </span>
-              ) : (
-                <span>
-                  <span className="font-mono font-semibold text-text-primary">{total}</span>
-                  {" "}leads
-                </span>
-              )}
-            </span>
-            <span className="flex items-center gap-1 font-sans text-[12px] text-text-muted">
-              <SortAscending size={14} />
-              Newest
-            </span>
-          </div>
-
-          {/* Lead cards / Skeleton / Empty */}
-          <div className="flex flex-col gap-2.5 px-4">
-            {showSkeleton && (
-              <>
-                <SkeletonCard />
-                <SkeletonCard />
-                <SkeletonCard />
-                <SkeletonCard />
-              </>
-            )}
-
-            {showEmpty && <EmptyState hasFilters={hasFilters} />}
-
-            {leads.length > 0 &&
-              leads.map((lead) => <LeadCard key={lead.id} lead={lead as Lead} />)}
-          </div>
-
-          {/* Load more */}
-          {showLoadMore && (
-            <div className="px-4 mt-3">
+            />
+            {search && (
               <button
-                onClick={loadMore}
+                onClick={clearSearch}
                 className={cn(
-                  "w-full h-11 rounded-xl font-sans text-[13px] font-medium",
-                  "bg-card border border-border-subtle text-text-secondary",
-                  "active:bg-elevated transition-colors",
+                  "shrink-0 flex items-center justify-center",
+                  "w-7 h-7 rounded-full bg-border-subtle/60",
+                  "active:bg-border-default transition-colors",
                 )}
+                aria-label="Clear search"
               >
-                Load more
-                <span className="ml-1.5 font-mono text-[12px] text-text-muted">
-                  ({total - leads.length})
-                </span>
+                <X size={14} className="text-text-secondary" weight="bold" />
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* FAB */}
-        <button
-          onClick={onAddLead}
-          className={cn(
-            "fixed right-5 flex items-center justify-center",
-            "w-14 h-14 rounded-full bg-crimson z-30",
-            "shadow-[0_4px_20px_rgba(196,35,45,0.4)]",
-            "active:scale-90 transition-transform duration-150",
+        {/* Filter chips — horizontal scroll */}
+        <div className="relative mt-3">
+          <div
+            className={cn(
+              "flex gap-2 overflow-x-auto px-4 pb-1",
+              "scrollbar-hide snap-x snap-mandatory",
+              /* fade-out gradient on right edge */
+              "[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]",
+            )}
+          >
+            {FILTER_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleFilter(tab.id)}
+                className={cn(
+                  "shrink-0 snap-start rounded-full h-8 px-4",
+                  "font-sans text-[12px] font-semibold tracking-wide",
+                  "transition-all duration-150 min-w-[44px]",
+                  filter === tab.id
+                    ? "bg-elevated text-text-primary"
+                    : "text-text-muted active:text-text-secondary",
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+            {/* Scroll padding */}
+            <div className="shrink-0 w-4" aria-hidden />
+          </div>
+        </div>
+
+        {/* Results header */}
+        <div className="flex items-center justify-between px-4 mt-3 mb-2">
+          <span className="font-sans text-[13px] text-text-secondary tabular-nums">
+            {isLoading ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-border-default animate-pulse" />
+                Loading…
+              </span>
+            ) : (
+              <span>
+                <span className="font-mono font-semibold text-text-primary">
+                  {total}
+                </span>{" "}
+                leads
+              </span>
+            )}
+          </span>
+          <span className="flex items-center gap-1 font-sans text-[12px] text-text-muted">
+            <SortAscending size={14} />
+            Newest
+          </span>
+        </div>
+
+        {/* Lead cards / Skeleton / Empty */}
+        <div className="flex flex-col gap-2.5 px-4">
+          {showSkeleton && (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
           )}
-          style={{ bottom: "calc(60px + env(safe-area-inset-bottom) + 20px)" }}
-          aria-label="Add Lead"
-        >
-          <Plus size={24} className="text-white" weight="bold" />
-        </button>
+
+          {showEmpty && <EmptyState hasFilters={hasFilters} />}
+
+          {leads.length > 0 &&
+            leads.map((lead) => <LeadCard key={lead.id} lead={lead as Lead} />)}
+        </div>
+
+        {/* Load more */}
+        {showLoadMore && (
+          <div className="px-4 mt-3">
+            <button
+              onClick={loadMore}
+              className={cn(
+                "w-full h-11 rounded-xl font-sans text-[13px] font-medium",
+                "bg-card border border-border-subtle text-text-secondary",
+                "active:bg-elevated transition-colors",
+              )}
+            >
+              Load more
+              <span className="ml-1.5 font-mono text-[12px] text-text-muted">
+                ({total - leads.length})
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* FAB */}
+      <button
+        onClick={onAddLead}
+        className={cn(
+          "fixed right-5 flex items-center justify-center",
+          "w-14 h-14 rounded-full bg-crimson z-30",
+          "shadow-[0_4px_20px_rgba(196,35,45,0.4)]",
+          "active:scale-90 transition-transform duration-150",
+        )}
+        style={{ bottom: "calc(60px + env(safe-area-inset-bottom) + 20px)" }}
+        aria-label="Add Lead"
+      >
+        <Plus size={24} className="text-white" weight="bold" />
+      </button>
     </div>
   );
 }

@@ -98,7 +98,7 @@ const ms: Record<string, string> = {
   /* ── Leads ───────────────────────────────────────── */
   "leads.title": "Perisikan Prospek",
   "leads.subtitle": "Urus dan jejak prospek corong IB anda",
-  "leads.search": "Cari nama, ID Telegram, ID HFM…",
+  "leads.search": "Cari nama, @username, e-mel, ID HFM…",
   "leads.filter.all": "Semua Prospek",
   "leads.filter.new": "Baru",
   "leads.filter.registered": "Didaftarkan",
@@ -112,6 +112,20 @@ const ms: Record<string, string> = {
   "leads.col.registered": "Didaftarkan",
   "leads.col.balance": "Baki",
   "leads.col.handover": "Penyerahan",
+  "leads.col.contactIds": "ID Kenalan",
+  "leads.col.actions": "Tindakan",
+  "leads.totalLeads": "jumlah prospek",
+  "leads.handover.global": "Penyerahan Global",
+  "leads.handover.all": "Semua Penyerahan",
+  "leads.handover.partial": "Penyerahan ({{count}})",
+  "leads.handover.globalTooltipOn":
+    "Klik untuk mengembalikan semua prospek ke mod bot",
+  "leads.handover.globalTooltipPartial":
+    "{{count}} prospek dalam mod manusia — klik untuk togol semua",
+  "leads.handover.globalTooltipOff":
+    "Klik untuk meletakkan semua prospek ke dalam mod penyerahan manusia",
+  "leads.bulk.selected": "dipilih",
+  "leads.bulk.apply": "Mohon",
   "leads.showing": "Menunjukkan",
   "leads.of": "dari",
   "leads.page": "Halaman",

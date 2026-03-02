@@ -102,14 +102,14 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       {/* Panel */}
-      <div className="relative w-full max-w-md bg-card border-l border-border-subtle flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 shadow-sm">
+      <div className="relative w-full max-w-lg bg-card border-l border-border-subtle flex flex-col overflow-hidden animate-in slide-in-from-right duration-200 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-elevated flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-card flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-accent/10 flex items-center justify-center">
-              <IconComp size={16} weight="duotone" className={colorCls} />
+            <div className="w-9 h-9 rounded-xl bg-elevated border border-border-subtle flex items-center justify-center">
+              <IconComp size={16} weight="duotone" className="text-text-secondary" />
             </div>
             <div>
               <h3 className="font-sans font-semibold text-[14px] text-text-primary">
@@ -321,13 +321,13 @@ export default function AuditLogsPage() {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { icon: Hash,     color: "text-text-muted",  bg: "bg-text-muted/10", label: t(K.auditLog.stats.total),     value: total.toLocaleString() },
-          { icon: Calendar, color: "text-accent",       bg: "bg-accent/10",     label: t(K.auditLog.stats.today),     value: String(todayCount) },
-          { icon: ChartBar, color: "text-info",         bg: "bg-info/10",       label: t(K.auditLog.stats.topAction), value: mostCommonAction },
-          { icon: Users,    color: "text-success",      bg: "bg-success/10",    label: t(K.auditLog.stats.actors),    value: String(uniqueActors) },
+          { icon: Hash,     color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.total),     value: total.toLocaleString() },
+          { icon: Calendar, color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.today),     value: String(todayCount) },
+          { icon: ChartBar, color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.topAction), value: mostCommonAction },
+          { icon: Users,    color: "text-text-muted",  bg: "bg-elevated", label: t(K.auditLog.stats.actors),    value: String(uniqueActors) },
         ].map(({ icon: Icon, color, bg, label, value }) => (
-          <div key={label} className="bg-elevated rounded-xl border border-border-subtle px-4 py-3 flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
+          <div key={label} className="bg-elevated rounded-xl border border-border-subtle shadow-sm px-4 py-3 flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-lg ${bg} border border-border-subtle flex items-center justify-center flex-shrink-0`}>
               <Icon size={15} className={color} />
             </div>
             <div className="min-w-0">
