@@ -195,7 +195,7 @@ function RejectDialog() {
 
   const handleReject = () => {
     if (!activeId) return;
-    updateStatus(activeId, { status: LeadStatus.NEW });
+    updateStatus(activeId, { status: LeadStatus.REJECTED, rejectReason });
     closeModal();
     showToast.error("Submission rejected. Lead has been notified.");
   };
@@ -241,6 +241,9 @@ function RejectDialog() {
               <label className="block text-[12px] font-sans font-medium text-text-secondary mb-1.5">
                 {t("verification.rejectionReason")}
               </label>
+              <p className="text-[11px] font-sans text-warning mb-1.5 flex items-center gap-1">
+                <span>⚠</span> This message will be sent directly to the customer via Telegram.
+              </p>
               <Textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}

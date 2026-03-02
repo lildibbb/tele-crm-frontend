@@ -9,7 +9,6 @@ import {
   CaretLeft,
   CheckCircle,
   XCircle,
-  Link as LinkIcon,
   PencilSimple,
   PaperPlaneRight,
   Play,
@@ -17,23 +16,25 @@ import {
   UserCircle,
   Chat,
   Lightning,
-  Check,
   Warning,
   ArrowSquareOut,
+  ArrowCounterClockwise,
+  ArrowClockwise,
   DownloadSimple,
   X,
   Fingerprint,
   EnvelopeSimple,
   Phone,
   CalendarCheck,
-  CurrencyDollar,
   UserSwitch,
   Paperclip,
   CaretRight,
   Hash,
 } from "@phosphor-icons/react";
+import { Icon } from "@iconify/react";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
-import { useT } from "@/i18n";
+import { useT, K } from "@/i18n";
+import { formatDate, timeAgo } from "@/lib/format";
 import { useLeadsStore } from "@/store/leadsStore";
 import { leadsApi } from "@/lib/api/leads";
 import type { Interaction } from "@/lib/schemas/lead.schema";
@@ -345,8 +346,9 @@ export default function LeadDetailPage({
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showRevertModal, setShowRevertModal] = useState(false);
+  const [showReopenModal, setShowReopenModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<{
     msg: string;
     type: "success" | "danger" | "info";
@@ -358,6 +360,8 @@ export default function LeadDetailPage({
   const verifyRef = useRef<HTMLDivElement>(null);
   const rejectRef = useRef<HTMLDivElement>(null);
   const editRef = useRef<HTMLDivElement>(null);
+  const revertRef = useRef<HTMLDivElement>(null);
+  const reopenRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
@@ -406,6 +410,26 @@ export default function LeadDetailPage({
       );
   }, [showEditModal, isMobile]);
 
+  useEffect(() => {
+    if (isMobile) return;
+    if (showRevertModal && revertRef.current)
+      gsap.fromTo(
+        revertRef.current,
+        { opacity: 0, scale: 0.95, y: 8 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: "power2.out" },
+      );
+  }, [showRevertModal, isMobile]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    if (showReopenModal && reopenRef.current)
+      gsap.fromTo(
+        reopenRef.current,
+        { opacity: 0, scale: 0.95, y: 8 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: "power2.out" },
+      );
+  }, [showReopenModal, isMobile]);
+
   // ── Mobile view ──
   if (isMobile) {
     return (
@@ -417,7 +441,7 @@ export default function LeadDetailPage({
           updateStatus(lead.id, { status: LeadStatus.DEPOSIT_CONFIRMED })
         }
         onReject={() =>
-          lead && updateStatus(lead.id, { status: LeadStatus.NEW })
+          lead && updateStatus(lead.id, { status: LeadStatus.REJECTED })
         }
       />
     );
@@ -434,27 +458,26 @@ export default function LeadDetailPage({
   const handleVerify = () => {
     if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_CONFIRMED });
     setShowVerifyModal(false);
-    showToastMsg(t("lead.toast.verified"), "success");
+    showToastMsg(t(K.lead.toast.verified), "success");
   };
 
   const handleReject = () => {
-    if (lead) updateStatus(lead.id, { status: LeadStatus.NEW });
+    if (lead) updateStatus(lead.id, { status: LeadStatus.REJECTED, rejectReason });
     setShowRejectModal(false);
     setRejectReason("");
-    showToastMsg(t("lead.toast.rejected"), "danger");
+    showToastMsg(t(K.lead.toast.rejected), "danger");
   };
 
-  const handleCopyLink = async () => {
-    const ref = lead?.telegramUserId ?? id;
-    const link = `https://app.titanjournal.com/tma/register?ref=${ref}`;
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      showToastMsg(t("lead.toast.copied"), "info");
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      showToast.error("Failed to copy");
-    }
+  const handleRevert = () => {
+    if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_REPORTED });
+    setShowRevertModal(false);
+    showToastMsg(t(K.lead.toast.reverted), "info");
+  };
+
+  const handleReopen = () => {
+    if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_REPORTED });
+    setShowReopenModal(false);
+    showToastMsg(t(K.lead.toast.reopened), "info");
   };
 
   const handleSend = async () => {
@@ -477,12 +500,7 @@ export default function LeadDetailPage({
     try {
       await leadsApi.reply(id, text);
     } catch {
-      showToastMsg(
-        t("lead.toast.sendFailed") === "lead.toast.sendFailed"
-          ? "Failed to send message"
-          : t("lead.toast.sendFailed"),
-        "danger",
-      );
+      showToastMsg(t(K.lead.toast.sendFailed), "danger");
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
     }
   };
@@ -491,7 +509,7 @@ export default function LeadDetailPage({
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
         <div className="w-8 h-8 rounded-full border-2 border-crimson border-t-transparent animate-spin" />
-        <p className="text-text-secondary font-sans">Loading lead details...</p>
+        <p className="text-text-secondary font-sans">{t(K.lead.loading)}</p>
       </div>
     );
   }
@@ -500,15 +518,11 @@ export default function LeadDetailPage({
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
         <p className="text-text-secondary font-sans">
-          {t("lead.notFound") === "lead.notFound"
-            ? "Lead not found:"
-            : t("lead.notFound")}{" "}
-          {id}
+          {t(K.lead.notFound)}: {id}
         </p>
         <Button variant="ghost" asChild className="gap-1.5 text-sm">
           <Link href="/leads">
-            <CaretLeft className="h-4 w-4" />{" "}
-            {t("nav.leads") === "nav.leads" ? "Back to Leads" : t("nav.leads")}
+            <CaretLeft className="h-4 w-4" /> {t("nav.leads")}
           </Link>
         </Button>
       </div>
@@ -580,12 +594,16 @@ export default function LeadDetailPage({
                           {statusBadge.label}
                         </span>
                         {handover ? (
-                          <span className="badge flex items-center gap-1 bg-card border border-border-default text-text-secondary shadow-sm">
-                            <UserCircle className="h-3 w-3" /> Handover
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[11px] font-semibold shadow-sm">
+                            <span className="relative flex h-2 w-2 flex-shrink-0">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                            </span>
+                            {t(K.lead.handoverBadge)}
                           </span>
                         ) : (
                           <span className="badge badge-live flex items-center gap-1">
-                            <Robot className="h-3 w-3" /> Bot Active
+                            <Robot className="h-3 w-3" /> {t(K.lead.botActive)}
                           </span>
                         )}
                       </div>
@@ -594,7 +612,7 @@ export default function LeadDetailPage({
                   {/* Balance KPI */}
                   <div className="sm:text-right flex-shrink-0">
                     <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-0.5">
-                      {t("lead.depositBalance")}
+                      {t(K.lead.depositBalance)}
                     </p>
                     <p className="text-2xl font-bold text-gold leading-none">
                       {lead.depositBalance && lead.depositBalance !== "—"
@@ -611,31 +629,36 @@ export default function LeadDetailPage({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
                     {
-                      label: "HFM ID",
+                      label: t(K.lead.field.hfmId),
                       value: lead.hfmBrokerId ?? "—",
+                      subValue: undefined as string | undefined,
                       Icon: Fingerprint,
                     },
                     {
-                      label: "Email",
+                      label: t(K.lead.field.email),
                       value: lead.email ?? "—",
+                      subValue: undefined as string | undefined,
                       Icon: EnvelopeSimple,
                     },
                     {
-                      label: "Phone",
+                      label: t(K.lead.field.phone),
                       value: lead.phoneNumber ?? "—",
+                      subValue: undefined as string | undefined,
                       Icon: Phone,
                     },
                     {
-                      label: "First Contacted",
-                      value: lead.contactedAt ?? "—",
+                      label: t(K.lead.field.firstContacted),
+                      value: lead.contactedAt ? formatDate(lead.contactedAt) ?? "—" : "—",
+                      subValue: lead.contactedAt ? timeAgo(lead.contactedAt) : undefined,
                       Icon: CalendarCheck,
                     },
                     {
-                      label: "Form Submitted",
-                      value: lead.registeredAt ?? "—",
+                      label: t(K.lead.field.formSubmitted),
+                      value: lead.registeredAt ? formatDate(lead.registeredAt) ?? "—" : "—",
+                      subValue: lead.registeredAt ? timeAgo(lead.registeredAt) : undefined,
                       Icon: CalendarCheck,
                     },
-                  ].map(({ label, value, Icon: FieldIcon }) => (
+                  ].map(({ label, value, subValue, Icon: FieldIcon }) => (
                     <div
                       key={label}
                       className="flex items-start gap-3 p-3 bg-card rounded-lg shadow-sm"
@@ -648,34 +671,45 @@ export default function LeadDetailPage({
                         <p className="data-mono text-[12px] text-text-primary truncate">
                           {value}
                         </p>
+                        {subValue && (
+                          <p className="text-[10px] text-text-muted mt-0.5">{subValue}</p>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Telegram ID */}
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg shadow-sm">
-                  <CurrencyDollar className="h-4 w-4 text-text-muted flex-shrink-0" />
+                {/* Telegram */}
+                <div className="flex items-center gap-3 p-3 bg-card rounded-lg shadow-sm border border-[#229ED9]/10">
+                  <div className="w-7 h-7 rounded-md bg-[#229ED9]/10 flex items-center justify-center flex-shrink-0">
+                    <Icon icon="logos:telegram" className="h-4 w-4" />
+                  </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-0.5">
-                      Telegram ID
+                      {t(K.lead.field.telegram)}
                     </p>
-                    <p className="data-mono text-[12px] text-text-primary">
-                      {lead.telegramUserId}
-                    </p>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      {lead.username && (
+                        <span className="text-[13px] font-semibold text-[#229ED9]">
+                          @{lead.username}
+                        </span>
+                      )}
+                      <span className="data-mono text-[11px] text-text-muted">
+                        #{lead.telegramUserId}
+                      </span>
+                    </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-text-muted hover:text-text-primary flex-shrink-0"
-                    onClick={handleCopyLink}
-                  >
-                    {copied ? (
-                      <Check className="h-3.5 w-3.5 text-success" />
-                    ) : (
+                  {lead.username && (
+                    <a
+                      href={`https://t.me/${lead.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={t(K.lead.openTelegram)}
+                      className="h-6 w-6 flex items-center justify-center text-text-muted hover:text-[#229ED9] transition-colors flex-shrink-0"
+                    >
                       <ArrowSquareOut className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
+                    </a>
+                  )}
                 </div>
 
                 {/* Group Thread Topic */}
@@ -684,7 +718,7 @@ export default function LeadDetailPage({
                     <Hash className="h-4 w-4 text-text-muted flex-shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-0.5">
-                        Group Thread
+                        {t(K.lead.field.groupThread)}
                       </p>
                       <p className="data-mono text-[12px] text-text-primary">
                         Topic #{lead.groupTopicId}
@@ -696,69 +730,85 @@ export default function LeadDetailPage({
                   </div>
                 )}
 
-                {/* Action buttons */}
+                {/* Action buttons — conditional based on current status */}
                 <div className="pt-1 flex items-center gap-2 flex-wrap">
+                  {/* DEPOSIT_REPORTED: primary verification flow */}
+                  {lead.status === LeadStatus.DEPOSIT_REPORTED && (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-success text-white text-xs font-semibold shadow-sm hover:bg-success/90 active:scale-[0.97] transition-all"
+                            onClick={() => setShowVerifyModal(true)}
+                          >
+                            <CheckCircle className="h-3.5 w-3.5" weight="fill" />
+                            {t(K.lead.verify)}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Verify deposit proof</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-danger/20 bg-danger/5 text-danger text-xs font-medium hover:bg-danger/10 active:scale-[0.97] transition-all"
+                            onClick={() => setShowRejectModal(true)}
+                          >
+                            <XCircle className="h-3.5 w-3.5" weight="fill" />
+                            {t(K.lead.reject)}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Reject deposit</TooltipContent>
+                      </Tooltip>
+                    </>
+                  )}
+
+                  {/* DEPOSIT_CONFIRMED: allow revert for accidental verifications */}
+                  {lead.status === LeadStatus.DEPOSIT_CONFIRMED && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-warning/30 bg-warning/8 text-warning text-xs font-medium hover:bg-warning/15 active:scale-[0.97] transition-all"
+                          onClick={() => setShowRevertModal(true)}
+                        >
+                          <ArrowCounterClockwise className="h-3.5 w-3.5" />
+                          {t(K.lead.revert)}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>Revert accidental verification</TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {/* REJECTED: allow re-open to re-queue for review */}
+                  {lead.status === LeadStatus.REJECTED && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-info/20 bg-info/5 text-info text-xs font-medium hover:bg-info/10 active:scale-[0.97] transition-all"
+                          onClick={() => setShowReopenModal(true)}
+                        >
+                          <ArrowClockwise className="h-3.5 w-3.5" />
+                          {t(K.lead.reopen)}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>Re-open for review</TooltipContent>
+                    </Tooltip>
+                  )}
+
+                  {/* Edit — always visible */}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        className="gap-1.5 text-xs bg-success/12 hover:bg-success/20 border border-success/20 text-success hover:text-success"
-                        onClick={() => setShowVerifyModal(true)}
-                      >
-                        <CheckCircle className="h-3.5 w-3.5" />{" "}
-                        {t("lead.verify")}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Verify deposit proof</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
+                      <button
                         disabled={isBlocked}
-                        className="gap-1.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border-default bg-card text-text-secondary text-xs font-medium hover:border-text-muted hover:text-text-primary active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => !isBlocked && setShowEditModal(true)}
                       >
-                        <PencilSimple className="h-3.5 w-3.5" />{" "}
-                        {t("lead.edit")}
-                      </Button>
+                        <PencilSimple className="h-3.5 w-3.5" />
+                        {t(K.lead.edit)}
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {isBlocked
-                        ? "Read-only during maintenance"
-                        : "Edit lead details"}
+                      {isBlocked ? "Read-only during maintenance" : "Edit lead details"}
                     </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1.5 text-xs"
-                        onClick={handleCopyLink}
-                      >
-                        {copied ? (
-                          <Check className="h-3.5 w-3.5 text-success" />
-                        ) : (
-                          <LinkIcon className="h-3.5 w-3.5" />
-                        )}
-                        {copied ? t("lead.copied") : t("lead.copyLink")}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Copy referral link</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        size="sm"
-                        className="gap-1.5 text-xs bg-danger/12 hover:bg-danger/20 border border-danger/20 text-danger hover:text-danger"
-                        onClick={() => setShowRejectModal(true)}
-                      >
-                        <XCircle className="h-3.5 w-3.5" /> {t("lead.reject")}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Reject deposit</TooltipContent>
                   </Tooltip>
                 </div>
               </div>
@@ -774,13 +824,13 @@ export default function LeadDetailPage({
                   </h3>
                 </div>
                 <span className="badge badge-pending">
-                  {attachments.length} file{attachments.length !== 1 ? "s" : ""}
+                  {attachments.length}
                 </span>
               </div>
               {attachments.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-10 text-text-muted">
                   <Paperclip size={28} className="opacity-20" />
-                  <p className="text-xs font-sans">No attachments yet</p>
+                  <p className="text-xs font-sans">{t(K.lead.noAttachments)}</p>
                 </div>
               ) : (
                 <div className="p-4">
@@ -908,7 +958,7 @@ export default function LeadDetailPage({
                     <div className="space-y-4">
                       {timeline.length === 0 ? (
                         <p className="text-xs font-sans text-text-muted pl-8">
-                          No activity yet.
+                          {t(K.lead.noActivity)}
                         </p>
                       ) : (
                         timeline.map((event) => {
@@ -1186,6 +1236,9 @@ export default function LeadDetailPage({
                 <label className="block text-xs font-sans font-medium text-text-secondary mb-1.5">
                   {t("lead.reject.reason")}
                 </label>
+                <p className="text-[11px] font-sans text-warning mb-1.5 flex items-center gap-1">
+                  <span>⚠</span> This message will be sent directly to the customer via Telegram.
+                </p>
                 <Textarea
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
@@ -1268,6 +1321,76 @@ export default function LeadDetailPage({
                   }}
                 >
                   {t("common.save")}
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* ── Revert Modal ── */}
+        <Dialog open={showRevertModal} onOpenChange={setShowRevertModal}>
+          <DialogContent className="max-w-sm rounded-3xl">
+            <div ref={revertRef}>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-warning/15 border border-warning/25 flex items-center justify-center flex-shrink-0">
+                    <ArrowCounterClockwise className="h-5 w-5 text-warning" />
+                  </div>
+                  <DialogTitle className="font-bold text-xl text-text-primary">
+                    {t(K.lead.revertDialog.title)}
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="font-sans text-sm text-text-secondary">
+                  {t(K.lead.revertDialog.desc, { name: lead.displayName ?? "" })}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex items-center gap-1.5 p-3 rounded-lg bg-warning/10 border border-warning/20 my-4">
+                <Warning className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                <p className="text-xs font-sans text-warning">
+                  {t(K.lead.revertDialog.warning)}
+                </p>
+              </div>
+              <DialogFooter className="flex gap-3 sm:flex-row">
+                <Button variant="outline" className="flex-1" onClick={() => setShowRevertModal(false)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  className="flex-1 gap-2 bg-warning hover:bg-warning/90 text-white font-semibold"
+                  onClick={handleRevert}
+                >
+                  <ArrowCounterClockwise className="h-4 w-4" /> {t(K.lead.revertDialog.btn)}
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* ── Reopen Modal ── */}
+        <Dialog open={showReopenModal} onOpenChange={setShowReopenModal}>
+          <DialogContent className="max-w-sm rounded-3xl">
+            <div ref={reopenRef}>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-info/15 border border-info/25 flex items-center justify-center flex-shrink-0">
+                    <ArrowClockwise className="h-5 w-5 text-info" />
+                  </div>
+                  <DialogTitle className="font-bold text-xl text-text-primary">
+                    {t(K.lead.reopenDialog.title)}
+                  </DialogTitle>
+                </div>
+                <DialogDescription className="font-sans text-sm text-text-secondary">
+                  {t(K.lead.reopenDialog.desc, { name: lead.displayName ?? "" })}
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex gap-3 sm:flex-row mt-4">
+                <Button variant="outline" className="flex-1" onClick={() => setShowReopenModal(false)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button
+                  className="flex-1 gap-2 bg-info hover:bg-info/90 text-white font-semibold"
+                  onClick={handleReopen}
+                >
+                  <ArrowClockwise className="h-4 w-4" /> {t(K.lead.reopenDialog.btn)}
                 </Button>
               </DialogFooter>
             </div>

@@ -38,6 +38,7 @@ export type Lead = z.infer<typeof LeadResponseSchema>;
 
 export const UpdateLeadStatusSchema = z.object({
   status: LeadStatusSchema,
+  rejectReason: z.string().optional(),
 });
 
 export type UpdateLeadStatusInput = z.infer<typeof UpdateLeadStatusSchema>;
@@ -104,6 +105,17 @@ export const ExportLeadsParamsSchema = z.object({
 });
 
 export type ExportLeadsParams = z.infer<typeof ExportLeadsParamsSchema>;
+
+// ── Import Result ─────────────────────────────────────────────────────────────
+
+export const ImportResultSchema = z.object({
+  imported: z.number(),
+  updated: z.number(),
+  skipped: z.number(),
+  errors: z.array(z.string()),
+});
+
+export type ImportResult = z.infer<typeof ImportResultSchema>;
 
 // ── Interaction Types ─────────────────────────────────────────────────────────
 
