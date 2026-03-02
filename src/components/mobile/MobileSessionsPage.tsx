@@ -25,6 +25,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { timeAgo } from "@/lib/format";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -53,16 +54,6 @@ function getBrowserName(ua: string | null): string {
   if (/safari/i.test(ua) && !/chrome/i.test(ua)) return "Safari";
   if (/firefox/i.test(ua)) return "Firefox";
   return "Browser";
-}
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "Active now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
 }
 
 function isCurrentSession(session: Session): boolean {
