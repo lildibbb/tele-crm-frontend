@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { useGoogleAnalyticsStats } from "@/queries/useGoogleAnalyticsQuery";
 import type { GoogleOpLog } from "@/lib/api/googleAnalytics";
+import { useT, K } from "@/i18n";
 
 // ── KPI Tile ──────────────────────────────────────────────────────────────────
 
@@ -90,6 +91,7 @@ function OpRow({ op }: { op: GoogleOpLog }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminGooglePage() {
+  const t = useT();
   const { data, isLoading, error, refetch } = useGoogleAnalyticsStats();
 
   const stats = data?.stats;
@@ -102,8 +104,8 @@ export default function AdminGooglePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Google Services</h1>
-          <p className="text-sm text-text-secondary mt-1">API usage for Sheets and Drive integrations</p>
+          <h1 className="text-2xl font-bold text-text-primary">{t(K.superadmin.google.title)}</h1>
+          <p className="text-sm text-text-secondary mt-1">{t(K.superadmin.google.subtitle)}</p>
         </div>
         <button
           onClick={() => void refetch()}
@@ -157,7 +159,7 @@ export default function AdminGooglePage() {
       <div className="page-panel bg-elevated rounded-xl overflow-hidden border border-border-subtle">
         <div className="px-5 py-4 bg-card border-b border-border-subtle flex items-center justify-between shadow-sm">
           <div>
-            <h2 className="text-sm font-semibold text-text-primary">Recent Operations</h2>
+            <h2 className="text-sm font-semibold text-text-primary">{t(K.superadmin.google.recentOps)}</h2>
             <p className="text-xs text-text-muted mt-0.5">Last {ops.length} API calls, newest first</p>
           </div>
           {ops.length > 0 && (
@@ -175,7 +177,7 @@ export default function AdminGooglePage() {
           </div>
         ) : ops.length === 0 ? (
           <div className="px-5 py-12 text-center text-text-muted text-sm">
-            No operations recorded yet. Syncs and uploads will appear here.
+            {t(K.superadmin.google.noOps)}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -192,8 +194,8 @@ export default function AdminGooglePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {ops.map((op) => (
-                  <OpRow key={op.id} op={op} />
+                {ops.map((op, i) => (
+                  <OpRow key={i} op={op} />
                 ))}
               </TableBody>
             </Table>

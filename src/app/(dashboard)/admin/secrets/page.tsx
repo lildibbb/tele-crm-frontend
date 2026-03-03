@@ -3,10 +3,12 @@ import { SecretsPanel } from "@/components/superadmin/secrets-panel";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useRouter } from "next/navigation";
 import { CaretLeft, LockKey } from "@phosphor-icons/react";
+import { useT, K } from "@/i18n";
 
 export default function AdminSecretsPage() {
   const isMobile = useIsMobile();
   const router = useRouter();
+  const t = useT();
 
   if (isMobile) {
     return (
@@ -31,8 +33,8 @@ export default function AdminSecretsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">Encrypted Secrets</h1>
-        <p className="text-sm text-text-secondary mt-1">AES-256-GCM credentials for integrations</p>
+        <h1 className="text-2xl font-bold text-text-primary">{t(K.superadmin.secrets.title)}</h1>
+        <p className="text-sm text-text-secondary mt-1">{t(K.superadmin.secrets.subtitle)}</p>
       </div>
       <SecretsPanel />
     </div>

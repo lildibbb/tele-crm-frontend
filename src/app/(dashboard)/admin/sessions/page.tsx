@@ -28,6 +28,7 @@ import {
 import { superadminApi } from '@/lib/api/superadmin';
 import { queryKeys } from '@/queries/queryKeys';
 import { ProhibitInset } from '@phosphor-icons/react';
+import { useT, K } from '@/i18n';
 
 function truncate(str: string, len = 12) {
   return str.length <= len ? str : `${str.slice(0, len)}…`;
@@ -38,6 +39,7 @@ function formatDate(iso: string) {
 }
 
 export default function AdminSessionsPage() {
+  const t = useT();
   const queryClient = useQueryClient();
   const [revokeId, setRevokeId] = useState<string | null>(null);
 
@@ -59,28 +61,28 @@ export default function AdminSessionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">Active Sessions</h1>
+        <h1 className="text-2xl font-bold text-text-primary">{t(K.superadmin.sessions.title)}</h1>
         <p className="text-sm text-text-secondary mt-1">
-          All active user sessions across the system
+          {t(K.superadmin.sessions.subtitle)}
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-base font-semibold">
-            Sessions{!isLoading && ` (${sessions.length})`}
+            {t(K.superadmin.sessions.count)}{!isLoading && ` (${sessions.length})`}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Session ID</TableHead>
-                <TableHead>User ID</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Expires At</TableHead>
-                <TableHead>User Agent</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t(K.superadmin.sessions.sessionId)}</TableHead>
+                <TableHead>{t(K.superadmin.sessions.userId)}</TableHead>
+                <TableHead>{t(K.superadmin.sessions.createdAt)}</TableHead>
+                <TableHead>{t(K.superadmin.sessions.expiresAt)}</TableHead>
+                <TableHead>{t(K.superadmin.sessions.userAgent)}</TableHead>
+                <TableHead className="text-right">{t(K.superadmin.sessions.actions)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -97,7 +99,7 @@ export default function AdminSessionsPage() {
               ) : sessions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
-                    <EmptyState title="No active sessions" />
+                    <EmptyState title={t(K.superadmin.sessions.noSessions)} />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -126,7 +128,7 @@ export default function AdminSessionsPage() {
                         className="gap-1.5"
                       >
                         <ProhibitInset size={14} />
-                        Revoke
+                        {t(K.superadmin.sessions.revoke)}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -140,19 +142,19 @@ export default function AdminSessionsPage() {
       <AlertDialog open={!!revokeId} onOpenChange={(open) => { if (!open) setRevokeId(null); }}>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>Revoke Session</AlertDialogTitle>
+            <AlertDialogTitle>{t(K.superadmin.sessions.revokeTitle)}</AlertDialogTitle>
             <AlertDialogDescription>
-              This session will be terminated immediately. The user will need to log in again.
+              {t(K.superadmin.sessions.revokeDesc)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t(K.common.cancel)}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => revokeId && revokeMutation.mutate(revokeId)}
               disabled={revokeMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Revoke
+              {t(K.superadmin.sessions.revoke)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

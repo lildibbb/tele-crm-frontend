@@ -18,8 +18,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { superadminApi } from '@/lib/api/superadmin';
 import { queryKeys } from '@/queries/queryKeys';
 import { ArrowsClockwise, Trash } from '@phosphor-icons/react';
+import { useT, K } from '@/i18n';
 
 export default function QueuesPage() {
+  const t = useT();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -51,26 +53,26 @@ export default function QueuesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">Queue Manager</h1>
+        <h1 className="text-2xl font-bold text-text-primary">{t(K.superadmin.queues.title)}</h1>
         <p className="text-sm text-text-secondary mt-1">
-          Monitor and manage background job queues · auto-refreshes every 10s
+          {t(K.superadmin.queues.subtitle)}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Active Queues</CardTitle>
+          <CardTitle className="text-base font-semibold">{t(K.superadmin.queues.activeQueues)}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Queue Name</TableHead>
-                <TableHead className="text-center">Waiting</TableHead>
-                <TableHead className="text-center">Active</TableHead>
-                <TableHead className="text-center">Completed</TableHead>
-                <TableHead className="text-center">Failed</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t(K.superadmin.queues.queueName)}</TableHead>
+                <TableHead className="text-center">{t(K.superadmin.queues.waiting)}</TableHead>
+                <TableHead className="text-center">{t(K.superadmin.queues.active)}</TableHead>
+                <TableHead className="text-center">{t(K.superadmin.queues.completed)}</TableHead>
+                <TableHead className="text-center">{t(K.superadmin.queues.failed)}</TableHead>
+                <TableHead className="text-right">{t(K.superadmin.queues.actions)}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -87,7 +89,7 @@ export default function QueuesPage() {
               ) : queues.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="p-0">
-                    <EmptyState title="No queues found" />
+                    <EmptyState title={t(K.superadmin.queues.noQueues)} />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -116,7 +118,7 @@ export default function QueuesPage() {
                           className="gap-1.5"
                         >
                           <ArrowsClockwise size={14} />
-                          Retry Failed
+                          {t(K.superadmin.queues.retryFailed)}
                         </Button>
                         <Button
                           size="sm"
@@ -126,7 +128,7 @@ export default function QueuesPage() {
                           className="gap-1.5"
                         >
                           <Trash size={14} />
-                          Purge Failed
+                          {t(K.superadmin.queues.purgeFailed)}
                         </Button>
                       </div>
                     </TableCell>

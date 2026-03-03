@@ -1,4 +1,4 @@
-const en: Record<string, string> = {
+﻿const en: Record<string, string> = {
   /* ── Navigation ────────────────────────────────── */
   "nav.commandCenter": "Command Center",
   "nav.leadIntelligence": "Lead Intelligence",
@@ -507,6 +507,68 @@ const en: Record<string, string> = {
   "status.pending": "Pending",
   "status.approved": "Approved",
   "status.rejected": "Rejected",
+  /* ── Superadmin Pages ─────────────────────────────────── */
+  "superadmin.sessions.title":       "Active Sessions",
+  "superadmin.sessions.subtitle":    "All active user sessions across the system",
+  "superadmin.sessions.sessionId":   "Session ID",
+  "superadmin.sessions.userId":      "User ID",
+  "superadmin.sessions.createdAt":   "Created At",
+  "superadmin.sessions.expiresAt":   "Expires At",
+  "superadmin.sessions.userAgent":   "User Agent",
+  "superadmin.sessions.actions":     "Actions",
+  "superadmin.sessions.revoke":      "Revoke",
+  "superadmin.sessions.revokeTitle": "Revoke Session",
+  "superadmin.sessions.revokeDesc":  "This session will be terminated immediately. The user will need to log in again.",
+  "superadmin.sessions.noSessions":  "No active sessions",
+  "superadmin.sessions.count":       "Sessions",
+
+  "superadmin.queues.title":        "Queue Manager",
+  "superadmin.queues.subtitle":     "Monitor and manage background job queues · auto-refreshes every 10s",
+  "superadmin.queues.activeQueues": "Active Queues",
+  "superadmin.queues.queueName":    "Queue Name",
+  "superadmin.queues.waiting":      "Waiting",
+  "superadmin.queues.active":       "Active",
+  "superadmin.queues.completed":    "Completed",
+  "superadmin.queues.failed":       "Failed",
+  "superadmin.queues.actions":      "Actions",
+  "superadmin.queues.retryFailed":  "Retry Failed",
+  "superadmin.queues.purgeFailed":  "Purge Failed",
+  "superadmin.queues.noQueues":     "No queues found",
+
+  "superadmin.backup.title":         "Backup Manager",
+  "superadmin.backup.subtitle":      "Trigger backups and view backup history",
+  "superadmin.backup.triggerBackup": "Trigger Backup",
+  "superadmin.backup.triggering":    "Triggering...",
+  "superadmin.backup.historyTitle":  "Backup History",
+  "superadmin.backup.retentionDays": "Retention days",
+  "superadmin.backup.saveRetention": "Save",
+  "superadmin.backup.noHistory":     "No backup history",
+  "superadmin.backup.filename":      "Filename",
+  "superadmin.backup.size":          "Size",
+  "superadmin.backup.destinations":  "Destinations",
+  "superadmin.backup.status":        "Status",
+
+  "superadmin.google.title":     "Google Integration",
+  "superadmin.google.subtitle":  "Google Sheets and Drive sync status",
+  "superadmin.google.totalOps":  "Total Ops",
+  "superadmin.google.errors":    "Errors",
+  "superadmin.google.lastSync":  "Last Sync",
+  "superadmin.google.recentOps": "Recent Operations",
+  "superadmin.google.noOps":     "No operations recorded",
+
+  "superadmin.users.title":    "User Management",
+  "superadmin.users.subtitle": "Manage CRM users, roles, and access",
+  "superadmin.users.addUser":  "Add User",
+  "superadmin.users.noUsers":  "No users found",
+
+  "superadmin.maintenance.title":    "Maintenance & Flags",
+  "superadmin.maintenance.subtitle": "Configure system maintenance mode and toggle feature flags globally without deploying.",
+
+  "superadmin.system.title":    "System Configuration",
+  "superadmin.system.subtitle": "Manage all platform configuration keys",
+
+  "superadmin.secrets.title":    "Secrets Manager",
+  "superadmin.secrets.subtitle": "Manage encrypted environment secrets",
 };
 
 export default en;
