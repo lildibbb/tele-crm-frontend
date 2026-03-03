@@ -30,7 +30,7 @@ export const FunnelOverview = React.memo(function FunnelOverview({
   labels,
 }: FunnelOverviewProps) {
   return (
-    <div className="xl:col-span-4 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
+    <div className="xl:col-span-4 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
       <div className="flex items-center justify-between mb-1">
         <h2 className="font-sans font-semibold text-[15px] text-text-primary">
           {labels.title}

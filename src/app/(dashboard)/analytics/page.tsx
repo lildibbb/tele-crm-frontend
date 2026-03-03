@@ -529,7 +529,7 @@ export default function AnalyticsPage() {
         {/* Row 1: Trend chart + Conversion Funnel */}
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
           {/* Lead trend area chart */}
-          <ChartInView className="xl:col-span-3 bg-elevated rounded-xl p-5">
+          <ChartInView className="xl:col-span-3 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                 {t("analytics.charts.depositTrend")}
@@ -607,7 +607,7 @@ export default function AnalyticsPage() {
           </ChartInView>
 
           {/* Conversion funnel */}
-          <ChartInView className="xl:col-span-2 bg-elevated rounded-xl p-5">
+          <ChartInView className="xl:col-span-2 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                 {t("analytics.charts.funnelBreakdown")}
@@ -706,7 +706,7 @@ export default function AnalyticsPage() {
         {/* Row 2: Lead Sources (funnel bar) + Conversion rates chart */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {/* Lead source bar chart */}
-          <ChartInView className="bg-elevated rounded-xl p-5">
+          <ChartInView className="bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                 {t("analytics.charts.leadSources")}
@@ -779,7 +779,7 @@ export default function AnalyticsPage() {
           {/* ── Lead Velocity & Time Distribution ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Panel A — Stage Velocity */}
-            <ChartInView className="bg-elevated rounded-xl p-5">
+            <ChartInView className="bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
               <div className="flex items-center justify-between mb-1">
                 <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   {t(K.analytics.velocity.title)}
@@ -827,7 +827,7 @@ export default function AnalyticsPage() {
             </ChartInView>
 
             {/* Panel B — Time Distribution */}
-            <ChartInView className="bg-elevated rounded-xl p-5">
+            <ChartInView className="bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
               <div className="flex items-center justify-between mb-1">
                 <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   {t(K.analytics.velocity.distribution)}
@@ -898,7 +898,7 @@ export default function AnalyticsPage() {
 
       {/* ── RAG Quality Stats (SUPERADMIN only) ── */}
       {isSuperAdmin && (ragLoading || ragStats) && (
-        <div className="mt-6 bg-elevated rounded-2xl border border-border-subtle p-5">
+        <div className="mt-6 bg-elevated rounded-xl border border-border-subtle p-5">
           <div className="flex items-center gap-2 mb-4">
             <Pulse size={16} className="text-accent" weight="duotone" />
             <h3 className="font-sans font-semibold text-sm text-text-primary">RAG Quality</h3>

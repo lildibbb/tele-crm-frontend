@@ -53,7 +53,7 @@ export const TrendCharts = React.memo(function TrendCharts({
   return (
     <div className="page-section grid grid-cols-1 xl:grid-cols-5 gap-3 md:gap-4">
       {/* Area Chart — Lead Acquisition Trend */}
-      <div className="xl:col-span-3 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
+      <div className="xl:col-span-3 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-sans font-semibold text-[15px] text-text-primary">
             {labels.acquisitionTitle}
@@ -136,7 +136,7 @@ export const TrendCharts = React.memo(function TrendCharts({
       </div>
 
       {/* Bar Chart — Deposits Trend */}
-      <div className="xl:col-span-2 bg-elevated rounded-[20px] p-5 border border-border-subtle shadow-sm">
+      <div className="xl:col-span-2 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-sans font-semibold text-[15px] text-text-primary">
             Deposits Trend

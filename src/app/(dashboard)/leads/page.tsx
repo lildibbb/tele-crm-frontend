@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useMemo, useCallback } from "react";
-import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
+import { useQueryState, parseAsInteger } from "nuqs";
+import { getSortingStateParser } from "@/lib/parsers";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileLeadsList } from "@/components/mobile";
 import {
@@ -59,6 +60,16 @@ import { Input } from "@/components/ui/input";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
 import { toast } from "sonner";
 
+// Module-level constants — stable parser instances (no re-creation on render)
+const LEADS_ORDER_MAP: Record<string, string> = {
+  lead: "displayName",
+  registeredAt: "registeredAt",
+  depositBalance: "depositBalance",
+};
+const LEADS_SORT_PARSER = getSortingStateParser(
+  new Set(Object.keys(LEADS_ORDER_MAP)),
+).withDefault([]);
+
 export default function LeadsPage() {
   const t = useT();
   const isMobile = useIsMobile();
@@ -85,22 +96,15 @@ export default function LeadsPage() {
   // Read pagination from URL (same keys useDataTable uses internally)
   const [page] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage] = useQueryState("perPage", parseAsInteger.withDefault(20));
-  const [sortRaw] = useQueryState("sort");
+  // Use same parser as useDataTable to avoid nuqs batched-update type collisions
+  const [sortState] = useQueryState("sort", LEADS_SORT_PARSER);
 
-  // Map TanStack column IDs to backend orderBy field names
-  const ORDER_BY_MAP: Record<string, string> = {
-    lead: "displayName",
-    registeredAt: "registeredAt",
-    depositBalance: "depositBalance",
-  };
-
-  // Parse sort from URL (format: "columnId.asc" or "columnId.desc")
-  const firstSortItem = sortRaw?.split(",")[0];
-  const lastDot = firstSortItem ? firstSortItem.lastIndexOf(".") : -1;
-  const sortColId = lastDot > -1 ? firstSortItem!.slice(0, lastDot) : undefined;
-  const sortDir = lastDot > -1 ? firstSortItem!.slice(lastDot + 1) : undefined;
-  const orderBy = sortColId ? (ORDER_BY_MAP[sortColId] ?? sortColId) : undefined;
-  const order = (sortDir === "asc" || sortDir === "desc") ? sortDir : undefined;
+  // Derive backend orderBy/order from TanStack sort state
+  const firstSort = sortState[0];
+  const sortColId = firstSort?.id;
+  const sortDir = firstSort ? (firstSort.desc ? "desc" : "asc") : undefined;
+  const orderBy = sortColId ? (LEADS_ORDER_MAP[sortColId] ?? sortColId) : undefined;
+  const order = sortDir;
   const pageIndex = page - 1;
   const pageSize = perPage;
 

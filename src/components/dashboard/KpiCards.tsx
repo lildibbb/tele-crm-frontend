@@ -57,7 +57,7 @@ const KpiCard = React.memo(function KpiCard({
   const displayValue = prefix + count.toLocaleString() + suffix;
 
   return (
-    <div className="kpi-stat-card bg-elevated rounded-xl p-5 border border-border-subtle shadow-sm">
+    <div className="kpi-stat-card bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
       <div className="flex items-start justify-between mb-4">
         <Icon size={22} weight="duotone" className="text-text-secondary" />
         <span

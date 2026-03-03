@@ -345,7 +345,7 @@ export function AppSidebar() {
                     </span>
                     <span
                       className={cn(
-                        "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold mt-0.5",
+                        "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold leading-none mt-0.5 w-fit",
                         user?.role === UserRole.OWNER || user?.role === UserRole.SUPERADMIN
                           ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25"
                           : user?.role === UserRole.ADMIN

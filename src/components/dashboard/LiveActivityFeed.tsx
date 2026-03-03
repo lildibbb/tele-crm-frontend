@@ -40,7 +40,7 @@ export const LiveActivityFeed = React.memo(function LiveActivityFeed({
   t,
 }: LiveActivityFeedProps) {
   return (
-    <div className="xl:col-span-3 bg-elevated rounded-[20px] border border-border-subtle flex flex-col overflow-hidden shadow-sm">
+    <div className="xl:col-span-3 bg-elevated rounded-xl border border-border-subtle flex flex-col overflow-hidden shadow-[var(--shadow-card)]">
       <div className="flex flex-row items-center justify-between px-5 py-4 bg-card shadow-sm">
         <span className="font-sans font-semibold text-[15px] text-text-primary">
           {labels.title}

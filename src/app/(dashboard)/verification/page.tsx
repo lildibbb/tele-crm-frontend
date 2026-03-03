@@ -49,6 +49,7 @@ import { useLeadsList, useVerifyLead, useUpdateLeadStatus } from "@/queries/useL
 import type { Lead } from "@/queries/useLeadsQuery";
 import { LeadStatus } from "@/types/enums";
 import { parseAsInteger, useQueryState } from "nuqs";
+import { getSortingStateParser } from "@/lib/parsers";
 import { useT, K } from "@/i18n";
 import { getVerificationColumns } from "./_components/verification-columns";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
@@ -56,6 +57,16 @@ import { FileTypeBadge } from "@/components/ui/file-type-badge";
 
 const TAB_FILTERS = ["PENDING", "ALL"] as const;
 type ModalKind = "approve" | "reject" | "askMore" | "receipt" | null;
+
+// Stable module-level sort parser for verification table
+const VERIFY_ORDER_MAP: Record<string, string> = {
+  lead: "displayName",
+  submittedAt: "createdAt",
+  amount: "depositBalance",
+};
+const VERIFY_SORT_PARSER = getSortingStateParser(
+  new Set(Object.keys(VERIFY_ORDER_MAP)),
+).withDefault([]);
 
 // ── Avatar ──────────────────────────────────────────────────────────────────
 function Avatar({ name, size = 36 }: { name: string; size?: number }) {
@@ -811,8 +822,16 @@ export default function VerificationPage() {
   // Read pagination from URL (synced with useDataTable's internal nuqs state)
   const [page] = useQueryState("page", parseAsInteger.withDefault(1));
   const [perPage] = useQueryState("perPage", parseAsInteger.withDefault(20));
+  // Use same parser as useDataTable to avoid nuqs batched-update type collisions
+  const [sortState] = useQueryState("sort", VERIFY_SORT_PARSER);
   const pageIndex = page - 1;
   const pageSize = perPage;
+
+  // Derive backend sort params
+  const firstSort = sortState[0];
+  const verifySortColId = firstSort?.id;
+  const verifyOrderBy = verifySortColId ? (VERIFY_ORDER_MAP[verifySortColId] ?? verifySortColId) : undefined;
+  const verifyOrder = firstSort ? (firstSort.desc ? "desc" : "asc") : undefined;
 
   const { data: tableResult, isLoading } = useLeadsList({
     skip: pageIndex * pageSize,
@@ -820,6 +839,8 @@ export default function VerificationPage() {
     ...(filter === "PENDING"
       ? { status: LeadStatus.DEPOSIT_REPORTED }
       : { statuses: VERIFICATION_STATUSES }),
+    orderBy: verifyOrderBy,
+    order: verifyOrder,
   });
   const leads = tableResult?.data ?? [];
   const pageCount = tableResult?.pageCount ?? 1;
