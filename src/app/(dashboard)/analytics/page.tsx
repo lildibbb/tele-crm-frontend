@@ -111,9 +111,9 @@ void _unused;
 
 // ── Funnel fill colours ──────────────────────────────────────────
 const FUNNEL_FILLS = {
-  new: "#C4232D",
+  new: "var(--color-crimson)",
   formSubmitted: "#F59E0B",
-  depositConfirmed: "#22d3a0",
+  depositConfirmed: "var(--color-success)",
 };
 
 // ── Tooltip components ───────────────────────────────────────────
@@ -260,7 +260,7 @@ function StatChipBadge({
     <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-elevated">
       <span
         className="flex items-center gap-0.5 text-[11px] font-semibold"
-        style={{ color: up ? "#22d3a0" : "#f87171" }}
+        style={{ color: up ? "var(--color-success)" : "var(--color-danger)" }}
       >
         {up ? (
           <ArrowUpRight size={13} weight="regular" />
@@ -496,7 +496,7 @@ export default function AnalyticsPage() {
               change={`${kpi?.verifiedClients.changePercentage ?? 0}%`}
               up={(kpi?.verifiedClients.trend ?? "up") === "up"}
               icon={Wallet}
-              iconColor="#22d3a0"
+              iconColor="var(--color-success)"
             />
             <KpiCard
               label={t(K.analytics.pendingVerification)}
@@ -512,7 +512,7 @@ export default function AnalyticsPage() {
               change={`${kpi?.verifiedClients.changePercentage ?? 0}%`}
               up={(kpi?.verifiedClients.trend ?? "up") === "up"}
               icon={Target}
-              iconColor="#C4232D"
+              iconColor="var(--color-crimson)"
             />
           </>
         )}
@@ -553,8 +553,8 @@ export default function AnalyticsPage() {
                     <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="gDep" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22d3a0" stopOpacity={0.38} />
-                    <stop offset="95%" stopColor="#22d3a0" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="var(--color-success)" stopOpacity={0.38} />
+                    <stop offset="95%" stopColor="var(--color-success)" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -580,7 +580,7 @@ export default function AnalyticsPage() {
                 <Area
                   type="monotone"
                   dataKey="Confirmed"
-                  stroke="#22d3a0"
+                  stroke="var(--color-success)"
                   strokeWidth={2}
                   fill="url(#gDep)"
                 />
@@ -590,7 +590,7 @@ export default function AnalyticsPage() {
               {(
                 [
                   ["#60a5fa", "New Leads"],
-                  ["#22d3a0", "Confirmed"],
+                  ["var(--color-success)", "Confirmed"],
                 ] as const
               ).map(([color, label]) => (
                 <div key={label} className="flex items-center gap-1.5">
@@ -726,10 +726,10 @@ export default function AnalyticsPage() {
               >
                 <defs>
                   <linearGradient id="gSrc" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#C4232D" stopOpacity={0.9} />
+                    <stop offset="0%" stopColor="var(--color-crimson)" stopOpacity={0.9} />
                     <stop
                       offset="100%"
-                      stopColor="#C4232D"
+                      stopColor="var(--color-crimson)"
                       stopOpacity={0.35}
                     />
                   </linearGradient>
@@ -795,8 +795,8 @@ export default function AnalyticsPage() {
                 <div className="space-y-3">
                   {[
                     { label: t(K.analytics.velocity.newToSubmit),      value: velocityData.newToSubmitted.p50,         color: "#a855f7" },
-                    { label: t(K.analytics.velocity.submitToConfirm),  value: velocityData.submittedToConfirmed.p50,   color: "#22d3a0" },
-                    { label: t(K.analytics.velocity.newToConfirm),     value: velocityData.newToConfirmed.p50,         color: "#C4232D" },
+                    { label: t(K.analytics.velocity.submitToConfirm),  value: velocityData.submittedToConfirmed.p50,   color: "var(--color-success)" },
+                    { label: t(K.analytics.velocity.newToConfirm),     value: velocityData.newToConfirmed.p50,         color: "var(--color-crimson)" },
                   ].map(({ label, value, color }) => {
                     const max = Math.max(
                       velocityData.newToSubmitted.p50 ?? 0,

@@ -9,11 +9,11 @@ export default function NotFound() {
     >
       {/* Icon */}
       <div className="w-20 h-20 rounded-[24px] bg-[#141422] bg-clip-padding overflow-hidden border border-white/8 flex items-center justify-center mb-6 shadow-[0_0_48px_rgba(196,35,45,0.15)]">
-        <Ghost size={36} weight="duotone" className="text-[#C4232D]" />
+        <Ghost size={36} weight="duotone" className="text-crimson" />
       </div>
 
       {/* Code badge */}
-      <span className="inline-block px-3 py-1 rounded-full bg-[#C4232D]/10 border border-[#C4232D]/20 font-mono text-[11px] text-[#C4232D] tracking-widest uppercase mb-4">
+      <span className="inline-block px-3 py-1 rounded-full bg-crimson/10 border border-crimson/20 font-mono text-[11px] text-crimson tracking-widest uppercase mb-4">
         Error 404
       </span>
 
@@ -33,7 +33,7 @@ export default function NotFound() {
       {/* CTA */}
       <Link
         href="/"
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C4232D] hover:bg-[#a81c25] text-white text-[13px] font-semibold transition-colors"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-crimson hover:bg-crimson-hover text-white text-[13px] font-semibold transition-colors"
       >
         <House size={15} weight="bold" />
         Back to Dashboard

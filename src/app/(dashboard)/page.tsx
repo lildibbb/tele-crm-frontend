@@ -88,7 +88,7 @@ export default function DashboardPage() {
         value: summary.funnel.formSubmitted,
         color: "#F59E0B",
       },
-      { name: "New", value: summary.funnel.new, color: "#C4232D" },
+      { name: "New", value: summary.funnel.new, color: "var(--color-crimson)" },
     ];
   }, [summary]);
 

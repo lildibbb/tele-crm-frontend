@@ -185,7 +185,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
       value: totalLeads,
       formatted: totalLeads.toLocaleString(),
       icon: <UsersThree size={20} weight="duotone" />,
-      color: "#C4232D",
+      color: "var(--color-crimson)",
       bgColor: "bg-elevated",
       iconColor: "text-text-secondary",
       trend: kpi?.totalLeads?.trend ?? "neutral",
@@ -258,18 +258,18 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
   const funnel = summary?.funnel;
   const funnelData = funnel
     ? [
-        { stage: "Leads", count: funnel.new, color: "#C4232D" },
+        { stage: "Leads", count: funnel.new, color: "var(--color-crimson)" },
         { stage: "Submitted", count: funnel.formSubmitted, color: "#F59E0B" },
-        { stage: "Confirmed", count: funnel.depositConfirmed, color: "#22D3A0" },
+        { stage: "Confirmed", count: funnel.depositConfirmed, color: "var(--color-success)" },
       ]
     : [
-        { stage: "Leads", count: totalLeads, color: "#C4232D" },
+        { stage: "Leads", count: totalLeads, color: "var(--color-crimson)" },
         {
           stage: "Submitted",
           count: kpi?.formSubmissions?.current ?? 0,
           color: "#F59E0B",
         },
-        { stage: "Confirmed", count: depositors, color: "#22D3A0" },
+        { stage: "Confirmed", count: depositors, color: "var(--color-success)" },
       ];
 
   // Funnel drop-off percentages

@@ -92,8 +92,8 @@ const TYPE_CONFIG: Record<
     label: "Video",
     icon: FileVideo,
     badgeCls: "badge badge-confirmed",
-    iconBg: "color-mix(in srgb, #22d3a0 14%, transparent)",
-    iconColor: "#22d3a0",
+    iconBg: "color-mix(in srgb, var(--color-success) 14%, transparent)",
+    iconColor: "var(--color-success)",
   },
 };
 

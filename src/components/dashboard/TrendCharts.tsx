@@ -74,8 +74,8 @@ export const TrendCharts = React.memo(function TrendCharts({
           >
             <defs>
               <linearGradient id="gradLeads" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#C4232D" stopOpacity={0.45} />
-                <stop offset="95%" stopColor="#C4232D" stopOpacity={0.02} />
+                <stop offset="5%" stopColor="var(--color-crimson)" stopOpacity={0.45} />
+                <stop offset="95%" stopColor="var(--color-crimson)" stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="gradConf" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#22D3A0" stopOpacity={0.38} />
@@ -103,7 +103,7 @@ export const TrendCharts = React.memo(function TrendCharts({
             <Area
               type="monotone"
               dataKey="Leads"
-              stroke="#C4232D"
+              stroke="var(--color-crimson)"
               strokeWidth={2}
               fill="url(#gradLeads)"
             />
@@ -120,7 +120,7 @@ export const TrendCharts = React.memo(function TrendCharts({
         <div className="flex items-center gap-5 mt-4 pt-3.5 border-t border-border-subtle">
           {(
             [
-              ["#C4232D", "Leads"],
+              ["var(--color-crimson)", "Leads"],
               ["#22D3A0", "Confirmed"],
             ] as const
           ).map(([color, label]) => (
