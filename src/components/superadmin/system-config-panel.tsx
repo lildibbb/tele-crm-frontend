@@ -17,6 +17,7 @@ import {
   Cpu,
   CurrencyDollar,
   DownloadSimple,
+  ChatText,
 } from "@phosphor-icons/react";
 import { apiClient } from "@/lib/api/apiClient";
 
@@ -55,6 +56,14 @@ export const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: s
       { key: "bot.depositFormUrl", label: "Deposit Form URL", description: "URL linked in deposit prompts", type: "text" },
       { key: "bot.groupId", label: "Group Forum ID", description: "Telegram supergroup ID for thread mirroring (e.g. -1001234567890)", type: "text" },
       { key: "bot.groupThreadEnabled", label: "Group Thread Mirroring", description: "Mirror lead DMs into group forum topics (default: off)", type: "toggle" },
+    ],
+  },
+  {
+    title: "Bot Messages", icon: ChatText, color: "text-primary",
+    fields: [
+      { key: "bot.helpMessage", label: "Help Message", description: "Shown when user sends /help command", type: "textarea" },
+      { key: "bot.resetMessage", label: "Reset Message", description: "Shown when conversation is reset", type: "textarea" },
+      { key: "bot.errorMessage", label: "Error Message", description: "Shown when an error occurs", type: "textarea" },
     ],
   },
   {
