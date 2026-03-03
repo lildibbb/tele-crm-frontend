@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -95,8 +96,8 @@ export default function AdminSessionsPage() {
                 ))
               ) : sessions.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-text-secondary py-8">
-                    No active sessions
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState title="No active sessions" />
                   </TableCell>
                 </TableRow>
               ) : (

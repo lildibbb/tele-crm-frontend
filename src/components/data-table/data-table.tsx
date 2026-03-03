@@ -65,6 +65,7 @@ export function DataTable<TData>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    className="hover:bg-accent/30 cursor-pointer transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell

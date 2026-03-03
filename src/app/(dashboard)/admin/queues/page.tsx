@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { EmptyState } from '@/components/ui/empty-state';
 import { superadminApi } from '@/lib/api/superadmin';
 import { queryKeys } from '@/queries/queryKeys';
 import { ArrowsClockwise, Trash } from '@phosphor-icons/react';
@@ -85,8 +86,8 @@ export default function QueuesPage() {
                 ))
               ) : queues.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-text-secondary py-8">
-                    No queues found
+                  <TableCell colSpan={6} className="p-0">
+                    <EmptyState title="No queues found" />
                   </TableCell>
                 </TableRow>
               ) : (

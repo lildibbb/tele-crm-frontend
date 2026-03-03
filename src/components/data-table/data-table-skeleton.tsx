@@ -14,6 +14,7 @@ interface DataTableSkeletonProps extends React.ComponentProps<"div"> {
   rowCount?: number;
   filterCount?: number;
   cellWidths?: string[];
+  columnWidths?: string[];
   withViewOptions?: boolean;
   withPagination?: boolean;
   shrinkZero?: boolean;
@@ -24,6 +25,7 @@ export function DataTableSkeleton({
   rowCount = 10,
   filterCount = 0,
   cellWidths = ["auto"],
+  columnWidths,
   withViewOptions = true,
   withPagination = true,
   shrinkZero = false,
@@ -65,7 +67,7 @@ export function DataTableSkeleton({
                       minWidth: shrinkZero ? cozyCellWidths[j] : "auto",
                     }}
                   >
-                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className={cn("h-6", columnWidths?.[j] ?? "w-full")} />
                   </TableHead>
                 ))}
               </TableRow>
@@ -82,7 +84,7 @@ export function DataTableSkeleton({
                       minWidth: shrinkZero ? cozyCellWidths[j] : "auto",
                     }}
                   >
-                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className={cn("h-6", columnWidths?.[j] ?? "w-full")} />
                   </TableCell>
                 ))}
               </TableRow>
