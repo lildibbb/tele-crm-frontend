@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   useReactTable,
   getCoreRowModel,
@@ -15,7 +17,16 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 
-import { useSuperadminStore } from "@/store/superadminStore";
+import {
+  useSuperadminUsers,
+  useSuperadminRagStats,
+  useCreateSuperadminUser,
+  useDeactivateSuperadminUser,
+  useReactivateSuperadminUser,
+  useChangeSuperadminUserRole,
+  useForceSuperadminPasswordChange,
+} from "@/queries/useSuperadminQuery";
+import { useAuditLogs } from "@/queries/useAuditLogsQuery";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole, AuditAction } from "@/types/enums";
 
@@ -50,6 +61,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
@@ -69,6 +86,8 @@ import {
   Warning,
   DotsThreeVertical,
   CaretDown,
+  EnvelopeSimple,
+  ListBullets,
 } from "@phosphor-icons/react";
 
 import {
@@ -78,8 +97,12 @@ import {
   auditFallbackIcon,
 } from "@/lib/audit-utils";
 
+import { apiClient } from "@/lib/api/apiClient";
+import { queryKeys } from "@/queries/queryKeys";
+import type { ApiResponse } from "@/lib/schemas/common";
 import type { UserResponse } from "@/lib/schemas/user.schema";
 import type { AuditLog } from "@/lib/schemas/auditLog.schema";
+import type { Lead } from "@/lib/schemas/lead.schema";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -127,6 +150,8 @@ interface UserColumnsProps {
   onEdit: (u: UserResponse) => void;
   onPassword: (u: UserResponse) => void;
   onToggle: (u: UserResponse) => void;
+  onChangeEmail: (u: UserResponse) => void;
+  onViewLeads: (u: UserResponse) => void;
   currentUserId: string;
 }
 
@@ -134,6 +159,8 @@ function getUserColumns({
   onEdit,
   onPassword,
   onToggle,
+  onChangeEmail,
+  onViewLeads,
   currentUserId,
 }: UserColumnsProps): ColumnDef<UserResponse>[] {
   return [
@@ -225,6 +252,14 @@ function getUserColumns({
               <DropdownMenuItem onClick={() => onPassword(u)} className="gap-2">
                 <LockKey size={14} className="text-warning" weight="duotone" />
                 Reset Password
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onChangeEmail(u)} className="gap-2">
+                <EnvelopeSimple size={14} className="text-info" weight="duotone" />
+                Change Email
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onViewLeads(u)} className="gap-2">
+                <ListBullets size={14} className="text-text-secondary" weight="duotone" />
+                View Leads
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -376,7 +411,7 @@ function RoleDropdown({
 // ─── Create User Modal ────────────────────────────────────────────────────────
 
 function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { createUser, isMutating, error } = useSuperadminStore();
+  const createUser = useCreateSuperadminUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>(UserRole.STAFF);
@@ -384,10 +419,10 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createUser({ email, password, role });
+      await createUser.mutateAsync({ email, password, role });
       setEmail(""); setPassword(""); setRole(UserRole.STAFF);
       onClose();
-    } catch { /* error shown from store */ }
+    } catch { /* error shown from mutation */ }
   };
 
   return (
@@ -416,11 +451,11 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
             <Label>Role</Label>
             <RoleDropdown value={role} onChange={setRole} />
           </div>
-          {error && <p className="text-xs text-danger">{error}</p>}
+          {createUser.error && <p className="text-xs text-danger">{(createUser.error as Error).message}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={isMutating}>
-              {isMutating ? "Creating…" : "Create User"}
+            <Button type="submit" disabled={createUser.isPending}>
+              {createUser.isPending ? "Creating…" : "Create User"}
             </Button>
           </DialogFooter>
         </form>
@@ -432,7 +467,7 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
 // ─── Force Password Modal ─────────────────────────────────────────────────────
 
 function ForcePasswordModal({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
-  const { forcePasswordChange, isMutating } = useSuperadminStore();
+  const forcePasswordChange = useForceSuperadminPasswordChange();
   const [newPassword, setNewPassword] = useState("");
   const [err, setErr] = useState("");
 
@@ -440,7 +475,7 @@ function ForcePasswordModal({ user, onClose }: { user: UserResponse | null; onCl
     e.preventDefault();
     if (newPassword.length < 8) { setErr("Password must be at least 8 characters"); return; }
     try {
-      await forcePasswordChange(user!.id, { newPassword });
+      await forcePasswordChange.mutateAsync({ id: user!.id, data: { newPassword } });
       setNewPassword(""); setErr(""); onClose();
     } catch { setErr("Failed to reset password"); }
   };
@@ -468,8 +503,8 @@ function ForcePasswordModal({ user, onClose }: { user: UserResponse | null; onCl
           {err && <p className="text-xs text-danger">{err}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={isMutating} variant="destructive">
-              {isMutating ? "Resetting…" : "Reset Password"}
+            <Button type="submit" disabled={forcePasswordChange.isPending} variant="destructive">
+              {forcePasswordChange.isPending ? "Resetting…" : "Reset Password"}
             </Button>
           </DialogFooter>
         </form>
@@ -481,15 +516,15 @@ function ForcePasswordModal({ user, onClose }: { user: UserResponse | null; onCl
 // ─── Change Role Modal ────────────────────────────────────────────────────────
 
 function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
-  const { changeUserRole, isMutating } = useSuperadminStore();
+  const changeUserRole = useChangeSuperadminUserRole();
   const [role, setRole] = useState<UserRole>(UserRole.STAFF);
 
   useEffect(() => { if (user) setRole(user.role as UserRole); }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try { await changeUserRole(user!.id, { role }); onClose(); }
-    catch { /* handled in store */ }
+    try { await changeUserRole.mutateAsync({ id: user!.id, data: { role } }); onClose(); }
+    catch { /* handled by mutation */ }
   };
 
   return (
@@ -511,8 +546,8 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={isMutating}>
-              {isMutating ? "Saving…" : "Save Role"}
+            <Button type="submit" disabled={changeUserRole.isPending}>
+              {changeUserRole.isPending ? "Saving…" : "Save Role"}
             </Button>
           </DialogFooter>
         </form>
@@ -521,29 +556,153 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
   );
 }
 
+// ─── Change Email Modal ───────────────────────────────────────────────────────
+
+function ChangeEmailModal({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const [newEmail, setNewEmail] = useState("");
+  const [err, setErr] = useState("");
+
+  const mutation = useMutation({
+    mutationFn: (email: string) =>
+      apiClient.patch<ApiResponse<UserResponse>>(`/superadmin/users/${user!.id}/email`, { email }),
+    onSuccess: () => {
+      toast.success("Email updated successfully");
+      queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.users() });
+      setNewEmail("");
+      setErr("");
+      onClose();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      setErr("Please enter a valid email address");
+      return;
+    }
+    mutation.mutate(newEmail);
+  };
+
+  return (
+    <Dialog open={!!user} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <EnvelopeSimple size={18} weight="duotone" className="text-info" /> Change Email Address
+          </DialogTitle>
+          <DialogDescription>
+            Update the email address for{" "}
+            <span className="font-medium text-text-primary">{user?.email}</span>.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="ce-email">New Email</Label>
+            <Input
+              id="ce-email"
+              type="email"
+              placeholder="new@company.com"
+              value={newEmail}
+              onChange={(e) => { setNewEmail(e.target.value); setErr(""); }}
+              required
+            />
+          </div>
+          {err && <p className="text-xs text-danger">{err}</p>}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Updating…" : "Update Email"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── User Leads Sheet ─────────────────────────────────────────────────────────
+
+function UserLeadsSheet({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
+  const { data: leads, isLoading } = useQuery({
+    queryKey: ["superadmin", "users", user?.id, "leads"],
+    queryFn: async () => {
+      const res = await apiClient.get<ApiResponse<Lead[]>>(`/superadmin/users/${user!.id}/leads`);
+      return res.data.data;
+    },
+    enabled: !!user,
+  });
+
+  return (
+    <Sheet open={!!user} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            <ListBullets size={18} weight="duotone" className="text-info" />
+            Leads for {user?.email}
+          </SheetTitle>
+        </SheetHeader>
+        <div className="mt-6">
+          {isLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-10 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : !leads?.length ? (
+            <p className="text-sm text-text-muted text-center py-8">No leads found</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Telegram ID</th>
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Display Name</th>
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Status</th>
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Created At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => (
+                    <tr key={lead.id} className="border-b border-border/50 hover:bg-elevated/50">
+                      <td className="py-2 px-3 text-xs data-mono text-text-secondary">{lead.telegramUserId}</td>
+                      <td className="py-2 px-3 text-xs text-text-primary">{lead.displayName ?? "—"}</td>
+                      <td className="py-2 px-3">
+                        <Badge className="text-[10px]">{lead.status}</Badge>
+                      </td>
+                      <td className="py-2 px-3 text-xs text-text-muted">{timeAgo(lead.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 // ─── Users Panel ──────────────────────────────────────────────────────────────
 
 export function UsersPanel() {
   const { user: authUser } = useAuthStore();
-  const {
-    users,
-    auditLogs,
-    ragStats,
-    isLoadingUsers,
-    isLoadingLogs,
-    isLoadingRag,
-    fetchUsers,
-    fetchAuditLogs,
-    fetchRagStats,
-    deactivateUser,
-    reactivateUser,
-  } = useSuperadminStore();
+  const { data: users = [], isLoading: isLoadingUsers, refetch: refetchUsers } = useSuperadminUsers();
+  const { data: auditLogs = [], isLoading: isLoadingLogs, refetch: refetchAuditLogs } = useAuditLogs({ take: 100 });
+  const { data: ragStats, isLoading: isLoadingRag } = useSuperadminRagStats();
+  const deactivateUser = useDeactivateSuperadminUser();
+  const reactivateUser = useReactivateSuperadminUser();
 
   // Modals
   const [showCreate, setShowCreate] = useState(false);
   const [roleModal, setRoleModal] = useState<UserResponse | null>(null);
   const [passwordModal, setPasswordModal] = useState<UserResponse | null>(null);
   const [deactivateTarget, setDeactivateTarget] = useState<UserResponse | null>(null);
+  const [changeEmailTarget, setChangeEmailTarget] = useState<UserResponse | null>(null);
+  const [leadsTarget, setLeadsTarget] = useState<UserResponse | null>(null);
 
   // Table states
   const [userSorting, setUserSorting] = useState<SortingState>([]);
@@ -554,17 +713,11 @@ export function UsersPanel() {
   const [auditFilters, setAuditFilters] = useState<ColumnFiltersState>([]);
   const [auditVisibility, setAuditVisibility] = useState<VisibilityState>({});
 
-  useEffect(() => {
-    fetchUsers();
-    fetchAuditLogs({ take: 100 });
-    fetchRagStats();
-  }, [fetchUsers, fetchAuditLogs, fetchRagStats]);
-
   const handleDeactivateConfirm = useCallback(async () => {
     if (!deactivateTarget) return;
     try {
-      if (deactivateTarget.isActive) await deactivateUser(deactivateTarget.id);
-      else await reactivateUser(deactivateTarget.id);
+      if (deactivateTarget.isActive) await deactivateUser.mutateAsync(deactivateTarget.id);
+      else await reactivateUser.mutateAsync(deactivateTarget.id);
     } finally {
       setDeactivateTarget(null);
     }
@@ -576,6 +729,8 @@ export function UsersPanel() {
         onEdit: setRoleModal,
         onPassword: setPasswordModal,
         onToggle: setDeactivateTarget,
+        onChangeEmail: setChangeEmailTarget,
+        onViewLeads: setLeadsTarget,
         currentUserId: authUser?.id ?? "",
       }),
     [authUser?.id],
@@ -622,6 +777,8 @@ export function UsersPanel() {
         <CreateUserModal open={showCreate} onClose={() => setShowCreate(false)} />
         <ChangeRoleModal user={roleModal} onClose={() => setRoleModal(null)} />
         <ForcePasswordModal user={passwordModal} onClose={() => setPasswordModal(null)} />
+        <ChangeEmailModal user={changeEmailTarget} onClose={() => setChangeEmailTarget(null)} />
+        <UserLeadsSheet user={leadsTarget} onClose={() => setLeadsTarget(null)} />
 
         <AlertDialog open={!!deactivateTarget} onOpenChange={(o) => !o && setDeactivateTarget(null)}>
           <AlertDialogContent>
@@ -676,7 +833,7 @@ export function UsersPanel() {
             <Button
               size="sm" variant="ghost"
               className="gap-1.5 text-text-secondary hover:text-text-primary"
-              onClick={() => fetchUsers()}
+              onClick={() => refetchUsers()}
             >
               <ArrowClockwise size={14} weight="bold" /> Refresh
             </Button>
@@ -712,7 +869,7 @@ export function UsersPanel() {
               <Button
                 size="sm" variant="ghost"
                 className="gap-1.5 text-text-secondary hover:text-text-primary"
-                onClick={() => fetchAuditLogs({ take: 100 })}
+                onClick={() => refetchAuditLogs()}
               >
                 <ArrowClockwise size={14} weight="bold" /> Reload
               </Button>
