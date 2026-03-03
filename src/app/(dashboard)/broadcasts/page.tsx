@@ -11,7 +11,10 @@ import {
   CalendarBlank,
   HourglassMedium,
 } from "@phosphor-icons/react";
-import { useBroadcastHistory, useSendBroadcast } from "@/queries/useBroadcastsQuery";
+import {
+  useBroadcastHistory,
+  useSendBroadcast,
+} from "@/queries/useBroadcastsQuery";
 import type { BroadcastStatus } from "@/lib/api/broadcast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -91,27 +94,39 @@ export default function BroadcastsPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
 
-  const { data: historyData, isLoading: isLoadingHistory } = useBroadcastHistory({ page: historyPage });
+  const { data: historyData, isLoading: isLoadingHistory } =
+    useBroadcastHistory({ page: historyPage });
   const history = historyData?.data ?? [];
   const historyTotal = historyData?.total ?? 0;
   const sendMutation = useSendBroadcast();
   const isSending = sendMutation.isPending;
-  const reset = () => { setMessage(""); setPhotoUrl(""); setLastEnqueued(null); setBroadcastError(null); };
+  const reset = () => {
+    setMessage("");
+    setPhotoUrl("");
+    setLastEnqueued(null);
+    setBroadcastError(null);
+  };
 
   if (isMobile) return <MobileBroadcasts />;
 
   const handleSend = async () => {
     setShowConfirm(false);
     try {
-      const input: { message: string; photoUrl?: string } = { message: message.trim() };
+      const input: { message: string; photoUrl?: string } = {
+        message: message.trim(),
+      };
       if (photoUrl.trim()) input.photoUrl = photoUrl.trim();
       const res = await sendMutation.mutateAsync(input);
-      const enqueued = (res.data as { data?: { recipientCount?: number } })?.data?.recipientCount ?? 0;
+      const enqueued =
+        (res.data as { data?: { recipientCount?: number } })?.data
+          ?.recipientCount ?? 0;
       setLastEnqueued(enqueued);
       setBroadcastError(null);
       setHistoryPage(1);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to send broadcast.";
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to send broadcast.";
       setBroadcastError(msg);
     }
   };
@@ -153,39 +168,42 @@ export default function BroadcastsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
-            icon: <Megaphone className="h-4 w-4 text-text-secondary" weight="duotone" />,
+            icon: Megaphone,
             label: t(K.broadcast.stats.total),
             value: historyTotal,
           },
           {
-            icon: <CalendarBlank className="h-4 w-4 text-text-secondary" weight="duotone" />,
+            icon: CalendarBlank,
             label: t(K.broadcast.stats.last7d),
             value: last7Days,
           },
           {
-            icon: <HourglassMedium className="h-4 w-4 text-text-secondary" weight="duotone" />,
+            icon: HourglassMedium,
             label: t(K.broadcast.stats.inProgress),
             value: pendingCount,
           },
           {
-            icon: <Users className="h-4 w-4 text-text-secondary" weight="duotone" />,
+            icon: Users,
             label: t(K.broadcast.stats.recipients),
             value: totalRecipients.toLocaleString(),
           },
-        ].map(({ icon, label, value }) => (
+        ].map(({ icon: Icon, label, value }) => (
           <div
             key={label}
-            className="bg-card rounded-xl border border-border-subtle p-4 flex items-center gap-3 shadow-[var(--shadow-card)]"
+            className="bg-card rounded-xl border border-border-subtle p-4 shadow-[var(--shadow-card)]"
           >
-            {icon}
-            <div className="min-w-0">
-              <p className="font-sans text-[11px] text-muted-foreground truncate">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon
+                className="h-4 w-4 flex-shrink-0 text-text-secondary"
+                weight="duotone"
+              />
+              <p className="font-sans text-xs font-semibold text-text-secondary truncate">
                 {label}
               </p>
-              <p className="font-display font-bold text-base text-foreground leading-tight">
-                {value}
-              </p>
             </div>
+            <p className="font-display font-bold text-2xl leading-none text-text-primary">
+              {value}
+            </p>
           </div>
         ))}
       </div>

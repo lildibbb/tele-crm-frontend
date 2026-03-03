@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock,
-  UserCircle,
   CheckCircle,
   Shield,
   Calendar,
@@ -24,7 +23,6 @@ import { UserRole } from "@/types/enums";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -165,10 +163,10 @@ function getUtcOffsetLabel(tz: string): string {
 }
 
 const ROLE_BADGE: Record<UserRole, string> = {
-  SUPERADMIN: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  OWNER:      "bg-crimson/15 text-crimson border-crimson/30",
-  ADMIN:      "bg-blue-500/15 text-blue-400 border-blue-500/30",
-  STAFF:      "bg-elevated text-text-secondary border-border-default",
+  SUPERADMIN: "text-[10px] px-2 py-0.5 rounded font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25",
+  OWNER:      "text-[10px] px-2 py-0.5 rounded font-semibold bg-crimson/15 text-crimson ring-1 ring-inset ring-crimson/25",
+  ADMIN:      "text-[10px] px-2 py-0.5 rounded font-semibold bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25",
+  STAFF:      "text-[10px] px-2 py-0.5 rounded font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
 };
 
 export default function ProfilePage() {
@@ -250,14 +248,9 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6 animate-in-up">
       {/* Page header */}
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center flex-shrink-0">
-          <UserCircle className="h-5 w-5 text-crimson" weight="fill" />
-        </div>
-        <div>
-          <h1 className="font-display font-bold text-xl text-text-primary">{t(K.profile.pageTitle)}</h1>
-          <p className="font-sans text-sm text-text-secondary">{t(K.profile.subtitle)}</p>
-        </div>
+      <div>
+        <h1 className="font-display font-bold text-xl text-text-primary">{t(K.profile.pageTitle)}</h1>
+        <p className="font-sans text-sm text-text-secondary">{t(K.profile.subtitle)}</p>
       </div>
 
       <div className="grid md:grid-cols-[270px_1fr] lg:grid-cols-[300px_1fr] gap-5 items-start">
@@ -265,7 +258,7 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="p-6 flex flex-col items-center text-center gap-4">
             {/* Avatar */}
-            <Avatar className="w-20 h-20 rounded-xl bg-crimson/10 border border-crimson/20 flex-shrink-0">
+            <Avatar className="w-20 h-20 rounded-xl flex-shrink-0">
               <AvatarFallback className="rounded-xl bg-crimson/10 text-crimson font-display font-bold text-3xl">
                 {initial}
               </AvatarFallback>
@@ -276,12 +269,9 @@ export default function ProfilePage() {
               <p className="font-display font-bold text-[14.5px] text-text-primary break-all leading-snug">
                 {user?.email}
               </p>
-              <Badge
-                variant="outline"
-                className={cn("font-mono text-[11px] tracking-wide px-2.5 py-0.5", ROLE_BADGE[role])}
-              >
+              <span className={cn("inline-flex items-center font-mono tracking-wide", ROLE_BADGE[role])}>
                 {role}
-              </Badge>
+              </span>
             </div>
 
             <Separator className="w-full" />
@@ -322,7 +312,7 @@ export default function ProfilePage() {
 
               {/* Current timezone display */}
               <div className="flex items-start gap-3">
-                <Globe size={14} weight="regular" className="text-text-muted shrink-0 mt-0.5" />
+                <Clock size={14} weight="regular" className="text-text-muted shrink-0 mt-0.5" />
                 <div>
                   <p className="font-sans text-[10.5px] text-text-muted uppercase tracking-widest mb-0.5">
                     Timezone
@@ -357,7 +347,7 @@ export default function ProfilePage() {
               <CardHeader>
                 <div>
                   <CardTitle className="flex items-center gap-2 font-display">
-                    <Lock size={14} className="text-crimson" weight="bold" />
+                    <Lock size={14} className="text-text-muted" weight="bold" />
                     {t(K.profile.changePassword)}
                   </CardTitle>
                   <CardDescription className="mt-0.5">
@@ -367,9 +357,9 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {success ? (
-                  <Alert className="border-success/25 bg-success/8">
+                  <Alert className="border-success/25 bg-success/8 py-2.5">
                     <CheckCircle size={15} weight="fill" className="text-success" />
-                    <AlertDescription className="text-success font-sans">
+                    <AlertDescription className="text-success text-[13px] font-sans">
                       {t(K.profile.passwordChanged)}
                     </AlertDescription>
                   </Alert>
@@ -441,7 +431,7 @@ export default function ProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-display">
-                  <Globe size={14} className="text-crimson" weight="bold" />
+                  <Globe size={14} className="text-text-muted" weight="bold" />
                   Timezone Preference
                 </CardTitle>
                 <CardDescription>
@@ -450,27 +440,39 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
-                {/* Live clock + offset badge */}
-                <div className="flex items-center gap-4 rounded-xl bg-elevated/60 border border-border-subtle px-4 py-3">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-crimson/10 border border-crimson/20">
-                    <span className="font-mono text-lg font-bold text-crimson tabular-nums">{liveClock}</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-text-primary truncate">{tzLabel}</p>
-                    <p className="text-[11px] font-mono text-text-muted">{tzOffset} · {tz}</p>
+                {/* Live clock display */}
+                <div className="rounded-xl border border-border-subtle bg-muted/30 px-5 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-1.5">
+                        Current Time
+                      </p>
+                      <div className="flex items-baseline gap-2.5">
+                        <span className="font-mono text-2xl font-bold text-text-primary tabular-nums leading-none">
+                          {liveClock}
+                        </span>
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-card border border-border-subtle text-[11px] font-mono font-semibold text-text-secondary leading-none">
+                          {tzOffset}
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-text-muted font-sans mt-1.5 truncate">{tzLabel}</p>
+                    </div>
+                    <Clock size={32} weight="thin" className="text-text-muted opacity-30 flex-shrink-0" />
                   </div>
                 </div>
 
                 {/* Auto-detect button */}
                 {browserTz !== tz && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     type="button"
                     onClick={() => setTz(browserTz)}
-                    className="flex items-center gap-2 text-[12px] text-info hover:text-info/80 transition-colors group"
+                    className="h-7 px-2 gap-1.5 text-[12px] text-info hover:text-info hover:bg-info/8 -ml-2"
                   >
-                    <Crosshair size={13} weight="bold" className="group-hover:animate-pulse" />
+                    <Crosshair size={13} weight="bold" />
                     Auto-detect: use <span className="font-mono font-medium">{browserTz}</span>
-                  </button>
+                  </Button>
                 )}
 
                 {/* Searchable timezone combobox */}
@@ -519,14 +521,12 @@ export default function ProfilePage() {
                   </Popover>
                 </div>
 
-                <Alert className="border-info/20 bg-info/5 py-2.5">
-                  <Globe size={13} className="text-info" />
-                  <AlertDescription className="text-info/80 text-[12px]">
-                    <strong>How it works:</strong> When you select &quot;Today&quot; on the analytics dashboard, the
-                    backend will compute midnight in <strong>{tzLabel}</strong> as the start of day —
-                    so you won&apos;t see data from yesterday bleeding in.
-                  </AlertDescription>
-                </Alert>
+                <div className="rounded-lg border border-border-subtle bg-muted/30 px-4 py-3 text-[12px] text-text-secondary font-sans leading-relaxed">
+                  <strong className="text-text-primary">How it works: </strong>
+                  When you select &quot;Today&quot; on the analytics dashboard, the
+                  backend will compute midnight in <strong>{tzLabel}</strong> as the start of day —
+                  so you won&apos;t see data from yesterday bleeding in.
+                </div>
 
                 <div className="flex justify-end pt-1">
                   <Button

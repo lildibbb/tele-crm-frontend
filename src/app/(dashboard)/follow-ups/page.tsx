@@ -227,40 +227,43 @@ export default function FollowUpsPage() {
             label: t(K.followUp.stats.scheduled),
             value: countScheduled,
             icon: CalendarCheck,
-            cls: "text-text-secondary",
+            cls: "#A78BFA",
           },
           {
             label: t(K.followUp.stats.sent),
             value: countSent,
             icon: CheckCircle,
-            cls: "text-text-secondary",
+            cls: "#A78BFA",
           },
           {
             label: t(K.followUp.stats.cancelled),
             value: countCancelled,
             icon: ProhibitInset,
-            cls: "text-text-secondary",
+            cls: "#A78BFA",
           },
           {
             label: t(K.followUp.stats.failed),
             value: countFailed,
             icon: SmileySad,
-            cls: "text-text-secondary",
+            cls: "#A78BFA",
           },
         ].map(({ label, value, icon: Icon, cls }) => (
           <div
             key={label}
-            className="bg-card rounded-xl border border-border-subtle px-4 py-3 flex items-center gap-3 shadow-[var(--shadow-card)]"
+            className="bg-card rounded-xl border border-border-subtle p-4 shadow-[var(--shadow-card)]"
           >
-            <Icon className={`h-4 w-4 flex-shrink-0 ${cls}`} weight="duotone" />
-            <div>
-              <p className="font-display font-bold text-lg leading-none text-text-primary">
-                {value}
-              </p>
-              <p className="font-sans text-xs text-text-muted mt-0.5">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon
+                className={`h-4 w-4 flex-shrink-0 ${cls}`}
+                weight="duotone"
+              />
+              <p className="font-sans text-xs font-semibold text-text-secondary">
                 {label}
               </p>
             </div>
+            <p className="font-display font-bold text-2xl leading-none text-text-primary">
+              {value}
+            </p>
           </div>
         ))}
       </div>
@@ -324,7 +327,10 @@ export default function FollowUpsPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-14 text-text-muted">
-              <Timer className="h-8 w-8 text-text-muted opacity-40" weight="duotone" />
+              <Timer
+                className="h-8 w-8 text-text-muted opacity-40"
+                weight="duotone"
+              />
               <div className="text-center">
                 <p className="font-sans text-sm font-medium text-text-primary">
                   {t(K.followUp.empty)}

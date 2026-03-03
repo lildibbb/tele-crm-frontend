@@ -369,28 +369,28 @@ export default function AuditLogsPage() {
           {[
             {
               icon: Hash,
-              color: "text-text-muted",
+              color: "#A78BFA",
               bg: "bg-elevated",
               label: t(K.auditLog.stats.total),
               value: total.toLocaleString(),
             },
             {
               icon: Calendar,
-              color: "text-text-muted",
+              color: "#A78BFA",
               bg: "bg-elevated",
               label: t(K.auditLog.stats.today),
               value: String(todayCount),
             },
             {
               icon: ChartBar,
-              color: "text-text-muted",
+              color: "#A78BFA",
               bg: "bg-elevated",
               label: t(K.auditLog.stats.topAction),
               value: mostCommonAction,
             },
             {
               icon: Users,
-              color: "text-text-muted",
+              color: "#A78BFA",
               bg: "bg-elevated",
               label: t(K.auditLog.stats.actors),
               value: String(uniqueActors),
@@ -398,21 +398,20 @@ export default function AuditLogsPage() {
           ].map(({ icon: Icon, color, bg, label, value }) => (
             <div
               key={label}
-              className="bg-elevated rounded-xl border border-border-subtle shadow-sm px-4 py-3 flex items-center gap-3"
+              className="bg-card rounded-xl border border-border-subtle p-4 shadow-[var(--shadow-card)]"
             >
-              <div
-                className={`w-8 h-8 rounded-lg ${bg} border border-border-subtle flex items-center justify-center flex-shrink-0`}
-              >
-                <Icon size={15} className={color} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">
+              <div className="flex items-center gap-2 mb-3">
+                <Icon
+                  className={`h-4 w-4 flex-shrink-0 ${color}`}
+                  weight="duotone"
+                />
+                <p className="font-sans text-xs font-semibold text-text-secondary truncate">
                   {label}
                 </p>
-                <p className="text-sm font-bold text-text-primary font-display leading-tight truncate">
-                  {value}
-                </p>
               </div>
+              <p className="font-display font-bold text-2xl leading-none text-text-primary">
+                {value}
+              </p>
             </div>
           ))}
         </div>
