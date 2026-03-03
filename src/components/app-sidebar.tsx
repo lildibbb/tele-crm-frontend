@@ -21,10 +21,12 @@ import {
   HardDrives,
   LockKey,
   ChartLineUp,
+  ListBullets,
+  Desktop,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
-import { useBotStore } from "@/store/botStore";
+import { useBotStatus } from "@/queries/useBotQuery";
 import { UserRole } from "@/types/enums";
 import {
   Sidebar,
@@ -60,6 +62,8 @@ const ADMIN_SUB_ITEMS = [
   { href: "/admin/backup", icon: HardDrives, label: "Backup" },
   { href: "/admin/secrets", icon: LockKey, label: "Secrets" },
   { href: "/admin/google", icon: ChartLineUp, label: "Google Analytics" },
+  { href: "/admin/queues", icon: ListBullets, label: "Queue Manager" },
+  { href: "/admin/sessions", icon: Desktop, label: "Sessions" },
 ];
 
 const ALL_NAV_ITEMS = [
@@ -132,8 +136,8 @@ export function AppSidebar() {
   const { user, logout } = useAuthStore();
   const { setOpenMobile, state: sidebarState } = useSidebar();
 
-  const botOnline = useBotStore((s) => s.online);
-  const startPolling = useBotStore((s) => s.startPolling);
+  const { data: botStatus } = useBotStatus();
+  const botOnline = botStatus?.online ?? null;
 
   const role = user?.role as UserRole | undefined;
   const isSuperAdmin = role === UserRole.SUPERADMIN;
@@ -144,12 +148,6 @@ export function AppSidebar() {
   useEffect(() => {
     if (isAdminPath) setAdminOpen(true);
   }, [isAdminPath]);
-
-  // Start bot status polling when sidebar mounts
-  useEffect(() => {
-    const stop = startPolling();
-    return stop;
-  }, [startPolling]);
 
   // Filter nav items by current user's role
   const visibleItems = ALL_NAV_ITEMS.filter((item) =>
