@@ -7,6 +7,7 @@ import {
 } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { QueryProvider } from "@/providers/QueryProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { LocaleProvider } from "@/i18n";
 import { Toaster } from "@/components/ui/sonner";
@@ -65,7 +66,8 @@ export default function RootLayout({
           disableTransitionOnChange={false}
         >
           <NuqsAdapter>
-            <AuthProvider>
+            <QueryProvider>
+              <AuthProvider>
               <LocaleProvider>
                 <TooltipProvider delayDuration={300}>
                   <SidebarConfigProvider>{children}</SidebarConfigProvider>
@@ -78,7 +80,8 @@ export default function RootLayout({
                   />
                 </TooltipProvider>
               </LocaleProvider>
-            </AuthProvider>
+              </AuthProvider>
+            </QueryProvider>
           </NuqsAdapter>
         </ThemeProvider>
       </body>

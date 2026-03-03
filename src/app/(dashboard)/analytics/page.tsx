@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileAnalytics } from "@/components/mobile";
-import { useAnalyticsStore } from "@/store/analyticsStore";
+import { useAnalyticsSummary, useAnalyticsVelocity } from "@/queries/useAnalyticsQuery";
 import { useAuthStore } from "@/store/authStore";
 import {
   TrendUp,
@@ -326,21 +326,12 @@ export default function AnalyticsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const summary = useAnalyticsStore((s) => s.summary);
-  const isLoading = useAnalyticsStore((s) => s.isLoading);
-  const fetchSummary = useAnalyticsStore((s) => s.fetchSummary);
-  const velocityData = useAnalyticsStore((s) => s.velocityData);
-  const fetchVelocity = useAnalyticsStore((s) => s.fetchVelocity);
+  const { data: summary, isLoading } = useAnalyticsSummary({ timeframe });
+  const { data: velocityData } = useAnalyticsVelocity();
   const user = useAuthStore((s) => s.user);
   const isSuperAdmin = user?.role === "SUPERADMIN";
   const [ragStats, setRagStats] = useState<import("@/lib/schemas/analytics.schema").RagStats | null>(null);
   const [ragLoading, setRagLoading] = useState(false);
-
-  // Fetch on mount and whenever timeframe changes
-  useEffect(() => {
-    fetchSummary({ timeframe });
-    fetchVelocity();
-  }, [fetchSummary, timeframe, fetchVelocity]);
 
   // Fetch RAG stats — SUPERADMIN only, no call for other roles
   useEffect(() => {

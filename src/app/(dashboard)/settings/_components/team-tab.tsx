@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, Copy, Check, UserX, RefreshCw, Clock } from "lucide-react";
@@ -30,7 +30,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUsersStore } from "@/store/usersStore";
+import { useUsersList, useInvitationsList, useInviteUser, useDeactivateUser, useReactivateUser, useDeleteInvitation } from "@/queries/useUsersQuery";
 import {
   InviteUserSchema,
   type InviteUserInput,
@@ -50,22 +50,12 @@ export function TeamTab() {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const {
-    users,
-    invitations,
-    isLoading,
-    fetchUsers,
-    fetchInvitations,
-    inviteUser,
-    deactivateUser,
-    reactivateUser,
-    deleteInvitation,
-  } = useUsersStore();
-
-  useEffect(() => {
-    fetchUsers();
-    fetchInvitations();
-  }, [fetchUsers, fetchInvitations]);
+  const { data: users = [], isLoading } = useUsersList();
+  const { data: invitations = [] } = useInvitationsList();
+  const inviteUserMutation = useInviteUser();
+  const deactivateUserMutation = useDeactivateUser();
+  const reactivateUserMutation = useReactivateUser();
+  const deleteInvitationMutation = useDeleteInvitation();
 
   const form = useForm<InviteUserInput>({
     // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
@@ -75,9 +65,8 @@ export function TeamTab() {
 
   const onInvite = async (data: InviteUserInput) => {
     try {
-      const inv = await inviteUser(data);
-      setInviteLink(inv.telegramDeepLink);
-      await fetchInvitations();
+      const res = await inviteUserMutation.mutateAsync(data);
+      setInviteLink(res.data.data.telegramDeepLink);
       toast.success("Invite generated");
     } catch {
       toast.error("Couldn't create the invitation. Please try again.");
@@ -100,9 +89,8 @@ export function TeamTab() {
 
   const handleDeactivate = async (id: string) => {
     try {
-      await deactivateUser(id);
+      await deactivateUserMutation.mutateAsync(id);
       toast.success("User deactivated");
-      await fetchUsers();
     } catch {
       toast.error("Couldn't deactivate this user. Please try again.");
     }
@@ -110,9 +98,8 @@ export function TeamTab() {
 
   const handleReactivate = async (id: string) => {
     try {
-      await reactivateUser(id);
+      await reactivateUserMutation.mutateAsync(id);
       toast.success("User reactivated");
-      await fetchUsers();
     } catch {
       toast.error("Couldn't reactivate this user. Please try again.");
     }
@@ -120,7 +107,7 @@ export function TeamTab() {
 
   const handleDeleteInvitation = async (id: string) => {
     try {
-      await deleteInvitation(id);
+      await deleteInvitationMutation.mutateAsync(id);
       toast.success("Invitation revoked");
     } catch {
       toast.error("Couldn't revoke this invitation. Please try again.");

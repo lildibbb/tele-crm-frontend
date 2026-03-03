@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -12,9 +12,9 @@ import {
   CheckCircle,
   CircleNotch,
 } from "@phosphor-icons/react";
-import { useLeadsStore } from "@/store/leadsStore";
+import { useLeadsList } from "@/queries/useLeadsQuery";
 import { useAuthStore } from "@/store/authStore";
-import { useAnalyticsStore } from "@/store/analyticsStore";
+import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -61,13 +61,10 @@ export default function StaffHome({
   onMyLeads,
 }: StaffHomeProps) {
   const { user } = useAuthStore();
-  const { leads, total, isLoading, fetchLeads } = useLeadsStore();
-  const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
-
-  useEffect(() => {
-    fetchLeads({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
-    fetchSummary();
-  }, [fetchLeads, fetchSummary]);
+  const { data: leadsResult, isLoading } = useLeadsList({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
+  const leads = leadsResult?.data ?? [];
+  const total = leadsResult?.total ?? 0;
+  const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
 
   const firstName = user?.email?.split("@")[0] ?? "Staff";
   const pendingCount = summary?.kpi?.formSubmissions?.current ?? 0;

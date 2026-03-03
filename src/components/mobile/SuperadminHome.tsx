@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
   ChartBar,
@@ -16,7 +16,7 @@ import {
   ShieldCheck,
 } from "@phosphor-icons/react";
 import { LiveDot } from "./MobileShell";
-import { useAnalyticsStore } from "@/store/analyticsStore";
+import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -62,11 +62,7 @@ export default function SuperadminHome({
   onOrgClick,
 }: SuperadminHomeProps) {
   const router = useRouter();
-  const { summary, isLoading, fetchSummary } = useAnalyticsStore();
-
-  useEffect(() => {
-    fetchSummary();
-  }, [fetchSummary]);
+  const { data: summary, isLoading } = useAnalyticsSummary();
 
   const kpi = summary?.kpi;
   const totalLeads = kpi?.totalLeads?.current ?? 0;

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSystemConfigStore } from "@/store/systemConfigStore";
+import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { integrationsApi } from "@/lib/api/integrations";
 import type { SecretMeta } from "@/lib/api/superadmin";
 import { parseApiData } from "@/lib/api/parseResponse";
@@ -183,7 +183,8 @@ function IdInput({
 // ── Main Tab ───────────────────────────────────────────────────────────────────
 
 export function IntegrationsTab() {
-  const { entries, isLoading: configLoading, fetchAll, upsertMany } = useSystemConfigStore();
+  const { data: entries = {}, isLoading: configLoading, refetch: refetchConfig } = useSystemConfig();
+  const upsertManyMutation = useUpsertManySystemConfig();
   const [credentials, setCredentials] = useState<SecretMeta[]>([]);
   const [loadingCreds, setLoadingCreds] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -203,9 +204,8 @@ export function IntegrationsTab() {
   };
 
   useEffect(() => {
-    void fetchAll();
     void loadCredentials();
-  }, [fetchAll]);
+  }, []);
 
   const getVal = (key: string, def = "false") => entries[key] ?? def;
 
@@ -213,7 +213,7 @@ export function IntegrationsTab() {
     setSaveErr(null);
     setIsSaving(true);
     try {
-      await upsertMany({ [key]: value ? "true" : "false" });
+      await upsertManyMutation.mutateAsync({ [key]: value ? "true" : "false" });
       setSaved(key);
       setTimeout(() => setSaved(null), 2000);
     } catch (e: unknown) {
@@ -260,7 +260,7 @@ export function IntegrationsTab() {
           </p>
         </div>
         <button
-          onClick={() => { void fetchAll(); void loadCredentials(); }}
+          onClick={() => { void refetchConfig(); void loadCredentials(); }}
           className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors"
         >
           <ArrowClockwise size={14} className={configLoading || loadingCreds ? "animate-spin" : ""} />

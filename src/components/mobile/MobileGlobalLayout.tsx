@@ -29,7 +29,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/authStore";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n";
@@ -285,7 +285,8 @@ export default function MobileGlobalLayout({
   const title = getPageTitle(pathname);
   const initials = user?.email ? user.email[0].toUpperCase() : "TJ";
 
-  const maintenanceMode = useMaintenanceStore((s) => s.maintenanceMode);
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const maintenanceMode = maintenanceConfig?.maintenanceMode ?? false;
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-void text-text-primary font-sans">

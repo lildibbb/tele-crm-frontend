@@ -6,7 +6,7 @@ import { ToggleLeft, ToggleRight, Eye, Hash } from "@phosphor-icons/react";
 import { Icon } from "@iconify/react";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
-import type { Lead } from "@/store/leadsStore";
+import type { Lead } from "@/queries/useLeadsQuery";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tooltip,

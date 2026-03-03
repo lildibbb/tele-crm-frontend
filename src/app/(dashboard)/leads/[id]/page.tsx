@@ -33,7 +33,9 @@ import { Icon } from "@iconify/react";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { useT, K } from "@/i18n";
 import { formatDate, timeAgo } from "@/lib/format";
-import { useLeadsStore } from "@/store/leadsStore";
+import { useLeadDetail, useUpdateLeadStatus, useSetHandover } from "@/queries/useLeadsQuery";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/queries/queryKeys";
 import { leadsApi } from "@/lib/api/leads";
 import type { Interaction } from "@/lib/schemas/lead.schema";
 import { LeadStatus } from "@/types/enums";
@@ -246,19 +248,10 @@ export default function LeadDetailPage({
   const t = useT();
   const isBlocked = useIsMaintenanceBlocked();
   const { id } = React.use(params);
-  const {
-    updateStatus,
-    setHandover: storeSetHandover,
-    fetchLead,
-    isLoading,
-  } = useLeadsStore();
-  const lead = useLeadsStore((s) => s.leads.find((l) => l.id === id));
-
-  useEffect(() => {
-    if (!lead && !isLoading) {
-      fetchLead(id);
-    }
-  }, [id, lead, isLoading, fetchLead]);
+  const queryClient = useQueryClient();
+  const { data: lead, isLoading } = useLeadDetail(id);
+  const { mutate: updateStatusMutation } = useUpdateLeadStatus();
+  const { mutate: setHandoverMutation } = useSetHandover();
 
   // Poll interaction history every 5 seconds
   useEffect(() => {
@@ -334,37 +327,37 @@ export default function LeadDetailPage({
         isLoading={isLoading}
         onVerify={() =>
           lead &&
-          updateStatus(lead.id, { status: LeadStatus.DEPOSIT_CONFIRMED })
+          updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_CONFIRMED } })
         }
         onReject={() =>
-          lead && updateStatus(lead.id, { status: LeadStatus.REJECTED })
+          lead && updateStatusMutation({ id: lead.id, data: { status: LeadStatus.REJECTED } })
         }
       />
     );
   }
 
   const handleVerify = () => {
-    if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_CONFIRMED });
+    if (lead) updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_CONFIRMED } });
     setShowVerifyModal(false);
     toast.success(t(K.lead.toast.verified));
   };
 
   const handleReject = () => {
     if (lead)
-      updateStatus(lead.id, { status: LeadStatus.REJECTED, rejectReason });
+      updateStatusMutation({ id: lead.id, data: { status: LeadStatus.REJECTED, rejectReason } });
     setShowRejectModal(false);
     setRejectReason("");
     toast.error(t(K.lead.toast.rejected));
   };
 
   const handleRevert = () => {
-    if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_REPORTED });
+    if (lead) updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_REPORTED } });
     setShowRevertModal(false);
     toast.info(t(K.lead.toast.reverted));
   };
 
   const handleReopen = () => {
-    if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_REPORTED });
+    if (lead) updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_REPORTED } });
     setShowReopenModal(false);
     toast.info(t(K.lead.toast.reopened));
   };
@@ -950,7 +943,7 @@ export default function LeadDetailPage({
                   checked={handover}
                   onCheckedChange={(next) => {
                     setHandover(next);
-                    if (lead) void storeSetHandover(lead.id, next);
+                    if (lead) setHandoverMutation({ id: lead.id, mode: next });
                   }}
                   className={
                     handover
@@ -1243,7 +1236,7 @@ export default function LeadDetailPage({
                         email: editEmail || undefined,
                         phoneNumber: editPhone || undefined,
                       });
-                      await useLeadsStore.getState().fetchLead(id);
+                      queryClient.invalidateQueries({ queryKey: queryKeys.leads.detail(id) });
                       setShowEditModal(false);
                       toast.success(t(K.lead.toast.edited));
                     } catch {

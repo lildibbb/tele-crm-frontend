@@ -88,7 +88,7 @@ import {
   type TiptapDoc,
 } from "@/lib/schemas/commandMenu.schema";
 import { toast } from "sonner";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -329,7 +329,8 @@ function SortableCommandRow({
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function CommandsTab() {
-  const commandMenuEnabled = useMaintenanceStore((s) => s.featureFlags.commandMenu);
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const commandMenuEnabled = maintenanceConfig?.featureFlags.commandMenu ?? true;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [activePane, setActivePane] = useState<"edit" | "preview">("edit");

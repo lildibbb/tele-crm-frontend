@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
   Crown,
@@ -18,9 +18,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSuperadminStore } from "@/store/superadminStore";
-import { useAnalyticsStore } from "@/store/analyticsStore";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useSuperadminUsers } from "@/queries/useSuperadminQuery";
+import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileAdminOverviewProps {}
@@ -52,15 +52,12 @@ const NAV_ITEMS: NavItem[] = [
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
   const router = useRouter();
-  const { users, isLoadingUsers, fetchUsers } = useSuperadminStore();
-  const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
-  const { maintenanceMode, featureFlags, isLoaded: maintenanceLoaded, fetchPublicConfig } = useMaintenanceStore();
-
-  useEffect(() => {
-    fetchUsers();
-    fetchSummary();
-    fetchPublicConfig();
-  }, [fetchUsers, fetchSummary, fetchPublicConfig]);
+  const { data: users = [], isLoading: isLoadingUsers } = useSuperadminUsers();
+  const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const maintenanceMode = maintenanceConfig?.maintenanceMode ?? false;
+  const featureFlags = maintenanceConfig?.featureFlags ?? { knowledgeBase: true, broadcast: true, commandMenu: true, followUp: true };
+  const maintenanceLoaded = maintenanceConfig !== undefined;
 
   const totalUsers = users.length;
   const activeToday = users.filter((u) => u.isActive).length;

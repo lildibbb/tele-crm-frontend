@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   ChartBar,
   UsersThree,
@@ -24,7 +24,7 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
-import { useAnalyticsStore } from "@/store/analyticsStore";
+import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -160,21 +160,14 @@ function TrendBadge({
 export default function MobileAnalytics({}: MobileAnalyticsProps) {
   const [range, setRange] = useState<DateRange>("7D");
   const chipScrollRef = useRef<HTMLDivElement>(null);
-  const { summary, isLoading, fetchSummary } = useAnalyticsStore();
+  const { data: summary, isLoading } = useAnalyticsSummary({ timeframe: TIMEFRAME_MAP[range] as never });
 
   const handleRangeChange = useCallback(
     (r: DateRange) => {
       setRange(r);
-      if (r !== "Custom") {
-        fetchSummary({ timeframe: TIMEFRAME_MAP[r] as never });
-      }
     },
-    [fetchSummary],
+    [],
   );
-
-  useEffect(() => {
-    fetchSummary({ timeframe: TIMEFRAME_MAP[range] as never });
-  }, [fetchSummary]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const kpi = summary?.kpi;
   const trendSeries = summary?.trendSeries ?? [];

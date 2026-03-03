@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Megaphone,
   PaperPlaneRight,
@@ -11,7 +11,7 @@ import {
   CalendarBlank,
   HourglassMedium,
 } from "@phosphor-icons/react";
-import { useBroadcastStore } from "@/store/broadcastStore";
+import { useBroadcastHistory, useSendBroadcast } from "@/queries/useBroadcastsQuery";
 import type { BroadcastStatus } from "@/lib/api/broadcast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +33,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useT, K } from "@/i18n";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileBroadcasts } from "@/components/mobile";
@@ -79,48 +79,41 @@ function StatusChip({ status }: { status: BroadcastStatus }) {
 
 export default function BroadcastsPage() {
   const isMobile = useIsMobile();
-  const broadcastEnabled = useMaintenanceStore((s) => s.featureFlags.broadcast);
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const broadcastEnabled = maintenanceConfig?.featureFlags.broadcast ?? true;
   const isBlocked = !broadcastEnabled;
-  const {
-    message,
-    photoUrl,
-    history,
-    historyTotal,
-    isSending,
-    isLoadingHistory,
-    error,
-    lastEnqueued,
-    setMessage,
-    setPhotoUrl,
-    send,
-    fetchHistory,
-    stopPolling,
-    reset,
-  } = useBroadcastStore();
+  const [message, setMessage] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [lastEnqueued, setLastEnqueued] = useState<number | null>(null);
+  const [error, setBroadcastError] = useState<string | null>(null);
 
   const t = useT();
   const [showConfirm, setShowConfirm] = useState(false);
   const [historyPage, setHistoryPage] = useState(1);
 
-  useEffect(() => {
-    if (isMobile) return;
-    void fetchHistory(historyPage);
-    return () => stopPolling();
-  }, [historyPage, fetchHistory, stopPolling, isMobile]);
-
-  // Guarantee polling is stopped on unmount regardless of other effects
-  useEffect(() => {
-    return () => {
-      useBroadcastStore.getState().stopPolling();
-    };
-  }, []);
+  const { data: historyData, isLoading: isLoadingHistory } = useBroadcastHistory({ page: historyPage });
+  const history = historyData?.data ?? [];
+  const historyTotal = historyData?.total ?? 0;
+  const sendMutation = useSendBroadcast();
+  const isSending = sendMutation.isPending;
+  const reset = () => { setMessage(""); setPhotoUrl(""); setLastEnqueued(null); setBroadcastError(null); };
 
   if (isMobile) return <MobileBroadcasts />;
 
   const handleSend = async () => {
     setShowConfirm(false);
-    await send();
-    setHistoryPage(1);
+    try {
+      const input: { message: string; photoUrl?: string } = { message: message.trim() };
+      if (photoUrl.trim()) input.photoUrl = photoUrl.trim();
+      const res = await sendMutation.mutateAsync(input);
+      const enqueued = (res.data as { data?: { recipientCount?: number } })?.data?.recipientCount ?? 0;
+      setLastEnqueued(enqueued);
+      setBroadcastError(null);
+      setHistoryPage(1);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to send broadcast.";
+      setBroadcastError(msg);
+    }
   };
 
   // ── Derived stats ──────────────────────────────────────────────────────────

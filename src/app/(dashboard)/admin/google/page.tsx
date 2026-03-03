@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { ArrowClockwise, CheckCircle, XCircle, Clock } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useGoogleAnalyticsStore } from "@/store/googleAnalyticsStore";
+import { useGoogleAnalyticsStats } from "@/queries/useGoogleAnalyticsQuery";
 import type { GoogleOpLog } from "@/lib/api/googleAnalytics";
 
 // ── KPI Tile ──────────────────────────────────────────────────────────────────
@@ -85,11 +84,7 @@ function OpRow({ op, isLast }: { op: GoogleOpLog; isLast: boolean }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminGooglePage() {
-  const { data, isLoading, error, fetchStats } = useGoogleAnalyticsStore();
-
-  useEffect(() => {
-    void fetchStats();
-  }, [fetchStats]);
+  const { data, isLoading, error, refetch } = useGoogleAnalyticsStats();
 
   const stats = data?.stats;
   const ops = data?.recentOps ?? [];
@@ -105,7 +100,7 @@ export default function AdminGooglePage() {
           <p className="text-sm text-text-secondary mt-1">API usage for Sheets and Drive integrations</p>
         </div>
         <button
-          onClick={() => void fetchStats()}
+          onClick={() => void refetch()}
           className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors"
         >
           <ArrowClockwise size={15} className={isLoading ? "animate-spin" : ""} />
@@ -113,7 +108,7 @@ export default function AdminGooglePage() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs">{error}</div>
+        <div className="p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-xs">{error instanceof Error ? error.message : String(error)}</div>
       )}
 
       {/* KPI Tiles */}

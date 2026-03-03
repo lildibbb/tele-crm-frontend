@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -43,11 +43,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { TelegramPreview } from "@/components/ui/telegram-preview";
-import { useKbStore } from "@/store/kbStore";
+import { useKbList, useCreateKbText, useUploadKbFile, useUpdateKb, useRemoveKb } from "@/queries/useKbQuery";
 import { CreateKbSchema, type CreateKbInput } from "@/lib/schemas/kb.schema";
 import { KbType, KbStatus } from "@/types/enums";
 import { toast } from "sonner";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
 const TYPE_CONFIG: Record<
@@ -114,7 +114,8 @@ const KB_TYPE_MIME: Record<string, string> = {
 type ModalTab = "text" | "upload" | "link";
 
 export function KnowledgeBaseTab() {
-  const kbEnabled = useMaintenanceStore((s) => s.featureFlags.knowledgeBase);
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const kbEnabled = maintenanceConfig?.featureFlags.knowledgeBase ?? true;
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -129,16 +130,11 @@ export function KnowledgeBaseTab() {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
-  const { entries, isLoading, error, fetchAll, createText, update, remove, uploadFile: storeUpload } =
-    useKbStore();
-
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
-
-  useEffect(() => {
-    if (error) toast.error(error);
-  }, [error]);
+  const { data: entries = [], isLoading, refetch } = useKbList();
+  const createTextMutation = useCreateKbText();
+  const uploadFileMutation = useUploadKbFile();
+  const updateMutation = useUpdateKb();
+  const removeMutation = useRemoveKb();
 
   const form = useForm<CreateKbInput>({
     // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
@@ -176,14 +172,13 @@ export function KnowledgeBaseTab() {
   const onSubmit = async (data: CreateKbInput) => {
     try {
       if (editingId) {
-        await update(editingId, { title: data.title, content: data.content, url: data.url });
+        await updateMutation.mutateAsync({ id: editingId, data: { title: data.title, content: data.content, url: data.url } });
         toast.success("Changes saved successfully");
       } else {
-        await createText(data);
+        await createTextMutation.mutateAsync(data);
         toast.success("New content added");
       }
       closeModal();
-      await fetchAll();
     } catch {
       toast.error(editingId ? "Couldn't save your changes. Please try again." : "Couldn't add content. Please try again.");
     }
@@ -193,7 +188,7 @@ export function KnowledgeBaseTab() {
     if (!uploadFile || !uploadTitle.trim()) return;
     setUploadLoading(true);
     try {
-      await storeUpload(uploadFile, uploadTitle.trim());
+      await uploadFileMutation.mutateAsync({ file: uploadFile, title: uploadTitle.trim() });
       setUploadSuccess(true);
       setTimeout(() => {
         setUploadSuccess(false);
@@ -223,8 +218,7 @@ export function KnowledgeBaseTab() {
 
   const toggleActive = async (id: string, isActive: boolean) => {
     try {
-      await update(id, { isActive: !isActive });
-      await fetchAll();
+      await updateMutation.mutateAsync({ id, data: { isActive: !isActive } });
     } catch {
       toast.error("Couldn't update this entry. Please try again.");
     }
@@ -232,7 +226,7 @@ export function KnowledgeBaseTab() {
 
   const deleteEntry = async (id: string) => {
     try {
-      await remove(id);
+      await removeMutation.mutateAsync(id);
       toast.success("Entry removed successfully");
     } catch {
       toast.error("Couldn't delete this entry. Please try again.");
@@ -409,7 +403,7 @@ export function KnowledgeBaseTab() {
                           <Button
                             size="xs"
                             className="gap-1"
-                            onClick={() => fetchAll()}
+                            onClick={() => void refetch()}
                           >
                             <RotateCcw className="h-3 w-3" /> Retry
                           </Button>

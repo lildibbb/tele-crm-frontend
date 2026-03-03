@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSystemConfigStore } from "@/store/systemConfigStore";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,8 +37,9 @@ import {
 } from "@phosphor-icons/react";
 
 export function MaintenancePanel() {
-  const { entries, fetchAll, upsertMany } = useSystemConfigStore();
-  const fetchPublicConfig = useMaintenanceStore((s) => s.fetchPublicConfig);
+  const { data: entries = {} } = useSystemConfig();
+  const upsertManyMutation = useUpsertManySystemConfig();
+  const { refetch: refetchMaintenanceConfig } = useMaintenanceConfig();
 
   const getVal = (key: string, def = "false") => entries[key] ?? def;
 
@@ -58,10 +59,6 @@ export function MaintenancePanel() {
     setBannerText(entries["system.maintenanceBanner"] ?? DEFAULT_BANNER);
   }, [entries]);
 
-  useEffect(() => {
-    void fetchAll();
-  }, [fetchAll]);
-
   const toggleMaintenance = (on: boolean) => {
     if (on) {
       setPendingOn(true);
@@ -75,12 +72,12 @@ export function MaintenancePanel() {
     setSaveErr(null);
     setIsSaving(true);
     try {
-      await upsertMany({
+      await upsertManyMutation.mutateAsync({
         "system.maintenanceMode": on ? "true" : "false",
         "system.maintenanceBanner": bannerText.trim() || DEFAULT_BANNER,
       });
       setMaintenanceOn(on);
-      await fetchPublicConfig().catch(() => undefined);
+      await refetchMaintenanceConfig().catch(() => undefined);
       setSaved("maintenance");
       setTimeout(() => setSaved(null), 2500);
     } catch (err: unknown) {
@@ -98,8 +95,8 @@ export function MaintenancePanel() {
     setSaveErr(null);
     setIsSaving(true);
     try {
-      await upsertMany({ [key]: value ? "true" : "false" });
-      await fetchPublicConfig().catch(() => undefined);
+      await upsertManyMutation.mutateAsync({ [key]: value ? "true" : "false" });
+      await refetchMaintenanceConfig().catch(() => undefined);
       setSaved(key);
       setTimeout(() => setSaved(null), 2000);
     } catch (err: unknown) {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   Megaphone,
   PaperPlaneRight,
@@ -13,8 +13,9 @@ import {
   Image as ImageIcon,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
-import { useBroadcastStore } from "@/store/broadcastStore";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useBroadcastHistory, useSendBroadcast } from "@/queries/useBroadcastsQuery";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
+import { parseApiData } from "@/lib/api/parseResponse";
 import { useT, K } from "@/i18n";
 import type { BroadcastStatus } from "@/lib/api/broadcast";
 import { Badge } from "@/components/ui/badge";
@@ -246,46 +247,38 @@ function ConfirmSheet({
 
 export default function MobileBroadcasts({}: MobileBroadcastsProps) {
   const t = useT();
-  const broadcastEnabled = useMaintenanceStore((s) => s.featureFlags.broadcast);
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const broadcastEnabled = maintenanceConfig?.featureFlags.broadcast ?? true;
 
-  const {
-    message,
-    photoUrl,
-    history,
-    historyTotal,
-    isSending,
-    isLoadingHistory,
-    error,
-    lastEnqueued,
-    setMessage,
-    setPhotoUrl,
-    send,
-    fetchHistory,
-    stopPolling,
-    reset,
-  } = useBroadcastStore();
-
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [message, setMessage] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [lastEnqueued, setLastEnqueued] = useState<number | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
   const LIMIT = 20;
 
-  useEffect(() => {
-    void fetchHistory(historyPage, LIMIT);
-    return () => stopPolling();
-  }, [historyPage, fetchHistory, stopPolling]);
+  const { data: historyResult, isLoading: isLoadingHistory } = useBroadcastHistory({ page: historyPage, limit: LIMIT });
+  const history = historyResult?.data ?? [];
+  const historyTotal = historyResult?.total ?? 0;
 
-  // Guarantee polling is stopped on unmount regardless of other effects
-  useEffect(() => {
-    return () => {
-      useBroadcastStore.getState().stopPolling();
-    };
-  }, []);
+  const sendMutation = useSendBroadcast();
+  const isSending = sendMutation.isPending;
+  const error = sendMutation.error ? (sendMutation.error instanceof Error ? sendMutation.error.message : String(sendMutation.error)) : null;
+
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSend = useCallback(async () => {
     setShowConfirm(false);
-    await send();
-    setHistoryPage(1);
-  }, [send]);
+    try {
+      const res = await sendMutation.mutateAsync({ message: message.trim(), ...(photoUrl.trim() ? { photoUrl: photoUrl.trim() } : {}) });
+      const payload = parseApiData<{ enqueued: number; logId: string }>(res.data);
+      setLastEnqueued(payload?.enqueued ?? 0);
+      setMessage("");
+      setPhotoUrl("");
+      setHistoryPage(1);
+    } catch {
+      // error handled by mutation state
+    }
+  }, [sendMutation, message, photoUrl]);
 
   // ── Derived stats ──────────────────────────────────────────────────────────
   const { pendingCount, last7Days, totalRecipients } = useMemo(() => {
@@ -304,7 +297,7 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
     };
   }, [history]);
 
-  const hasMore = history.length < historyTotal;
+  const hasMore = historyPage * LIMIT < historyTotal;
   const charRatio = message.length / MAX_MSG_LENGTH;
 
   return (

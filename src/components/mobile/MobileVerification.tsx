@@ -11,9 +11,8 @@ import {
   Receipt,
   Eye,
 } from "@phosphor-icons/react";
-import { useLeadsStore } from "@/store/leadsStore";
-import type { Lead } from "@/store/leadsStore";
-import { useVerificationStore, type FilterTab } from "@/store/verificationStore";
+import { useLeadsList, useVerifyLead, useUpdateLeadStatus } from "@/queries/useLeadsQuery";
+import type { Lead } from "@/queries/useLeadsQuery";
 import { LeadStatus } from "@/types/enums";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { cn } from "@/lib/utils";
@@ -22,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
+export type FilterTab = "PENDING" | "ALL";
 export interface MobileVerificationProps {
   readonly onMoreOpen?: () => void;
   readonly onApprove?: (id: string) => void;
@@ -386,20 +386,15 @@ export default function MobileVerification({
   onApprove,
   onReject,
 }: MobileVerificationProps) {
-  const { leads, isLoading, fetchLeads, verifyLead, updateStatus } = useLeadsStore();
-  const {
-    filter,
-    setFilter,
-    openModal,
-    getVerifiedCount,
-    getRejectedCount,
-  } = useVerificationStore();
+  const verificationStatuses = `${LeadStatus.DEPOSIT_REPORTED},${LeadStatus.DEPOSIT_CONFIRMED},${LeadStatus.REJECTED}`;
+  const { data: leadsResult, isLoading } = useLeadsList({ skip: 0, take: 50, statuses: verificationStatuses });
+  const leads = leadsResult?.data ?? [];
+  const verifyMutation = useVerifyLead();
+  const updateStatusMutation = useUpdateLeadStatus();
+  const [filter, setFilter] = useState<FilterTab>("PENDING");
+  const openModal = (_id: string, _kind: string) => { /* askMore modal not supported on mobile */ };
 
   const [receiptPreview, setReceiptPreview] = useState<{ id: string; name: string } | null>(null);
-
-  useEffect(() => {
-    fetchLeads({ skip: 0, take: 50, orderBy: "createdAt", order: "desc" });
-  }, [fetchLeads]);
 
   // ── Derived data ───────────────────────────────────────────────────────────
   const pendingLeads = useMemo(
@@ -433,8 +428,8 @@ export default function MobileVerification({
     [pendingLeads, processedIds],
   );
 
-  const approvedToday = getVerifiedCount();
-  const rejectedToday = getRejectedCount();
+  const approvedToday = leads.filter((l) => l.status === LeadStatus.DEPOSIT_CONFIRMED).length;
+  const rejectedToday = leads.filter((l) => l.status === LeadStatus.REJECTED).length;
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const handleApprove = useCallback(
@@ -444,9 +439,9 @@ export default function MobileVerification({
       toast.success("Lead approved");
       onApprove?.(id);
       if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([8, 40, 8]);
-      try { await verifyLead(id); } catch { /* noop */ }
+      try { verifyMutation.mutate(id); } catch { /* noop */ }
     },
-    [onApprove, verifyLead],
+    [onApprove, verifyMutation],
   );
 
   const handleReject = useCallback(
@@ -455,9 +450,9 @@ export default function MobileVerification({
       toast.error("Lead rejected");
       onReject?.(id);
       if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
-      try { await updateStatus(id, { status: "REJECTED" }); } catch { /* noop */ }
+      try { updateStatusMutation.mutate({ id, data: { status: "REJECTED" } }); } catch { /* noop */ }
     },
-    [onReject, updateStatus],
+    [onReject, updateStatusMutation],
   );
 
   const handleAskMore = useCallback(

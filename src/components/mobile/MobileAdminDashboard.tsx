@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -12,8 +12,8 @@ import {
   Pulse,
   ClockCounterClockwise,
 } from "@phosphor-icons/react";
-import { useSuperadminStore } from "@/store/superadminStore";
-import { useAnalyticsStore } from "@/store/analyticsStore";
+import { useSuperadminUsers, useSuperadminAuditLogs, useSuperadminRagStats } from "@/queries/useSuperadminQuery";
+import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,15 +40,10 @@ function SkeletonHealthCard() {
 export default function MobileAdminDashboard(_props: MobileAdminDashboardProps) {
   const router = useRouter();
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const { users, auditLogs, ragStats, isLoadingUsers, isLoadingLogs, isLoadingRag, fetchUsers, fetchAuditLogs, fetchRagStats } = useSuperadminStore();
-  const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
-
-  useEffect(() => {
-    fetchUsers();
-    fetchAuditLogs({ skip: 0, take: 8 });
-    fetchRagStats();
-    fetchSummary();
-  }, [fetchUsers, fetchAuditLogs, fetchRagStats, fetchSummary]);
+  const { data: users = [], isLoading: isLoadingUsers } = useSuperadminUsers();
+  const { data: auditLogs = [], isLoading: isLoadingLogs } = useSuperadminAuditLogs({ skip: 0, take: 8 });
+  const { data: ragStats, isLoading: isLoadingRag } = useSuperadminRagStats();
+  const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
 
   const kpi = summary?.kpi;
   const activeUsers = users.filter((u) => u.isActive).length;

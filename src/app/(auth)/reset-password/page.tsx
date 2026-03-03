@@ -19,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { authApi } from "@/lib/api/auth";
-import { usePasswordResetStore } from "@/store/passwordResetStore";
+
 import { cn } from "@/lib/utils";
 import { z } from "zod/v4";
 
@@ -191,11 +191,14 @@ function OTPSlot(props: SlotProps) {
 function StepOneVerification({ 
   onNext, 
   form,
+  submittedEmail,
 }: { 
   onNext: () => void;
   form: any;
+  submittedEmail: string;
 }) {
-  const { setOtp, setVerified, setLoading, setError, isLoading, error, submittedEmail } = usePasswordResetStore();
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [resendCountdown, setResendCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -227,9 +230,6 @@ function StepOneVerification({
       
       // Demo: accept "1234" or any 4-digit code for testing
       if (code === DEMO_OTP_CODE || code.length === 4) {
-        setOtp(code);
-        setVerified(true);
-        
         // Animate to step 2
         setTimeout(() => {
           onNext();
@@ -568,14 +568,9 @@ function StepTwoPassword({
 // Main component
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const { 
-    step, 
-    setStep, 
-    setCompleted, 
-    isCompleted,
-    submittedEmail,
-    reset,
-  } = usePasswordResetStore();
+  const [step, setStep] = useState<1 | 2>(1);
+  const [isCompleted, setCompleted] = useState(false);
+  const [submittedEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Extended schema with confirmPassword for client-side validation
@@ -598,20 +593,6 @@ export default function ResetPasswordPage() {
       confirmPassword: "",
     },
   });
-
-  // Update email in form when store changes
-  useEffect(() => {
-    if (submittedEmail) {
-      form.setValue("email", submittedEmail);
-    }
-  }, [submittedEmail, form]);
-
-  // Reset store on unmount
-  useEffect(() => {
-    return () => {
-      reset();
-    };
-  }, [reset]);
 
   // Handle final submission
   const onSubmit = async (data: any) => {
@@ -718,6 +699,7 @@ export default function ResetPasswordPage() {
                 key="step1"
                 onNext={handleNextStep}
                 form={form}
+                submittedEmail={submittedEmail}
               />
             ) : (
               <StepTwoPassword

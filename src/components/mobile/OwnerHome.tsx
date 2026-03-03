@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -18,8 +18,8 @@ import {
   CircleNotch,
   Circle,
 } from "@phosphor-icons/react";
-import { useAnalyticsStore } from "@/store/analyticsStore";
-import { useLeadsStore } from "@/store/leadsStore";
+import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
+import { useLeadsList } from "@/queries/useLeadsQuery";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,13 +73,9 @@ export default function OwnerHome({
 }: OwnerHomeProps) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const { summary, isLoading: analyticsLoading, fetchSummary } = useAnalyticsStore();
-  const { leads, isLoading: leadsLoading, fetchLeads } = useLeadsStore();
-
-  useEffect(() => {
-    fetchSummary();
-    fetchLeads({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
-  }, [fetchSummary, fetchLeads]);
+  const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
+  const { data: leadsResult, isLoading: leadsLoading } = useLeadsList({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
+  const leads = leadsResult?.data ?? [];
 
   const kpi = summary?.kpi;
   const pendingCount = kpi?.formSubmissions?.current ?? 0;

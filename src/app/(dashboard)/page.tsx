@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
+import { useState, useRef, useMemo } from "react";
+import { lazy, Suspense } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { useAnalyticsStore } from "@/store/analyticsStore";
-import { useLeadsStore } from "@/store/leadsStore";
+import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
+import { useLeadsList } from "@/queries/useLeadsQuery";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/queries/queryKeys";
 import { useDashboardLayoutStore } from "@/store/dashboardLayoutStore";
 import { UserRole } from "@/types/enums";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
@@ -12,7 +15,6 @@ import { Users, Wallet, TrendUp, ChatText } from "@phosphor-icons/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT, K } from "@/i18n";
-import { toast } from "sonner";
 
 // ── Extracted components ────────────────────────────────────────
 import {
@@ -62,32 +64,15 @@ export default function DashboardPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
 
-  const summary = useAnalyticsStore((s) => s.summary);
-  const isLoading = useAnalyticsStore((s) => s.isLoading);
-  const error = useAnalyticsStore((s) => s.error);
-  const fetchSummary = useAnalyticsStore((s) => s.fetchSummary);
-  const leads = useLeadsStore((s) => s.leads);
-  const fetchLeads = useLeadsStore((s) => s.fetchLeads);
+  const { data: summary, isLoading, error } = useAnalyticsSummary({ timeframe: period });
+  const { data: leadsResult } = useLeadsList({ skip: 0, take: 20 });
+  const leads = leadsResult?.data ?? [];
   const widgets = useDashboardLayoutStore((s) => s.widgets);
   const visibleWidgets = [...widgets]
     .sort((a, b) => a.order - b.order)
     .filter((w) => w.visible);
-
-  // Fetch summary when period changes
-  useEffect(() => {
-    fetchSummary({ timeframe: period });
-  }, [fetchSummary, period]);
-
-  // Fetch leads once on mount only
-  useEffect(() => {
-    fetchLeads({ skip: 0, take: 20 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchLeads]);
-
-  useEffect(() => {
-    if (error) toast.error(error);
-  }, [error]);
 
   // ── Derived data ─────────────────────────────────────────────
   const funnelDonut = useMemo(() => {
@@ -210,8 +195,8 @@ export default function DashboardPage() {
     if (refreshing) return;
     setRefreshing(true);
     Promise.all([
-      fetchSummary({ timeframe: period }),
-      fetchLeads({ skip: 0, take: 20 }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.analytics.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.leads.all }),
     ]).finally(() => {
       setLastRefresh(new Date());
       setRefreshing(false);

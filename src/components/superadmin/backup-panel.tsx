@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useBackupStore } from "@/store/backupStore";
-import { useSystemConfigStore } from "@/store/systemConfigStore";
+import { useBackupHistory, useTriggerBackup } from "@/queries/useBackupQuery";
+import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,15 +70,16 @@ function InlineToggle({
 // ── BackupPanel ───────────────────────────────────────────────────────────────
 
 export function BackupPanel() {
-  const { history, isLoadingHistory, isTriggering, triggerResult, error, fetchHistory, triggerBackup, clearTriggerResult } = useBackupStore();
-  const { entries, fetchAll, upsertMany } = useSystemConfigStore();
+  const { data: history = [], isLoading: isLoadingHistory, refetch: refetchHistory } = useBackupHistory(10);
+  const triggerBackupMutation = useTriggerBackup();
+  const { data: entries = {} } = useSystemConfig();
+  const upsertMany = useUpsertManySystemConfig();
 
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const [retentionDraft, setRetentionDraft] = useState("");
   const [configErr, setConfigErr] = useState<string | null>(null);
-
-  useEffect(() => { void fetchAll(); void fetchHistory(); }, [fetchAll, fetchHistory]);
+  const [triggerResult, setTriggerResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (Object.keys(entries).length === 0) return;
@@ -87,10 +88,10 @@ export function BackupPanel() {
 
   useEffect(() => {
     if (triggerResult) {
-      const t = setTimeout(clearTriggerResult, 4000);
+      const t = setTimeout(() => setTriggerResult(null), 4000);
       return () => clearTimeout(t);
     }
-  }, [triggerResult, clearTriggerResult]);
+  }, [triggerResult]);
 
   const getVal = (key: string, def = "false") => entries[key] ?? def;
 
@@ -98,7 +99,7 @@ export function BackupPanel() {
     setIsSavingConfig(true);
     setConfigErr(null);
     try {
-      await upsertMany(updates);
+      await upsertMany.mutateAsync(updates);
       const firstKey = Object.keys(updates)[0];
       setSavedKey(firstKey ?? null);
       setTimeout(() => setSavedKey(null), 2000);
@@ -112,8 +113,10 @@ export function BackupPanel() {
   };
 
   const handleTrigger = async () => {
-    try { await triggerBackup(); void fetchHistory(10); }
-    catch { /* error shown from store */ }
+    try {
+      await triggerBackupMutation.mutateAsync();
+      setTriggerResult("Backup queued successfully");
+    } catch { /* error in triggerBackupMutation.error */ }
   };
 
   const backupEnabled = getVal("backup.enabled") === "true";
@@ -130,7 +133,7 @@ export function BackupPanel() {
             <p className="text-xs text-text-secondary mt-0.5">pg_dump → encrypted → S3/R2 storage</p>
           </div>
         </div>
-        <button onClick={() => void fetchHistory(10)} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
+        <button onClick={() => void refetchHistory()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
           <ArrowClockwise size={14} className={isLoadingHistory ? "animate-spin" : ""} />
         </button>
       </div>
@@ -210,20 +213,20 @@ export function BackupPanel() {
           <Button
             size="sm"
             onClick={handleTrigger}
-            disabled={isTriggering}
+            disabled={triggerBackupMutation.isPending}
             className="h-8 gap-1.5 text-xs"
           >
             <Play size={13} weight="fill" />
-            {isTriggering ? "Queuing…" : "Run Backup Now"}
+            {triggerBackupMutation.isPending ? "Queuing…" : "Run Backup Now"}
           </Button>
           {triggerResult && (
             <span className="text-xs text-success flex items-center gap-1">
               <CheckCircle size={13} /> {triggerResult}
             </span>
           )}
-          {error && (
+          {triggerBackupMutation.error && (
             <span className="text-xs text-danger flex items-center gap-1">
-              <Warning size={13} /> {error}
+              <Warning size={13} /> {(triggerBackupMutation.error as Error).message}
             </span>
           )}
         </div>

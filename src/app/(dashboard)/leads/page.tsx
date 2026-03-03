@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
+import { useQueryState, parseAsInteger, parseAsString } from "nuqs";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileLeadsList } from "@/components/mobile";
 import {
@@ -17,10 +18,14 @@ import {
 import { useT } from "@/i18n";
 import { K } from "@/i18n/keys";
 import {
-  useLeadsStore,
+  useLeadsList,
+  useSetHandover,
+  useBulkSetHandover,
   type LeadStatus,
   LeadStatus as LeadStatusEnum,
-} from "@/store/leadsStore";
+} from "@/queries/useLeadsQuery";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/queries/queryKeys";
 import { leadsApi } from "@/lib/api/leads";
 import type { ImportResult } from "@/lib/schemas/lead.schema";
 import { Button } from "@/components/ui/button";
@@ -60,14 +65,6 @@ export default function LeadsPage() {
   const tableRef = useRef<HTMLDivElement>(null);
   const isBlocked = useIsMaintenanceBlocked();
 
-  const leads = useLeadsStore((s) => s.leads);
-  const total = useLeadsStore((s) => s.total);
-  const isLoading = useLeadsStore((s) => s.isLoading);
-  const fetchLeads = useLeadsStore((s) => s.fetchLeads);
-  const setHandover = useLeadsStore((s) => s.setHandover);
-  const bulkSetHandover = useLeadsStore((s) => s.bulkSetHandover);
-  const pageCount = useLeadsStore((s) => s.pageCount);
-
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "ALL">("ALL");
   const [exportStatus, setExportStatus] = useState<"idle" | "loading" | "done">(
     "idle",
@@ -85,6 +82,43 @@ export default function LeadsPage() {
   const [bulkStatusValue, setBulkStatusValue] = useState<LeadStatus>("NEW");
   const [bulkStatusPending, setBulkStatusPending] = useState(false);
 
+  // Read pagination from URL (same keys useDataTable uses internally)
+  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [perPage] = useQueryState("perPage", parseAsInteger.withDefault(20));
+  const [sortRaw] = useQueryState("sort");
+
+  // Map TanStack column IDs to backend orderBy field names
+  const ORDER_BY_MAP: Record<string, string> = {
+    lead: "displayName",
+    registeredAt: "registeredAt",
+    depositBalance: "depositBalance",
+  };
+
+  // Parse sort from URL (format: "columnId.asc" or "columnId.desc")
+  const firstSortItem = sortRaw?.split(",")[0];
+  const lastDot = firstSortItem ? firstSortItem.lastIndexOf(".") : -1;
+  const sortColId = lastDot > -1 ? firstSortItem!.slice(0, lastDot) : undefined;
+  const sortDir = lastDot > -1 ? firstSortItem!.slice(lastDot + 1) : undefined;
+  const orderBy = sortColId ? (ORDER_BY_MAP[sortColId] ?? sortColId) : undefined;
+  const order = (sortDir === "asc" || sortDir === "desc") ? sortDir : undefined;
+  const pageIndex = page - 1;
+  const pageSize = perPage;
+
+  const { data: leadsResult, isLoading } = useLeadsList({
+    skip: pageIndex * pageSize,
+    take: pageSize,
+    status: statusFilter === "ALL" ? undefined : statusFilter,
+    search: searchValue || undefined,
+    orderBy,
+    order,
+  });
+  const setHandoverMutation = useSetHandover();
+  const bulkSetHandoverMutation = useBulkSetHandover();
+  const queryClient = useQueryClient();
+  const leads = leadsResult?.data ?? [];
+  const total = leadsResult?.total ?? 0;
+  const pageCount = leadsResult?.pageCount ?? 1;
+
   // Derived tri-state for global handover
   const handoverCount = leads.filter((l) => l.handoverMode).length;
   const globalHandoverOn = handoverCount > 0 && handoverCount === leads.length;
@@ -94,19 +128,19 @@ export default function LeadsPage() {
   const handleBulkHandover = useCallback(
     async (checked: boolean) => {
       setBulkHandoverPending(true);
-      await bulkSetHandover(checked).catch(() =>
+      await bulkSetHandoverMutation.mutateAsync(checked).catch(() =>
         toast.error(t(K.common.error.updateLead)),
       );
       setBulkHandoverPending(false);
     },
-    [bulkSetHandover],
+    [bulkSetHandoverMutation],
   );
 
   const onHandoverToggle = useCallback(
     (id: string, current: boolean) => {
-      void setHandover(id, !current);
+      void setHandoverMutation.mutate({ id, mode: !current });
     },
-    [setHandover],
+    [setHandoverMutation],
   );
 
   const columns = useMemo(
@@ -121,25 +155,10 @@ export default function LeadsPage() {
     initialState: { pagination: { pageSize: 20, pageIndex: 0 } },
   });
 
-  const { pageIndex, pageSize } = table.getState().pagination;
-
-  // Map TanStack column IDs to backend orderBy field names
-  const ORDER_BY_MAP: Record<string, string> = {
-    lead: "displayName",
-    registeredAt: "registeredAt",
-    depositBalance: "depositBalance",
-  };
-  const firstSort = table.getState().sorting[0];
-  const orderBy = firstSort
-    ? (ORDER_BY_MAP[firstSort.id] ?? firstSort.id)
-    : undefined;
-  const order = firstSort
-    ? ((firstSort.desc ? "desc" : "asc") as "asc" | "desc")
-    : undefined;
+  const { pageIndex: tablePageIndex } = table.getState().pagination;
 
   const debouncedSetSearch = useDebouncedCallback((val: string) => {
     setSearchValue(val);
-    table.setPageIndex(0);
   }, 400);
 
   const handleSearch = useCallback(
@@ -153,29 +172,7 @@ export default function LeadsPage() {
   const clearSearch = useCallback(() => {
     setSearchRaw("");
     setSearchValue("");
-    table.setPageIndex(0);
-    // Mount-only effect — table is a stable ref from useDataTable
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    void fetchLeads({
-      skip: pageIndex * pageSize,
-      take: pageSize,
-      status: statusFilter === "ALL" ? undefined : statusFilter,
-      search: searchValue || undefined,
-      orderBy,
-      order,
-    });
-  }, [
-    pageIndex,
-    pageSize,
-    statusFilter,
-    searchValue,
-    orderBy,
-    order,
-    fetchLeads,
-  ]);
 
   // ── Must be declared BEFORE the isMobile early return to satisfy Rules of Hooks ──
   const handleBulkStatus = useCallback(async () => {
@@ -186,14 +183,7 @@ export default function LeadsPage() {
       const ids = selected.map((r) => r.original.id);
       await leadsApi.bulkStatus({ ids, status: bulkStatusValue });
       table.resetRowSelection();
-      await fetchLeads({
-        skip: pageIndex * pageSize,
-        take: pageSize,
-        status: statusFilter === "ALL" ? undefined : statusFilter,
-        search: searchValue || undefined,
-        orderBy,
-        order,
-      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.leads.all });
     } catch {
       toast.error(t(K.common.error.updateStatus));
     } finally {
@@ -203,13 +193,7 @@ export default function LeadsPage() {
     table,
     bulkStatusValue,
     bulkStatusPending,
-    pageIndex,
-    pageSize,
-    statusFilter,
-    searchValue,
-    orderBy,
-    order,
-    fetchLeads,
+    queryClient,
   ]);
 
   if (isMobile) {
@@ -275,14 +259,7 @@ export default function LeadsPage() {
           `Import complete: ${result.imported} created, ${result.updated} updated${result.skipped > 0 ? `, ${result.skipped} skipped` : ""}`,
         );
         // Refresh the table
-        void fetchLeads({
-          skip: pageIndex * pageSize,
-          take: pageSize,
-          status: statusFilter === "ALL" ? undefined : statusFilter,
-          search: searchValue || undefined,
-          orderBy,
-          order,
-        });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.leads.all });
       }
     } catch {
       setImportStatus("error");
@@ -314,7 +291,6 @@ export default function LeadsPage() {
 
   const handleStatusChange = (value: string) => {
     setStatusFilter(value as LeadStatus | "ALL");
-    table.setPageIndex(0);
   };
 
   return (

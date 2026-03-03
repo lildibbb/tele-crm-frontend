@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSecretsStore } from "@/store/secretsStore";
+import { useState } from "react";
+import { useSecretsList, useSetSecret, useDeleteSecret } from "@/queries/useSecretsQuery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,7 +53,7 @@ function SetSecretModal({
   secret: SecretMeta | { key: string; description: string | null; updatedBy: null; updatedAt: "" } | null;
   onClose: () => void;
 }) {
-  const { setSecret, isMutating } = useSecretsStore();
+  const setSecretMutation = useSetSecret();
   const [value, setValue] = useState("");
   const [show, setShow] = useState(false);
   const [err, setErr] = useState("");
@@ -64,7 +64,7 @@ function SetSecretModal({
     e.preventDefault();
     if (!value.trim() || !secret) return;
     try {
-      await setSecret(secret.key, value.trim(), known?.label ?? secret.description ?? undefined);
+      await setSecretMutation.mutateAsync({ key: secret.key, value: value.trim(), description: known?.label ?? secret.description ?? undefined });
       setValue("");
       setShow(false);
       setErr("");
@@ -123,8 +123,8 @@ function SetSecretModal({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={isMutating || !value.trim()}>
-              {isMutating ? "Saving…" : "Save Secret"}
+            <Button type="submit" disabled={setSecretMutation.isPending || !value.trim()}>
+              {setSecretMutation.isPending ? "Saving…" : "Save Secret"}
             </Button>
           </DialogFooter>
         </form>
@@ -136,12 +136,11 @@ function SetSecretModal({
 // ── SecretsPanel ──────────────────────────────────────────────────────────────
 
 export function SecretsPanel() {
-  const { secrets, isLoading, isMutating, fetchSecrets, deleteSecret } = useSecretsStore();
+  const { data: secrets = [], isLoading, refetch: refetchSecrets } = useSecretsList();
+  const deleteSecretMutation = useDeleteSecret();
   const [editTarget, setEditTarget] = useState<typeof secrets[0] | null>(null);
   const [newKey, setNewKey] = useState<{ key: string; description: string | null; updatedBy: null; updatedAt: "" } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-
-  useEffect(() => { void fetchSecrets(); }, [fetchSecrets]);
 
   // Merge known keys with stored secrets (show all known + any extras)
   const rows = KNOWN_KEYS.map((k) => {
@@ -151,8 +150,8 @@ export function SecretsPanel() {
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
-    try { await deleteSecret(deleteTarget); }
-    catch { /* error handled in store */ }
+    try { await deleteSecretMutation.mutateAsync(deleteTarget); }
+    catch { /* error handled by mutation */ }
     finally { setDeleteTarget(null); }
   };
 
@@ -196,7 +195,7 @@ export function SecretsPanel() {
               <p className="text-xs text-text-secondary mt-0.5">AES-256-GCM credentials — values never displayed</p>
             </div>
           </div>
-          <button onClick={() => void fetchSecrets()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
+          <button onClick={() => void refetchSecrets()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
             <ArrowClockwise size={14} className={isLoading ? "animate-spin" : ""} />
           </button>
         </div>
@@ -250,7 +249,7 @@ export function SecretsPanel() {
                               size="sm"
                               variant="ghost"
                               className="h-7 px-2 text-[11px] gap-1 text-text-muted hover:text-text-primary"
-                              disabled={isMutating}
+                              disabled={deleteSecretMutation.isPending}
                               onClick={() => {
                                 if (isStored) {
                                   setEditTarget(row as SecretMeta);
@@ -270,7 +269,7 @@ export function SecretsPanel() {
                                 size="sm"
                                 variant="ghost"
                                 className="h-7 px-2 text-[11px] gap-1 text-danger/60 hover:text-danger hover:bg-danger/10"
-                                disabled={isMutating}
+                                disabled={deleteSecretMutation.isPending}
                                 onClick={() => setDeleteTarget(row.key)}
                               >
                                 <Trash size={12} />

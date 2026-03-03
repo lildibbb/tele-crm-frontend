@@ -110,6 +110,33 @@ function useStore<T>(
   return React.useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
 }
 
+function shallowEqual(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  if (Object.is(a, b)) return true;
+  const keysA = Object.keys(a);
+  if (keysA.length !== Object.keys(b).length) return false;
+  return keysA.every((k) => Object.is(a[k], b[k]));
+}
+
+function useShallowStore<T extends Record<string, unknown>>(
+  store: DataGridStore,
+  selector: (state: DataGridState) => T,
+): T {
+  const prevRef = React.useRef<T | undefined>(undefined);
+  const stableSelector = React.useCallback(
+    (state: DataGridState) => {
+      const next = selector(state);
+      if (prevRef.current !== undefined && shallowEqual(prevRef.current as Record<string, unknown>, next as Record<string, unknown>)) {
+        return prevRef.current;
+      }
+      prevRef.current = next;
+      return next;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store],
+  );
+  return useStore(store, stableSelector);
+}
+
 interface UseDataGridProps<TData>
   extends Omit<TableOptions<TData>, "pageCount" | "getCoreRowModel"> {
   onDataChange?: (data: TData[]) => void;
@@ -256,19 +283,36 @@ function useDataGrid<TData>({
     };
   }, [listenersRef, stateRef]);
 
-  const focusedCell = useStore(store, (state) => state.focusedCell);
-  const editingCell = useStore(store, (state) => state.editingCell);
-  const selectionState = useStore(store, (state) => state.selectionState);
-  const searchQuery = useStore(store, (state) => state.searchQuery);
-  const searchMatches = useStore(store, (state) => state.searchMatches);
-  const matchIndex = useStore(store, (state) => state.matchIndex);
-  const searchOpen = useStore(store, (state) => state.searchOpen);
-  const sorting = useStore(store, (state) => state.sorting);
-  const columnFilters = useStore(store, (state) => state.columnFilters);
-  const rowSelection = useStore(store, (state) => state.rowSelection);
-  const rowHeight = useStore(store, (state) => state.rowHeight);
-  const contextMenu = useStore(store, (state) => state.contextMenu);
-  const pasteDialog = useStore(store, (state) => state.pasteDialog);
+  const { focusedCell, editingCell, contextMenu, pasteDialog } = useShallowStore(
+    store,
+    (s) => ({
+      focusedCell: s.focusedCell,
+      editingCell: s.editingCell,
+      contextMenu: s.contextMenu,
+      pasteDialog: s.pasteDialog,
+    }),
+  );
+
+  const { selectionState, rowSelection } = useShallowStore(
+    store,
+    (s) => ({
+      selectionState: s.selectionState,
+      rowSelection: s.rowSelection,
+    }),
+  );
+
+  const { searchQuery, searchMatches, matchIndex, searchOpen, sorting, columnFilters, rowHeight } = useShallowStore(
+    store,
+    (s) => ({
+      searchQuery: s.searchQuery,
+      searchMatches: s.searchMatches,
+      matchIndex: s.matchIndex,
+      searchOpen: s.searchOpen,
+      sorting: s.sorting,
+      columnFilters: s.columnFilters,
+      rowHeight: s.rowHeight,
+    }),
+  );
 
   const rowHeightValue = getRowHeightValue(rowHeight);
 

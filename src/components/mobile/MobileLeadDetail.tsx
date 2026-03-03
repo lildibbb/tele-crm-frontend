@@ -26,7 +26,7 @@ import {
   Star,
   Robot,
 } from "@phosphor-icons/react";
-import type { Lead } from "@/store/leadsStore";
+import type { Lead } from "@/queries/useLeadsQuery";
 import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";

@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { useT, useLocale } from "@/i18n";
 import type { Locale } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
-import { useMaintenanceStore } from "@/store/maintenanceStore";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import { MaintenanceBanner } from "@/components/maintenance/MaintenanceBanner";
 import MobileGlobalLayout from "@/components/mobile/MobileGlobalLayout";
 import {
@@ -43,8 +43,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isInitialized } = useAuthStore();
-  const fetchPublicConfig = useMaintenanceStore((s) => s.fetchPublicConfig);
-  const maintenanceMode = useMaintenanceStore((s) => s.maintenanceMode);
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const maintenanceMode = maintenanceConfig?.maintenanceMode ?? false;
   const t = useT();
   const { locale, setLocale } = useLocale();
   const toggleLocale = () =>
@@ -56,12 +56,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       router.replace("/login");
     }
   }, [isInitialized, user, router]);
-
-  // Fetch public config (maintenance mode + feature flags) on mount
-  useEffect(() => {
-    void fetchPublicConfig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Resolve page title from exact path first, then prefix match
   const pageTitle =

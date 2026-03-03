@@ -9,11 +9,13 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileSettings } from "@/components/mobile";
-import { useSystemConfigStore } from "@/store/systemConfigStore";
+import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { useT, K } from "@/i18n";
 
 export function BotConfigTab() {
-  const { entries, isLoading, isSaving, fetchAll, upsertMany } = useSystemConfigStore();
+  const { data: entries = {}, isLoading } = useSystemConfig();
+  const upsertManyMutation = useUpsertManySystemConfig();
+  const isSaving = upsertManyMutation.isPending;
   const isMobile = useIsMobile();
   const t = useT();
 
@@ -29,10 +31,6 @@ export function BotConfigTab() {
     followUpEnabled: true,
   });
   const [initialised, setInitialised] = useState(false);
-
-  useEffect(() => {
-    void fetchAll();
-  }, [fetchAll]);
 
   // Sync store → draft once
   useEffect(() => {
@@ -52,7 +50,7 @@ export function BotConfigTab() {
   }, [entries, isLoading, initialised]);
 
   const handleSave = async () => {
-    await upsertMany({
+    await upsertManyMutation.mutateAsync({
       "persona.name": draft.name,
       "bot.systemPrompt": draft.systemPrompt,
       "bot.welcomeMessage": draft.greeting,

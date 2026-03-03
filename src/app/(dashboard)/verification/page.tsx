@@ -45,17 +45,17 @@ import {
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { useDataTable } from "@/lib/hooks/use-data-table";
-import { useVerificationStore } from "@/store/verificationStore";
-import { Lead } from "@/store/leadsStore";
+import { useLeadsList, useVerifyLead, useUpdateLeadStatus } from "@/queries/useLeadsQuery";
+import type { Lead } from "@/queries/useLeadsQuery";
 import { LeadStatus } from "@/types/enums";
-import { leadsApi } from "@/lib/api/leads";
-import { useLeadsStore } from "@/store/leadsStore";
+import { parseAsInteger, useQueryState } from "nuqs";
 import { useT, K } from "@/i18n";
 import { getVerificationColumns } from "./_components/verification-columns";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { FileTypeBadge } from "@/components/ui/file-type-badge";
 
 const TAB_FILTERS = ["PENDING", "ALL"] as const;
+type ModalKind = "approve" | "reject" | "askMore" | "receipt" | null;
 
 // ── Avatar ──────────────────────────────────────────────────────────────────
 function Avatar({ name, size = 36 }: { name: string; size?: number }) {
@@ -77,19 +77,28 @@ function Avatar({ name, size = 36 }: { name: string; size?: number }) {
 }
 
 // ── Approve Dialog ───────────────────────────────────────────────────────────
-function ApproveDialog() {
+function ApproveDialog({
+  open,
+  activeId,
+  req,
+  onClose,
+}: {
+  open: boolean;
+  activeId: string | null;
+  req: Lead | undefined;
+  onClose: () => void;
+}) {
   const t = useT();
-  const { modalKind, closeModal, verify, activeId, getActiveRequest } =
-    useVerificationStore();
-  const req = getActiveRequest();
+  const verifyMutation = useVerifyLead();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleApprove = async () => {
     if (!activeId) return;
     setIsSubmitting(true);
     try {
-      await verify(activeId);
+      await verifyMutation.mutateAsync(activeId);
       toast.success("Deposit verified — lead status updated to Confirmed.");
+      onClose();
     } catch {
       toast.error("Failed to verify deposit. Please try again.");
     } finally {
@@ -99,8 +108,8 @@ function ApproveDialog() {
 
   return (
     <Dialog
-      open={modalKind === "approve"}
-      onOpenChange={(open) => !open && closeModal()}
+      open={open}
+      onOpenChange={(o) => !o && onClose()}
     >
       <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-sm">
         <DialogHeader className="pb-0">
@@ -155,7 +164,7 @@ function ApproveDialog() {
           <Button
             variant="outline"
             className="flex-1 rounded-xl h-11"
-            onClick={closeModal}
+            onClick={onClose}
             disabled={isSubmitting}
           >
             {t("common.cancel")}
@@ -179,30 +188,32 @@ function ApproveDialog() {
 }
 
 // ── Reject Dialog ────────────────────────────────────────────────────────────
-function RejectDialog() {
+function RejectDialog({
+  open,
+  activeId,
+  req,
+  onClose,
+}: {
+  open: boolean;
+  activeId: string | null;
+  req: Lead | undefined;
+  onClose: () => void;
+}) {
   const t = useT();
-  const {
-    modalKind,
-    closeModal,
-    activeId,
-    getActiveRequest,
-    rejectReason,
-    setRejectReason,
-  } = useVerificationStore();
-  const updateStatus = useLeadsStore((s) => s.updateStatus);
-  const req = getActiveRequest();
+  const [rejectReason, setRejectReason] = useState("");
+  const updateStatusMutation = useUpdateLeadStatus();
 
   const handleReject = () => {
     if (!activeId) return;
-    updateStatus(activeId, { status: LeadStatus.REJECTED, rejectReason });
-    closeModal();
+    updateStatusMutation.mutate({ id: activeId, data: { status: LeadStatus.REJECTED, rejectReason } });
+    onClose();
     toast.error("Submission rejected. Lead has been notified.");
   };
 
   return (
     <Dialog
-      open={modalKind === "reject"}
-      onOpenChange={(open) => !open && closeModal()}
+      open={open}
+      onOpenChange={(o) => !o && onClose()}
     >
       <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-sm">
         <DialogHeader className="pb-0">
@@ -278,19 +289,20 @@ function RejectDialog() {
 }
 
 // ── Ask More Dialog ──────────────────────────────────────────────────────────
-function AskMoreDialog() {
+function AskMoreDialog({
+  open,
+  req,
+  onClose,
+}: {
+  open: boolean;
+  req: Lead | undefined;
+  onClose: () => void;
+}) {
   const t = useT();
-  const {
-    modalKind,
-    closeModal,
-    getActiveRequest,
-    askMoreText,
-    setAskMoreText,
-  } = useVerificationStore();
-  const req = getActiveRequest();
+  const [askMoreText, setAskMoreText] = useState("");
 
   const handleSend = () => {
-    closeModal();
+    onClose();
     toast.success(
       `Message sent to ${req?.displayName ?? req?.username ?? "lead"}.`,
     );
@@ -298,8 +310,8 @@ function AskMoreDialog() {
 
   return (
     <Dialog
-      open={modalKind === "askMore"}
-      onOpenChange={(open) => !open && closeModal()}
+      open={open}
+      onOpenChange={(o) => !o && onClose()}
     >
       <DialogContent className="sm:max-w-sm rounded-3xl border-border-subtle bg-card shadow-sm">
         <DialogHeader className="pb-0">
@@ -605,11 +617,18 @@ function AttachmentPreviewDialog({
 }
 
 // ── Receipt Dialog ───────────────────────────────────────────────────────────
-function ReceiptDialog() {
+function ReceiptDialog({
+  open,
+  req,
+  onClose,
+  onOpenApprove,
+}: {
+  open: boolean;
+  req: Lead | undefined;
+  onClose: () => void;
+  onOpenApprove: () => void;
+}) {
   const t = useT();
-  const { modalKind, closeModal, openModal, getActiveRequest } =
-    useVerificationStore();
-  const req = getActiveRequest();
   const [attachmentOpen, setAttachmentOpen] = useState(false);
 
   const isVerified = req?.status === LeadStatus.DEPOSIT_CONFIRMED;
@@ -626,8 +645,8 @@ function ReceiptDialog() {
   return (
     <>
       <Dialog
-        open={modalKind === "receipt"}
-        onOpenChange={(open) => !open && closeModal()}
+        open={open}
+        onOpenChange={(o) => !o && onClose()}
       >
         <DialogContent className="sm:max-w-[400px] rounded-3xl border border-border-subtle bg-card gap-0 p-0 overflow-hidden shadow-[var(--shadow-modal)]">
           <DialogDescription className="sr-only">
@@ -738,10 +757,7 @@ function ReceiptDialog() {
             </DialogClose>
             {isPending ? (
               <Button
-                onClick={() => {
-                  closeModal();
-                  openModal(req?.id ?? "", "approve");
-                }}
+                onClick={() => onOpenApprove()}
                 className="flex-1 rounded-xl h-10 bg-success hover:bg-success/90 text-white font-semibold gap-1.5 text-[13px]"
               >
                 <CheckCircle weight="duotone" size={14} />
@@ -776,21 +792,49 @@ export default function VerificationPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  const filter = useVerificationStore((s) => s.filter);
-  const openModal = useVerificationStore((s) => s.openModal);
-  const setFilter = useVerificationStore((s) => s.setFilter);
-  const leads = useLeadsStore((s) => s.leads);
-  const total = useLeadsStore((s) => s.total);
-  const isLoading = useLeadsStore((s) => s.isLoading);
-  const fetchLeads = useLeadsStore((s) => s.fetchLeads);
-  const pageCount = useLeadsStore((s) => s.pageCount);
-  const updateStatus = useLeadsStore((s) => s.updateStatus);
+  const [filter, setFilter] = useState<"PENDING" | "ALL">("PENDING");
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [modalKind, setModalKind] = useState<ModalKind>(null);
 
-  // Stat card totals — fetched from API on mount for accuracy
-  const [pendingTotal, setPendingTotal] = useState(0);
-  const [allTotal, setAllTotal] = useState(0);
-  const [approvedTotal, setApprovedTotal] = useState(0);
-  const [rejectedTotal, setRejectedTotal] = useState(0);
+  const openModal = useCallback((id: string, kind: Exclude<ModalKind, null>) => {
+    setActiveId(id);
+    setModalKind(kind);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setModalKind(null);
+    setActiveId(null);
+  }, []);
+
+  const VERIFICATION_STATUSES = `${LeadStatus.DEPOSIT_REPORTED},${LeadStatus.DEPOSIT_CONFIRMED},${LeadStatus.REJECTED}`;
+
+  // Read pagination from URL (synced with useDataTable's internal nuqs state)
+  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [perPage] = useQueryState("perPage", parseAsInteger.withDefault(20));
+  const pageIndex = page - 1;
+  const pageSize = perPage;
+
+  const { data: tableResult, isLoading } = useLeadsList({
+    skip: pageIndex * pageSize,
+    take: pageSize,
+    ...(filter === "PENDING"
+      ? { status: LeadStatus.DEPOSIT_REPORTED }
+      : { statuses: VERIFICATION_STATUSES }),
+  });
+  const leads = tableResult?.data ?? [];
+  const pageCount = tableResult?.pageCount ?? 1;
+
+  // Stat counts
+  const { data: pendingCountResult } = useLeadsList({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_REPORTED });
+  const pendingTotal = pendingCountResult?.total ?? 0;
+  const { data: allCountResult } = useLeadsList({ take: 1, skip: 0, statuses: VERIFICATION_STATUSES });
+  const allTotal = allCountResult?.total ?? 0;
+  const { data: approvedCountResult } = useLeadsList({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_CONFIRMED });
+  const approvedTotal = approvedCountResult?.total ?? 0;
+  const { data: rejectedCountResult } = useLeadsList({ take: 1, skip: 0, status: LeadStatus.REJECTED });
+  const rejectedTotal = rejectedCountResult?.total ?? 0;
+
+  const activeRequest = leads.find((l) => l.id === activeId);
 
   const onApprove = useCallback(
     (id: string) => {
@@ -836,68 +880,6 @@ export default function VerificationPage() {
     pageCount,
     initialState: { pagination: { pageSize: 20, pageIndex: 0 } },
   });
-
-  const { pageIndex, pageSize } = table.getState().pagination;
-
-  const VERIFICATION_STATUSES = `${LeadStatus.DEPOSIT_REPORTED},${LeadStatus.DEPOSIT_CONFIRMED},${LeadStatus.REJECTED}`;
-
-  useEffect(() => {
-    void fetchLeads({
-      skip: pageIndex * pageSize,
-      take: pageSize,
-      ...(filter === "PENDING"
-        ? { status: LeadStatus.DEPOSIT_REPORTED }
-        : { statuses: VERIFICATION_STATUSES }),
-    });
-  }, [pageIndex, pageSize, filter, fetchLeads]);
-
-  // Sync tab-specific totals from active API response
-  useEffect(() => {
-    if (filter === "PENDING") {
-      setPendingTotal(total);
-    } else {
-      setAllTotal(total);
-    }
-  }, [total, filter]);
-
-  // Fetch all stat totals on mount so counts are accurate regardless of active tab
-  useEffect(() => {
-    const extractTotal = (r: { data: unknown }): number | undefined => {
-      const outer = r.data as {
-        data?: { data?: unknown; meta?: { total?: number } };
-      };
-      return outer?.data?.meta?.total;
-    };
-    leadsApi
-      .list({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_REPORTED })
-      .then((r) => {
-        const n = extractTotal(r);
-        if (n != null) setPendingTotal(n);
-      })
-      .catch(() => {});
-    leadsApi
-      .list({ take: 1, skip: 0, statuses: VERIFICATION_STATUSES })
-      .then((r) => {
-        const n = extractTotal(r);
-        if (n != null) setAllTotal(n);
-      })
-      .catch(() => {});
-    leadsApi
-      .list({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_CONFIRMED })
-      .then((r) => {
-        const n = extractTotal(r);
-        if (n != null) setApprovedTotal(n);
-      })
-      .catch(() => {});
-    leadsApi
-      .list({ take: 1, skip: 0, status: LeadStatus.REJECTED })
-      .then((r) => {
-        const n = extractTotal(r);
-        if (n != null) setRejectedTotal(n);
-      })
-      .catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   if (isMobile) {
     return <MobileVerification />;
@@ -1033,10 +1015,29 @@ export default function VerificationPage() {
         )}
 
         {/* ── Portaled Dialogs ── */}
-        <ApproveDialog />
-        <RejectDialog />
-        <AskMoreDialog />
-        <ReceiptDialog />
+        <ApproveDialog
+          open={modalKind === "approve"}
+          activeId={activeId}
+          req={activeRequest}
+          onClose={closeModal}
+        />
+        <RejectDialog
+          open={modalKind === "reject"}
+          activeId={activeId}
+          req={activeRequest}
+          onClose={closeModal}
+        />
+        <AskMoreDialog
+          open={modalKind === "askMore"}
+          req={activeRequest}
+          onClose={closeModal}
+        />
+        <ReceiptDialog
+          open={modalKind === "receipt"}
+          req={activeRequest}
+          onClose={closeModal}
+          onOpenApprove={() => setModalKind("approve")}
+        />
       </div>
     </TooltipProvider>
   );

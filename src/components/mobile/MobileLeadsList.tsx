@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   MagnifyingGlass,
@@ -10,8 +10,8 @@ import {
   FunnelSimple,
 } from "@phosphor-icons/react";
 import { LeadStatus } from "@/types/enums";
-import type { Lead } from "@/store/leadsStore";
-import { useLeadsList } from "@/hooks/useLeadsList";
+import type { Lead } from "@/queries/useLeadsQuery";
+import { useLeadsList } from "@/queries/useLeadsQuery";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -169,7 +169,6 @@ function PullIndicator({ visible }: { visible: boolean }) {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
-  const { leads, total, isLoading, load: loadLeads } = useLeadsList();
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [search, setSearch] = useState("");
   const [skip, setSkip] = useState(0);
@@ -177,21 +176,14 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
 
-  const load = useCallback(
-    (newSkip: number, newSearch: string, newFilter: FilterTab) => {
-      loadLeads({
-        skip: newSkip,
-        take: PAGE_SIZE,
-        status: newFilter === "ALL" ? undefined : newFilter,
-        search: newSearch || undefined,
-      });
-    },
-    [loadLeads],
-  );
-
-  useEffect(() => {
-    load(0, "", "ALL");
-  }, [load]);
+  const { data: leadsResult, isLoading, refetch } = useLeadsList({
+    skip,
+    take: PAGE_SIZE,
+    status: filter === "ALL" ? undefined : filter,
+    search: search || undefined,
+  });
+  const leads = leadsResult?.data ?? [];
+  const total = leadsResult?.total ?? 0;
 
   // ── Pull-to-refresh handlers ─────────────────────────────────────────────
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -204,40 +196,37 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
       const atTop = scrollRef.current ? scrollRef.current.scrollTop <= 0 : true;
       if (delta > 80 && atTop && !isRefreshing) {
         setIsRefreshing(true);
-        load(0, search, filter);
         setSkip(0);
+        setSearch("");
+        setFilter("ALL");
+        void refetch();
         setTimeout(() => setIsRefreshing(false), 800);
       }
     },
-    [isRefreshing, load, search, filter],
+    [isRefreshing, refetch],
   );
 
   const handleFilter = (tab: FilterTab) => {
     setFilter(tab);
     setSkip(0);
-    load(0, search, tab);
   };
 
-  const debouncedLoad = useDebouncedCallback((val: string) => {
+  const debouncedLoad = useDebouncedCallback(() => {
     setSkip(0);
-    load(0, val, filter);
   }, 300);
 
   const handleSearch = (val: string) => {
     setSearch(val);
-    debouncedLoad(val);
+    debouncedLoad();
   };
 
   const clearSearch = () => {
     setSearch("");
     setSkip(0);
-    load(0, "", filter);
   };
 
   const loadMore = () => {
-    const next = skip + PAGE_SIZE;
-    setSkip(next);
-    load(next, search, filter);
+    setSkip(skip + PAGE_SIZE);
   };
 
   const hasFilters = search !== "" || filter !== "ALL";

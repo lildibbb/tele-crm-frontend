@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Mail, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
-import { useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v4";
@@ -20,7 +20,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { authApi } from "@/lib/api/auth";
-import { usePasswordResetStore } from "@/store/passwordResetStore";
 
 // Form schema
 const forgotPasswordSchema = z.object({
@@ -47,24 +46,10 @@ const iconVariants = {
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const {
-    isEmailSent,
-    submittedEmail,
-    isLoading,
-    error,
-    setEmailSent,
-    setSubmittedEmail,
-    setLoading,
-    setError,
-    reset,
-  } = usePasswordResetStore();
-
-  // Reset store on unmount
-  useEffect(() => {
-    return () => {
-      reset();
-    };
-  }, [reset]);
+  const [isEmailSent, setEmailSent] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+  const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),

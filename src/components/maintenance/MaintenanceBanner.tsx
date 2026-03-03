@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { Warning, CheckCircle, X, Wrench } from '@phosphor-icons/react';
-import { useMaintenanceStore } from '@/store/maintenanceStore';
+import { useMaintenanceConfig } from '@/queries/useMaintenanceQuery';
 import { useAuthStore } from '@/store/authStore';
 import { UserRole } from '@/types/enums';
 
 const SESSION_KEY = 'titan-crm-maintenance-dismissed';
 
 export function MaintenanceBanner() {
-  const maintenanceMode = useMaintenanceStore((s) => s.maintenanceMode);
-  const banner = useMaintenanceStore((s) => s.maintenanceBanner);
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const maintenanceMode = maintenanceConfig?.maintenanceMode ?? false;
+  const banner = maintenanceConfig?.maintenanceBanner ?? '';
   const user = useAuthStore((s) => s.user);
   const [dismissed, setDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
