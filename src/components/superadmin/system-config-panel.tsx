@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSystemConfigStore } from "@/store/systemConfigStore";
+import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,9 +15,12 @@ import {
   Timer,
   ShieldCheck,
   Cpu,
+  CurrencyDollar,
+  DownloadSimple,
 } from "@phosphor-icons/react";
+import { apiClient } from "@/lib/api/apiClient";
 
-// ─── Types & Constants ────────────────────────────────────────────────────────
+// --- Types & Constants ---
 
 type FieldDef = {
   key: string;
@@ -30,7 +33,7 @@ type FieldDef = {
 /** Default values for keys that are not yet persisted in DB — must match backend fallback defaults */
 export const FIELD_DEFAULTS: Record<string, string> = {
   "bot.active":       "true",
-  "bot.hydeEnabled":  "true",  // backend defaults to true (see bot.service.ts ?? true)
+  "bot.hydeEnabled":  "true",
 };
 
 export const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: string; fields: FieldDef[] }[] = [
@@ -57,7 +60,6 @@ export const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: s
   {
     title: "Follow-Up Delays", icon: Timer, color: "text-warning",
     fields: [
-      { key: "bot.followUpContactedDelayHours", label: "Contacted Delay (h)", description: "Hours after CONTACTED before follow-up", type: "number" },
       { key: "bot.followUpContactedDelayHours", label: "Contacted Delay (h)", description: "Hours after CONTACTED before follow-up", type: "number" },
       { key: "bot.followUpDepositReportedDelayHours", label: "Deposit Delay (h)", description: "Hours after DEPOSIT_REPORTED before follow-up", type: "number" },
       { key: "bot.followUpMaxRetries", label: "Max Retries", description: "Maximum follow-up retry attempts", type: "number" },
@@ -87,17 +89,30 @@ export const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: s
       { key: "ai.ragTopK", label: "RAG Top-K", description: "Number of KB chunks retrieved per query", type: "number" },
     ],
   },
+  {
+    title: "AI Models & Costs", icon: CurrencyDollar, color: "text-success",
+    fields: [
+      { key: "ai.defaultProvider", label: "Default AI Provider", description: "openai or google", type: "text" },
+      { key: "ai.openaiChatModel", label: "OpenAI Chat Model", description: "e.g. gpt-4o-mini, gpt-4o", type: "text" },
+      { key: "ai.googleChatModel", label: "Google Chat Model", description: "e.g. gemini-1.5-flash", type: "text" },
+      { key: "ai.openaiEmbeddingModel", label: "OpenAI Embedding Model", description: "e.g. text-embedding-3-small", type: "text" },
+      { key: "ai.googleEmbeddingModel", label: "Google Embedding Model", description: "e.g. text-embedding-004", type: "text" },
+      { key: "ai.costPerInputToken", label: "Cost Per Input Token ($)", description: "USD per token, e.g. 0.000000150", type: "number" },
+      { key: "ai.costPerOutputToken", label: "Cost Per Output Token ($)", description: "USD per token, e.g. 0.000000600", type: "number" },
+    ],
+  },
 ];
 
-// ─── System Config Panel ──────────────────────────────────────────────────────
+// --- System Config Panel ---
 
 export function SystemConfigPanel() {
-  const { entries, isLoading, isSaving, fetchAll, upsertMany } = useSystemConfigStore();
+  const { data: entries = {}, isLoading, refetch: refetchConfig } = useSystemConfig();
+  const upsertManyMutation = useUpsertManySystemConfig();
+  const isSaving = upsertManyMutation.isPending;
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState<string | null>(null);
   const [errMsg, setErrMsg] = useState<string | null>(null);
-
-  useEffect(() => { void fetchAll(); }, [fetchAll]);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Sync drafts when entries load
   useEffect(() => {
@@ -118,11 +133,30 @@ export function SystemConfigPanel() {
     const updates: Record<string, string> = {};
     for (const f of fields) updates[f.key] = getValue(f.key);
     try {
-      await upsertMany(updates);
+      await upsertManyMutation.mutateAsync(updates);
       setSaved(sectionTitle);
       setTimeout(() => setSaved(null), 2500);
     } catch {
       setErrMsg("Failed to save. Check the values and try again.");
+    }
+  };
+
+  const handleExportAuditLogs = async () => {
+    setIsExporting(true);
+    try {
+      const response = await apiClient.get("/audit-logs/export", { responseType: "blob" });
+      const url = URL.createObjectURL(new Blob([response.data as BlobPart]));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "audit-logs.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      setErrMsg("Failed to export audit logs.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -136,7 +170,7 @@ export function SystemConfigPanel() {
           </h2>
           <p className="text-xs text-text-secondary mt-0.5">All 27 platform config keys</p>
         </div>
-        <button onClick={() => void fetchAll()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
+        <button onClick={() => void refetchConfig()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
           <ArrowClockwise size={14} className={isLoading ? "animate-spin" : ""} />
         </button>
       </div>
@@ -164,7 +198,7 @@ export function SystemConfigPanel() {
                   className={`h-7 px-3 text-xs gap-1 ${isSectionSaved ? "text-success" : "text-crimson hover:bg-crimson/10"}`}
                 >
                   {isSectionSaved ? <CheckCircle size={13} /> : <Gear size={13} />}
-                  {isSectionSaved ? "Saved!" : isSaving ? "Saving…" : "Save"}
+                  {isSectionSaved ? "Saved!" : isSaving ? "Saving..." : "Save"}
                 </Button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -202,6 +236,32 @@ export function SystemConfigPanel() {
             </div>
           );
         })}
+
+        {/* Admin Tools */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pt-3">
+            <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 text-text-muted">
+              <DownloadSimple size={13} weight="duotone" />
+              Admin Tools
+            </h3>
+          </div>
+          <div className="rounded-lg border border-border-subtle bg-card p-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-medium text-text-primary">Export Audit Logs</p>
+              <p className="text-[10px] text-text-muted mt-0.5">Download all audit log entries as a CSV file</p>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => void handleExportAuditLogs()}
+              disabled={isExporting}
+              className="h-7 px-3 text-xs gap-1 text-crimson hover:bg-crimson/10 shrink-0"
+            >
+              <DownloadSimple size={13} />
+              {isExporting ? "Exporting..." : "Export CSV"}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
