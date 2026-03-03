@@ -3,6 +3,14 @@
 import { Icon } from "@iconify/react";
 import { ArrowClockwise, CheckCircle, XCircle, Clock } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useGoogleAnalyticsStats } from "@/queries/useGoogleAnalyticsQuery";
 import type { GoogleOpLog } from "@/lib/api/googleAnalytics";
 
@@ -32,19 +40,19 @@ function KpiTile({
 
 // ── Operation row ─────────────────────────────────────────────────────────────
 
-function OpRow({ op, isLast }: { op: GoogleOpLog; isLast: boolean }) {
+function OpRow({ op }: { op: GoogleOpLog }) {
   const serviceLabel = op.service === "sheets" ? "Sheets" : "Drive";
   const opLabel = op.operation === "fullSync" ? "Full Sync" : op.operation === "appendRow" ? "Append Row" : "Upload";
   const time = new Date(op.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const date = new Date(op.timestamp).toLocaleDateString([], { month: "short", day: "numeric" });
 
   return (
-    <tr className={isLast ? "" : "border-b border-border-subtle"}>
-      <td className="px-4 py-2.5 whitespace-nowrap">
+    <TableRow>
+      <TableCell className="whitespace-nowrap">
         <p className="text-xs text-text-primary">{time}</p>
         <p className="text-[10px] text-text-muted">{date}</p>
-      </td>
-      <td className="px-3 py-2.5">
+      </TableCell>
+      <TableCell>
         <div className="flex items-center gap-1.5">
           {op.service === "sheets" ? (
             <Icon icon="logos:google-sheets" className="w-3.5 h-3.5 shrink-0" />
@@ -53,9 +61,9 @@ function OpRow({ op, isLast }: { op: GoogleOpLog; isLast: boolean }) {
           )}
           <span className="text-xs text-text-secondary">{serviceLabel}</span>
         </div>
-      </td>
-      <td className="px-3 py-2.5 text-xs text-text-secondary">{opLabel}</td>
-      <td className="px-3 py-2.5">
+      </TableCell>
+      <TableCell className="text-xs text-text-secondary">{opLabel}</TableCell>
+      <TableCell>
         {op.status === "ok" ? (
           <span className="inline-flex items-center gap-1 text-[11px] text-success">
             <CheckCircle size={12} weight="fill" /> OK
@@ -65,19 +73,17 @@ function OpRow({ op, isLast }: { op: GoogleOpLog; isLast: boolean }) {
             <XCircle size={12} weight="fill" /> Failed
           </span>
         )}
-      </td>
-      <td className="px-3 py-2.5 text-xs text-text-muted">
+      </TableCell>
+      <TableCell className="text-xs text-text-muted">
         {op.records != null ? op.records.toLocaleString() : "—"}
-      </td>
-      <td className="px-3 py-2.5 text-xs text-text-muted whitespace-nowrap">
+      </TableCell>
+      <TableCell className="text-xs text-text-muted whitespace-nowrap">
         {op.durationMs != null ? `${op.durationMs}ms` : "—"}
-      </td>
-      {op.errorMessage && (
-        <td className="px-3 py-2.5 text-[10px] text-danger/70 max-w-[200px] truncate" title={op.errorMessage}>
-          {op.errorMessage}
-        </td>
-      )}
-    </tr>
+      </TableCell>
+      <TableCell className="text-[10px] text-danger/70 max-w-[200px] truncate" title={op.errorMessage ?? undefined}>
+        {op.errorMessage ?? "—"}
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -173,23 +179,24 @@ export default function AdminGooglePage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-border-subtle">
-                  <th className="text-left px-4 py-2.5 font-medium text-text-muted whitespace-nowrap">Time</th>
-                  <th className="text-left px-3 py-2.5 font-medium text-text-muted">Service</th>
-                  <th className="text-left px-3 py-2.5 font-medium text-text-muted">Operation</th>
-                  <th className="text-left px-3 py-2.5 font-medium text-text-muted">Status</th>
-                  <th className="text-left px-3 py-2.5 font-medium text-text-muted">Records</th>
-                  <th className="text-left px-3 py-2.5 font-medium text-text-muted">Duration</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ops.map((op, i) => (
-                  <OpRow key={i} op={op} isLast={i === ops.length - 1} />
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Operation</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Records</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Error</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {ops.map((op) => (
+                  <OpRow key={op.id} op={op} />
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         )}
       </div>

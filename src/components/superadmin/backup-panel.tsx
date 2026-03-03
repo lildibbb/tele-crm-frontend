@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useBackupHistory, useTriggerBackup } from "@/queries/useBackupQuery";
 import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,31 +42,6 @@ const STATUS_CONFIG: Record<string, { label: string; cls: string; dot: string }>
   partial: { label: "Partial", cls: "text-warning", dot: "bg-warning" },
   failed:  { label: "Failed",  cls: "text-danger",  dot: "bg-danger"  },
 };
-
-// ── InlineToggle ──────────────────────────────────────────────────────────────
-
-function InlineToggle({
-  value,
-  onChange,
-  disabled,
-}: {
-  value: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => onChange(!value)}
-      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:ring-2 ${value ? "bg-crimson" : "bg-border-subtle"} disabled:opacity-50`}
-    >
-      <span
-        className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${value ? "translate-x-4.5" : "translate-x-0.5"}`}
-      />
-    </button>
-  );
-}
 
 // ── BackupPanel ───────────────────────────────────────────────────────────────
 
@@ -133,9 +109,9 @@ export function BackupPanel() {
             <p className="text-xs text-text-secondary mt-0.5">pg_dump → encrypted → S3/R2 storage</p>
           </div>
         </div>
-        <button onClick={() => void refetchHistory()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-text-muted hover:text-text-primary" onClick={() => void refetchHistory()}>
           <ArrowClockwise size={14} className={isLoadingHistory ? "animate-spin" : ""} />
-        </button>
+        </Button>
       </div>
 
       <div className="px-5 py-5 space-y-5">
@@ -145,9 +121,9 @@ export function BackupPanel() {
           <div className="space-y-2">
             <Label className="text-[11px] font-medium text-text-secondary">Enable Backup</Label>
             <div className="flex items-center gap-3">
-              <InlineToggle
-                value={backupEnabled}
-                onChange={(v) => void saveConfig({ "backup.enabled": String(v) })}
+              <Switch
+                checked={backupEnabled}
+                onCheckedChange={(v) => void saveConfig({ "backup.enabled": String(v) })}
                 disabled={isSavingConfig}
               />
               <span className="text-xs text-text-muted">{backupEnabled ? "On" : "Off"}</span>

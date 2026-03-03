@@ -66,7 +66,12 @@ export interface KbHealthData {
   embeddingCoverage: { total: number; embedded: number };
 }
 
-export type HealthStatus = 'ok' | 'degraded' | 'down';
+export const HealthStatus = {
+  OK:       'ok',
+  DEGRADED: 'degraded',
+  DOWN:     'down',
+} as const;
+export type HealthStatus = (typeof HealthStatus)[keyof typeof HealthStatus];
 
 export interface SystemHealthCheck {
   name: string;
@@ -142,7 +147,8 @@ export const superadminApi = {
   },
   listSessions: async (): Promise<AdminSession[]> => {
     const res = await apiClient.get<ApiResponse<AdminSession[]>>('/superadmin/sessions');
-    return res.data.data;
+    const data = res.data.data;
+    return Array.isArray(data) ? data : [];
   },
   revokeSession: async (id: string): Promise<void> => {
     await apiClient.delete(`/superadmin/sessions/${id}`);

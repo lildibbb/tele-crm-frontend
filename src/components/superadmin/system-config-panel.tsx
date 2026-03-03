@@ -19,6 +19,7 @@ import {
   DownloadSimple,
   ChatText,
 } from "@phosphor-icons/react";
+import { Switch } from "@/components/ui/switch";
 import { apiClient } from "@/lib/api/apiClient";
 
 // --- Types & Constants ---
@@ -179,9 +180,9 @@ export function SystemConfigPanel() {
           </h2>
           <p className="text-xs text-text-secondary mt-0.5">All 27 platform config keys</p>
         </div>
-        <button onClick={() => void refetchConfig()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-text-muted hover:text-text-primary" onClick={() => void refetchConfig()}>
           <ArrowClockwise size={14} className={isLoading ? "animate-spin" : ""} />
-        </button>
+        </Button>
       </div>
 
       {errMsg && (
@@ -218,13 +219,10 @@ export function SystemConfigPanel() {
                       <p className="text-[10px] text-text-muted leading-snug">{field.description}</p>
                     )}
                     {field.type === "toggle" ? (
-                      <button
-                        type="button"
-                        onClick={() => setValue(field.key, getValue(field.key) === "true" ? "false" : "true")}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus-visible:ring-2 ${getValue(field.key) === "true" ? "bg-crimson" : "bg-border-subtle"}`}
-                      >
-                        <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${getValue(field.key) === "true" ? "translate-x-4.5" : "translate-x-0.5"}`} />
-                      </button>
+                      <Switch
+                        checked={getValue(field.key) === "true"}
+                        onCheckedChange={(checked) => setValue(field.key, checked ? "true" : "false")}
+                      />
                     ) : field.type === "textarea" ? (
                       <Textarea
                         value={getValue(field.key)}
