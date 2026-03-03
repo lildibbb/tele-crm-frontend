@@ -42,7 +42,7 @@ import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { useT, K } from "@/i18n";
 import { formatDate } from "@/lib/format";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 
 // ── Role label ─────────────────────────────────────────────────────────────────
 const ROLE_LABEL: Record<UserRole, string> = {
@@ -138,13 +138,13 @@ function PasswordChangeForm({
     setSaving(true);
     try {
       await usersApi.changePassword(userId, { newPassword });
-      showToast.success(t(K.profile.passwordChanged));
+      toast.success(t(K.profile.passwordChanged));
       setNewPassword("");
       setConfirmPassword("");
       setErrors({});
       onSuccess();
     } catch {
-      showToast.error("Failed to change password. Please try again.");
+      toast.error("Failed to change password. Please try again.");
     } finally {
       setSaving(false);
     }

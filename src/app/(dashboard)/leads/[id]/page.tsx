@@ -1,7 +1,5 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
 import Link from "next/link";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileLeadDetail } from "@/components/mobile";
@@ -66,9 +64,7 @@ import {
   FileTypeChip,
 } from "@/components/ui/file-type-badge";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
-import { showToast } from "@/lib/toast";
-
-gsap.registerPlugin(useGSAP);
+import { toast } from "sonner";
 
 // ── Interaction → display mappings ───────────────────────────────────────────
 
@@ -138,32 +134,6 @@ function isImage(mimeType: string | null | undefined): boolean {
 
 function isVideo(mimeType: string | null | undefined): boolean {
   return !!mimeType?.startsWith("video/");
-}
-
-// ── Toast component ──────────────────────────────────────────────────────────
-
-function ToastMsg({
-  msg,
-  type,
-}: {
-  msg: string;
-  type: "success" | "danger" | "info";
-}) {
-  const styles = {
-    success: "border-success/30 text-success",
-    danger: "border-danger/30 text-danger",
-    info: "border-info/30 text-info",
-  };
-  const Icon =
-    type === "success" ? CheckCircle : type === "danger" ? XCircle : Warning;
-  return (
-    <div
-      className={`fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-4 py-3 rounded-xl border bg-elevated shadow-xl animate-in-up font-sans text-sm font-medium ${styles[type]}`}
-    >
-      <Icon className="h-4 w-4 flex-shrink-0" />
-      {msg}
-    </div>
-  );
 }
 
 // ── Media Lightbox ───────────────────────────────────────────────────────────
@@ -323,9 +293,7 @@ export default function LeadDetailPage({
         const items = parseApiData<Attachment[]>(res.data) ?? [];
         setAttachments(items);
       })
-      .catch(() =>
-        showToast.error("Couldn't load attachments. Please try again."),
-      );
+      .catch(() => toast.error("Couldn't load attachments. Please try again."));
   }, [id]);
   const isMobile = useIsMobile();
 
@@ -353,86 +321,10 @@ export default function LeadDetailPage({
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
-  const [toast, setToast] = useState<{
-    msg: string;
-    type: "success" | "danger" | "info";
-  } | null>(null);
   const [mediaPreview, setMediaPreview] = useState<MediaItem | null>(null);
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const verifyRef = useRef<HTMLDivElement>(null);
-  const rejectRef = useRef<HTMLDivElement>(null);
-  const editRef = useRef<HTMLDivElement>(null);
-  const revertRef = useRef<HTMLDivElement>(null);
-  const reopenRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      if (isMobile) return;
-      const items = timelineRef.current?.querySelectorAll(".timeline-item");
-      if (items && items.length > 0) {
-        gsap.from(items, {
-          opacity: 0,
-          x: -8,
-          duration: 0.25,
-          stagger: 0.06,
-          ease: "power2.out",
-        });
-      }
-    },
-    { scope: timelineRef, dependencies: [timeline.length, isMobile] },
-  );
-
-  useEffect(() => {
-    if (isMobile) return;
-    if (showVerifyModal && verifyRef.current)
-      gsap.fromTo(
-        verifyRef.current,
-        { opacity: 0, scale: 0.95, y: 8 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: "power2.out" },
-      );
-  }, [showVerifyModal, isMobile]);
-
-  useEffect(() => {
-    if (isMobile) return;
-    if (showRejectModal && rejectRef.current)
-      gsap.fromTo(
-        rejectRef.current,
-        { opacity: 0, scale: 0.95, y: 8 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: "power2.out" },
-      );
-  }, [showRejectModal, isMobile]);
-
-  useEffect(() => {
-    if (isMobile) return;
-    if (showEditModal && editRef.current)
-      gsap.fromTo(
-        editRef.current,
-        { opacity: 0, scale: 0.95, y: 8 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: "power2.out" },
-      );
-  }, [showEditModal, isMobile]);
-
-  useEffect(() => {
-    if (isMobile) return;
-    if (showRevertModal && revertRef.current)
-      gsap.fromTo(
-        revertRef.current,
-        { opacity: 0, scale: 0.95, y: 8 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: "power2.out" },
-      );
-  }, [showRevertModal, isMobile]);
-
-  useEffect(() => {
-    if (isMobile) return;
-    if (showReopenModal && reopenRef.current)
-      gsap.fromTo(
-        reopenRef.current,
-        { opacity: 0, scale: 0.95, y: 8 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.2, ease: "power2.out" },
-      );
-  }, [showReopenModal, isMobile]);
 
   // ── Mobile view ──
   if (isMobile) {
@@ -451,37 +343,30 @@ export default function LeadDetailPage({
     );
   }
 
-  const showToastMsg = (
-    msg: string,
-    type: "success" | "danger" | "info" = "success",
-  ) => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3200);
-  };
-
   const handleVerify = () => {
     if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_CONFIRMED });
     setShowVerifyModal(false);
-    showToastMsg(t(K.lead.toast.verified), "success");
+    toast.success(t(K.lead.toast.verified));
   };
 
   const handleReject = () => {
-    if (lead) updateStatus(lead.id, { status: LeadStatus.REJECTED, rejectReason });
+    if (lead)
+      updateStatus(lead.id, { status: LeadStatus.REJECTED, rejectReason });
     setShowRejectModal(false);
     setRejectReason("");
-    showToastMsg(t(K.lead.toast.rejected), "danger");
+    toast.error(t(K.lead.toast.rejected));
   };
 
   const handleRevert = () => {
     if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_REPORTED });
     setShowRevertModal(false);
-    showToastMsg(t(K.lead.toast.reverted), "info");
+    toast.info(t(K.lead.toast.reverted));
   };
 
   const handleReopen = () => {
     if (lead) updateStatus(lead.id, { status: LeadStatus.DEPOSIT_REPORTED });
     setShowReopenModal(false);
-    showToastMsg(t(K.lead.toast.reopened), "info");
+    toast.info(t(K.lead.toast.reopened));
   };
 
   const handleSend = async () => {
@@ -504,7 +389,7 @@ export default function LeadDetailPage({
     try {
       await leadsApi.reply(id, text);
     } catch {
-      showToastMsg(t(K.lead.toast.sendFailed), "danger");
+      toast.error(t(K.lead.toast.sendFailed));
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
     }
   };
@@ -594,9 +479,9 @@ export default function LeadDetailPage({
                         {lead.displayName}
                       </h2>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className={`badge ${statusBadge.cls}`}>
+                        <Badge className={`badge ${statusBadge.cls}`}>
                           {statusBadge.label}
-                        </span>
+                        </Badge>
                         {handover ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[11px] font-semibold shadow-sm">
                             <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -606,9 +491,9 @@ export default function LeadDetailPage({
                             {t(K.lead.handoverBadge)}
                           </span>
                         ) : (
-                          <span className="badge badge-live flex items-center gap-1">
+                          <Badge className="badge badge-live flex items-center gap-1">
                             <Robot className="h-3 w-3" /> {t(K.lead.botActive)}
-                          </span>
+                          </Badge>
                         )}
                       </div>
                     </div>
@@ -652,14 +537,22 @@ export default function LeadDetailPage({
                     },
                     {
                       label: t(K.lead.field.firstContacted),
-                      value: lead.contactedAt ? formatDate(lead.contactedAt) ?? "—" : "—",
-                      subValue: lead.contactedAt ? timeAgo(lead.contactedAt) : undefined,
+                      value: lead.contactedAt
+                        ? (formatDate(lead.contactedAt) ?? "—")
+                        : "—",
+                      subValue: lead.contactedAt
+                        ? timeAgo(lead.contactedAt)
+                        : undefined,
                       Icon: CalendarCheck,
                     },
                     {
                       label: t(K.lead.field.formSubmitted),
-                      value: lead.registeredAt ? formatDate(lead.registeredAt) ?? "—" : "—",
-                      subValue: lead.registeredAt ? timeAgo(lead.registeredAt) : undefined,
+                      value: lead.registeredAt
+                        ? (formatDate(lead.registeredAt) ?? "—")
+                        : "—",
+                      subValue: lead.registeredAt
+                        ? timeAgo(lead.registeredAt)
+                        : undefined,
                       Icon: CalendarCheck,
                     },
                   ].map(({ label, value, subValue, Icon: FieldIcon }) => (
@@ -676,7 +569,9 @@ export default function LeadDetailPage({
                           {value}
                         </p>
                         {subValue && (
-                          <p className="text-[10px] text-text-muted mt-0.5">{subValue}</p>
+                          <p className="text-[10px] text-text-muted mt-0.5">
+                            {subValue}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -745,7 +640,10 @@ export default function LeadDetailPage({
                             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-success text-white text-xs font-semibold shadow-sm hover:bg-success/90 active:scale-[0.97] transition-all"
                             onClick={() => setShowVerifyModal(true)}
                           >
-                            <CheckCircle className="h-3.5 w-3.5" weight="fill" />
+                            <CheckCircle
+                              className="h-3.5 w-3.5"
+                              weight="fill"
+                            />
                             {t(K.lead.verify)}
                           </button>
                         </TooltipTrigger>
@@ -778,7 +676,9 @@ export default function LeadDetailPage({
                           {t(K.lead.revert)}
                         </button>
                       </TooltipTrigger>
-                      <TooltipContent>Revert accidental verification</TooltipContent>
+                      <TooltipContent>
+                        Revert accidental verification
+                      </TooltipContent>
                     </Tooltip>
                   )}
 
@@ -817,7 +717,9 @@ export default function LeadDetailPage({
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {isBlocked ? "Read-only during maintenance" : "Edit lead details"}
+                      {isBlocked
+                        ? "Read-only during maintenance"
+                        : "Edit lead details"}
                     </TooltipContent>
                   </Tooltip>
                 </div>
@@ -833,9 +735,9 @@ export default function LeadDetailPage({
                     {t("lead.proof")}
                   </h3>
                 </div>
-                <span className="badge badge-pending">
+                <Badge className="badge badge-pending">
                   {attachments.length}
-                </span>
+                </Badge>
               </div>
               {attachments.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-10 text-text-muted">
@@ -1247,7 +1149,8 @@ export default function LeadDetailPage({
                   {t("lead.reject.reason")}
                 </label>
                 <p className="text-[11px] font-sans text-warning mb-1.5 flex items-center gap-1">
-                  <span>⚠</span> This message will be sent directly to the customer via Telegram.
+                  <span>⚠</span> This message will be sent directly to the
+                  customer via Telegram.
                 </p>
                 <Textarea
                   value={rejectReason}
@@ -1342,9 +1245,9 @@ export default function LeadDetailPage({
                       });
                       await useLeadsStore.getState().fetchLead(id);
                       setShowEditModal(false);
-                      showToastMsg(t("lead.toast.edited"), "success");
+                      toast.success(t(K.lead.toast.edited));
                     } catch {
-                      showToastMsg(t("common.error.updateLead"), "danger");
+                      toast.error(t("common.error.updateLead"));
                     } finally {
                       setIsSavingEdit(false);
                     }
@@ -1371,7 +1274,9 @@ export default function LeadDetailPage({
                   </DialogTitle>
                 </div>
                 <DialogDescription className="font-sans text-sm text-text-secondary">
-                  {t(K.lead.revertDialog.desc, { name: lead.displayName ?? "" })}
+                  {t(K.lead.revertDialog.desc, {
+                    name: lead.displayName ?? "",
+                  })}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex items-center gap-1.5 p-3 rounded-lg bg-warning/10 border border-warning/20 my-4">
@@ -1381,14 +1286,19 @@ export default function LeadDetailPage({
                 </p>
               </div>
               <DialogFooter className="flex gap-3 sm:flex-row">
-                <Button variant="outline" className="flex-1" onClick={() => setShowRevertModal(false)}>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowRevertModal(false)}
+                >
                   {t("common.cancel")}
                 </Button>
                 <Button
                   className="flex-1 gap-2 bg-warning hover:bg-warning/90 text-white font-semibold"
                   onClick={handleRevert}
                 >
-                  <ArrowCounterClockwise className="h-4 w-4" /> {t(K.lead.revertDialog.btn)}
+                  <ArrowCounterClockwise className="h-4 w-4" />{" "}
+                  {t(K.lead.revertDialog.btn)}
                 </Button>
               </DialogFooter>
             </div>
@@ -1409,18 +1319,25 @@ export default function LeadDetailPage({
                   </DialogTitle>
                 </div>
                 <DialogDescription className="font-sans text-sm text-text-secondary">
-                  {t(K.lead.reopenDialog.desc, { name: lead.displayName ?? "" })}
+                  {t(K.lead.reopenDialog.desc, {
+                    name: lead.displayName ?? "",
+                  })}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex gap-3 sm:flex-row mt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setShowReopenModal(false)}>
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowReopenModal(false)}
+                >
                   {t("common.cancel")}
                 </Button>
                 <Button
                   className="flex-1 gap-2 bg-info hover:bg-info/90 text-white font-semibold"
                   onClick={handleReopen}
                 >
-                  <ArrowClockwise className="h-4 w-4" /> {t(K.lead.reopenDialog.btn)}
+                  <ArrowClockwise className="h-4 w-4" />{" "}
+                  {t(K.lead.reopenDialog.btn)}
                 </Button>
               </DialogFooter>
             </div>
@@ -1434,8 +1351,6 @@ export default function LeadDetailPage({
             onClose={() => setMediaPreview(null)}
           />
         )}
-
-        {toast && <ToastMsg msg={toast.msg} type={toast.type} />}
       </div>
     </TooltipProvider>
   );

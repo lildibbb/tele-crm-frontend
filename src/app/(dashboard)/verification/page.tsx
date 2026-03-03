@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useRef, useState, useEffect, useMemo, useCallback } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileVerification } from "@/components/mobile";
 import {
@@ -19,6 +19,8 @@ import {
   Hash,
   CalendarBlank,
   ArrowSquareOut,
+  CaretLeft,
+  CaretRight,
 } from "@phosphor-icons/react";
 
 import {
@@ -92,9 +94,9 @@ function ApproveDialog() {
     setIsSubmitting(true);
     try {
       await verify(activeId);
-      showToast.success("Deposit verified — lead status updated to Confirmed.");
+      toast.success("Deposit verified — lead status updated to Confirmed.");
     } catch {
-      showToast.error("Failed to verify deposit. Please try again.");
+      toast.error("Failed to verify deposit. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +140,9 @@ function ApproveDialog() {
               </div>
               <p className="font-bold text-gold data-mono text-[13px]">
                 ${Number(req.depositBalance ?? 0).toLocaleString()}{" "}
-                <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
+                <span className="text-[10px] text-text-muted font-normal tracking-wide">
+                  USD
+                </span>
               </p>
               <Warning
                 weight="duotone"
@@ -197,7 +201,7 @@ function RejectDialog() {
     if (!activeId) return;
     updateStatus(activeId, { status: LeadStatus.REJECTED, rejectReason });
     closeModal();
-    showToast.error("Submission rejected. Lead has been notified.");
+    toast.error("Submission rejected. Lead has been notified.");
   };
 
   return (
@@ -234,7 +238,9 @@ function RejectDialog() {
               </div>
               <p className="font-bold data-mono text-[13px] text-text-primary">
                 ${Number(req.depositBalance ?? 0).toLocaleString()}{" "}
-                <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
+                <span className="text-[10px] text-text-muted font-normal tracking-wide">
+                  USD
+                </span>
               </p>
             </div>
             <div>
@@ -242,7 +248,8 @@ function RejectDialog() {
                 {t("verification.rejectionReason")}
               </label>
               <p className="text-[11px] font-sans text-warning mb-1.5 flex items-center gap-1">
-                <span>⚠</span> This message will be sent directly to the customer via Telegram.
+                <span>⚠</span> This message will be sent directly to the
+                customer via Telegram.
               </p>
               <Textarea
                 value={rejectReason}
@@ -289,7 +296,7 @@ function AskMoreDialog() {
 
   const handleSend = () => {
     closeModal();
-    showToast.success(
+    toast.success(
       `Message sent to ${req?.displayName ?? req?.username ?? "lead"}.`,
     );
   };
@@ -368,6 +375,8 @@ function AttachmentPreviewDialog({
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loadingAtts, setLoadingAtts] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [slideDir, setSlideDir] = useState<"left" | "right">("right");
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (!open || !req?.id) return;
@@ -380,33 +389,61 @@ function AttachmentPreviewDialog({
       .finally(() => setLoadingAtts(false));
   }, [open, req?.id]);
 
+  const goNext = useCallback(() => {
+    if (attachments.length <= 1 || isAnimating) return;
+    setSlideDir("right");
+    setIsAnimating(true);
+    setActiveIdx((i) => (i + 1) % attachments.length);
+    setTimeout(() => setIsAnimating(false), 300);
+  }, [attachments.length, isAnimating]);
+
+  const goPrev = useCallback(() => {
+    if (attachments.length <= 1 || isAnimating) return;
+    setSlideDir("left");
+    setIsAnimating(true);
+    setActiveIdx((i) => (i - 1 + attachments.length) % attachments.length);
+    setTimeout(() => setIsAnimating(false), 300);
+  }, [attachments.length, isAnimating]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") goNext();
+      else if (e.key === "ArrowLeft") goPrev();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, goNext, goPrev]);
+
   const active = attachments[activeIdx];
   const isImg = active?.mimeType?.startsWith("image/");
+  const hasMultiple = attachments.length > 1;
 
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <DialogPortal>
-        <DialogOverlay className="bg-black/55 backdrop-blur-[6px]" />
+        <DialogOverlay className="bg-black/60 backdrop-blur-[8px]" />
         <DialogContent
           showCloseButton={false}
-          className="sm:max-w-lg bg-transparent border-0 shadow-none p-0 gap-0"
+          className="sm:max-w-md bg-transparent border-0 shadow-none p-0 gap-0"
         >
           <DialogTitle className="sr-only">Attachment Preview</DialogTitle>
           <DialogDescription className="sr-only">
             Full preview of the uploaded proof attachment
           </DialogDescription>
-          <div className="relative flex flex-col items-center gap-4 px-2">
+          <div className="relative flex flex-col items-center gap-3 px-1">
+            {/* Close button */}
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="absolute -top-2 -right-2 z-10 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm"
+              className="absolute -top-1 -right-1 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 backdrop-blur-sm transition-all"
             >
-              <X size={15} weight="bold" />
+              <X size={14} weight="bold" />
             </Button>
 
             {/* Main preview area */}
-            <div className="w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
+            <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center">
               {loadingAtts ? (
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
@@ -415,16 +452,28 @@ function AttachmentPreviewDialog({
               ) : !active ? (
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
-                    <PhosphorImage weight="duotone" size={36} className="text-white/50" />
+                    <PhosphorImage
+                      weight="duotone"
+                      size={36}
+                      className="text-white/50"
+                    />
                   </div>
-                  <p className="font-sans text-sm text-white/50">No attachments yet</p>
+                  <p className="font-sans text-sm text-white/50">
+                    No attachments yet
+                  </p>
                 </div>
               ) : isImg ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
+                  key={activeIdx}
                   src={active.fileUrl}
                   alt="Proof attachment"
                   className="w-full h-full object-contain"
+                  style={{
+                    animation: hasMultiple
+                      ? `${slideDir === "right" ? "slideInRight" : "slideInLeft2"} 0.28s cubic-bezier(0.22,1,0.36,1) forwards`
+                      : undefined,
+                  }}
                 />
               ) : (
                 <div className="flex flex-col items-center gap-4">
@@ -439,25 +488,88 @@ function AttachmentPreviewDialog({
                   </a>
                 </div>
               )}
+
+              {/* Counter badge */}
+              {hasMultiple && (
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/15 text-white text-[11px] font-mono font-medium">
+                  {activeIdx + 1} / {attachments.length}
+                </div>
+              )}
+
+              {/* Prev / Next nav */}
+              {hasMultiple && !loadingAtts && (
+                <>
+                  <button
+                    type="button"
+                    onClick={goPrev}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95"
+                    aria-label="Previous attachment"
+                  >
+                    <CaretLeft size={14} weight="bold" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={goNext}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95"
+                    aria-label="Next attachment"
+                  >
+                    <CaretRight size={14} weight="bold" />
+                  </button>
+                </>
+              )}
             </div>
 
-            {/* Thumbnail strip when multiple attachments */}
-            {attachments.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {/* Dot indicators */}
+            {hasMultiple && (
+              <div className="flex items-center gap-1.5">
+                {attachments.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setSlideDir(i > activeIdx ? "right" : "left");
+                      setActiveIdx(i);
+                    }}
+                    className={`rounded-full transition-all ${
+                      i === activeIdx
+                        ? "w-4 h-1.5 bg-white"
+                        : "w-1.5 h-1.5 bg-white/30 hover:bg-white/50"
+                    }`}
+                    aria-label={`Go to attachment ${i + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Thumbnail strip */}
+            {hasMultiple && (
+              <div
+                className="flex gap-1.5 overflow-x-auto max-w-full pb-0.5"
+                style={{ scrollbarWidth: "none" }}
+              >
                 {attachments.map((att, i) => (
                   <button
                     key={att.id}
-                    onClick={() => setActiveIdx(i)}
-                    className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
-                      i === activeIdx ? "border-white/70" : "border-white/15 opacity-60"
+                    onClick={() => {
+                      setSlideDir(i > activeIdx ? "right" : "left");
+                      setActiveIdx(i);
+                    }}
+                    className={`w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all hover:opacity-100 ${
+                      i === activeIdx
+                        ? "border-white/80 scale-105 shadow-lg"
+                        : "border-white/15 opacity-50 hover:border-white/40"
                     }`}
                   >
                     {att.mimeType?.startsWith("image/") ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={att.fileUrl} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={att.fileUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                        <FileTypeBadge mimeType={att.mimeType} size={24} />
+                        <FileTypeBadge mimeType={att.mimeType} size={20} />
                       </div>
                     )}
                   </button>
@@ -465,8 +577,9 @@ function AttachmentPreviewDialog({
               </div>
             )}
 
+            {/* Lead info bar */}
             {req && (
-              <div className="w-full flex items-center justify-between px-1">
+              <div className="w-full flex items-center justify-between px-1 pb-1">
                 <div className="flex items-center gap-2.5">
                   <Avatar
                     name={req.displayName ?? req.username ?? "—"}
@@ -483,7 +596,9 @@ function AttachmentPreviewDialog({
                 </div>
                 <p className="font-bold text-gold data-mono text-[13px]">
                   ${Number(req.depositBalance ?? 0).toLocaleString()}{" "}
-                  <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
+                  <span className="text-[10px] text-white/40 font-normal tracking-wide">
+                    USD
+                  </span>
                 </p>
               </div>
             )}
@@ -503,11 +618,13 @@ function ReceiptDialog() {
   const [attachmentOpen, setAttachmentOpen] = useState(false);
 
   const isVerified = req?.status === LeadStatus.DEPOSIT_CONFIRMED;
-  const isPending  = req?.status === LeadStatus.DEPOSIT_REPORTED;
+  const isPending = req?.status === LeadStatus.DEPOSIT_REPORTED;
 
   const submittedDisplay = req?.updatedAt
     ? new Date(req.updatedAt).toLocaleDateString("en-US", {
-        month: "short", day: "numeric", year: "numeric",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
       })
     : "—";
 
@@ -539,7 +656,10 @@ function ReceiptDialog() {
             <>
               {/* ── Lead identity row ── */}
               <div className="mx-5 mb-4 flex items-center gap-3 p-3 rounded-2xl bg-elevated border border-border-subtle">
-                <Avatar name={req.displayName ?? req.username ?? "—"} size={36} />
+                <Avatar
+                  name={req.displayName ?? req.username ?? "—"}
+                  size={36}
+                />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-[13px] text-text-primary truncate">
                     {req.displayName ?? req.username ?? "—"}
@@ -566,15 +686,27 @@ function ReceiptDialog() {
               {/* ── Meta rows ── */}
               <div className="mx-5 mb-4 rounded-2xl bg-elevated border border-border-subtle overflow-hidden divide-y divide-border-subtle">
                 <div className="flex items-center gap-3 px-4 py-3">
-                  <Hash size={13} weight="regular" className="text-text-muted flex-shrink-0" />
-                  <span className="text-[12px] text-text-secondary flex-1">{t(K.verification.hfmAccount)}</span>
+                  <Hash
+                    size={13}
+                    weight="regular"
+                    className="text-text-muted flex-shrink-0"
+                  />
+                  <span className="text-[12px] text-text-secondary flex-1">
+                    {t(K.verification.hfmAccount)}
+                  </span>
                   <span className="data-mono text-[12px] text-text-primary font-medium">
                     {req.hfmBrokerId ?? "—"}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 px-4 py-3">
-                  <CalendarBlank size={13} weight="regular" className="text-text-muted flex-shrink-0" />
-                  <span className="text-[12px] text-text-secondary flex-1">{t(K.verification.submitted)}</span>
+                  <CalendarBlank
+                    size={13}
+                    weight="regular"
+                    className="text-text-muted flex-shrink-0"
+                  />
+                  <span className="text-[12px] text-text-secondary flex-1">
+                    {t(K.verification.submitted)}
+                  </span>
                   <span className="data-mono text-[12px] text-text-primary font-medium">
                     {submittedDisplay}
                   </span>
@@ -589,7 +721,11 @@ function ReceiptDialog() {
                 >
                   <PhosphorImage weight="duotone" size={15} />
                   {t(K.verification.viewReceipt)}
-                  <ArrowSquareOut size={12} weight="regular" className="ml-0.5 opacity-60" />
+                  <ArrowSquareOut
+                    size={12}
+                    weight="regular"
+                    className="ml-0.5 opacity-60"
+                  />
                 </button>
               </div>
             </>
@@ -598,7 +734,10 @@ function ReceiptDialog() {
           {/* ── Footer ── */}
           <div className="px-5 pb-5 flex gap-2 border-t border-border-subtle pt-4">
             <DialogClose asChild>
-              <Button variant="outline" className="flex-1 rounded-xl h-10 text-[13px]">
+              <Button
+                variant="outline"
+                className="flex-1 rounded-xl h-10 text-[13px]"
+              >
                 {t(K.common.close)}
               </Button>
             </DialogClose>
@@ -615,7 +754,11 @@ function ReceiptDialog() {
               </Button>
             ) : (
               <div className="flex-1 flex items-center justify-center gap-2 rounded-xl h-10 bg-elevated border border-border-subtle text-text-muted text-[13px] font-medium">
-                <ShieldCheck size={14} weight="duotone" className="text-success" />
+                <ShieldCheck
+                  size={14}
+                  weight="duotone"
+                  className="text-success"
+                />
                 {t(K.verification.alreadyVerified)}
               </div>
             )}
@@ -681,7 +824,13 @@ export default function VerificationPage() {
 
   const columns = useMemo(
     () =>
-      getVerificationColumns({ onApprove, onReject, onAskMore, onViewReceipt, t }),
+      getVerificationColumns({
+        onApprove,
+        onReject,
+        onAskMore,
+        onViewReceipt,
+        t,
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [onApprove, onReject, onAskMore, onViewReceipt],
   );
@@ -719,24 +868,38 @@ export default function VerificationPage() {
   // Fetch all stat totals on mount so counts are accurate regardless of active tab
   useEffect(() => {
     const extractTotal = (r: { data: unknown }): number | undefined => {
-      const outer = r.data as { data?: { data?: unknown; meta?: { total?: number } } };
+      const outer = r.data as {
+        data?: { data?: unknown; meta?: { total?: number } };
+      };
       return outer?.data?.meta?.total;
     };
     leadsApi
       .list({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_REPORTED })
-      .then((r) => { const n = extractTotal(r); if (n != null) setPendingTotal(n); })
+      .then((r) => {
+        const n = extractTotal(r);
+        if (n != null) setPendingTotal(n);
+      })
       .catch(() => {});
     leadsApi
       .list({ take: 1, skip: 0, statuses: VERIFICATION_STATUSES })
-      .then((r) => { const n = extractTotal(r); if (n != null) setAllTotal(n); })
+      .then((r) => {
+        const n = extractTotal(r);
+        if (n != null) setAllTotal(n);
+      })
       .catch(() => {});
     leadsApi
       .list({ take: 1, skip: 0, status: LeadStatus.DEPOSIT_CONFIRMED })
-      .then((r) => { const n = extractTotal(r); if (n != null) setApprovedTotal(n); })
+      .then((r) => {
+        const n = extractTotal(r);
+        if (n != null) setApprovedTotal(n);
+      })
       .catch(() => {});
     leadsApi
       .list({ take: 1, skip: 0, status: LeadStatus.REJECTED })
-      .then((r) => { const n = extractTotal(r); if (n != null) setRejectedTotal(n); })
+      .then((r) => {
+        const n = extractTotal(r);
+        if (n != null) setRejectedTotal(n);
+      })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -861,48 +1024,50 @@ export default function VerificationPage() {
           </div>
         </div>
 
-        {/* ── Main Queue Panel ── */}
-        <div className="bg-elevated rounded-xl overflow-hidden">
-          <div className="px-4 sm:px-5 py-4 pb-0 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div
-              className="bg-elevated/60 border border-border-default/40 p-[3px] flex items-center gap-0.5 rounded-full overflow-x-auto scrollbar-none flex-shrink-0"
-              role="tablist"
-              aria-label="Queue filter"
-            >
-              {TAB_FILTERS.map((f) => (
-                <Button
-                  key={f}
-                  type="button"
-                  variant="ghost"
-                  role="tab"
-                  aria-selected={filter === f}
-                  onClick={() => {
-                    setFilter(f);
-                    table.setPageIndex(0);
-                  }}
-                  className={
-                    "px-5 py-1.5 h-auto rounded-full text-[13px] font-sans font-medium transition-all cursor-pointer whitespace-nowrap flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 " +
-                    (filter === f
-                      ? "bg-crimson hover:bg-crimson-hover text-white shadow-sm"
-                      : "text-text-secondary hover:text-text-primary hover:bg-border-subtle/50")
-                  }
-                >
-                  {f === "PENDING"
-                    ? `${t("verification.tabs.pending")} (${pendingTotal})`
-                    : `${t("verification.tabs.all")} (${allTotal})`}
-                </Button>
-              ))}
-            </div>
+        {/* ── Queue filter tabs ── */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div
+            className="bg-elevated p-1 flex items-center gap-0.5 rounded-xl overflow-x-auto scrollbar-none"
+            role="tablist"
+            aria-label="Queue filter"
+          >
+            {TAB_FILTERS.map((f) => (
+              <Button
+                key={f}
+                type="button"
+                variant="ghost"
+                role="tab"
+                aria-selected={filter === f}
+                onClick={() => {
+                  setFilter(f);
+                  table.setPageIndex(0);
+                }}
+                className={
+                  "px-3.5 py-1.5 h-auto rounded-lg text-xs font-sans font-medium transition-all cursor-pointer whitespace-nowrap flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 " +
+                  (filter === f
+                    ? "bg-crimson hover:bg-crimson-hover text-white shadow-sm"
+                    : "text-text-secondary hover:text-text-primary hover:bg-card")
+                }
+              >
+                {f === "PENDING"
+                  ? `${t("verification.tabs.pending")} (${pendingTotal})`
+                  : `${t("verification.tabs.all")} (${allTotal})`}
+              </Button>
+            ))}
           </div>
 
-          <div className="p-4 sm:p-5">
-            {isLoading ? (
-              <DataTableSkeleton columnCount={6} rowCount={10} shrinkZero />
-            ) : (
-              <DataTable table={table} />
-            )}
-          </div>
+          <p className="text-[11px] font-sans text-text-muted">
+            {(filter === "PENDING" ? pendingTotal : allTotal).toLocaleString()}{" "}
+            {t(K.verification.tabs.entries)}
+          </p>
         </div>
+
+        {/* ── Table ── */}
+        {isLoading ? (
+          <DataTableSkeleton columnCount={6} rowCount={10} shrinkZero />
+        ) : (
+          <DataTable table={table} />
+        )}
 
         {/* ── Portaled Dialogs ── */}
         <ApproveDialog />

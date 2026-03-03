@@ -13,7 +13,6 @@ import {
 import { Icon } from "@iconify/react";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { Lead } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,32 +23,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { K } from "@/i18n";
-
-function StatusBadge({ status, t }: { status: string; t: (k: string) => string }) {
-  if (status === LeadStatus.DEPOSIT_CONFIRMED)
-    return (
-      <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/8 border border-success/20 text-success text-[11px] font-semibold shadow-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
-        {t(K.status.confirmed)}
-      </Badge>
-    );
-  if (status === LeadStatus.REJECTED)
-    return (
-      <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-danger/8 border border-danger/20 text-danger text-[11px] font-semibold shadow-none">
-        <span className="w-1.5 h-1.5 rounded-full bg-danger flex-shrink-0" />
-        {t(K.status.rejected)}
-      </Badge>
-    );
-  return (
-    <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border-default text-text-secondary text-[11px] font-semibold shadow-none">
-      <span
-        className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0"
-        style={{ animation: "pulse-live 2.4s ease-in-out infinite" }}
-      />
-      {t(K.status.proofPending)}
-    </Badge>
-  );
-}
+import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
+import { cn } from "@/lib/utils";
 
 interface VerificationColumnsProps {
   onApprove: (id: string) => void;
@@ -75,11 +50,8 @@ export function getVerificationColumns({
       ),
       cell: ({ row }) => {
         const lead = row.original;
-        const initials = (
-          lead.displayName ??
-          lead.username ??
-          lead.telegramUserId
-        )
+        const name = lead.displayName ?? lead.username ?? lead.telegramUserId;
+        const initials = name
           .split(" ")
           .map((n: string) => n[0])
           .join("")
@@ -87,8 +59,8 @@ export function getVerificationColumns({
           .toUpperCase();
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8 rounded-full bg-elevated border border-border-default flex-shrink-0">
-              <AvatarFallback className="text-[11px] font-semibold text-text-secondary bg-transparent">
+            <Avatar className="h-9 w-9 rounded-full border border-border flex-shrink-0">
+              <AvatarFallback className="text-[11px] font-semibold text-muted-foreground bg-muted">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -96,24 +68,31 @@ export function getVerificationColumns({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="data-mono">{lead.displayName}</span>
+                    <span className="text-sm font-medium text-foreground truncate cursor-default">
+                      {lead.displayName ?? "—"}
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="data-mono text-[11px]">ID: {lead.telegramUserId}</p>
+                    <p className="font-mono text-xs">
+                      ID: {lead.telegramUserId}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               {lead.username ? (
                 <div className="flex items-center gap-1 mt-0.5">
-                  <Icon icon="logos:telegram" className="h-3 w-3 flex-shrink-0" />
-                  <span className="text-[11px] font-semibold text-[#229ED9] data-mono">
+                  <Icon
+                    icon="logos:telegram"
+                    className="h-3 w-3 flex-shrink-0"
+                  />
+                  <span className="text-xs font-semibold text-[#229ED9] font-mono">
                     @{lead.username}
                   </span>
                 </div>
               ) : (
-                <p className="text-[11px] font-sans text-text-muted data-mono truncate">
-                  {lead.email ?? "-"}
-                </p>
+                <span className="text-xs text-muted-foreground font-mono truncate mt-0.5">
+                  {lead.email ?? "—"}
+                </span>
               )}
             </div>
           </div>
@@ -127,7 +106,7 @@ export function getVerificationColumns({
       accessorKey: "hfmBrokerId",
       header: t(K.verification.hfmAccount),
       cell: ({ row }) => (
-        <span className="data-mono text-[12px] text-text-secondary">
+        <span className="font-mono text-sm text-muted-foreground">
           {row.original.hfmBrokerId ?? "—"}
         </span>
       ),
@@ -138,17 +117,26 @@ export function getVerificationColumns({
       id: "depositBalance",
       accessorKey: "depositBalance",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label={t(K.verification.amount)} />
+        <DataTableColumnHeader
+          column={column}
+          label={t(K.verification.amount)}
+        />
       ),
       cell: ({ row }) => {
         const balance = row.original.depositBalance;
         if (!balance || balance === "—")
-          return <span className="text-text-muted data-mono">—</span>;
+          return (
+            <span className="text-muted-foreground font-mono text-xs">—</span>
+          );
         return (
-          <span className="font-display font-bold text-gold data-mono text-[13px]">
-            ${Number(balance).toLocaleString()}{" "}
-            <span className="text-[10px] text-text-muted font-normal tracking-wide">USD</span>
-          </span>
+          <div className="flex items-baseline gap-1">
+            <span className="font-mono text-sm font-semibold text-foreground">
+              ${Number(balance).toLocaleString()}
+            </span>
+            <span className="font-mono text-[10px] text-muted-foreground tracking-wider">
+              USD
+            </span>
+          </div>
         );
       },
       enableSorting: true,
@@ -158,11 +146,17 @@ export function getVerificationColumns({
       id: "submittedAt",
       accessorKey: "updatedAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label={t(K.verification.submitted)} />
+        <DataTableColumnHeader
+          column={column}
+          label={t(K.verification.submitted)}
+        />
       ),
       cell: ({ row }) => {
         const val = row.original.updatedAt;
-        if (!val) return <span className="text-text-muted data-mono">—</span>;
+        if (!val)
+          return (
+            <span className="text-muted-foreground font-mono text-xs">—</span>
+          );
         const date = new Date(val);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();
@@ -175,11 +169,14 @@ export function getVerificationColumns({
         else if (diffH < 24) display = `${diffH}h ago`;
         else if (diffD < 7) display = `${diffD}d ago`;
         else
-          display = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          display = date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          });
         return (
-          <div className="flex items-center gap-1.5 text-text-muted text-[12px]">
-            <Clock size={11} weight="regular" />
-            <span className="data-mono" title={date.toLocaleString()}>
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Clock size={12} weight="regular" className="flex-shrink-0" />
+            <span className="font-mono text-xs" title={date.toLocaleString()}>
               {display}
             </span>
           </div>
@@ -192,7 +189,30 @@ export function getVerificationColumns({
       id: "status",
       accessorKey: "status",
       header: t(K.verify.col.status),
-      cell: ({ row }) => <StatusBadge status={row.original.status} t={t} />,
+      cell: ({ row }) => {
+        const status = row.original.status;
+        const badgeInfo = LEAD_STATUS_BADGE[status];
+        const label = badgeInfo
+          ? t(badgeInfo.labelKey)
+          : status.replace(/_/g, " ");
+        return (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold",
+              badgeInfo?.cls ?? "bg-muted text-muted-foreground",
+            )}
+          >
+            <span
+              className={cn(
+                "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                badgeInfo?.dotCls ?? "bg-muted-foreground",
+                status === LeadStatus.DEPOSIT_REPORTED && "animate-pulse",
+              )}
+            />
+            {label}
+          </span>
+        );
+      },
       enableSorting: false,
       enableColumnFilter: false,
     },
@@ -202,33 +222,44 @@ export function getVerificationColumns({
       cell: ({ row }) => {
         const lead = row.original;
         return (
-          <div className="flex items-center justify-end gap-1.5">
+          <div className="flex items-center justify-end gap-1">
             {lead.status === LeadStatus.DEPOSIT_REPORTED && (
               <>
                 <Button
                   size="sm"
                   onClick={() => onApprove(lead.id)}
-                  className="h-8 bg-success/10 text-success hover:bg-success/20 border border-success/30 rounded-[8px] gap-1.5 font-semibold text-[13px] px-3 shadow-none transition-colors"
+                  className={cn(
+                    "h-8 px-3 gap-1.5 text-xs font-semibold rounded-lg shadow-none transition-colors",
+                    "bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20",
+                    "dark:text-emerald-400 dark:hover:bg-emerald-500/20",
+                    "ring-1 ring-inset ring-emerald-500/20",
+                  )}
                 >
-                  <CheckCircle weight="bold" size={15} />
+                  <CheckCircle weight="bold" size={14} />
                   {t(K.verify.approve)}
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => onReject(lead.id)}
-                  className="h-8 bg-danger/5 text-danger hover:bg-danger/10 border-danger/30 hover:border-danger/50 rounded-[8px] gap-1.5 font-semibold text-[13px] px-3 shadow-none transition-colors"
+                  className={cn(
+                    "h-8 px-3 gap-1.5 text-xs font-semibold rounded-lg shadow-none transition-colors",
+                    "bg-red-500/5 text-red-700 hover:bg-red-500/10",
+                    "dark:text-red-400",
+                    "ring-1 ring-inset ring-red-500/20 border-0",
+                  )}
                 >
-                  <XCircle weight="bold" size={15} />
+                  <XCircle weight="bold" size={14} />
                   {t(K.verify.reject)}
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
                   onClick={() => onAskMore(lead.id)}
-                  className="w-8 h-8 rounded-[8px] border border-border-default/60 bg-elevated/30 text-text-secondary hover:text-text-primary hover:bg-elevated hover:border-border-default transition-all ml-1"
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  aria-label="Ask for more information"
                 >
-                  <Chat weight="duotone" size={15} />
+                  <Chat weight="regular" size={15} />
                 </Button>
               </>
             )}
@@ -236,18 +267,19 @@ export function getVerificationColumns({
               size="icon"
               variant="ghost"
               onClick={() => onViewReceipt(lead.id)}
-              className="w-8 h-8 text-text-muted hover:text-text-primary ml-0.5 rounded-lg"
-              title={t(K.verification.viewReceipt)}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+              aria-label={t(K.verification.viewReceipt)}
             >
-              <Receipt weight="duotone" className="h-[18px] w-[18px]" />
+              <Receipt weight="regular" className="h-4 w-4" />
             </Button>
             <Link href={`/leads/${lead.id}`}>
               <Button
                 size="icon"
                 variant="ghost"
-                className="w-8 h-8 text-text-muted hover:text-text-primary rounded-lg"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                aria-label="View lead"
               >
-                <CaretRight weight="bold" className="h-[15px] w-[15px]" />
+                <CaretRight weight="bold" className="h-3.5 w-3.5" />
               </Button>
             </Link>
           </div>

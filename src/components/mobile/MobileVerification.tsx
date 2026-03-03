@@ -19,6 +19,7 @@ import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileVerificationProps {
@@ -395,7 +396,6 @@ export default function MobileVerification({
   } = useVerificationStore();
 
   const [receiptPreview, setReceiptPreview] = useState<{ id: string; name: string } | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: "approve" | "reject" } | null>(null);
 
   useEffect(() => {
     fetchLeads({ skip: 0, take: 50, orderBy: "createdAt", order: "desc" });
@@ -441,11 +441,10 @@ export default function MobileVerification({
     async (id: string) => {
       setProcessedIds((prev) => new Set(prev).add(id));
       setTodayCount((c) => c + 1);
-      setToast({ msg: "✓ Lead approved", type: "approve" });
+      toast.success("Lead approved");
       onApprove?.(id);
       if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([8, 40, 8]);
       try { await verifyLead(id); } catch { /* noop */ }
-      setTimeout(() => setToast(null), 4000);
     },
     [onApprove, verifyLead],
   );
@@ -453,11 +452,10 @@ export default function MobileVerification({
   const handleReject = useCallback(
     async (id: string) => {
       setProcessedIds((prev) => new Set(prev).add(id));
-      setToast({ msg: "✗ Lead rejected", type: "reject" });
+      toast.error("Lead rejected");
       onReject?.(id);
       if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
       try { await updateStatus(id, { status: "REJECTED" }); } catch { /* noop */ }
-      setTimeout(() => setToast(null), 4000);
     },
     [onReject, updateStatus],
   );
@@ -570,25 +568,6 @@ export default function MobileVerification({
           ))
         )}
       </div>
-
-      {/* ── Toast ───────────────────────────────────────────────────────────── */}
-      {toast && (
-        <div
-          className={cn(
-            "fixed left-4 right-4 z-50 flex items-center justify-between gap-3 px-4 py-3 rounded-xl font-sans font-medium text-[14px] shadow-2xl",
-            toast.type === "approve" ? "bg-success text-white" : "bg-danger text-white",
-          )}
-          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 16px)" }}
-        >
-          <span>{toast.msg}</span>
-          <button
-            className="text-[13px] font-semibold underline opacity-80"
-            onClick={() => setToast(null)}
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* ── Receipt Preview Modal ───────────────────────────────────────────── */}
       {receiptPreview && (

@@ -61,6 +61,8 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
           const enqueued = payload?.enqueued ?? 0;
           const logId = payload?.logId;
 
+          // Snapshot history before optimistic add so callers can detect rollback
+          const previousHistory = get().history;
           // Optimistically prepend a QUEUED entry
           if (logId) {
             const optimistic: BroadcastLog = {
@@ -85,7 +87,8 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
           set({ isSending: false, lastEnqueued: enqueued, message: "", photoUrl: "" }, false, "send/success");
         } catch (err: unknown) {
           const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to send broadcast";
-          set({ isSending: false, error: msg, lastEnqueued: null }, false, "send/error");
+          // Rollback any optimistic history change
+          set({ isSending: false, error: msg, lastEnqueued: null, history: previousHistory }, false, "send/error");
         }
       },
 
@@ -112,6 +115,18 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
         const id = setInterval(async () => {
           attempts++;
           if (attempts > 24) { // max 2 min at 5s intervals
+            // Mark the entry as FAILED so the UI reflects the timeout
+            set(
+              (s) => ({
+                history: s.history.map((l) =>
+                  l.id === logId && (l.status === "QUEUED" || l.status === "SENDING")
+                    ? { ...l, status: "FAILED" as const }
+                    : l,
+                ),
+              }),
+              false,
+              "poll/timeout",
+            );
             get().stopPolling();
             return;
           }
@@ -144,7 +159,7 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
 
       stopPolling: () => {
         const { pollingId } = get();
-        if (pollingId) {
+        if (pollingId !== null) {
           clearInterval(pollingId);
           set({ pollingId: null }, false, "stopPolling");
         }

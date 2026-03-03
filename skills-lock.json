@@ -46,6 +46,11 @@
       "sourceType": "github",
       "computedHash": "bdf01cb716d99c640cf02438eee71b544709730ef4d59b3cc24b8721a4540e4b"
     },
+    "performance-optimization": {
+      "source": "supercent-io/skills-template",
+      "sourceType": "github",
+      "computedHash": "7f787b3497f82e6b800580efb4709ed0a6cff76e21f91bd218efb957b6ccd698"
+    },
     "react:components": {
       "source": "google-labs-code/stitch-skills",
       "sourceType": "github",
@@ -100,6 +105,11 @@
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "8c536ae03ef3ab1fa974c0e50a65d803acddf5d4ee7cac68ab25a39b9e338611"
     },
     "zustand": {
       "source": "lobehub/lobehub",

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 
 import { useAsRef } from "@/hooks/use-as-ref";
 import { useLazyRef } from "@/hooks/use-lazy-ref";
@@ -274,14 +274,14 @@ function useDataGridUndoRedo<TData>({
 
     const entry = store.undo();
     if (!entry) {
-      showToast.info("No actions to undo");
+      toast.info("No actions to undo");
       return;
     }
 
     const newData = entry.undo(propsRef.current.data);
     propsRef.current.onDataChange(newData);
 
-    showToast.success(
+    toast.success(
       `${entry.count} action${entry.count !== 1 ? "s" : ""} undone`,
     );
   }, [store, propsRef, onCommit]);
@@ -293,14 +293,14 @@ function useDataGridUndoRedo<TData>({
 
     const entry = store.redo();
     if (!entry) {
-      showToast.info("No actions to redo");
+      toast.info("No actions to redo");
       return;
     }
 
     const newData = entry.redo(propsRef.current.data);
     propsRef.current.onDataChange(newData);
 
-    showToast.success(
+    toast.success(
       `${entry.count} action${entry.count !== 1 ? "s" : ""} redone`,
     );
   }, [store, propsRef, onCommit]);

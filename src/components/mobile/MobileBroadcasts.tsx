@@ -274,6 +274,13 @@ export default function MobileBroadcasts({}: MobileBroadcastsProps) {
     return () => stopPolling();
   }, [historyPage, fetchHistory, stopPolling]);
 
+  // Guarantee polling is stopped on unmount regardless of other effects
+  useEffect(() => {
+    return () => {
+      useBroadcastStore.getState().stopPolling();
+    };
+  }, []);
+
   const handleSend = useCallback(async () => {
     setShowConfirm(false);
     await send();

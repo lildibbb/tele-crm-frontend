@@ -20,6 +20,7 @@ import {
   Eye,
 } from "lucide-react";
 import { FileTypeBadge, FileTypeChip } from "@/components/ui/file-type-badge";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +46,7 @@ import { TelegramPreview } from "@/components/ui/telegram-preview";
 import { useKbStore } from "@/store/kbStore";
 import { CreateKbSchema, type CreateKbInput } from "@/lib/schemas/kb.schema";
 import { KbType, KbStatus } from "@/types/enums";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 import { useMaintenanceStore } from "@/store/maintenanceStore";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
 
@@ -136,7 +137,7 @@ export function KnowledgeBaseTab() {
   }, [fetchAll]);
 
   useEffect(() => {
-    if (error) showToast.error(error);
+    if (error) toast.error(error);
   }, [error]);
 
   const form = useForm<CreateKbInput>({
@@ -176,15 +177,15 @@ export function KnowledgeBaseTab() {
     try {
       if (editingId) {
         await update(editingId, { title: data.title, content: data.content, url: data.url });
-        showToast.success("Changes saved successfully");
+        toast.success("Changes saved successfully");
       } else {
         await createText(data);
-        showToast.success("New content added");
+        toast.success("New content added");
       }
       closeModal();
       await fetchAll();
     } catch {
-      showToast.error(editingId ? "Couldn't save your changes. Please try again." : "Couldn't add content. Please try again.");
+      toast.error(editingId ? "Couldn't save your changes. Please try again." : "Couldn't add content. Please try again.");
     }
   };
 
@@ -201,7 +202,7 @@ export function KnowledgeBaseTab() {
         setShowModal(false);
       }, 1500);
     } catch {
-      showToast.error("Upload failed. Check file type and size.");
+      toast.error("Upload failed. Check file type and size.");
     } finally {
       setUploadLoading(false);
     }
@@ -225,16 +226,16 @@ export function KnowledgeBaseTab() {
       await update(id, { isActive: !isActive });
       await fetchAll();
     } catch {
-      showToast.error("Couldn't update this entry. Please try again.");
+      toast.error("Couldn't update this entry. Please try again.");
     }
   };
 
   const deleteEntry = async (id: string) => {
     try {
       await remove(id);
-      showToast.success("Entry removed successfully");
+      toast.success("Entry removed successfully");
     } catch {
-      showToast.error("Couldn't delete this entry. Please try again.");
+      toast.error("Couldn't delete this entry. Please try again.");
     }
   };
 
@@ -366,7 +367,7 @@ export function KnowledgeBaseTab() {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span
+                      <Badge
                         className={`badge ${statusConf.cls} flex items-center gap-1`}
                       >
                         {entry.status === KbStatus.PROCESSING && (
@@ -379,7 +380,7 @@ export function KnowledgeBaseTab() {
                           <AlertCircle className="h-2.5 w-2.5" />
                         )}
                         {statusConf.label}
-                      </span>
+                      </Badge>
                       {/* Type chip: FileTypeChip for MIME-mapped types; text badge for others */}
                       {KB_TYPE_MIME[entry.fileType ?? entry.type] ? (
                         <FileTypeChip
@@ -387,9 +388,9 @@ export function KnowledgeBaseTab() {
                           size={20}
                         />
                       ) : (
-                        <span className={typeConf.badgeCls}>
+                        <Badge className={typeConf.badgeCls}>
                           {typeConf.label}
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <h3 className="font-sans font-semibold text-[14px] text-text-primary mb-1">

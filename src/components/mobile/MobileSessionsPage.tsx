@@ -16,7 +16,7 @@ import {
 } from "@phosphor-icons/react";
 import { authApi } from "@/lib/api/auth";
 import type { Session } from "@/lib/schemas/auth.schema";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
@@ -213,9 +213,9 @@ export default function MobileSessionsPage() {
     try {
       await authApi.revokeSession(id);
       setSessions((prev) => prev.filter((s) => s.id !== id));
-      showToast.success("Session ended");
+      toast.success("Session ended");
     } catch {
-      showToast.error("Couldn't revoke session");
+      toast.error("Couldn't revoke session");
     } finally {
       setRevoking(null);
     }
@@ -226,10 +226,10 @@ export default function MobileSessionsPage() {
     try {
       await authApi.revokeAllSessions();
       setSessions([]);
-      showToast.success("All sessions ended");
+      toast.success("All sessions ended");
       setRevokeAllOpen(false);
     } catch {
-      showToast.error("Couldn't end all sessions");
+      toast.error("Couldn't end all sessions");
     } finally {
       setRevokingAll(false);
     }

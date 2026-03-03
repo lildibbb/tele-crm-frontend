@@ -263,6 +263,7 @@ export const K = {
     tabs: {
       pending: "verification.tabs.pending",
       all:     "verification.tabs.all",
+      entries: "verification.tabs.entries",
     },
     stats: {
       pending:        "verification.stats.pending",

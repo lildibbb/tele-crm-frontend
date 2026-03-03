@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { motion } from "framer-motion";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileAnalytics } from "@/components/mobile";
 import { useAnalyticsStore } from "@/store/analyticsStore";
@@ -36,9 +35,7 @@ import type { RagStats } from "@/lib/schemas/analytics.schema";
 import type { ChartTooltipEntry, ChartTooltipProps } from "@/lib/types/chart";
 import { analyticsApi } from "@/lib/api/analytics";
 import { parseApiData } from "@/lib/api/parseResponse";
-import { showToast } from "@/lib/toast";
-
-gsap.registerPlugin(useGSAP);
+import { toast } from "sonner";
 
 // ── Timeframe constants ──────────────────────────────────────────
 type Timeframe = NonNullable<AnalyticsSummaryParams["timeframe"]>;
@@ -229,7 +226,7 @@ function BarTip({
   );
 }
 
-// ── InView chart wrapper (GSAP) ─────────────────────────────────
+// ── InView chart wrapper ─────────────────────────────────────────
 function ChartInView({
   children,
   className,
@@ -237,23 +234,15 @@ function ChartInView({
   children: React.ReactNode;
   className?: string;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useGSAP(
-    () => {
-      if (!ref.current) return;
-      gsap.from(ref.current, {
-        opacity: 0,
-        y: 16,
-        duration: 0.45,
-        ease: "power2.out",
-      });
-    },
-    { scope: ref, dependencies: [] },
-  );
   return (
-    <div ref={ref} className={className}>
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -362,7 +351,7 @@ export default function AnalyticsPage() {
         const d = parseApiData<RagStats>(res.data);
         setRagStats(d ?? null);
       })
-      .catch(() => showToast.error(t(K.common.error.loadAnalytics)))
+      .catch(() => toast.error(t(K.common.error.loadAnalytics)))
       .finally(() => setRagLoading(false));
   // Mount-only effect — deps intentionally omitted (fetch RAG stats once when role is known)
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -417,26 +406,7 @@ export default function AnalyticsPage() {
     return map[tf];
   };
 
-  useGSAP(
-    () => {
-      gsap.from(".kpi-stat-card", {
-        opacity: 0,
-        y: 18,
-        stagger: 0.08,
-        duration: 0.45,
-        ease: "power2.out",
-      });
-      gsap.from(".funnel-bar", {
-        width: 0,
-        duration: 0.6,
-        ease: "power2.out",
-        stagger: 0.07,
-      });
-    },
-    { scope: containerRef, dependencies: [timeframe] },
-  );
-
-  const handleTimeframeChange = (tf: Timeframe) => {
+  const handleTimeframeChange= (tf: Timeframe) => {
     if (tf === timeframe) return;
     setContentVisible(false);
     setTimeout(() => {

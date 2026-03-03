@@ -2,12 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
-import {
-  ToggleLeft,
-  ToggleRight,
-  Eye,
-  Hash,
-} from "@phosphor-icons/react";
+import { ToggleLeft, ToggleRight, Eye, Hash } from "@phosphor-icons/react";
 import { Icon } from "@iconify/react";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Button } from "@/components/ui/button";
@@ -20,6 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
+import { cn } from "@/lib/utils";
 
 interface LeadsColumnsProps {
   onHandoverToggle: (id: string, current: boolean) => void;
@@ -39,32 +35,33 @@ export function getLeadsColumns({
       ),
       cell: ({ row }) => {
         const lead = row.original;
-        const initials = (
-          lead.displayName ??
-          lead.username ??
-          lead.telegramUserId
-        )
+        const name = lead.displayName ?? lead.username ?? lead.telegramUserId;
+        const initials = name
           .split(" ")
           .map((n: string) => n[0])
           .join("")
-          .slice(0, 2);
+          .slice(0, 2)
+          .toUpperCase();
         return (
-          <Link href={`/leads/${lead.id}`} className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar className="h-8 w-8 rounded-full bg-elevated border border-border-default flex-shrink-0">
-                <AvatarFallback className="text-[11px] font-semibold text-text-secondary bg-transparent">
+          <Link
+            href={`/leads/${lead.id}`}
+            className="flex items-center gap-3 group/lead"
+          >
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-9 w-9 rounded-full border border-border">
+                <AvatarFallback className="text-[11px] font-semibold text-muted-foreground bg-muted">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-card" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card" />
             </div>
             <div className="flex flex-col min-w-0">
-              <p className="text-[13px] font-sans font-semibold text-text-primary truncate">
+              <span className="text-sm font-medium text-foreground truncate group-hover/lead:text-primary transition-colors">
                 {lead.displayName ?? lead.username ?? "—"}
-              </p>
-              <p className="text-[11px] font-sans text-text-muted truncate">
+              </span>
+              <span className="text-xs text-muted-foreground truncate mt-0.5">
                 {lead.email ?? "—"}
-              </p>
+              </span>
             </div>
           </Link>
         );
@@ -80,24 +77,31 @@ export function getLeadsColumns({
         return (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5">
-              <Icon icon="logos:telegram" className="h-3.5 w-3.5 flex-shrink-0" />
+              <Icon
+                icon="logos:telegram"
+                className="h-3.5 w-3.5 flex-shrink-0"
+              />
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="text-[12px] font-semibold text-[#229ED9] data-mono cursor-default">
+                    <span className="text-xs font-semibold text-[#229ED9] font-mono cursor-default hover:underline underline-offset-2">
                       @{lead.username ?? "—"}
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="data-mono text-[11px]">ID: {lead.telegramUserId}</p>
+                    <p className="font-mono text-xs">
+                      ID: {lead.telegramUserId}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <div className="flex items-center gap-1.5 text-text-muted text-[11px]">
-              <Hash className="h-3 w-3" />
-              <span className="data-mono">{lead.hfmBrokerId ?? "—"}</span>
-            </div>
+            {lead.hfmBrokerId && (
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Hash className="h-3 w-3" />
+                <span className="font-mono text-xs">{lead.hfmBrokerId}</span>
+              </div>
+            )}
           </div>
         );
       },
@@ -113,16 +117,21 @@ export function getLeadsColumns({
         const label = badgeInfo
           ? t(badgeInfo.labelKey)
           : row.original.status.replace(/_/g, " ");
-        const cls = badgeInfo ? badgeInfo.cls : "";
         return (
-          <div
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-current ${cls} bg-opacity-10 shadow-sm`}
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold",
+              badgeInfo?.cls ?? "bg-muted text-muted-foreground",
+            )}
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-current" />
-            <span className="text-[11.5px] font-medium tracking-wide">
-              {label}
-            </span>
-          </div>
+            <span
+              className={cn(
+                "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                badgeInfo?.dotCls ?? "bg-muted-foreground",
+              )}
+            />
+            {label}
+          </span>
         );
       },
       enableSorting: false,
@@ -139,7 +148,10 @@ export function getLeadsColumns({
       ),
       cell: ({ row }) => {
         const val = row.original.registeredAt;
-        if (!val) return <span className="text-text-muted data-mono">—</span>;
+        if (!val)
+          return (
+            <span className="text-muted-foreground font-mono text-xs">—</span>
+          );
         const date = new Date(val);
         const topDate = date.toLocaleDateString("en-US", {
           month: "short",
@@ -151,9 +163,11 @@ export function getLeadsColumns({
           minute: "2-digit",
         });
         return (
-          <div className="flex flex-col gap-0.5 data-mono">
-            <span className="text-text-primary text-[13px]">{topDate}</span>
-            <span className="text-text-muted text-[11px]">{botTime}</span>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm text-foreground font-mono">{topDate}</span>
+            <span className="text-xs text-muted-foreground font-mono">
+              {botTime}
+            </span>
           </div>
         );
       },
@@ -169,14 +183,18 @@ export function getLeadsColumns({
       cell: ({ row }) => {
         const balance = row.original.depositBalance;
         if (!balance || balance === "—")
-          return <span className="text-text-muted data-mono">—</span>;
+          return (
+            <span className="text-muted-foreground font-mono text-xs">—</span>
+          );
         return (
-          <span className="data-mono text-gold font-semibold text-[13px]">
-            ${Number(balance).toLocaleString()}{" "}
-            <span className="text-[10px] text-text-muted font-normal tracking-wide">
+          <div className="flex items-baseline gap-1">
+            <span className="font-mono text-sm font-semibold text-foreground">
+              ${Number(balance).toLocaleString()}
+            </span>
+            <span className="font-mono text-[10px] text-muted-foreground tracking-wider">
               USD
             </span>
-          </span>
+          </div>
         );
       },
       enableSorting: true,
@@ -188,9 +206,10 @@ export function getLeadsColumns({
       cell: ({ row }) => {
         const lead = row.original;
         return (
-          <div className="flex items-center justify-end gap-2">
-            <div className="flex items-center gap-2 mr-1">
-              <span className="text-[9.5px] uppercase font-bold text-text-muted tracking-wider">
+          <div className="flex items-center justify-end gap-1.5">
+            {/* Handover toggle — no border, clean inline */}
+            <div className="flex items-center gap-1.5 mr-1">
+              <span className="text-[10px] font-semibold text-muted-foreground tracking-wider select-none">
                 {t("leads.col.handover")}
               </span>
               <button
@@ -199,15 +218,16 @@ export function getLeadsColumns({
                   onHandoverToggle(lead.id, lead.handoverMode ?? false)
                 }
                 className="cursor-pointer flex items-center"
+                aria-label={`Toggle handover for ${lead.displayName ?? lead.username}`}
               >
                 {lead.handoverMode ? (
                   <ToggleRight
-                    className="h-7 w-7 text-crimson transition-colors"
+                    className="h-6 w-6 text-red-500 transition-colors"
                     weight="fill"
                   />
                 ) : (
                   <ToggleLeft
-                    className="h-7 w-7 text-text-muted transition-colors border-current rounded-full"
+                    className="h-6 w-6 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
                     weight="fill"
                   />
                 )}
@@ -217,7 +237,8 @@ export function getLeadsColumns({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-text-muted hover:text-text-primary"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md"
+                aria-label="View lead"
               >
                 <Eye className="h-4 w-4" />
               </Button>

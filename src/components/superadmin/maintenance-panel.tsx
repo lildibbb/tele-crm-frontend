@@ -13,17 +13,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Warning, Gear, Lightning } from "@phosphor-icons/react";
+import {
+  CheckCircle,
+  Warning,
+  Gear,
+  Lightning,
+  Brain,
+  Megaphone,
+  TerminalWindow,
+  ClockCounterClockwise,
+} from "@phosphor-icons/react";
 
 export function MaintenancePanel() {
   const { entries, fetchAll, upsertMany } = useSystemConfigStore();
   const fetchPublicConfig = useMaintenanceStore((s) => s.fetchPublicConfig);
 
-  const getVal = (key: string, def = "false") =>
-    entries[key] ?? def;
+  const getVal = (key: string, def = "false") => entries[key] ?? def;
 
   const DEFAULT_BANNER = "System under maintenance — read-only mode active.";
 
@@ -35,17 +52,15 @@ export function MaintenancePanel() {
   const [saved, setSaved] = useState<string | null>(null);
   const [saveErr, setSaveErr] = useState<string | null>(null);
 
-  // Sync from store entries once loaded
-  // getVal reads `entries` which is already in the dep array
   useEffect(() => {
     if (!entries || Object.keys(entries).length === 0) return;
     setMaintenanceOn(entries["system.maintenanceMode"] === "true");
-    setBannerText(
-      entries["system.maintenanceBanner"] ?? DEFAULT_BANNER
-    );
+    setBannerText(entries["system.maintenanceBanner"] ?? DEFAULT_BANNER);
   }, [entries]);
 
-  useEffect(() => { void fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    void fetchAll();
+  }, [fetchAll]);
 
   const toggleMaintenance = (on: boolean) => {
     if (on) {
@@ -62,7 +77,6 @@ export function MaintenancePanel() {
     try {
       await upsertMany({
         "system.maintenanceMode": on ? "true" : "false",
-        // Never send empty string — backend @IsString() accepts it but semantics are wrong
         "system.maintenanceBanner": bannerText.trim() || DEFAULT_BANNER,
       });
       setMaintenanceOn(on);
@@ -70,7 +84,9 @@ export function MaintenancePanel() {
       setSaved("maintenance");
       setTimeout(() => setSaved(null), 2500);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Save failed";
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Save failed";
       setSaveErr(msg);
       setTimeout(() => setSaveErr(null), 4000);
     } finally {
@@ -87,7 +103,9 @@ export function MaintenancePanel() {
       setSaved(key);
       setTimeout(() => setSaved(null), 2000);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Save failed";
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Save failed";
       setSaveErr(msg);
       setTimeout(() => setSaveErr(null), 4000);
     } finally {
@@ -100,43 +118,48 @@ export function MaintenancePanel() {
       key: "feature.knowledgeBase.enabled",
       label: "Knowledge Base",
       description: "KB file uploads and vector processing",
-      icon: "🧠",
-      color: "blue",
+      icon: <Brain size={22} weight="duotone" className="text-blue-500" />,
       defaultOn: true,
     },
     {
       key: "feature.broadcast.enabled",
       label: "Broadcast",
       description: "Bulk message blasts to leads",
-      icon: "📢",
-      color: "purple",
+      icon: (
+        <Megaphone size={22} weight="duotone" className="text-purple-500" />
+      ),
       defaultOn: true,
     },
     {
       key: "feature.commandMenu.enabled",
       label: "Command Menus",
       description: "Bot command menu management",
-      icon: "⚡",
-      color: "amber",
+      icon: (
+        <TerminalWindow size={22} weight="duotone" className="text-amber-500" />
+      ),
       defaultOn: true,
     },
     {
       key: "followUp.enabled",
       label: "Follow-Up Automation",
       description: "Scheduled follow-up messages",
-      icon: "🔄",
-      color: "green",
+      icon: (
+        <ClockCounterClockwise
+          size={22}
+          weight="duotone"
+          className="text-emerald-500"
+        />
+      ),
       defaultOn: true,
     },
   ];
 
   return (
     <>
-      {/* Confirm dialog for enabling maintenance mode */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-amber-400">
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-500">
               <Warning size={18} weight="fill" />
               Enable Maintenance Mode?
             </AlertDialogTitle>
@@ -147,7 +170,13 @@ export function MaintenancePanel() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { setPendingOn(false); }}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel
+              onClick={() => {
+                setPendingOn(false);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               className="bg-amber-600 hover:bg-amber-500 text-white"
               onClick={() => {
@@ -161,197 +190,179 @@ export function MaintenancePanel() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* ── Maintenance Mode Card ─────────────────────────────────────────── */}
-        <div className="page-panel rounded-xl overflow-hidden border border-amber-500/25 bg-amber-950/10 shadow-sm">
-          <div className="px-5 py-4 bg-amber-900/10 flex items-center justify-between border-b border-amber-500/20">
+        <Card className="border-border">
+          <CardHeader className="border-b border-border-subtle bg-muted/20 px-5 py-4 flex flex-row items-center justify-between space-y-0">
             <div>
-              <h2 className="text-sm font-semibold text-amber-300 flex items-center gap-2">
-                <Warning size={16} weight="fill" className="text-amber-400" />
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Warning size={16} weight="fill" className="text-amber-500" />
                 Maintenance Mode
-              </h2>
-              <p className="text-xs text-amber-200/60 mt-0.5">
-                Blocks write operations for Owner / Admin / Staff. Bot stays online.
-              </p>
+              </CardTitle>
+              <CardDescription className="text-xs mt-1">
+                Blocks write operations for non-superadmin users. Bot stays
+                online.
+              </CardDescription>
             </div>
             {saved === "maintenance" && (
-              <span className="text-xs text-success flex items-center gap-1">
-                <CheckCircle size={13} /> Saved
+              <span className="text-xs text-success flex items-center gap-1 font-medium bg-success/10 px-2.5 py-1 rounded-full border border-success/20">
+                <CheckCircle size={14} weight="bold" /> Saved
               </span>
             )}
-          </div>
-          <div className="px-5 py-5 space-y-4">
-            {/* Toggle row */}
+          </CardHeader>
+
+          <CardContent className="px-5 py-6 space-y-6">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-text-primary">
-                  Maintenance Mode
-                </p>
-                <p className="text-xs text-text-muted mt-0.5">
+              <div className="space-y-1">
+                <Label className="text-sm font-semibold">Mode Status</Label>
+                <p className="text-xs text-text-muted">
                   {maintenanceOn
                     ? "🔴 Active — staff/owners are in read-only mode"
                     : "🟢 Inactive — system is fully operational"}
                 </p>
               </div>
-              <button
-                type="button"
+              <Switch
+                checked={maintenanceOn}
+                onCheckedChange={(checked) => toggleMaintenance(checked)}
                 disabled={isSaving}
-                onClick={() => toggleMaintenance(!maintenanceOn)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:ring-2 ${
-                  maintenanceOn ? "bg-amber-500" : "bg-border-subtle"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4.5 w-4.5 rounded-full bg-white shadow transition-transform ${
-                    maintenanceOn ? "translate-x-5.5" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
+              />
             </div>
 
-            {/* Banner message */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-text-secondary">
-                Banner Message
-              </Label>
+            <div className="space-y-3 pt-4 border-t border-border-subtle">
+              <div>
+                <Label className="text-sm font-semibold">Banner Message</Label>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Displayed to all users when maintenance mode is active.
+                </p>
+              </div>
               <Textarea
                 value={bannerText}
                 onChange={(e) => setBannerText(e.target.value)}
                 placeholder="System under maintenance — read-only mode active."
-                className="text-xs min-h-[60px] resize-none"
+                className="resize-none min-h-[80px] text-sm"
               />
             </div>
 
-            {/* Live preview */}
             {bannerText && (
-              <div className="space-y-1.5">
-                <p className="text-[10px] text-text-muted uppercase tracking-wider">
-                  Banner Preview
-                </p>
-                <div className="flex items-center gap-2 rounded-lg border border-amber-500/25 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">
-                  <Warning weight="fill" size={13} className="text-amber-400 shrink-0" />
-                  <span className="font-medium">Maintenance Mode — </span>
-                  {bannerText}
+              <div className="space-y-2 bg-background rounded-lg p-4 border border-border-subtle shadow-sm">
+                <Label className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
+                  Preview
+                </Label>
+                <div className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
+                  <Warning
+                    weight="fill"
+                    size={16}
+                    className="shrink-0 text-amber-500"
+                  />
+                  <div>
+                    <span className="font-semibold">Maintenance Mode — </span>
+                    {bannerText}
+                  </div>
                 </div>
               </div>
             )}
+          </CardContent>
 
-            {/* Save banner text button */}
-            <div className="flex items-center gap-3">
+          <CardFooter className="border-t border-border-subtle bg-muted/10 px-5 py-4 flex items-center gap-3">
             <Button
+              variant="outline"
               size="sm"
-              variant="ghost"
               disabled={isSaving}
               onClick={() => void saveMaintenanceMode(maintenanceOn)}
-              className="h-7 px-3 text-xs text-amber-400 hover:bg-amber-800/20 border border-amber-500/20"
+              className="h-8 shadow-sm"
             >
-              <Gear size={13} className="mr-1" />
-              {isSaving ? "Saving…" : "Save Banner"}
+              <Gear size={15} className="mr-2" />
+              {isSaving ? "Saving…" : "Save Configuration"}
             </Button>
             {saveErr && (
-              <span className="text-xs text-crimson">{saveErr}</span>
+              <span className="text-sm text-destructive">{saveErr}</span>
             )}
-            </div>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
 
         {/* ── Feature Flags Card ──────────────────────────────────────────────── */}
-        <div className="page-panel bg-elevated rounded-xl overflow-hidden shadow-sm">
-          <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle shadow-sm">
-            <div>
-              <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                <Lightning size={16} weight="duotone" className="text-info" />
-                Feature Flags
-              </h2>
-              <p className="text-xs text-text-secondary mt-0.5">
-                Toggle individual platform features independently
-              </p>
-            </div>
-          </div>
-          <div className="px-5 py-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Card className="border-border">
+          <CardHeader className="border-b border-border-subtle bg-muted/20 px-5 py-4">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Lightning size={16} weight="duotone" className="text-info" />
+              Feature Flags
+            </CardTitle>
+            <CardDescription className="text-xs mt-1">
+              Toggle individual platform features independently without
+              deploying.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            <div className="divide-y divide-border-subtle flex flex-col">
               {featureFlags.map((flag) => {
                 const isOn =
-                  getVal(flag.key, flag.defaultOn ? "true" : "false") !== "false";
+                  getVal(flag.key, flag.defaultOn ? "true" : "false") !==
+                  "false";
                 const isFlagSaved = saved === flag.key;
-
-                const colorMap: Record<string, string> = {
-                  blue:   isOn ? "border-blue-500/30 bg-blue-950/20"   : "border-border-subtle bg-elevated",
-                  purple: isOn ? "border-purple-500/30 bg-purple-950/20" : "border-border-subtle bg-elevated",
-                  amber:  isOn ? "border-amber-500/30 bg-amber-950/20"  : "border-border-subtle bg-elevated",
-                  green:  isOn ? "border-emerald-500/30 bg-emerald-950/20" : "border-border-subtle bg-elevated",
-                };
-                const dotMap: Record<string, string> = {
-                  blue:   "bg-blue-400",
-                  purple: "bg-purple-400",
-                  amber:  "bg-amber-400",
-                  green:  "bg-emerald-400",
-                };
-                const toggleMap: Record<string, string> = {
-                  blue:   "bg-blue-500",
-                  purple: "bg-purple-500",
-                  amber:  "bg-amber-500",
-                  green:  "bg-emerald-500",
-                };
 
                 return (
                   <div
                     key={flag.key}
-                    className={`relative flex flex-col gap-3 rounded-xl border p-4 transition-all duration-200 ${colorMap[flag.color]}`}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 hover:bg-muted/5 transition-colors gap-4"
                   >
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-lg leading-none">{flag.icon}</span>
-                        <div>
-                          <p className="text-sm font-semibold text-text-primary leading-tight">
-                            {flag.label}
-                          </p>
-                          <p className="text-[11px] text-text-muted mt-0.5 leading-snug">
-                            {flag.description}
-                          </p>
-                        </div>
-                      </div>
-                      {/* Type chip — ON/OFF status */}
-                      <span
-                        className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide border ${
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border shadow-sm transition-colors ${
                           isOn
-                            ? "border-current text-emerald-400 bg-emerald-950/40"
-                            : "border-current text-text-muted bg-overlay/60"
+                            ? "border-border-subtle bg-background"
+                            : "border-transparent bg-muted/40 grayscale opacity-60"
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isOn ? dotMap[flag.color] : "bg-text-muted"}`} />
-                        {isOn ? "ON" : "OFF"}
-                        {isFlagSaved && <span className="ml-0.5 text-success">✓</span>}
-                      </span>
+                        <span className="text-lg leading-none block">
+                          {flag.icon}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Label
+                            htmlFor={`switch-${flag.key}`}
+                            className="text-sm font-semibold cursor-pointer text-text-primary leading-none"
+                          >
+                            {flag.label}
+                          </Label>
+                          {isFlagSaved && (
+                            <CheckCircle
+                              size={14}
+                              weight="bold"
+                              className="text-success"
+                            />
+                          )}
+                        </div>
+                        <p className="text-xs text-text-secondary leading-snug">
+                          {flag.description}
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Toggle button */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-text-muted">
-                        {isOn ? "Feature is active" : "Feature is disabled"}
-                      </span>
-                      <button
-                        type="button"
-                        disabled={isSaving}
-                        onClick={() => void saveFeatureFlag(flag.key, !isOn)}
-                        className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
-                          isOn ? toggleMap[flag.color] : "bg-border-subtle"
+                    <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-border-subtle sm:border-0 pl-13 sm:pl-0">
+                      <span
+                        className={`text-xs font-semibold ${
+                          isOn ? "text-emerald-500" : "text-text-muted"
                         }`}
                       >
-                        <span
-                          className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
-                            isOn ? "translate-x-4.5" : "translate-x-0.5"
-                          }`}
-                        />
-                      </button>
+                        {isOn ? "Enabled" : "Disabled"}
+                      </span>
+                      <Switch
+                        id={`switch-${flag.key}`}
+                        checked={isOn}
+                        onCheckedChange={(checked) =>
+                          void saveFeatureFlag(flag.key, checked)
+                        }
+                        disabled={isSaving}
+                      />
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

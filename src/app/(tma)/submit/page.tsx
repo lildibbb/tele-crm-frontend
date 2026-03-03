@@ -76,7 +76,6 @@ export default function TMASubmitPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [amount, setAmount] = useState("");
-  const [notes, setNotes] = useState("");
   const [files, setFiles] = useState<FileItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -130,7 +129,6 @@ export default function TMASubmitPage() {
         email: email || undefined,
         phoneNumber: phone || undefined,
         depositBalance: amount || undefined,
-        notes: notes || undefined,
         files: files.length > 0 ? files.map((f) => f.file) : undefined,
       });
       setDone(true);
@@ -428,19 +426,6 @@ export default function TMASubmitPage() {
               />
             </InputField>
 
-            {/* Notes */}
-            <InputField label="Additional Notes (optional)">
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any additional info for verification…"
-                rows={3}
-                style={{ ...styledInput(), height: "auto", borderRadius: "12px" }}
-                className="w-full px-4 py-3 font-sans text-sm focus:outline-none resize-none"
-                onFocus={(e) => (e.target.style.borderColor = brand)}
-                onBlur={(e) => (e.target.style.borderColor = border)}
-              />
-            </InputField>
 
             {submitError && (
               <p className="font-sans text-sm text-red-500 text-center">

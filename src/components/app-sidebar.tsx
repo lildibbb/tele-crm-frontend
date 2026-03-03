@@ -42,10 +42,15 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { EllipsisVertical } from "lucide-react";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 
 const ADMIN_SUB_ITEMS = [
   { href: "/admin/overview", icon: SquaresFour, label: "Overview" },
@@ -152,26 +157,34 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar
-      collapsible="icon"
-      className="border-none mt-4 mb-4 ml-2 h-[calc(100svh-2rem)] [&>[data-sidebar=sidebar]]:rounded-xl [&>[data-sidebar=sidebar]]:bg-base [&>[data-sidebar=sidebar]]:border-none [&>[data-sidebar=sidebar]]:shadow-[var(--sidebar-shadow)] z-40 group/app-sidebar"
-    >
-      <SidebarHeader className="h-14 flex items-center justify-center px-5 flex-shrink-0 bg-transparent transition-all duration-300 group-data-[collapsible=icon]:px-0">
-        <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">
-          {/* Full Logo - Hidden when collapsed */}
-          <div className="flex items-center text-[13px] gap-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
-            <span className="text-text-primary">TITAN</span>
-            <span className="text-text-secondary font-bold"> JOURNAL</span>
-            <span className="text-crimson font-bold"> CRM</span>
-          </div>
-          {/* Icon Logo - Shown ONLY when collapsed */}
-          <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full text-crimson text-lg">
-            T.
-          </div>
-        </div>
+    <Sidebar collapsible="icon" variant="inset">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link href="/l">
+                <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">
+                  {/* Full Logo - Hidden when collapsed */}
+                  <div className="flex items-center text-[13px] gap-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
+                    <span className="text-text-primary">TITAN</span>
+                    <span className="text-text-secondary font-bold">
+                      {" "}
+                      JOURNAL
+                    </span>
+                    <span className="text-crimson font-bold"> CRM</span>
+                  </div>
+                  {/* Icon Logo - Shown ONLY when collapsed */}
+                  <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full text-crimson text-lg">
+                    T.
+                  </div>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-2.5 py-4 overflow-y-auto bg-transparent scrollbar-none group-data-[collapsible=icon]:px-2">
+      <SidebarContent>
         <SidebarMenu className="space-y-1">
           {/* ── Regular nav items ──────────────────────── */}
           {visibleItems.map(({ href, icon: Icon, labelKey }) => {
@@ -190,21 +203,16 @@ export function AppSidebar() {
                   className={`nav-item group h-auto py-2.5 px-3 transition-all duration-300 overflow-hidden ${isActive ? "!bg-crimson/10 !text-crimson active" : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"}`}
                   onClick={() => setOpenMobile(false)}
                 >
-                  <Link
-                    href={href}
-                    className="flex items-center min-w-0 w-full"
-                  >
+                  <Link href={href} className="flex items-center">
                     <Icon
                       size={18}
                       weight={isActive ? "fill" : "light"}
                       className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
                     />
-                    <span className="font-medium ml-3 truncate transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
-                      {label}
-                    </span>
+                    <span className="font-medium ml-2">{label}</span>
                     {href === "/settings" && (
                       <span
-                        className={`ml-auto w-2 h-2 rounded-full flex-shrink-0 transition-colors group-data-[collapsible=icon]:hidden ${
+                        className={`ml-auto w-2 h-2 rounded-full flex-shrink-0 transition-colors ${
                           botOnline === true
                             ? "bg-success"
                             : botOnline === false
@@ -317,65 +325,77 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 bg-transparent transition-all duration-300 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:pb-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              className="w-full flex items-center gap-2.5 bg-elevated/30 p-2 rounded-xl border border-border-subtle/50 transition-all duration-300 hover:bg-elevated/60 focus:outline-none group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:justify-center"
-              aria-label="Profile menu"
-            >
-              <div className="w-8 h-8 rounded-full bg-crimson-subtle border border-crimson/30 flex items-center justify-center text-crimson font-display font-bold text-[11px] flex-shrink-0 shadow-inner group-data-[collapsible=icon]:ring-2 group-data-[collapsible=icon]:ring-crimson/20 transition-all duration-300">
-                {user?.email?.[0]?.toUpperCase() ?? "?"}
-              </div>
-              <div className="flex-1 min-w-0 text-left transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
-                <p className="text-[12px] font-semibold text-text-primary truncate">
-                  {user?.email ?? "—"}
-                </p>
-                <span
-                  className={`badge ${user?.role === UserRole.OWNER ? "badge-owner" : user?.role === UserRole.ADMIN ? "badge-admin" : user?.role === UserRole.SUPERADMIN ? "badge-owner" : "badge-staff"} text-[9px] px-1.5 py-px mt-0.5 inline-block`}
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
                 >
-                  {user?.role?.toUpperCase() ?? "—"}
-                </span>
-              </div>
-              <CaretUpDown
-                size={13}
-                className="text-text-muted flex-shrink-0 group-data-[collapsible=icon]:hidden"
-              />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="top"
-            align="start"
-            sideOffset={8}
-            className="w-56 mb-1"
-          >
-            <div className="px-2 py-1.5 mb-1">
-              <p className="text-xs font-semibold text-text-primary truncate">
-                {user?.email}
-              </p>
-              <p className="text-[10px] text-text-muted">{user?.role}</p>
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer"
-              onClick={() => {
-                setOpenMobile(false);
-                router.push("/profile");
-              }}
-            >
-              <UserCircle size={15} className="text-text-secondary" />
-              <span>My Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="gap-2 cursor-pointer text-danger focus:text-danger focus:bg-danger/10"
-              onClick={() => logout()}
-            >
-              <SignOut size={15} />
-              <span>{t("nav.logout")}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg">
+                    <Avatar>
+                      <AvatarFallback className="bg-crimson-subtle border border-crimson/30 text-crimson">
+                        {user?.email?.[0]?.toUpperCase() ?? "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">
+                      {user?.email ?? "—"}
+                    </span>
+                    <Badge
+                      className={`badge ${user?.role === UserRole.OWNER ? "badge-owner" : user?.role === UserRole.ADMIN ? "badge-admin" : user?.role === UserRole.SUPERADMIN ? "badge-owner" : "badge-staff"} text-[9px] px-1.5 py-px mt-0.5 inline-block`}
+                    >
+                      {user?.role?.toUpperCase() ?? "—"}
+                    </Badge>
+                  </div>
+                  <EllipsisVertical className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                align="end"
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <p className="text-xs font-semibold text-text-primary truncate">
+                        {user?.email}
+                      </p>
+                      <p className="text-[10px] text-text-muted">
+                        {user?.role}
+                      </p>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    className="gap-2 cursor-pointer"
+                    onClick={() => {
+                      setOpenMobile(false);
+                      router.push("/profile");
+                    }}
+                  >
+                    <UserCircle />
+                    My Profile
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 cursor-pointer text-danger focus:text-danger focus:bg-danger/10"
+                  onClick={() => logout()}
+                >
+                  <SignOut />
+                  {t("nav.logout")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );

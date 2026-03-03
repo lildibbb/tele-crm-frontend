@@ -2,7 +2,7 @@
 
 import { Check, Upload, X } from "lucide-react";
 import * as React from "react";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 import { DataGridCellWrapper } from "@/components/data-grid/data-grid-cell-wrapper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -654,7 +654,7 @@ export function UrlCell<TData>({
       const href = getUrlHref(value);
       if (!href) {
         event.preventDefault();
-        showToast.error("Invalid URL", {
+        toast.error("Invalid URL", {
           description:
             "URL contains a dangerous protocol (javascript:, data:, vbscript:, or file:)",
         });
@@ -1513,7 +1513,7 @@ export function FileCell<TData>({
       if (maxFiles && files.length + newFiles.length > maxFiles) {
         const errorMessage = `Maximum ${maxFiles} files allowed`;
         setError(errorMessage);
-        showToast.warning(errorMessage);
+        toast.warning(errorMessage);
         setTimeout(() => {
           setError(null);
         }, 2000);
@@ -1543,11 +1543,11 @@ export function FileCell<TData>({
               : firstError.name;
 
           if (rejectedFiles.length === 1) {
-            showToast.error(firstError.reason, {
+            toast.error(firstError.reason, {
               description: `"${truncatedName}" has been rejected`,
             });
           } else {
-            showToast.error(firstError.reason, {
+            toast.error(firstError.reason, {
               description: `"${truncatedName}" and ${rejectedFiles.length - 1} more rejected`,
             });
           }
@@ -1583,7 +1583,7 @@ export function FileCell<TData>({
                 columnId,
               });
             } catch (error) {
-              showToast.error(
+              toast.error(
                 error instanceof Error
                   ? error.message
                   : `Failed to upload ${filesToValidate.length} file${filesToValidate.length !== 1 ? "s" : ""}`,
@@ -1662,7 +1662,7 @@ export function FileCell<TData>({
             columnId,
           });
         } catch (error) {
-          showToast.error(
+          toast.error(
             error instanceof Error
               ? error.message
               : `Failed to delete ${fileToRemove.name}`,
@@ -1707,7 +1707,7 @@ export function FileCell<TData>({
           columnId,
         });
       } catch (error) {
-        showToast.error(
+        toast.error(
           error instanceof Error ? error.message : "Failed to delete files",
         );
         setDeletingFiles(new Set());

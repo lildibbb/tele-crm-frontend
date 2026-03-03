@@ -276,28 +276,6 @@ export default function LoginPage() {
 
                 {!isLinkingMode && (
                   <>
-                    {/* Divider */}
-                    <div className="flex items-center gap-3 my-5">
-                      <div className="flex-1 h-px bg-border-subtle" />
-                      <span className="text-text-muted text-xs font-sans">
-                        or continue with
-                      </span>
-                      <div className="flex-1 h-px bg-border-subtle" />
-                    </div>
-
-                    {/* Telegram login placeholder if they aren't in TMA */}
-                    <Button
-                      variant="outline"
-                      className="w-full gap-2 border-[#2AABEE]/30 bg-[#2AABEE]/10 hover:bg-[#2AABEE]/20 text-[#2AABEE] hover:text-[#2AABEE]"
-                      size="lg"
-                      onClick={() => {
-                        // Logic to open telegram bot / external login
-                        window.open("https://t.me/TitanJournalBot", "_blank");
-                      }}
-                    >
-                      <Send className="h-4 w-4" />
-                      Continue with Telegram
-                    </Button>
                   </>
                 )}
 

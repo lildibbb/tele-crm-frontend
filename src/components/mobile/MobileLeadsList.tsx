@@ -9,9 +9,10 @@ import {
   X,
   FunnelSimple,
 } from "@phosphor-icons/react";
-import { useLeadsStore } from "@/store/leadsStore";
 import { LeadStatus } from "@/types/enums";
 import type { Lead } from "@/store/leadsStore";
+import { useLeadsList } from "@/hooks/useLeadsList";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -168,27 +169,24 @@ function PullIndicator({ visible }: { visible: boolean }) {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
-  const { leads, total, isLoading, fetchLeads } = useLeadsStore();
+  const { leads, total, isLoading, load: loadLeads } = useLeadsList();
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [search, setSearch] = useState("");
   const [skip, setSkip] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const searchTimer = useRef<ReturnType<typeof setTimeout>>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
 
   const load = useCallback(
     (newSkip: number, newSearch: string, newFilter: FilterTab) => {
-      fetchLeads({
+      loadLeads({
         skip: newSkip,
         take: PAGE_SIZE,
         status: newFilter === "ALL" ? undefined : newFilter,
         search: newSearch || undefined,
-        orderBy: "createdAt",
-        order: "desc",
       });
     },
-    [fetchLeads],
+    [loadLeads],
   );
 
   useEffect(() => {
@@ -220,18 +218,18 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
     load(0, search, tab);
   };
 
+  const debouncedLoad = useDebouncedCallback((val: string) => {
+    setSkip(0);
+    load(0, val, filter);
+  }, 300);
+
   const handleSearch = (val: string) => {
     setSearch(val);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      setSkip(0);
-      load(0, val, filter);
-    }, 400);
+    debouncedLoad(val);
   };
 
   const clearSearch = () => {
     setSearch("");
-    if (searchTimer.current) clearTimeout(searchTimer.current);
     setSkip(0);
     load(0, "", filter);
   };

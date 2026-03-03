@@ -235,6 +235,7 @@ const ms: Record<string, string> = {
   "verification.pendingReview": "Menunggu Semakan",
   "verification.tabs.pending": "Tertangguh",
   "verification.tabs.all": "Semua",
+  "verification.tabs.entries": "entri",
   "verification.approve": "Luluskan",
   "verification.reject": "Tolak",
   "verification.askMore": "Tanya Lebih",

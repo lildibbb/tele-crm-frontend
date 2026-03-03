@@ -32,14 +32,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
           description: "!text-[var(--text-secondary)]",
           actionButton: "!bg-[var(--accent)] !text-white !rounded-lg !font-medium",
           closeButton: "!text-[var(--text-secondary)] hover:!text-[var(--text-primary)]",
-          success:
-            "!border-l-[4px] !border-l-[#10B981]",
-          error:
-            "!border-l-[4px] !border-l-[#EF4444]",
-          warning:
-            "!border-l-[4px] !border-l-[#F59E0B]",
-          info:
-            "!border-l-[4px] !border-l-[#6366F1]",
         },
       }}
       style={

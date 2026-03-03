@@ -20,6 +20,7 @@ import { useAuthStore } from "@/store/authStore";
 import { UserRole, AuditAction } from "@/types/enums";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
@@ -104,7 +105,7 @@ function RoleBadge({ role }: { role: string }) {
     ADMIN: "badge badge-admin",
     STAFF: "badge badge-staff",
   };
-  return <span className={cls[role] ?? "badge"}>{role}</span>;
+  return <Badge className={cls[role] ?? "badge"}>{role}</Badge>;
 }
 
 function StatusDot({ active }: { active: boolean }) {

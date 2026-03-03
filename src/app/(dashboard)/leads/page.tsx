@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileLeadsList } from "@/components/mobile";
 import {
@@ -47,16 +45,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DataTable } from "@/components/data-table/data-table";
-import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { DataTableViewOptions } from "@/components/data-table/data-table-view-options";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { useDataTable } from "@/lib/hooks/use-data-table";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { getLeadsColumns } from "./_components/leads-columns";
 import { Input } from "@/components/ui/input";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
-import { showToast } from "@/lib/toast";
-
-gsap.registerPlugin(useGSAP);
+import { toast } from "sonner";
 
 export default function LeadsPage() {
   const t = useT();
@@ -99,7 +95,7 @@ export default function LeadsPage() {
     async (checked: boolean) => {
       setBulkHandoverPending(true);
       await bulkSetHandover(checked).catch(() =>
-        showToast.error(t(K.common.error.updateLead)),
+        toast.error(t(K.common.error.updateLead)),
       );
       setBulkHandoverPending(false);
     },
@@ -181,28 +177,6 @@ export default function LeadsPage() {
     fetchLeads,
   ]);
 
-  useGSAP(
-    () => {
-      if (isMobile) return;
-      const rows = tableRef.current?.querySelectorAll("tbody tr");
-      if (rows && rows.length > 0) {
-        gsap.fromTo(
-          rows,
-          { opacity: 0, y: 10 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.3,
-            stagger: 0.03,
-            ease: "power2.out",
-            clearProps: "all",
-          },
-        );
-      }
-    },
-    { scope: tableRef, dependencies: [leads.length, statusFilter, isMobile] },
-  );
-
   // ── Must be declared BEFORE the isMobile early return to satisfy Rules of Hooks ──
   const handleBulkStatus = useCallback(async () => {
     const selected = table.getSelectedRowModel().rows;
@@ -221,7 +195,7 @@ export default function LeadsPage() {
         order,
       });
     } catch {
-      showToast.error(t(K.common.error.updateStatus));
+      toast.error(t(K.common.error.updateStatus));
     } finally {
       setBulkStatusPending(false);
     }
@@ -276,11 +250,11 @@ export default function LeadsPage() {
   const handleImportFileChange = (file: File | null) => {
     if (!file) return;
     if (!file.name.toLowerCase().endsWith(".csv")) {
-      showToast.error("Only CSV files are accepted (.csv)");
+      toast.error("Only CSV files are accepted (.csv)");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      showToast.error("File too large. Maximum size is 5 MB.");
+      toast.error("File too large. Maximum size is 5 MB.");
       return;
     }
     setImportFile(file);
@@ -297,7 +271,7 @@ export default function LeadsPage() {
       setImportResult(result);
       setImportStatus("done");
       if (result.imported > 0 || result.updated > 0) {
-        showToast.success(
+        toast.success(
           `Import complete: ${result.imported} created, ${result.updated} updated${result.skipped > 0 ? `, ${result.skipped} skipped` : ""}`,
         );
         // Refresh the table
@@ -312,7 +286,7 @@ export default function LeadsPage() {
       }
     } catch {
       setImportStatus("error");
-      showToast.error("Import failed. Please check your file and try again.");
+      toast.error("Import failed. Please check your file and try again.");
     }
   };
 
@@ -327,7 +301,7 @@ export default function LeadsPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      showToast.error("Failed to download template.");
+      toast.error("Failed to download template.");
     }
   };
 
@@ -458,43 +432,41 @@ export default function LeadsPage() {
             </div>
           </div>
 
-          {/* ── Main Panel ── */}
-          <div className="bg-elevated rounded-xl overflow-hidden">
-            {/* Panel header: tabs + search */}
-            <div className="px-5 py-3.5 bg-card border-b border-border-subtle flex items-center justify-between gap-3 flex-wrap shadow-sm">
-              <div
-                className="bg-elevated p-1 flex items-center gap-0.5 rounded-xl overflow-x-auto scrollbar-none"
-                role="tablist"
-                aria-label="Lead status filter"
-              >
-                {TAB_FILTERS.map((f) => (
-                  <button
-                    key={f.key}
-                    type="button"
-                    role="tab"
-                    aria-selected={statusFilter === f.key}
-                    onClick={() => handleStatusChange(f.key)}
-                    className={
-                      "px-3.5 py-1.5 rounded-lg text-xs font-sans font-medium transition-all cursor-pointer whitespace-nowrap flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 " +
-                      (statusFilter === f.key
-                        ? "bg-crimson text-white"
-                        : "text-text-secondary hover:text-text-primary")
-                    }
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
+          {/* ── Status Tabs + Search ── */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div
+              className="bg-elevated p-1 flex items-center gap-0.5 rounded-xl overflow-x-auto scrollbar-none"
+              role="tablist"
+              aria-label="Lead status filter"
+            >
+              {TAB_FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={statusFilter === f.key}
+                  onClick={() => handleStatusChange(f.key)}
+                  className={
+                    "px-3.5 py-1.5 rounded-lg text-xs font-sans font-medium transition-all cursor-pointer whitespace-nowrap flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 " +
+                    (statusFilter === f.key
+                      ? "bg-crimson text-white shadow-sm"
+                      : "text-text-secondary hover:text-text-primary hover:bg-card")
+                  }
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
 
-              {/* Search bar */}
-              <div className="relative flex-shrink-0 w-full sm:w-[320px]">
-                <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-muted pointer-events-none" />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="relative w-full sm:w-[260px]">
+                <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-muted pointer-events-none" />
                 <Input
                   type="text"
                   value={searchRaw}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder={t("leads.search")}
-                  className="pl-9 pr-12 h-9 w-full bg-elevated/50 hover:bg-elevated border-border-default/50 hover:border-border-default text-sm shadow-none transition-all placeholder:text-text-muted rounded-xl focus-visible:bg-background focus-visible:border-crimson/50 focus-visible:ring-[3px] focus-visible:ring-crimson/10"
+                  className="pl-8 pr-10 h-8 w-full bg-background hover:bg-elevated border-border-default text-[11.5px] shadow-sm transition-all placeholder:text-text-muted rounded-[10px] focus-visible:bg-background focus-visible:border-crimson/40 focus-visible:ring-[2px] focus-visible:ring-crimson/10 font-sans"
                 />
                 <div className="absolute inset-y-0 right-1.5 flex items-center justify-center">
                   {searchRaw ? (
@@ -503,28 +475,31 @@ export default function LeadsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={clearSearch}
-                      className="h-6 w-6 text-text-muted hover:text-text-primary hover:bg-border-subtle rounded-lg transition-colors"
+                      className="h-5 w-5 text-text-muted hover:text-text-primary hover:bg-border-subtle rounded flex items-center justify-center transition-colors"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-3 w-3" />
                     </Button>
                   ) : (
-                    <kbd className="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-[6px] border border-border-subtle bg-background px-1.5 font-mono text-[10px] font-medium text-text-muted">
-                      <span className="text-xs">⌘</span>K
+                    <kbd className="pointer-events-none hidden sm:inline-flex h-4.5 select-none items-center gap-0.5 rounded-[4px] border border-border-default bg-elevated px-1 font-mono text-[9px] font-medium text-text-muted shadow-sm">
+                      <span className="text-[10px]">⌘</span>K
                     </kbd>
                   )}
                 </div>
               </div>
+              <DataTableViewOptions
+                table={table}
+                className="h-8 text-[11.5px] font-sans px-2.5 rounded-[10px]"
+              />
             </div>
+          </div>
 
-            <div className="px-4 pt-3 pb-4" ref={tableRef}>
-              {isLoading ? (
-                <DataTableSkeleton columnCount={6} rowCount={20} shrinkZero />
-              ) : (
-                <DataTable table={table} className="border-transparent">
-                  <DataTableToolbar table={table} />
-                </DataTable>
-              )}
-            </div>
+          {/* ── Table ── */}
+          <div ref={tableRef}>
+            {isLoading ? (
+              <DataTableSkeleton columnCount={6} rowCount={20} shrinkZero />
+            ) : (
+              <DataTable table={table} />
+            )}
           </div>
         </div>
 

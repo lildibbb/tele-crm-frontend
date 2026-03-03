@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Space_Grotesk, DM_Sans, JetBrains_Mono } from "next/font/google";
+import {
+  Space_Grotesk,
+  Plus_Jakarta_Sans,
+  JetBrains_Mono,
+} from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
@@ -8,6 +12,7 @@ import { LocaleProvider } from "@/i18n";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
+import { SidebarConfigProvider } from "@/context/sidebar-context";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-syne",
@@ -16,9 +21,9 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-// ── Font stack per DESIGN.md: DM Sans (body), Space Grotesk (display), JetBrains Mono (data)
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+// ── Font stack: Plus Jakarta Sans (body), Space Grotesk (display), JetBrains Mono (data)
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   display: "swap",
@@ -51,7 +56,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${dmSans.variable} ${jetbrainsMono.variable} font-sans antialiased bg-void text-text-primary`}
+        className={`${spaceGrotesk.variable} ${jakarta.variable} ${jetbrainsMono.variable} font-sans antialiased bg-void text-text-primary`}
       >
         <ThemeProvider
           attribute="class"
@@ -63,8 +68,14 @@ export default function RootLayout({
             <AuthProvider>
               <LocaleProvider>
                 <TooltipProvider delayDuration={300}>
-                  {children}
-                  <Toaster richColors position="bottom-right" visibleToasts={3} closeButton gap={8} />
+                  <SidebarConfigProvider>{children}</SidebarConfigProvider>
+                  <Toaster
+                    richColors
+                    position="bottom-right"
+                    visibleToasts={3}
+                    closeButton
+                    gap={8}
+                  />
                 </TooltipProvider>
               </LocaleProvider>
             </AuthProvider>

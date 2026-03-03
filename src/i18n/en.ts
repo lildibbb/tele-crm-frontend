@@ -237,6 +237,7 @@ const en: Record<string, string> = {
   "verification.pendingReview": "Pending Review",
   "verification.tabs.pending": "Pending",
   "verification.tabs.all": "All",
+  "verification.tabs.entries": "entries",
   "verification.approve": "Approve",
   "verification.reject": "Reject",
   "verification.askMore": "Ask More",

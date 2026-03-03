@@ -37,7 +37,7 @@ import { cn } from "@/lib/utils";
 import { useT, K } from "@/i18n";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileProfile } from "@/components/mobile";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 
 // Grouped IANA timezones by region
 const TIMEZONE_GROUPS: { region: string; zones: { value: string; label: string }[] }[] = [
@@ -239,9 +239,9 @@ export default function ProfilePage() {
       useAuthStore.setState((s) => ({
         user: s.user ? { ...s.user, timezone: res.data.data.timezone } : s.user,
       }));
-      showToast.success("Timezone saved — analytics will now use " + tzLabel);
+      toast.success("Timezone saved — analytics will now use " + tzLabel);
     } catch {
-      showToast.error("Failed to save timezone preference.");
+      toast.error("Failed to save timezone preference.");
     } finally {
       setTzSaving(false);
     }

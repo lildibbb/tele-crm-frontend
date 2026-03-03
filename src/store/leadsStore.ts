@@ -173,7 +173,7 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
       },
 
       bulkSetHandover: async (mode: boolean) => {
-        const leads = get().leads;
+        const previousLeads = get().leads;
         // Optimistically update all leads in store
         set(
           (s) => ({
@@ -187,7 +187,8 @@ export const useLeadsStore = create<LeadsState & LeadsActions>()(
             handoverMode: mode,
           });
         } catch (err: unknown) {
-          console.error("Failed to set bulk handover", err);
+          set({ leads: previousLeads, error: err instanceof Error ? err.message : "Failed to set bulk handover" }, false, "bulkSetHandover/rollback");
+          throw err;
         }
       },
 

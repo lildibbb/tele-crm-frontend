@@ -16,7 +16,7 @@ import {
 } from "@tanstack/react-table";
 import { useVirtualizer, type Virtualizer } from "@tanstack/react-virtual";
 import * as React from "react";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 
 import { useAsRef } from "@/hooks/use-as-ref";
 import { useIsomorphicLayoutEffect } from "@/hooks/use-isomorphic-layout-effect";
@@ -635,13 +635,13 @@ function useDataGrid<TData>({
         store.setState("cutCells", new Set());
       }
 
-      showToast.success(
+      toast.success(
         `${selectedCellsArray.length} cell${
           selectedCellsArray.length !== 1 ? "s" : ""
         } copied`,
       );
     } catch (error) {
-      showToast.error(
+      toast.error(
         error instanceof Error ? error.message : "Failed to copy to clipboard",
       );
     }
@@ -660,13 +660,13 @@ function useDataGrid<TData>({
 
       store.setState("cutCells", new Set(selectedCellsArray));
 
-      showToast.success(
+      toast.success(
         `${selectedCellsArray.length} cell${
           selectedCellsArray.length !== 1 ? "s" : ""
         } cut`,
       );
     } catch (error) {
-      showToast.error(
+      toast.error(
         error instanceof Error ? error.message : "Failed to cut to clipboard",
       );
     }
@@ -1012,13 +1012,13 @@ function useDataGrid<TData>({
           onDataUpdate(allUpdates);
 
           if (cellsSkipped > 0) {
-            showToast.success(
+            toast.success(
               `${cellsUpdated} cell${
                 cellsUpdated !== 1 ? "s" : ""
               } pasted, ${cellsSkipped} skipped`,
             );
           } else {
-            showToast.success(
+            toast.success(
               `${cellsUpdated} cell${cellsUpdated !== 1 ? "s" : ""} pasted`,
             );
           }
@@ -1036,7 +1036,7 @@ function useDataGrid<TData>({
 
           restoreFocus(dataGridRef.current);
         } else if (cellsSkipped > 0) {
-          showToast.error(
+          toast.error(
             `${cellsSkipped} cell${
               cellsSkipped !== 1 ? "s" : ""
             } skipped pasting for invalid data`,
@@ -1051,7 +1051,7 @@ function useDataGrid<TData>({
           });
         }
       } catch (error) {
-        showToast.error(
+        toast.error(
           error instanceof Error
             ? error.message
             : "Failed to paste. Please try again.",

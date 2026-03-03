@@ -20,7 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { authApi } from "@/lib/api/auth";
 import type { Session } from "@/lib/schemas/auth.schema";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 
 function getDeviceType(userAgent: string | null): "mobile" | "desktop" {
   if (!userAgent) return "desktop";
@@ -47,7 +47,7 @@ export function SessionsTab() {
     authApi
       .getSessions()
       .then((res: { data: { data: Session[] } }) => setSessions(res.data.data))
-      .catch(() => showToast.error("Couldn't load sessions. Please try again."))
+      .catch(() => toast.error("Couldn't load sessions. Please try again."))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -56,9 +56,9 @@ export function SessionsTab() {
     try {
       await authApi.revokeSession(id);
       setSessions((prev) => prev.filter((s) => s.id !== id));
-      showToast.success("Session ended successfully");
+      toast.success("Session ended successfully");
     } catch {
-      showToast.error("Couldn't revoke this session. Please try again.");
+      toast.error("Couldn't revoke this session. Please try again.");
     } finally {
       setRevoking(false);
       setRevokeId(null);
@@ -70,9 +70,9 @@ export function SessionsTab() {
     try {
       await authApi.revokeAllSessions();
       setSessions([]);
-      showToast.success("All sessions ended successfully");
+      toast.success("All sessions ended successfully");
     } catch {
-      showToast.error("Couldn't end all sessions. Please try again.");
+      toast.error("Couldn't end all sessions. Please try again.");
     } finally {
       setRevoking(false);
     }

@@ -3,7 +3,7 @@
 import type { ColumnDef, TableMeta } from "@tanstack/react-table";
 import { CopyIcon, EraserIcon, ScissorsIcon, Trash2Icon } from "lucide-react";
 import * as React from "react";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -175,7 +175,7 @@ function ContextMenuImpl<TData>({
 
     onDataUpdate?.(updates);
 
-    showToast.success(
+    toast.success(
       `${updates.length} cell${updates.length !== 1 ? "s" : ""} cleared`,
     );
   }, [propsRef]);
@@ -200,7 +200,7 @@ function ContextMenuImpl<TData>({
 
     await onRowsDelete?.(rowIndicesArray);
 
-    showToast.success(`${rowCount} row${rowCount !== 1 ? "s" : ""} deleted`);
+    toast.success(`${rowCount} row${rowCount !== 1 ? "s" : ""} deleted`);
   }, [propsRef]);
 
   return (

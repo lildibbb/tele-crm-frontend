@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, Copy, Check, UserX, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -35,7 +36,7 @@ import {
   type InviteUserInput,
 } from "@/lib/schemas/user.schema";
 import { UserRole } from "@/types/enums";
-import { showToast } from "@/lib/toast";
+import { toast } from "sonner";
 
 const ROLE_CONFIG: Record<string, { label: string; cls: string }> = {
   OWNER: { label: "Owner", cls: "badge-owner" },
@@ -77,9 +78,9 @@ export function TeamTab() {
       const inv = await inviteUser(data);
       setInviteLink(inv.telegramDeepLink);
       await fetchInvitations();
-      showToast.success("Invite generated");
+      toast.success("Invite generated");
     } catch {
-      showToast.error("Couldn't create the invitation. Please try again.");
+      toast.error("Couldn't create the invitation. Please try again.");
     }
   };
 
@@ -100,29 +101,29 @@ export function TeamTab() {
   const handleDeactivate = async (id: string) => {
     try {
       await deactivateUser(id);
-      showToast.success("User deactivated");
+      toast.success("User deactivated");
       await fetchUsers();
     } catch {
-      showToast.error("Couldn't deactivate this user. Please try again.");
+      toast.error("Couldn't deactivate this user. Please try again.");
     }
   };
 
   const handleReactivate = async (id: string) => {
     try {
       await reactivateUser(id);
-      showToast.success("User reactivated");
+      toast.success("User reactivated");
       await fetchUsers();
     } catch {
-      showToast.error("Couldn't reactivate this user. Please try again.");
+      toast.error("Couldn't reactivate this user. Please try again.");
     }
   };
 
   const handleDeleteInvitation = async (id: string) => {
     try {
       await deleteInvitation(id);
-      showToast.success("Invitation revoked");
+      toast.success("Invitation revoked");
     } catch {
-      showToast.error("Couldn't revoke this invitation. Please try again.");
+      toast.error("Couldn't revoke this invitation. Please try again.");
     }
   };
 
@@ -188,16 +189,16 @@ export function TeamTab() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={`badge ${roleConf.cls}`}>
+                        <Badge className={`badge ${roleConf.cls}`}>
                           {roleConf.label}
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell>
-                        <span
+                        <Badge
                           className={`badge ${m.isActive ? "badge-confirmed" : "badge-failed"}`}
                         >
                           {m.isActive ? "Active" : "Inactive"}
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell className="data-mono text-[12px] whitespace-nowrap">
                         {m.lastLoginAt
@@ -258,11 +259,11 @@ export function TeamTab() {
                   <p className="data-mono flex-1 min-w-[200px]">
                     {inv.email ?? "—"}
                   </p>
-                  <span
+                  <Badge
                     className={`badge ${ROLE_CONFIG[inv.role]?.cls ?? "badge-staff"}`}
                   >
                     {ROLE_CONFIG[inv.role]?.label ?? inv.role}
-                  </span>
+                  </Badge>
                   <div className="flex items-center gap-1 text-warning text-xs font-sans whitespace-nowrap">
                     <Clock className="h-3 w-3" />
                     Expires {new Date(inv.expiresAt).toLocaleDateString()}
