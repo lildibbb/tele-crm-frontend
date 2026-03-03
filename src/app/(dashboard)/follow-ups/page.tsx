@@ -44,13 +44,24 @@ function formatDate(iso: string) {
 
 function StatusChip({ status }: { status: FollowUp["status"] }) {
   const map: Record<string, { label: string; cls: string }> = {
-    [FollowUpStatus.PENDING]:   { label: "Scheduled",  cls: "bg-info/10 text-info border-info/20" },
-    [FollowUpStatus.SENT]:      { label: "Sent",       cls: "bg-success/10 text-success border-success/20" },
-    [FollowUpStatus.CANCELLED]: { label: "Cancelled",  cls: "bg-muted/20 text-text-secondary border-border-subtle" },
+    [FollowUpStatus.PENDING]: {
+      label: "Scheduled",
+      cls: "bg-info/10 text-info border-info/20",
+    },
+    [FollowUpStatus.SENT]: {
+      label: "Sent",
+      cls: "bg-success/10 text-success border-success/20",
+    },
+    [FollowUpStatus.CANCELLED]: {
+      label: "Cancelled",
+      cls: "bg-muted/20 text-text-secondary border-border-subtle",
+    },
   };
   const { label, cls } = map[status] ?? map[FollowUpStatus.PENDING];
   return (
-    <span className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${cls}`}>
+    <span
+      className={`inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${cls}`}
+    >
       {label}
     </span>
   );
@@ -71,13 +82,14 @@ export default function FollowUpsPage() {
   const isMobile = useIsMobile();
   const t = useT();
   const TYPE_LABELS: Record<string, string> = {
-    follow_up_register:     t(K.followUp.type.register),
-    follow_up_deposit:      t(K.followUp.type.deposit),
+    follow_up_register: t(K.followUp.type.register),
+    follow_up_deposit: t(K.followUp.type.deposit),
     follow_up_verification: t(K.followUp.type.verification),
   };
-  const typeLabel = (type: string) => TYPE_LABELS[type] ?? type.replace(/_/g, " ");
+  const typeLabel = (type: string) =>
+    TYPE_LABELS[type] ?? type.replace(/_/g, " ");
 
-  const [tab, setTab]= useState<"scheduled" | "failed">("scheduled");
+  const [tab, setTab] = useState<"scheduled" | "failed">("scheduled");
   const [items, setItems] = useState<FollowUp[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -97,7 +109,9 @@ export default function FollowUpsPage() {
     try {
       const res = await followUpsApi.findAll({ skip, take: PAGE_SIZE });
       // Response: { statusCode, message, data: { data: FollowUp[], total: N } }
-      const { data: arr, total: count } = parsePaginatedData<FollowUp>(res.data);
+      const { data: arr, total: count } = parsePaginatedData<FollowUp>(
+        res.data,
+      );
       setItems(arr);
       setTotal(count);
     } catch {
@@ -167,30 +181,37 @@ export default function FollowUpsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // Stat counts
-  const countScheduled  = items.filter((i) => i.status === FollowUpStatus.PENDING).length;
-  const countSent       = items.filter((i) => i.status === FollowUpStatus.SENT).length;
-  const countCancelled  = items.filter((i) => i.status === FollowUpStatus.CANCELLED).length;
-  const countFailed     = failedJobs.length;
+  const countScheduled = items.filter(
+    (i) => i.status === FollowUpStatus.PENDING,
+  ).length;
+  const countSent = items.filter(
+    (i) => i.status === FollowUpStatus.SENT,
+  ).length;
+  const countCancelled = items.filter(
+    (i) => i.status === FollowUpStatus.CANCELLED,
+  ).length;
+  const countFailed = failedJobs.length;
 
   return (
     <div className="space-y-6 animate-in-up">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
-            <Timer className="h-5 w-5 text-accent" weight="fill" />
-          </div>
-          <div>
-            <h1 className="font-display font-bold text-xl text-text-primary">{t(K.followUp.title)}</h1>
-            <p className="font-sans text-sm text-text-secondary">
-              {t(K.followUp.subtitle)}
-            </p>
-          </div>
+        <div>
+          <h1 className="font-display font-bold text-xl text-text-primary">
+            {t(K.followUp.title)}
+          </h1>
+          <p className="font-sans text-sm text-text-secondary">
+            {t(K.followUp.subtitle)}
+          </p>
         </div>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => tab === "scheduled" ? void load(page * PAGE_SIZE) : void loadFailed()}
+          onClick={() =>
+            tab === "scheduled"
+              ? void load(page * PAGE_SIZE)
+              : void loadFailed()
+          }
           disabled={isLoading || isLoadingFailed}
           className="gap-1.5 text-xs"
         >
@@ -202,18 +223,43 @@ export default function FollowUpsPage() {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: t(K.followUp.stats.scheduled),  value: countScheduled, icon: CalendarCheck,  cls: "text-info",           bg: "bg-info/10" },
-          { label: t(K.followUp.stats.sent),        value: countSent,       icon: CheckCircle,    cls: "text-success",        bg: "bg-success/10" },
-          { label: t(K.followUp.stats.cancelled),   value: countCancelled,  icon: ProhibitInset,  cls: "text-text-secondary", bg: "bg-muted/20" },
-          { label: t(K.followUp.stats.failed),      value: countFailed,     icon: SmileySad,      cls: "text-danger",         bg: "bg-danger/10" },
-        ].map(({ label, value, icon: Icon, cls, bg }) => (
-          <div key={label} className="bg-elevated rounded-2xl border border-border-subtle px-4 py-3 flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
-              <Icon className={`h-4 w-4 ${cls}`} weight="duotone" />
-            </div>
+          {
+            label: t(K.followUp.stats.scheduled),
+            value: countScheduled,
+            icon: CalendarCheck,
+            cls: "text-text-secondary",
+          },
+          {
+            label: t(K.followUp.stats.sent),
+            value: countSent,
+            icon: CheckCircle,
+            cls: "text-text-secondary",
+          },
+          {
+            label: t(K.followUp.stats.cancelled),
+            value: countCancelled,
+            icon: ProhibitInset,
+            cls: "text-text-secondary",
+          },
+          {
+            label: t(K.followUp.stats.failed),
+            value: countFailed,
+            icon: SmileySad,
+            cls: "text-text-secondary",
+          },
+        ].map(({ label, value, icon: Icon, cls }) => (
+          <div
+            key={label}
+            className="bg-card rounded-xl border border-border-subtle px-4 py-3 flex items-center gap-3 shadow-[var(--shadow-card)]"
+          >
+            <Icon className={`h-4 w-4 flex-shrink-0 ${cls}`} weight="duotone" />
             <div>
-              <p className="font-display font-bold text-lg leading-none text-text-primary">{value}</p>
-              <p className="font-sans text-xs text-text-muted mt-0.5">{label}</p>
+              <p className="font-display font-bold text-lg leading-none text-text-primary">
+                {value}
+              </p>
+              <p className="font-sans text-xs text-text-muted mt-0.5">
+                {label}
+              </p>
             </div>
           </div>
         ))}
@@ -231,7 +277,9 @@ export default function FollowUpsPage() {
                 : "text-text-muted hover:text-text-primary"
             }`}
           >
-            {tabKey === "scheduled" ? t(K.followUp.tabs.scheduled) : t(K.followUp.tabs.failed)}
+            {tabKey === "scheduled"
+              ? t(K.followUp.tabs.scheduled)
+              : t(K.followUp.tabs.failed)}
             {tabKey === "failed" && failedJobs.length > 0 && (
               <span className="ml-1.5 bg-danger text-white text-[9px] px-1.5 py-px rounded-full leading-none">
                 {failedJobs.length}
@@ -251,11 +299,20 @@ export default function FollowUpsPage() {
 
       {/* ── Scheduled tab ── */}
       {tab === "scheduled" && (
-        <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
+        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
           {/* Table header */}
           <div className="hidden sm:grid grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle shadow-sm">
-            {[t(K.followUp.col.lead), t(K.followUp.col.type), t(K.followUp.col.status), t(K.followUp.col.scheduledAt), ""].map((h) => (
-              <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
+            {[
+              t(K.followUp.col.lead),
+              t(K.followUp.col.type),
+              t(K.followUp.col.status),
+              t(K.followUp.col.scheduledAt),
+              "",
+            ].map((h) => (
+              <span
+                key={h}
+                className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted"
+              >
                 {h}
               </span>
             ))}
@@ -267,12 +324,14 @@ export default function FollowUpsPage() {
             </div>
           ) : items.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-14 text-text-muted">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center">
-                <Timer className="h-6 w-6 text-accent" weight="duotone" />
-              </div>
+              <Timer className="h-8 w-8 text-text-muted opacity-40" weight="duotone" />
               <div className="text-center">
-                <p className="font-sans text-sm font-medium text-text-primary">{t(K.followUp.empty)}</p>
-                <p className="font-sans text-xs text-text-muted mt-0.5">{t(K.followUp.emptyDesc)}</p>
+                <p className="font-sans text-sm font-medium text-text-primary">
+                  {t(K.followUp.empty)}
+                </p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">
+                  {t(K.followUp.emptyDesc)}
+                </p>
               </div>
             </div>
           ) : (
@@ -284,14 +343,22 @@ export default function FollowUpsPage() {
                 >
                   {/* Lead */}
                   <div className="min-w-0">
-                    <p className="font-sans text-sm font-medium text-text-primary truncate">{t(K.followUp.col.lead)}</p>
-                    <p className="font-mono text-xs text-text-muted truncate">{item.leadId}</p>
+                    <p className="font-sans text-sm font-medium text-text-primary truncate">
+                      {t(K.followUp.col.lead)}
+                    </p>
+                    <p className="font-mono text-xs text-text-muted truncate">
+                      {item.leadId}
+                    </p>
                   </div>
 
                   {/* Type */}
                   <div className="min-w-0">
-                    <p className="font-sans text-sm text-text-primary truncate">{typeLabel(item.type)}</p>
-                    <p className="font-sans text-xs text-text-muted truncate">{item.type}</p>
+                    <p className="font-sans text-sm text-text-primary truncate">
+                      {typeLabel(item.type)}
+                    </p>
+                    <p className="font-sans text-xs text-text-muted truncate">
+                      {item.type}
+                    </p>
                   </div>
 
                   {/* Status */}
@@ -301,7 +368,9 @@ export default function FollowUpsPage() {
 
                   {/* Scheduled At */}
                   <div className="min-w-0">
-                    <p className="font-sans text-sm text-text-primary">{formatDate(item.scheduledAt)}</p>
+                    <p className="font-sans text-sm text-text-primary">
+                      {formatDate(item.scheduledAt)}
+                    </p>
                     {item.sentAt && (
                       <p className="font-sans text-xs text-text-muted">
                         Sent {formatDate(item.sentAt)}
@@ -365,11 +434,16 @@ export default function FollowUpsPage() {
         <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
           {/* Table header */}
           <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle shadow-sm">
-            {[t(K.followUp.failedJob), t(K.followUp.failedError), ""].map((h) => (
-              <span key={h} className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted">
-                {h}
-              </span>
-            ))}
+            {[t(K.followUp.failedJob), t(K.followUp.failedError), ""].map(
+              (h) => (
+                <span
+                  key={h}
+                  className="font-sans text-[11px] font-semibold uppercase tracking-wide text-text-muted"
+                >
+                  {h}
+                </span>
+              ),
+            )}
           </div>
 
           {isLoadingFailed ? (
@@ -382,8 +456,12 @@ export default function FollowUpsPage() {
                 <XCircle className="h-6 w-6 text-success" weight="duotone" />
               </div>
               <div className="text-center">
-                <p className="font-sans text-sm font-medium text-text-primary">{t(K.followUp.noFailed)}</p>
-                <p className="font-sans text-xs text-text-muted mt-0.5">{t(K.followUp.noFailedDesc)}</p>
+                <p className="font-sans text-sm font-medium text-text-primary">
+                  {t(K.followUp.noFailed)}
+                </p>
+                <p className="font-sans text-xs text-text-muted mt-0.5">
+                  {t(K.followUp.noFailedDesc)}
+                </p>
               </div>
             </div>
           ) : (
@@ -395,16 +473,24 @@ export default function FollowUpsPage() {
                 >
                   {/* Job / Lead */}
                   <div className="min-w-0">
-                    <p className="font-sans text-sm font-medium text-text-primary truncate">{job.name}</p>
-                    <p className="font-mono text-xs text-text-muted truncate">#{job.id}</p>
+                    <p className="font-sans text-sm font-medium text-text-primary truncate">
+                      {job.name}
+                    </p>
+                    <p className="font-mono text-xs text-text-muted truncate">
+                      #{job.id}
+                    </p>
                   </div>
 
                   {/* Error */}
                   <div className="min-w-0">
                     {job.failedReason ? (
-                      <p className="font-mono text-xs text-danger line-clamp-2 break-all">{job.failedReason}</p>
+                      <p className="font-mono text-xs text-danger line-clamp-2 break-all">
+                        {job.failedReason}
+                      </p>
                     ) : (
-                      <p className="font-sans text-xs text-text-muted italic">{t(K.followUp.noErrorDetail)}</p>
+                      <p className="font-sans text-xs text-text-muted italic">
+                        {t(K.followUp.noErrorDetail)}
+                      </p>
                     )}
                   </div>
 
@@ -433,24 +519,35 @@ export default function FollowUpsPage() {
       )}
 
       {/* ── Cancel Confirm Dialog ── */}
-      <Dialog open={!!cancelTarget} onOpenChange={(o) => !o && setCancelTarget(null)}>
+      <Dialog
+        open={!!cancelTarget}
+        onOpenChange={(o) => !o && setCancelTarget(null)}
+      >
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-bold text-lg text-text-primary">{t(K.followUp.cancelTitle)}</DialogTitle>
+            <DialogTitle className="font-bold text-lg text-text-primary">
+              {t(K.followUp.cancelTitle)}
+            </DialogTitle>
             <DialogDescription className="font-sans text-sm text-text-secondary">
               {t(K.followUp.cancelDesc)}
             </DialogDescription>
           </DialogHeader>
           {cancelTarget && (
             <div className="my-3 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
-              <p className="font-sans text-sm font-medium text-text-primary">{typeLabel(cancelTarget.type)}</p>
+              <p className="font-sans text-sm font-medium text-text-primary">
+                {typeLabel(cancelTarget.type)}
+              </p>
               <p className="font-mono text-[11px] text-text-muted mt-1">
                 Scheduled: {formatDate(cancelTarget.scheduledAt)}
               </p>
             </div>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="ghost" onClick={() => setCancelTarget(null)} className="flex-1">
+            <Button
+              variant="ghost"
+              onClick={() => setCancelTarget(null)}
+              className="flex-1"
+            >
               {t(K.followUp.keep)}
             </Button>
             <Button

@@ -919,12 +919,7 @@ export default function VerificationPage() {
               {pendingTotal > 0 && (
                 <Badge className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border-default text-text-secondary text-[11px] font-semibold shadow-none">
                   <span
-                    className="rounded-full bg-warning inline-block flex-shrink-0"
-                    style={{
-                      width: 5,
-                      height: 5,
-                      animation: "pulse-live 2.4s ease-in-out infinite",
-                    }}
+                    className="w-1.5 h-1.5 rounded-full bg-warning inline-block flex-shrink-0 animate-pulse"
                   />
                   {pendingTotal} {t("verification.pendingReview")}
                 </Badge>
@@ -943,12 +938,7 @@ export default function VerificationPage() {
               <Clock size={22} weight="duotone" className="text-text-muted" />
               <span className="flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-card border border-border-subtle text-text-secondary">
                 <span
-                  className="rounded-full bg-warning inline-block flex-shrink-0"
-                  style={{
-                    width: 5,
-                    height: 5,
-                    animation: "pulse-live 2.4s ease-in-out infinite",
-                  }}
+                  className="w-1.5 h-1.5 rounded-full bg-warning inline-block flex-shrink-0 animate-pulse"
                 />
                 Live
               </span>

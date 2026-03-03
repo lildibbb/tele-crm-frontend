@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useBackupHistory, useTriggerBackup } from "@/queries/useBackupQuery";
-import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
+import {
+  useSystemConfig,
+  useUpsertManySystemConfig,
+} from "@/queries/useSystemConfigQuery";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -37,16 +40,23 @@ function formatDate(iso: string): string {
   });
 }
 
-const STATUS_CONFIG: Record<string, { label: string; cls: string; dot: string }> = {
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; cls: string; dot: string }
+> = {
   success: { label: "Success", cls: "text-success", dot: "bg-success" },
   partial: { label: "Partial", cls: "text-warning", dot: "bg-warning" },
-  failed:  { label: "Failed",  cls: "text-danger",  dot: "bg-danger"  },
+  failed: { label: "Failed", cls: "text-danger", dot: "bg-danger" },
 };
 
 // ── BackupPanel ───────────────────────────────────────────────────────────────
 
 export function BackupPanel() {
-  const { data: history = [], isLoading: isLoadingHistory, refetch: refetchHistory } = useBackupHistory(10);
+  const {
+    data: history = [],
+    isLoading: isLoadingHistory,
+    refetch: refetchHistory,
+  } = useBackupHistory(10);
   const triggerBackupMutation = useTriggerBackup();
   const { data: entries = {} } = useSystemConfig();
   const upsertMany = useUpsertManySystemConfig();
@@ -80,7 +90,9 @@ export function BackupPanel() {
       setSavedKey(firstKey ?? null);
       setTimeout(() => setSavedKey(null), 2000);
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Save failed";
+      const msg =
+        (e as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Save failed";
       setConfigErr(msg);
       setTimeout(() => setConfigErr(null), 3000);
     } finally {
@@ -92,7 +104,9 @@ export function BackupPanel() {
     try {
       await triggerBackupMutation.mutateAsync();
       setTriggerResult("Backup queued successfully");
-    } catch { /* error in triggerBackupMutation.error */ }
+    } catch {
+      /* error in triggerBackupMutation.error */
+    }
   };
 
   const backupEnabled = getVal("backup.enabled") === "true";
@@ -105,12 +119,24 @@ export function BackupPanel() {
         <div className="flex items-center gap-2">
           <HardDrives size={16} weight="duotone" className="text-info" />
           <div>
-            <h2 className="text-sm font-semibold text-text-primary">Database Backup</h2>
-            <p className="text-xs text-text-secondary mt-0.5">pg_dump → encrypted → S3/R2 storage</p>
+            <h2 className="text-sm font-semibold text-text-primary">
+              Database Backup
+            </h2>
+            <p className="text-xs text-text-secondary mt-0.5">
+              pg_dump → encrypted → S3/R2 storage
+            </p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7 text-text-muted hover:text-text-primary" onClick={() => void refetchHistory()}>
-          <ArrowClockwise size={14} className={isLoadingHistory ? "animate-spin" : ""} />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-text-muted hover:text-text-primary"
+          onClick={() => void refetchHistory()}
+        >
+          <ArrowClockwise
+            size={14}
+            className={isLoadingHistory ? "animate-spin" : ""}
+          />
         </Button>
       </div>
 
@@ -119,14 +145,20 @@ export function BackupPanel() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Enable toggle */}
           <div className="space-y-2">
-            <Label className="text-[11px] font-medium text-text-secondary">Enable Backup</Label>
+            <Label className="text-[11px] font-medium text-text-secondary">
+              Enable Backup
+            </Label>
             <div className="flex items-center gap-3">
               <Switch
                 checked={backupEnabled}
-                onCheckedChange={(v) => void saveConfig({ "backup.enabled": String(v) })}
+                onCheckedChange={(v) =>
+                  void saveConfig({ "backup.enabled": String(v) })
+                }
                 disabled={isSavingConfig}
               />
-              <span className="text-xs text-text-muted">{backupEnabled ? "On" : "Off"}</span>
+              <span className="text-xs text-text-muted">
+                {backupEnabled ? "On" : "Off"}
+              </span>
               {savedKey === "backup.enabled" && (
                 <CheckCircle size={13} className="text-success" />
               )}
@@ -141,7 +173,9 @@ export function BackupPanel() {
             <div className="flex gap-2">
               <select
                 value={schedule}
-                onChange={(e) => void saveConfig({ "backup.schedule": e.target.value })}
+                onChange={(e) =>
+                  void saveConfig({ "backup.schedule": e.target.value })
+                }
                 disabled={isSavingConfig}
                 className="flex-1 h-8 rounded-md border border-input bg-transparent px-2 text-xs text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 disabled:opacity-50"
               >
@@ -149,13 +183,17 @@ export function BackupPanel() {
                 <option value="weekly">Weekly (Sun 4 AM)</option>
                 <option value="monthly">Monthly (1st, 4 AM)</option>
               </select>
-              {savedKey === "backup.schedule" && <CheckCircle size={13} className="text-success self-center" />}
+              {savedKey === "backup.schedule" && (
+                <CheckCircle size={13} className="text-success self-center" />
+              )}
             </div>
           </div>
 
           {/* Retention */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-medium text-text-secondary">Retention (days)</Label>
+            <Label className="text-[11px] font-medium text-text-secondary">
+              Retention (days)
+            </Label>
             <div className="flex gap-2">
               <Input
                 type="number"
@@ -170,7 +208,9 @@ export function BackupPanel() {
                 variant="outline"
                 className={`h-8 px-3 text-xs ${savedKey === "backup.retentionDays" ? "text-success border-success/30" : ""}`}
                 disabled={isSavingConfig}
-                onClick={() => void saveConfig({ "backup.retentionDays": retentionDraft })}
+                onClick={() =>
+                  void saveConfig({ "backup.retentionDays": retentionDraft })
+                }
               >
                 {savedKey === "backup.retentionDays" ? "Saved!" : "Save"}
               </Button>
@@ -202,7 +242,8 @@ export function BackupPanel() {
           )}
           {triggerBackupMutation.error && (
             <span className="text-xs text-danger flex items-center gap-1">
-              <Warning size={13} /> {(triggerBackupMutation.error as Error).message}
+              <Warning size={13} />{" "}
+              {(triggerBackupMutation.error as Error).message}
             </span>
           )}
         </div>
@@ -220,34 +261,56 @@ export function BackupPanel() {
               ))}
             </div>
           ) : history.length === 0 ? (
-            <p className="text-xs text-text-muted py-4 text-center">No backups yet</p>
+            <p className="text-xs text-text-muted py-4 text-center">
+              No backups yet
+            </p>
           ) : (
             <div className="rounded-lg border border-border-subtle overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border-subtle bg-card shadow-sm">
-                    <th className="text-left px-4 py-2.5 font-medium text-text-muted">Filename</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">Size</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">Status</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">Created</th>
+                    <th className="text-left px-4 py-2.5 font-medium text-text-muted">
+                      Filename
+                    </th>
+                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">
+                      Size
+                    </th>
+                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">
+                      Status
+                    </th>
+                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">
+                      Created
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {history.map((log, idx) => {
-                    const sc = STATUS_CONFIG[log.status] ?? STATUS_CONFIG.failed;
+                    const sc =
+                      STATUS_CONFIG[log.status] ?? STATUS_CONFIG.failed;
                     return (
-                      <tr key={log.id} className={`${idx !== 0 ? "border-t border-border-subtle" : ""} hover:bg-elevated/50`}>
+                      <tr
+                        key={log.id}
+                        className={`${idx !== 0 ? "border-t border-border-subtle" : ""} hover:bg-elevated/50`}
+                      >
                         <td className="px-4 py-2.5 font-mono text-[10px] text-text-secondary max-w-[200px] truncate">
                           {log.filename}
                         </td>
-                        <td className="px-3 py-2.5 text-text-muted">{formatBytes(log.sizeBytes)}</td>
+                        <td className="px-3 py-2.5 text-text-muted">
+                          {formatBytes(log.sizeBytes)}
+                        </td>
                         <td className="px-3 py-2.5">
-                          <span className={`flex items-center gap-1.5 ${sc.cls}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                          <span
+                            className={`flex items-center gap-1.5 ${sc.cls}`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${sc.dot}`}
+                            />
                             {sc.label}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-text-muted whitespace-nowrap">{formatDate(log.createdAt)}</td>
+                        <td className="px-3 py-2.5 text-text-muted whitespace-nowrap">
+                          {formatDate(log.createdAt)}
+                        </td>
                       </tr>
                     );
                   })}

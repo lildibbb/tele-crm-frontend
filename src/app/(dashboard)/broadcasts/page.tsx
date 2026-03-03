@@ -139,9 +139,6 @@ export default function BroadcastsPage() {
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-crimson/10 border border-crimson/20 flex items-center justify-center flex-shrink-0">
-          <Megaphone className="h-5 w-5 text-crimson" weight="fill" />
-        </div>
         <div>
           <h1 className="font-display font-bold text-xl text-text-primary">
             {t(K.broadcast.title)}
@@ -156,39 +153,31 @@ export default function BroadcastsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
-            icon: <Megaphone className="h-4 w-4 text-crimson" />,
+            icon: <Megaphone className="h-4 w-4 text-text-secondary" weight="duotone" />,
             label: t(K.broadcast.stats.total),
             value: historyTotal,
-            bg: "bg-crimson/10 border-crimson/20",
           },
           {
-            icon: <CalendarBlank className="h-4 w-4 text-indigo-500" />,
+            icon: <CalendarBlank className="h-4 w-4 text-text-secondary" weight="duotone" />,
             label: t(K.broadcast.stats.last7d),
             value: last7Days,
-            bg: "bg-indigo-500/10 border-indigo-500/20",
           },
           {
-            icon: <HourglassMedium className="h-4 w-4 text-warning" />,
+            icon: <HourglassMedium className="h-4 w-4 text-text-secondary" weight="duotone" />,
             label: t(K.broadcast.stats.inProgress),
             value: pendingCount,
-            bg: "bg-warning/10 border-warning/20",
           },
           {
-            icon: <Users className="h-4 w-4 text-success" />,
+            icon: <Users className="h-4 w-4 text-text-secondary" weight="duotone" />,
             label: t(K.broadcast.stats.recipients),
             value: totalRecipients.toLocaleString(),
-            bg: "bg-success/10 border-success/20",
           },
-        ].map(({ icon, label, value, bg }) => (
+        ].map(({ icon, label, value }) => (
           <div
             key={label}
             className="bg-card rounded-xl border border-border-subtle p-4 flex items-center gap-3 shadow-[var(--shadow-card)]"
           >
-            <div
-              className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 ${bg}`}
-            >
-              {icon}
-            </div>
+            {icon}
             <div className="min-w-0">
               <p className="font-sans text-[11px] text-muted-foreground truncate">
                 {label}

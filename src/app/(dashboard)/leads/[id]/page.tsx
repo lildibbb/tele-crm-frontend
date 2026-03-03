@@ -24,6 +24,7 @@ import {
   EnvelopeSimple,
   Phone,
   CalendarCheck,
+  ClipboardText,
   UserSwitch,
   Paperclip,
   CaretRight,
@@ -33,7 +34,11 @@ import { Icon } from "@iconify/react";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { useT, K } from "@/i18n";
 import { formatDate, timeAgo } from "@/lib/format";
-import { useLeadDetail, useUpdateLeadStatus, useSetHandover } from "@/queries/useLeadsQuery";
+import {
+  useLeadDetail,
+  useUpdateLeadStatus,
+  useSetHandover,
+} from "@/queries/useLeadsQuery";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/queries/queryKeys";
 import { leadsApi } from "@/lib/api/leads";
@@ -329,37 +334,59 @@ export default function LeadDetailPage({
         isLoading={isLoading}
         onVerify={() =>
           lead &&
-          updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_CONFIRMED } })
+          updateStatusMutation({
+            id: lead.id,
+            data: { status: LeadStatus.DEPOSIT_CONFIRMED },
+          })
         }
         onReject={() =>
-          lead && updateStatusMutation({ id: lead.id, data: { status: LeadStatus.REJECTED } })
+          lead &&
+          updateStatusMutation({
+            id: lead.id,
+            data: { status: LeadStatus.REJECTED },
+          })
         }
       />
     );
   }
 
   const handleVerify = () => {
-    if (lead) updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_CONFIRMED } });
+    if (lead)
+      updateStatusMutation({
+        id: lead.id,
+        data: { status: LeadStatus.DEPOSIT_CONFIRMED },
+      });
     setShowVerifyModal(false);
     toast.success(t(K.lead.toast.verified));
   };
 
   const handleReject = () => {
     if (lead)
-      updateStatusMutation({ id: lead.id, data: { status: LeadStatus.REJECTED, rejectReason } });
+      updateStatusMutation({
+        id: lead.id,
+        data: { status: LeadStatus.REJECTED, rejectReason },
+      });
     setShowRejectModal(false);
     setRejectReason("");
     toast.error(t(K.lead.toast.rejected));
   };
 
   const handleRevert = () => {
-    if (lead) updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_REPORTED } });
+    if (lead)
+      updateStatusMutation({
+        id: lead.id,
+        data: { status: LeadStatus.DEPOSIT_REPORTED },
+      });
     setShowRevertModal(false);
     toast.info(t(K.lead.toast.reverted));
   };
 
   const handleReopen = () => {
-    if (lead) updateStatusMutation({ id: lead.id, data: { status: LeadStatus.DEPOSIT_REPORTED } });
+    if (lead)
+      updateStatusMutation({
+        id: lead.id,
+        data: { status: LeadStatus.DEPOSIT_REPORTED },
+      });
     setShowReopenModal(false);
     toast.info(t(K.lead.toast.reopened));
   };
@@ -470,8 +497,18 @@ export default function LeadDetailPage({
                         {lead.displayName}
                       </h2>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold", statusBadge?.cls)}>
-                          <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", statusBadge?.dotCls)} />
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold",
+                            statusBadge?.cls,
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                              statusBadge?.dotCls,
+                            )}
+                          />
                           {statusLabel}
                         </span>
                         {handover ? (
@@ -497,8 +534,8 @@ export default function LeadDetailPage({
                     </p>
                     <p className="text-2xl font-bold text-gold leading-none">
                       {lead.depositBalance && lead.depositBalance !== "—"
-                        ? lead.depositBalance
-                        : `$${depositBalance.toFixed(2)}`}
+                        ? `${lead.depositBalance} USD`
+                        : `$${depositBalance.toFixed(2)} USD`}
                     </p>
                   </div>
                 </div>
@@ -545,7 +582,7 @@ export default function LeadDetailPage({
                       subValue: lead.registeredAt
                         ? timeAgo(lead.registeredAt)
                         : undefined,
-                      Icon: CalendarCheck,
+                      Icon: ClipboardText,
                     },
                   ].map(({ label, value, subValue, Icon: FieldIcon }) => (
                     <div
@@ -572,9 +609,8 @@ export default function LeadDetailPage({
 
                 {/* Telegram */}
                 <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border-subtle">
-                  <div className="w-7 h-7 rounded-md bg-[#229ED9]/10 flex items-center justify-center flex-shrink-0">
-                    <Icon icon="logos:telegram" className="h-4 w-4" />
-                  </div>
+                  <Icon icon="logos:telegram" className="h-4 w-4" />
+
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider mb-0.5">
                       {t(K.lead.field.telegram)}
@@ -615,7 +651,7 @@ export default function LeadDetailPage({
                         Topic #{lead.groupTopicId}
                       </p>
                     </div>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-semibold ring-1 ring-inset ring-success/20">
                       Active
                     </span>
                   </div>
@@ -1244,7 +1280,9 @@ export default function LeadDetailPage({
                         email: editEmail || undefined,
                         phoneNumber: editPhone || undefined,
                       });
-                      queryClient.invalidateQueries({ queryKey: queryKeys.leads.detail(id) });
+                      queryClient.invalidateQueries({
+                        queryKey: queryKeys.leads.detail(id),
+                      });
                       setShowEditModal(false);
                       toast.success(t(K.lead.toast.edited));
                     } catch {

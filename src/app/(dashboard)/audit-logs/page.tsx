@@ -75,13 +75,11 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-card flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-elevated border border-border-subtle flex items-center justify-center">
-              <IconComp
-                size={16}
-                weight="duotone"
-                className="text-text-secondary"
-              />
-            </div>
+            <IconComp
+              size={20}
+              weight="duotone"
+              className="text-text-secondary flex-shrink-0"
+            />
             <div>
               <h3 className="font-sans font-semibold text-[14px] text-text-primary">
                 {formatAuditAction(log.action)}
@@ -323,379 +321,379 @@ export default function AuditLogsPage() {
 
   return (
     <>
-    <div className="space-y-6 animate-in-up">
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-text-muted/10 border border-border-subtle flex items-center justify-center flex-shrink-0">
-            <ClipboardText
-              size={18}
-              className="text-text-primary"
-              weight="fill"
+      <div className="space-y-6 animate-in-up">
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-text-muted/10 border border-border-subtle flex items-center justify-center flex-shrink-0">
+              <ClipboardText
+                size={18}
+                className="text-text-primary"
+                weight="fill"
+              />
+            </div>
+            <div>
+              <h1 className="font-display font-bold text-xl text-text-primary">
+                {t(K.auditLog.title)}
+              </h1>
+              <p className="font-sans text-sm text-text-secondary">
+                {t(K.auditLog.subtitle)}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              void load(
+                page * PAGE_SIZE,
+                filterAction,
+                filterEmail,
+                filterFrom,
+                filterTo,
+              )
+            }
+            disabled={isLoading}
+            className="gap-1.5 text-xs"
+          >
+            <ArrowCounterClockwise
+              size={13}
+              className={isLoading ? "animate-spin" : ""}
+            />
+            {t(K.auditLog.refresh)}
+          </Button>
+        </div>
+
+        {/* ── Stats bar ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            {
+              icon: Hash,
+              color: "text-text-muted",
+              bg: "bg-elevated",
+              label: t(K.auditLog.stats.total),
+              value: total.toLocaleString(),
+            },
+            {
+              icon: Calendar,
+              color: "text-text-muted",
+              bg: "bg-elevated",
+              label: t(K.auditLog.stats.today),
+              value: String(todayCount),
+            },
+            {
+              icon: ChartBar,
+              color: "text-text-muted",
+              bg: "bg-elevated",
+              label: t(K.auditLog.stats.topAction),
+              value: mostCommonAction,
+            },
+            {
+              icon: Users,
+              color: "text-text-muted",
+              bg: "bg-elevated",
+              label: t(K.auditLog.stats.actors),
+              value: String(uniqueActors),
+            },
+          ].map(({ icon: Icon, color, bg, label, value }) => (
+            <div
+              key={label}
+              className="bg-elevated rounded-xl border border-border-subtle shadow-sm px-4 py-3 flex items-center gap-3"
+            >
+              <div
+                className={`w-8 h-8 rounded-lg ${bg} border border-border-subtle flex items-center justify-center flex-shrink-0`}
+              >
+                <Icon size={15} className={color} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">
+                  {label}
+                </p>
+                <p className="text-sm font-bold text-text-primary font-display leading-tight truncate">
+                  {value}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Filter bar ── */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Email search */}
+          <div className="relative flex-1 min-w-[180px] max-w-xs">
+            <MagnifyingGlass
+              size={13}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+            />
+            <input
+              type="text"
+              placeholder={t(K.auditLog.filter.email)}
+              value={filterEmail}
+              onChange={(e) => {
+                setFilterEmail(e.target.value);
+                setPage(0);
+              }}
+              className="w-full pl-8 pr-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-colors"
             />
           </div>
-          <div>
-            <h1 className="font-display font-bold text-xl text-text-primary">
-              {t(K.auditLog.title)}
-            </h1>
-            <p className="font-sans text-sm text-text-secondary">
-              {t(K.auditLog.subtitle)}
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            void load(
-              page * PAGE_SIZE,
-              filterAction,
-              filterEmail,
-              filterFrom,
-              filterTo,
-            )
-          }
-          disabled={isLoading}
-          className="gap-1.5 text-xs"
-        >
-          <ArrowCounterClockwise
-            size={13}
-            className={isLoading ? "animate-spin" : ""}
-          />
-          {t(K.auditLog.refresh)}
-        </Button>
-      </div>
 
-      {/* ── Stats bar ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          {
-            icon: Hash,
-            color: "text-text-muted",
-            bg: "bg-elevated",
-            label: t(K.auditLog.stats.total),
-            value: total.toLocaleString(),
-          },
-          {
-            icon: Calendar,
-            color: "text-text-muted",
-            bg: "bg-elevated",
-            label: t(K.auditLog.stats.today),
-            value: String(todayCount),
-          },
-          {
-            icon: ChartBar,
-            color: "text-text-muted",
-            bg: "bg-elevated",
-            label: t(K.auditLog.stats.topAction),
-            value: mostCommonAction,
-          },
-          {
-            icon: Users,
-            color: "text-text-muted",
-            bg: "bg-elevated",
-            label: t(K.auditLog.stats.actors),
-            value: String(uniqueActors),
-          },
-        ].map(({ icon: Icon, color, bg, label, value }) => (
-          <div
-            key={label}
-            className="bg-elevated rounded-xl border border-border-subtle shadow-sm px-4 py-3 flex items-center gap-3"
-          >
-            <div
-              className={`w-8 h-8 rounded-lg ${bg} border border-border-subtle flex items-center justify-center flex-shrink-0`}
+          {/* Action filter */}
+          <div className="relative">
+            <button
+              onClick={() => setActionMenuOpen((o) => !o)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary hover:border-accent/50 transition-colors"
             >
-              <Icon size={15} className={color} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-text-muted font-sans">
-                {label}
-              </p>
-              <p className="text-sm font-bold text-text-primary font-display leading-tight truncate">
-                {value}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Filter bar ── */}
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Email search */}
-        <div className="relative flex-1 min-w-[180px] max-w-xs">
-          <MagnifyingGlass
-            size={13}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
-          />
-          <input
-            type="text"
-            placeholder={t(K.auditLog.filter.email)}
-            value={filterEmail}
-            onChange={(e) => {
-              setFilterEmail(e.target.value);
-              setPage(0);
-            }}
-            className="w-full pl-8 pr-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-colors"
-          />
-        </div>
-
-        {/* Action filter */}
-        <div className="relative">
-          <button
-            onClick={() => setActionMenuOpen((o) => !o)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary hover:border-accent/50 transition-colors"
-          >
-            <span>
-              {filterAction
-                ? formatAuditAction(filterAction)
-                : t(K.auditLog.allActions)}
-            </span>
-            <CaretDown size={11} className="text-text-muted" />
-          </button>
-          {actionMenuOpen && (
-            <div className="absolute top-full left-0 mt-1 z-20 bg-card border border-border-subtle rounded-xl min-w-[200px] py-1 max-h-64 overflow-y-auto shadow-sm">
-              <button
-                className="w-full text-left px-3 py-1.5 text-xs font-sans text-text-muted hover:bg-elevated hover:text-text-primary transition-colors"
-                onClick={() => {
-                  setFilterAction("");
-                  setActionMenuOpen(false);
-                  setPage(0);
-                }}
-              >
-                {t(K.auditLog.allActions)}
-              </button>
-              {ALL_ACTIONS.map((a) => (
+              <span>
+                {filterAction
+                  ? formatAuditAction(filterAction)
+                  : t(K.auditLog.allActions)}
+              </span>
+              <CaretDown size={11} className="text-text-muted" />
+            </button>
+            {actionMenuOpen && (
+              <div className="absolute top-full left-0 mt-1 z-20 bg-card border border-border-subtle rounded-xl min-w-[200px] py-1 max-h-64 overflow-y-auto shadow-sm">
                 <button
-                  key={a}
-                  className={`w-full text-left px-3 py-1.5 text-xs font-sans transition-colors hover:bg-elevated ${filterAction === a ? "text-accent font-semibold" : "text-text-secondary hover:text-text-primary"}`}
+                  className="w-full text-left px-3 py-1.5 text-xs font-sans text-text-muted hover:bg-elevated hover:text-text-primary transition-colors"
                   onClick={() => {
-                    setFilterAction(a);
+                    setFilterAction("");
                     setActionMenuOpen(false);
                     setPage(0);
                   }}
                 >
-                  {formatAuditAction(a)}
+                  {t(K.auditLog.allActions)}
                 </button>
-              ))}
-            </div>
+                {ALL_ACTIONS.map((a) => (
+                  <button
+                    key={a}
+                    className={`w-full text-left px-3 py-1.5 text-xs font-sans transition-colors hover:bg-elevated ${filterAction === a ? "text-accent font-semibold" : "text-text-secondary hover:text-text-primary"}`}
+                    onClick={() => {
+                      setFilterAction(a);
+                      setActionMenuOpen(false);
+                      setPage(0);
+                    }}
+                  >
+                    {formatAuditAction(a)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Date range */}
+          <div className="flex items-center gap-1.5">
+            <input
+              type="date"
+              value={filterFrom}
+              onChange={(e) => {
+                setFilterFrom(e.target.value);
+                setPage(0);
+              }}
+              className="px-2 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/50 transition-colors"
+              title={t(K.auditLog.filter.from)}
+            />
+            <span className="text-text-muted text-xs font-sans">—</span>
+            <input
+              type="date"
+              value={filterTo}
+              onChange={(e) => {
+                setFilterTo(e.target.value);
+                setPage(0);
+              }}
+              className="px-2 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/50 transition-colors"
+              title={t(K.auditLog.filter.to)}
+            />
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-1 px-3 py-2 text-xs font-sans rounded-lg text-text-muted hover:text-text-primary hover:bg-elevated border border-border-subtle transition-colors"
+            >
+              <X size={11} />
+              {t(K.auditLog.filter.clearAll)}
+            </button>
           )}
         </div>
 
-        {/* Date range */}
-        <div className="flex items-center gap-1.5">
-          <input
-            type="date"
-            value={filterFrom}
-            onChange={(e) => {
-              setFilterFrom(e.target.value);
-              setPage(0);
-            }}
-            className="px-2 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/50 transition-colors"
-            title={t(K.auditLog.filter.from)}
-          />
-          <span className="text-text-muted text-xs font-sans">—</span>
-          <input
-            type="date"
-            value={filterTo}
-            onChange={(e) => {
-              setFilterTo(e.target.value);
-              setPage(0);
-            }}
-            className="px-2 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/50 transition-colors"
-            title={t(K.auditLog.filter.to)}
-          />
-        </div>
-
-        {hasActiveFilters && (
-          <button
-            onClick={clearFilters}
-            className="flex items-center gap-1 px-3 py-2 text-xs font-sans rounded-lg text-text-muted hover:text-text-primary hover:bg-elevated border border-border-subtle transition-colors"
-          >
-            <X size={11} />
-            {t(K.auditLog.filter.clearAll)}
-          </button>
+        {error && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm font-sans">
+            <Warning size={14} className="flex-shrink-0" />
+            {error}
+          </div>
         )}
-      </div>
 
-      {error && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-danger/10 border border-danger/20 text-danger text-sm font-sans">
-          <Warning size={14} className="flex-shrink-0" />
-          {error}
-        </div>
-      )}
-
-      {/* ── Table ── */}
-      <div className="bg-card rounded-xl border border-border-subtle overflow-hidden">
-        {isLoading && items.length === 0 ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
-          </div>
-        ) : items.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-16 text-text-muted">
-            <ClipboardText size={32} className="opacity-20" />
-            <p className="font-sans text-sm">{t(K.auditLog.empty)}</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm font-sans">
-              <thead>
-                <tr className="bg-muted/30 border-b border-border-subtle">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
-                    {t(K.auditLog.col.actor)}
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
-                    {t(K.auditLog.col.action)}
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
-                    {t(K.auditLog.col.entity)}
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
-                    {t(K.auditLog.col.change)}
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
-                    {t(K.auditLog.col.timestamp)}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((log) => {
-                  const IconComp =
-                    auditIconMap[log.action] ?? auditFallbackIcon;
-                  const colorCls =
-                    auditColorMap[log.action] ?? "text-text-secondary";
-                  const changeSummary = computeChangeSummary(
-                    log.before,
-                    log.after,
-                  );
-                  return (
-                    <tr
-                      key={log.id}
-                      onClick={() => setSelected(log)}
-                      className="cursor-pointer hover:bg-muted/50 transition-colors border-b border-border-subtle last:border-0"
-                    >
-                      {/* Actor */}
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {log.userEmail ? (
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-full bg-accent/10 border border-border-subtle flex items-center justify-center flex-shrink-0">
-                              <span className="text-[9px] font-bold">
-                                {getInitials(log.userEmail)}
-                              </span>
+        {/* ── Table ── */}
+        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden">
+          {isLoading && items.length === 0 ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+            </div>
+          ) : items.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-16 text-text-muted">
+              <ClipboardText size={32} className="opacity-20" />
+              <p className="font-sans text-sm">{t(K.auditLog.empty)}</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm font-sans">
+                <thead>
+                  <tr className="bg-muted/30 border-b border-border-subtle">
+                    <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
+                      {t(K.auditLog.col.actor)}
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
+                      {t(K.auditLog.col.action)}
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
+                      {t(K.auditLog.col.entity)}
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
+                      {t(K.auditLog.col.change)}
+                    </th>
+                    <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
+                      {t(K.auditLog.col.timestamp)}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((log) => {
+                    const IconComp =
+                      auditIconMap[log.action] ?? auditFallbackIcon;
+                    const colorCls =
+                      auditColorMap[log.action] ?? "text-text-secondary";
+                    const changeSummary = computeChangeSummary(
+                      log.before,
+                      log.after,
+                    );
+                    return (
+                      <tr
+                        key={log.id}
+                        onClick={() => setSelected(log)}
+                        className="cursor-pointer hover:bg-muted/50 transition-colors border-b border-border-subtle last:border-0"
+                      >
+                        {/* Actor */}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {log.userEmail ? (
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-accent/10 border border-border-subtle flex items-center justify-center flex-shrink-0">
+                                <span className="text-[9px] font-bold">
+                                  {getInitials(log.userEmail)}
+                                </span>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-medium text-text-primary truncate max-w-[140px]">
+                                  {log.userEmail}
+                                </p>
+                                {log.userRole && (
+                                  <span
+                                    className={`text-[8px] font-bold px-1 py-0.5 rounded ${roleBadgeCls(log.userRole)}`}
+                                  >
+                                    {log.userRole}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-medium text-text-primary truncate max-w-[140px]">
-                                {log.userEmail}
-                              </p>
-                              {log.userRole && (
-                                <span
-                                  className={`text-[8px] font-bold px-1 py-0.5 rounded ${roleBadgeCls(log.userRole)}`}
-                                >
-                                  {log.userRole}
+                          ) : (
+                            <span className="text-xs font-sans text-text-muted italic">
+                              {t(K.auditLog.system)}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Action */}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <IconComp
+                              size={13}
+                              weight="duotone"
+                              className={colorCls}
+                            />
+                            <span className="text-xs font-sans text-text-primary">
+                              {formatAuditAction(log.action)}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Entity */}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {log.resourceType ? (
+                            <div>
+                              <span className="text-xs font-medium text-text-primary">
+                                {log.resourceType}
+                              </span>
+                              {log.resourceId && (
+                                <span className="ml-1.5 text-[10px] font-mono text-text-muted">
+                                  {log.resourceId.slice(0, 8)}…
                                 </span>
                               )}
                             </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs font-sans text-text-muted italic">
-                            {t(K.auditLog.system)}
+                          ) : (
+                            <span className="text-text-muted text-xs">—</span>
+                          )}
+                        </td>
+
+                        {/* Change summary */}
+                        <td className="px-4 py-3 max-w-[200px]">
+                          <span
+                            className="text-[11px] font-mono text-text-muted truncate block"
+                            title={
+                              changeSummary !== "—" ? changeSummary : undefined
+                            }
+                          >
+                            {changeSummary}
                           </span>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Action */}
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <IconComp
-                            size={13}
-                            weight="duotone"
-                            className={colorCls}
-                          />
-                          <span className="text-xs font-sans text-text-primary">
-                            {formatAuditAction(log.action)}
+                        {/* Timestamp */}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span
+                            className="text-xs font-mono text-text-muted"
+                            title={formatDateTime(log.createdAt)}
+                          >
+                            {timeAgo(log.createdAt)}
                           </span>
-                        </div>
-                      </td>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-                      {/* Entity */}
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {log.resourceType ? (
-                          <div>
-                            <span className="text-xs font-medium text-text-primary">
-                              {log.resourceType}
-                            </span>
-                            {log.resourceId && (
-                              <span className="ml-1.5 text-[10px] font-mono text-text-muted">
-                                {log.resourceId.slice(0, 8)}…
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-text-muted text-xs">—</span>
-                        )}
-                      </td>
-
-                      {/* Change summary */}
-                      <td className="px-4 py-3 max-w-[200px]">
-                        <span
-                          className="text-[11px] font-mono text-text-muted truncate block"
-                          title={
-                            changeSummary !== "—" ? changeSummary : undefined
-                          }
-                        >
-                          {changeSummary}
-                        </span>
-                      </td>
-
-                      {/* Timestamp */}
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className="text-xs font-mono text-text-muted"
-                          title={formatDateTime(log.createdAt)}
-                        >
-                          {timeAgo(log.createdAt)}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-5 py-3 border-t border-border-subtle flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={page === 0}
-              onClick={() => setPage((p) => p - 1)}
-              className="text-xs"
-            >
-              {t(K.auditLog.prev)}
-            </Button>
-            <span className="font-sans text-xs text-text-muted">
-              {t(K.auditLog.page)} {page + 1} {t(K.auditLog.of)} {totalPages}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={page >= totalPages - 1}
-              onClick={() => setPage((p) => p + 1)}
-              className="text-xs"
-            >
-              {t(K.auditLog.next)}
-            </Button>
-          </div>
-        )}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="px-5 py-3 border-t border-border-subtle flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={page === 0}
+                onClick={() => setPage((p) => p - 1)}
+                className="text-xs"
+              >
+                {t(K.auditLog.prev)}
+              </Button>
+              <span className="font-sans text-xs text-text-muted">
+                {t(K.auditLog.page)} {page + 1} {t(K.auditLog.of)} {totalPages}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={page >= totalPages - 1}
+                onClick={() => setPage((p) => p + 1)}
+                className="text-xs"
+              >
+                {t(K.auditLog.next)}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
 
-    {/* ── Drawer (outside animated container to allow proper fixed positioning) ── */}
-    {selected && (
-      <AuditDrawer log={selected} onClose={() => setSelected(null)} />
-    )}
+      {/* ── Drawer (outside animated container to allow proper fixed positioning) ── */}
+      {selected && (
+        <AuditDrawer log={selected} onClose={() => setSelected(null)} />
+      )}
     </>
   );
 }
