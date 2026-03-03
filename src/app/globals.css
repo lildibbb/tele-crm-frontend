@@ -15,12 +15,12 @@
   --font-display: var(--font-syne), system-ui, sans-serif;
   --font-mono:    var(--font-jetbrains-mono), monospace;
 
-  /* Radii */
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --radius-xl:   20px;
-  --radius-2xl:  28px;
+  /* Radii — derived from --radius token */
+  --radius-sm:   calc(var(--radius) - 4px);
+  --radius-md:   calc(var(--radius) - 2px);
+  --radius-lg:   var(--radius);
+  --radius-xl:   calc(var(--radius) + 4px);
+  --radius-2xl:  calc(var(--radius) + 8px);
   --radius-full: 9999px;
 
   /* Backgrounds — all point to runtime CSS vars */
@@ -94,19 +94,19 @@
 
 /* ── Light Mode — Default ─────────────────────────────────── */
 :root {
-  --radius: 0.75rem;
+  --radius: 0.4rem;
 
-  /* Surfaces — 4-level elevation hierarchy */
-  --void:           #fdfdfd;  /* near-white  · page background          */
-  --base:           #f5f8fb;  /* cool-white  · sidebar / nav background  */
-  --card:           #FFFFFF;  /* pure white  · card / panel surface      */
-  --elevated:       #FFFFFF;  /* pure white  · popovers, dropdowns       */
-  --overlay:        #f5f5f5;  /* warm-white  · table rows, inner sections */
-  --surface-sunken: #edf0f4;  /* deeper inset · code blocks, sub-panels */
+  /* Surfaces — Twitter-Crimson 4-level elevation hierarchy */
+  --void:           #f7f8f8;  /* Twitter off-white · page background          */
+  --base:           #f0f3f4;  /* cool-white  · sidebar / nav background        */
+  --card:           #ffffff;  /* pure white  · card / panel surface (floats)   */
+  --elevated:       #ffffff;  /* pure white  · popovers, dropdowns             */
+  --overlay:        #f0f3f4;  /* warm-white  · table rows, inner sections       */
+  --surface-sunken: #eaecef;  /* deeper inset · code blocks, sub-panels        */
 
-  /* Borders — neutral family */
-  --border-subtle:  #e7e7ee;
-  --border-default: #ebebeb;
+  /* Borders — Twitter-Crimson neutral family */
+  --border-subtle:  #e1eaef;
+  --border-default: #d5dde3;
 
   /* Text — slate family */
   --text-primary:   #0F172A;  /* slate-900 */
@@ -128,30 +128,30 @@
   --shadow-lg:    0 4px 8px rgba(15,23,42,0.08), 0 16px 40px rgba(15,23,42,0.12);
   --shadow-modal: 0 8px 32px rgba(15,23,42,0.18), 0 2px 8px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.06);
   --sidebar-shadow: 0 2px 8px rgba(15,23,42,0.07), 0 0 0 1px rgba(15,23,42,0.04);
-  --sidebar:    hsl(210 40% 98%);
-  --sidebar-foreground:    hsl(215 25% 27%);
-  --sidebar-primary:    hsl(215 28% 17%);
-  --sidebar-primary-foreground:    hsl(0 0% 98%);
-  --sidebar-accent:    hsl(210 40% 96%);
-  --sidebar-accent-foreground:    hsl(215 25% 27%);
-  --sidebar-border:    hsl(214 32% 91%);
-  --sidebar-ring:    hsl(0 72% 51%);
+  --sidebar:                    #f0f3f4;
+  --sidebar-foreground:         #0F172A;
+  --sidebar-primary:            #DC2626;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:             #f0f3f4;
+  --sidebar-accent-foreground:  #0F172A;
+  --sidebar-border:             #e1eaef;
+  --sidebar-ring:               #DC2626;
 }
 
 /* ── Dark Mode ────────────────────────────────────────────── */
 .dark {
-  /* Backgrounds */
-  --void:           #1a1b1e;
-  --base:           #161618;
-  --card:           #222327;
-  --elevated:       #2a2c33;
-  --overlay:        #2a2c33;
+  /* Backgrounds — Twitter dark */
+  --void:           #000000;
+  --base:           #16171a;
+  --card:           #17181c;
+  --elevated:       #1e2025;
+  --overlay:        #1c1d21;
   --surface-sunken: #111214;
   --red-surface:    rgba(220, 38, 38, 0.10);
 
-  /* Borders */
-  --border-subtle:  #33353a;
-  --border-default: #3e4048;
+  /* Borders — Twitter dark */
+  --border-subtle:  #242628;
+  --border-default: #2e3033;
 
   /* Text */
   --text-primary:   #f0f0ff;
@@ -172,14 +172,14 @@
   --shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.60);
   --shadow-modal: 0 16px 64px rgba(0, 0, 0, 0.70), 0 4px 16px rgba(0, 0, 0, 0.50);
   --sidebar-shadow: 2px 0 16px rgba(0,0,0,0.45), 1px 0 4px rgba(0,0,0,0.25);
-  --sidebar:    hsl(240 5.9% 10%);
-  --sidebar-foreground:    hsl(240 4.8% 95.9%);
-  --sidebar-primary:    hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground:    hsl(0 0% 100%);
-  --sidebar-accent:    hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground:    hsl(240 4.8% 95.9%);
-  --sidebar-border:    hsl(240 3.7% 15.9%);
-  --sidebar-ring:    hsl(217.2 91.2% 59.8%);
+  --sidebar:                    #16171a;
+  --sidebar-foreground:         #f0f0ff;
+  --sidebar-primary:            #c4232d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:             #1c1d21;
+  --sidebar-accent-foreground:  #f0f0ff;
+  --sidebar-border:             #242628;
+  --sidebar-ring:               #c4232d;
 }
 
 /* ============================================================
@@ -256,7 +256,7 @@
     position: relative;
     background: var(--card);
     border: 1px solid var(--border-subtle);
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     box-shadow: var(--shadow-card);
     overflow: hidden;
     /* isolation prevents hover transform from stacking over sibling cards */
@@ -318,7 +318,7 @@
     position: relative;
     background: linear-gradient(155deg, var(--card) 0%, var(--elevated) 100%);
     border: 1px solid var(--border-subtle);
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     padding: 1.5rem;
     box-shadow: var(--shadow-card);
     overflow: hidden;
@@ -721,7 +721,7 @@
   .chart-card {
     background: #0f0f1c;
     border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     padding: 1.5rem;
     box-shadow:
       0 1px 3px rgba(0,0,0,0.5),
