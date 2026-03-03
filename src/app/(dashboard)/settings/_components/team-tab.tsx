@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus, Copy, Check, UserX, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -39,10 +38,10 @@ import { UserRole } from "@/types/enums";
 import { toast } from "sonner";
 
 const ROLE_CONFIG: Record<string, { label: string; cls: string }> = {
-  OWNER: { label: "Owner", cls: "badge-owner" },
-  ADMIN: { label: "Admin", cls: "badge-admin" },
-  STAFF: { label: "Staff", cls: "badge-staff" },
-  SUPERADMIN: { label: "Superadmin", cls: "badge-owner" },
+  OWNER: { label: "Owner", cls: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25" },
+  ADMIN: { label: "Admin", cls: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25" },
+  STAFF: { label: "Staff", cls: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle" },
+  SUPERADMIN: { label: "Superadmin", cls: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25" },
 };
 
 export function TeamTab() {
@@ -153,7 +152,7 @@ export function TeamTab() {
                 {users.map((m) => {
                   const roleConf = ROLE_CONFIG[m.role] ?? {
                     label: m.role,
-                    cls: "badge-staff",
+                    cls: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
                   };
                   const initials = m.email.slice(0, 2).toUpperCase();
                   return (
@@ -176,16 +175,14 @@ export function TeamTab() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={`badge ${roleConf.cls}`}>
+                        <span className={roleConf.cls}>
                           {roleConf.label}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          className={`badge ${m.isActive ? "badge-confirmed" : "badge-failed"}`}
-                        >
+                        <span className={m.isActive ? "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-500/20" : "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-500/20"}>
                           {m.isActive ? "Active" : "Inactive"}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell className="data-mono text-[12px] whitespace-nowrap">
                         {m.lastLoginAt
@@ -246,11 +243,9 @@ export function TeamTab() {
                   <p className="data-mono flex-1 min-w-[200px]">
                     {inv.email ?? "—"}
                   </p>
-                  <Badge
-                    className={`badge ${ROLE_CONFIG[inv.role]?.cls ?? "badge-staff"}`}
-                  >
+                  <span className={ROLE_CONFIG[inv.role]?.cls ?? "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle"}>
                     {ROLE_CONFIG[inv.role]?.label ?? inv.role}
-                  </Badge>
+                  </span>
                   <div className="flex items-center gap-1 text-warning text-xs font-sans whitespace-nowrap">
                     <Clock className="h-3 w-3" />
                     Expires {new Date(inv.expiresAt).toLocaleDateString()}

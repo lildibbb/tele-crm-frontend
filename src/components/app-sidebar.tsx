@@ -50,7 +50,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { EllipsisVertical } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
@@ -343,11 +343,18 @@ export function AppSidebar() {
                     <span className="truncate font-medium">
                       {user?.email ?? "—"}
                     </span>
-                    <Badge
-                      className={`badge ${user?.role === UserRole.OWNER ? "badge-owner" : user?.role === UserRole.ADMIN ? "badge-admin" : user?.role === UserRole.SUPERADMIN ? "badge-owner" : "badge-staff"} text-[9px] px-1.5 py-px mt-0.5 inline-block`}
+                    <span
+                      className={cn(
+                        "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold mt-0.5",
+                        user?.role === UserRole.OWNER || user?.role === UserRole.SUPERADMIN
+                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25"
+                          : user?.role === UserRole.ADMIN
+                            ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25"
+                            : "bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
+                      )}
                     >
                       {user?.role?.toUpperCase() ?? "—"}
-                    </Badge>
+                    </span>
                   </div>
                   <EllipsisVertical className="ml-auto size-4" />
                 </SidebarMenuButton>

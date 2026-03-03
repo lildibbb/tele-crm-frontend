@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -13,8 +13,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { EmptyState } from '@/components/ui/empty-state';
+} from "@/components/ui/table";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -24,11 +24,11 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from '@/components/ui/alert-dialog';
-import { superadminApi } from '@/lib/api/superadmin';
-import { queryKeys } from '@/queries/queryKeys';
-import { ProhibitInset } from '@phosphor-icons/react';
-import { useT, K } from '@/i18n';
+} from "@/components/ui/alert-dialog";
+import { superadminApi } from "@/lib/api/superadmin";
+import { queryKeys } from "@/queries/queryKeys";
+import { ProhibitInset } from "@phosphor-icons/react";
+import { useT, K } from "@/i18n";
 
 function truncate(str: string, len = 12) {
   return str.length <= len ? str : `${str.slice(0, len)}…`;
@@ -51,26 +51,31 @@ export default function AdminSessionsPage() {
   const revokeMutation = useMutation({
     mutationFn: (id: string) => superadminApi.revokeSession(id),
     onSuccess: (_, id) => {
-      toast.success(`Session ${truncate(id)} revoked`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.sessions() });
+      toast.success(t(K.superadmin.toast.sessionRevoked, { id: truncate(id) }));
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.superadmin.sessions(),
+      });
       setRevokeId(null);
     },
-    onError: () => toast.error('Failed to revoke session'),
+    onError: () => toast.error(t(K.superadmin.toast.sessionRevokeFailed)),
   });
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">{t(K.superadmin.sessions.title)}</h1>
+        <h1 className="text-2xl font-bold text-text-primary">
+          {t(K.superadmin.sessions.title)}
+        </h1>
         <p className="text-sm text-text-secondary mt-1">
           {t(K.superadmin.sessions.subtitle)}
         </p>
       </div>
 
-      <Card>
+      <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="text-base font-semibold">
-            {t(K.superadmin.sessions.count)}{!isLoading && ` (${sessions.length})`}
+            {t(K.superadmin.sessions.count)}
+            {!isLoading && ` (${sessions.length})`}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -82,7 +87,9 @@ export default function AdminSessionsPage() {
                 <TableHead>{t(K.superadmin.sessions.createdAt)}</TableHead>
                 <TableHead>{t(K.superadmin.sessions.expiresAt)}</TableHead>
                 <TableHead>{t(K.superadmin.sessions.userAgent)}</TableHead>
-                <TableHead className="text-right">{t(K.superadmin.sessions.actions)}</TableHead>
+                <TableHead className="text-right">
+                  {t(K.superadmin.sessions.actions)}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -105,10 +112,16 @@ export default function AdminSessionsPage() {
               ) : (
                 sessions.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell className="font-mono text-xs text-text-secondary" title={s.id}>
+                    <TableCell
+                      className="font-mono text-xs text-text-secondary"
+                      title={s.id}
+                    >
                       {truncate(s.id, 16)}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-text-secondary" title={s.userId}>
+                    <TableCell
+                      className="font-mono text-xs text-text-secondary"
+                      title={s.userId}
+                    >
                       {truncate(s.userId, 16)}
                     </TableCell>
                     <TableCell className="text-sm text-text-secondary whitespace-nowrap">
@@ -117,8 +130,11 @@ export default function AdminSessionsPage() {
                     <TableCell className="text-sm text-text-secondary whitespace-nowrap">
                       {formatDate(s.expiresAt)}
                     </TableCell>
-                    <TableCell className="text-xs text-text-secondary max-w-[200px] truncate" title={s.userAgent ?? undefined}>
-                      {s.userAgent ?? '—'}
+                    <TableCell
+                      className="text-xs text-text-secondary max-w-[200px] truncate"
+                      title={s.userAgent ?? undefined}
+                    >
+                      {s.userAgent ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -139,10 +155,17 @@ export default function AdminSessionsPage() {
         </CardContent>
       </Card>
 
-      <AlertDialog open={!!revokeId} onOpenChange={(open) => { if (!open) setRevokeId(null); }}>
+      <AlertDialog
+        open={!!revokeId}
+        onOpenChange={(open) => {
+          if (!open) setRevokeId(null);
+        }}
+      >
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t(K.superadmin.sessions.revokeTitle)}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t(K.superadmin.sessions.revokeTitle)}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t(K.superadmin.sessions.revokeDesc)}
             </AlertDialogDescription>

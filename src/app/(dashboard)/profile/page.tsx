@@ -265,8 +265,8 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="p-6 flex flex-col items-center text-center gap-4">
             {/* Avatar */}
-            <Avatar className="w-20 h-20 rounded-2xl bg-crimson/10 border border-crimson/20 flex-shrink-0">
-              <AvatarFallback className="rounded-2xl bg-crimson/10 text-crimson font-display font-bold text-3xl">
+            <Avatar className="w-20 h-20 rounded-xl bg-crimson/10 border border-crimson/20 flex-shrink-0">
+              <AvatarFallback className="rounded-xl bg-crimson/10 text-crimson font-display font-bold text-3xl">
                 {initial}
               </AvatarFallback>
             </Avatar>
@@ -367,9 +367,9 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {success ? (
-                  <Alert className="border-green-500/25 bg-green-500/8">
-                    <CheckCircle size={15} weight="fill" className="text-green-400" />
-                    <AlertDescription className="text-green-400 font-sans">
+                  <Alert className="border-success/25 bg-success/8">
+                    <CheckCircle size={15} weight="fill" className="text-success" />
+                    <AlertDescription className="text-success font-sans">
                       {t(K.profile.passwordChanged)}
                     </AlertDescription>
                   </Alert>
@@ -416,9 +416,11 @@ export default function ProfilePage() {
 
                     <div className="flex justify-end pt-1">
                       <Button
+                        variant="default"
+                        size="sm"
                         onClick={() => void handleChangePassword()}
                         disabled={saving || !form.currentPassword || !form.newPassword || !form.confirmPassword}
-                        className="bg-crimson hover:bg-crimson/90 text-white text-sm gap-1.5 px-5"
+                        className="gap-1.5 px-5"
                       >
                         {saving ? (
                           <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
@@ -464,7 +466,7 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => setTz(browserTz)}
-                    className="flex items-center gap-2 text-[12px] text-blue-400 hover:text-blue-300 transition-colors group"
+                    className="flex items-center gap-2 text-[12px] text-info hover:text-info/80 transition-colors group"
                   >
                     <Crosshair size={13} weight="bold" className="group-hover:animate-pulse" />
                     Auto-detect: use <span className="font-mono font-medium">{browserTz}</span>
@@ -517,9 +519,9 @@ export default function ProfilePage() {
                   </Popover>
                 </div>
 
-                <Alert className="border-blue-500/20 bg-blue-500/5 py-2.5">
-                  <Globe size={13} className="text-blue-400" />
-                  <AlertDescription className="text-blue-300 text-[12px]">
+                <Alert className="border-info/20 bg-info/5 py-2.5">
+                  <Globe size={13} className="text-info" />
+                  <AlertDescription className="text-info/80 text-[12px]">
                     <strong>How it works:</strong> When you select &quot;Today&quot; on the analytics dashboard, the
                     backend will compute midnight in <strong>{tzLabel}</strong> as the start of day —
                     so you won&apos;t see data from yesterday bleeding in.
@@ -528,9 +530,11 @@ export default function ProfilePage() {
 
                 <div className="flex justify-end pt-1">
                   <Button
+                    variant="default"
+                    size="sm"
                     onClick={() => void handleSaveTimezone()}
                     disabled={tzSaving || tz === (user?.timezone ?? "UTC")}
-                    className="bg-crimson hover:bg-crimson/90 text-white text-sm gap-1.5 px-5"
+                    className="gap-1.5 px-5"
                   >
                     {tzSaving ? (
                       <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />

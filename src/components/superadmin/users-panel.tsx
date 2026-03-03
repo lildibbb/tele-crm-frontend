@@ -123,12 +123,12 @@ const auditColorMap = auditColorMapShared;
 
 function RoleBadge({ role }: { role: string }) {
   const cls: Record<string, string> = {
-    SUPERADMIN: "badge badge-owner",
-    OWNER: "badge badge-owner",
-    ADMIN: "badge badge-admin",
-    STAFF: "badge badge-staff",
+    SUPERADMIN: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25",
+    OWNER: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25",
+    ADMIN: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25",
+    STAFF: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
   };
-  return <Badge className={cls[role] ?? "badge"}>{role}</Badge>;
+  return <span className={cls[role] ?? "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle"}>{role}</span>;
 }
 
 function StatusDot({ active }: { active: boolean }) {
@@ -217,7 +217,9 @@ function getUserColumns({
       ),
       cell: ({ row }) => (
         <span className="text-xs text-text-muted">
-          {row.original.lastLoginAt ? timeAgo(row.original.lastLoginAt) : "Never"}
+          {row.original.lastLoginAt
+            ? timeAgo(row.original.lastLoginAt)
+            : "Never"}
         </span>
       ),
       enableSorting: true,
@@ -246,19 +248,37 @@ function getUserColumns({
                 disabled={isSelf}
                 className="gap-2"
               >
-                <PencilSimple size={14} className="text-gold" weight="duotone" />
+                <PencilSimple
+                  size={14}
+                  className="text-gold"
+                  weight="duotone"
+                />
                 Change Role
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onPassword(u)} className="gap-2">
                 <LockKey size={14} className="text-warning" weight="duotone" />
                 Reset Password
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onChangeEmail(u)} className="gap-2">
-                <EnvelopeSimple size={14} className="text-info" weight="duotone" />
+              <DropdownMenuItem
+                onClick={() => onChangeEmail(u)}
+                className="gap-2"
+              >
+                <EnvelopeSimple
+                  size={14}
+                  className="text-info"
+                  weight="duotone"
+                />
                 Change Email
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onViewLeads(u)} className="gap-2">
-                <ListBullets size={14} className="text-text-secondary" weight="duotone" />
+              <DropdownMenuItem
+                onClick={() => onViewLeads(u)}
+                className="gap-2"
+              >
+                <ListBullets
+                  size={14}
+                  className="text-text-secondary"
+                  weight="duotone"
+                />
                 View Leads
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -324,7 +344,8 @@ function getAuditColumns(): ColumnDef<AuditLog>[] {
       header: "Resource",
       cell: ({ row }) => {
         const { resourceType, resourceId } = row.original;
-        if (!resourceType) return <span className="text-xs text-text-muted">—</span>;
+        if (!resourceType)
+          return <span className="text-xs text-text-muted">—</span>;
         return (
           <div className="flex flex-col gap-0.5">
             <span className="text-xs text-text-secondary">{resourceType}</span>
@@ -358,9 +379,9 @@ function getAuditColumns(): ColumnDef<AuditLog>[] {
 // ─── Role Selector ────────────────────────────────────────────────────────────
 
 const ROLE_OPTIONS = [
-  { value: UserRole.STAFF, label: "Staff",  dot: "bg-text-muted"  },
-  { value: UserRole.ADMIN, label: "Admin",  dot: "bg-info"        },
-  { value: UserRole.OWNER, label: "Owner",  dot: "bg-gold"        },
+  { value: UserRole.STAFF, label: "Staff", dot: "bg-text-muted" },
+  { value: UserRole.ADMIN, label: "Admin", dot: "bg-info" },
+  { value: UserRole.OWNER, label: "Owner", dot: "bg-gold" },
 ] as const;
 
 function RoleDropdown({
@@ -379,7 +400,9 @@ function RoleDropdown({
           className="w-full flex items-center justify-between h-9 px-3 rounded-md border border-input bg-transparent text-sm text-text-primary hover:bg-elevated/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40"
         >
           <span className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${current.dot}`} />
+            <span
+              className={`w-2 h-2 rounded-full flex-shrink-0 ${current.dot}`}
+            />
             {current.label}
           </span>
           <CaretDown size={13} className="opacity-50 flex-shrink-0" />
@@ -410,7 +433,13 @@ function RoleDropdown({
 
 // ─── Create User Modal ────────────────────────────────────────────────────────
 
-function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function CreateUserModal({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const createUser = useCreateSuperadminUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -420,9 +449,13 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
     e.preventDefault();
     try {
       await createUser.mutateAsync({ email, password, role });
-      setEmail(""); setPassword(""); setRole(UserRole.STAFF);
+      setEmail("");
+      setPassword("");
+      setRole(UserRole.STAFF);
       onClose();
-    } catch { /* error shown from mutation */ }
+    } catch {
+      /* error shown from mutation */
+    }
   };
 
   return (
@@ -430,7 +463,8 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserPlus size={18} weight="duotone" className="text-info" /> Create User
+            <UserPlus size={18} weight="duotone" className="text-info" /> Create
+            User
           </DialogTitle>
           <DialogDescription>
             Add a new CRM user directly (no invitation required).
@@ -439,21 +473,40 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
             <Label htmlFor="cu-email">Email</Label>
-            <Input id="cu-email" type="email" placeholder="user@company.com"
-              value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <Input
+              id="cu-email"
+              type="email"
+              placeholder="user@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cu-password">Password</Label>
-            <Input id="cu-password" type="password" placeholder="Min 8 characters"
-              value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+            <Input
+              id="cu-password"
+              type="password"
+              placeholder="Min 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Role</Label>
             <RoleDropdown value={role} onChange={setRole} />
           </div>
-          {createUser.error && <p className="text-xs text-danger">{(createUser.error as Error).message}</p>}
+          {createUser.error && (
+            <p className="text-xs text-danger">
+              {(createUser.error as Error).message}
+            </p>
+          )}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={createUser.isPending}>
               {createUser.isPending ? "Creating…" : "Create User"}
             </Button>
@@ -466,18 +519,34 @@ function CreateUserModal({ open, onClose }: { open: boolean; onClose: () => void
 
 // ─── Force Password Modal ─────────────────────────────────────────────────────
 
-function ForcePasswordModal({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
+function ForcePasswordModal({
+  user,
+  onClose,
+}: {
+  user: UserResponse | null;
+  onClose: () => void;
+}) {
   const forcePasswordChange = useForceSuperadminPasswordChange();
   const [newPassword, setNewPassword] = useState("");
   const [err, setErr] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 8) { setErr("Password must be at least 8 characters"); return; }
+    if (newPassword.length < 8) {
+      setErr("Password must be at least 8 characters");
+      return;
+    }
     try {
-      await forcePasswordChange.mutateAsync({ id: user!.id, data: { newPassword } });
-      setNewPassword(""); setErr(""); onClose();
-    } catch { setErr("Failed to reset password"); }
+      await forcePasswordChange.mutateAsync({
+        id: user!.id,
+        data: { newPassword },
+      });
+      setNewPassword("");
+      setErr("");
+      onClose();
+    } catch {
+      setErr("Failed to reset password");
+    }
   };
 
   return (
@@ -485,25 +554,41 @@ function ForcePasswordModal({ user, onClose }: { user: UserResponse | null; onCl
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <LockKey size={18} weight="duotone" className="text-warning" /> Force Password Reset
+            <LockKey size={18} weight="duotone" className="text-warning" />{" "}
+            Force Password Reset
           </DialogTitle>
           <DialogDescription>
             Reset password for{" "}
-            <span className="font-medium text-text-primary">{user?.email}</span>.
-            All sessions will be revoked.
+            <span className="font-medium text-text-primary">{user?.email}</span>
+            . All sessions will be revoked.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
             <Label htmlFor="fp-password">New Password</Label>
-            <Input id="fp-password" type="password" placeholder="Min 8 characters"
-              value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setErr(""); }}
-              required minLength={8} />
+            <Input
+              id="fp-password"
+              type="password"
+              placeholder="Min 8 characters"
+              value={newPassword}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                setErr("");
+              }}
+              required
+              minLength={8}
+            />
           </div>
           {err && <p className="text-xs text-danger">{err}</p>}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={forcePasswordChange.isPending} variant="destructive">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={forcePasswordChange.isPending}
+              variant="destructive"
+            >
               {forcePasswordChange.isPending ? "Resetting…" : "Reset Password"}
             </Button>
           </DialogFooter>
@@ -515,16 +600,28 @@ function ForcePasswordModal({ user, onClose }: { user: UserResponse | null; onCl
 
 // ─── Change Role Modal ────────────────────────────────────────────────────────
 
-function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
+function ChangeRoleModal({
+  user,
+  onClose,
+}: {
+  user: UserResponse | null;
+  onClose: () => void;
+}) {
   const changeUserRole = useChangeSuperadminUserRole();
   const [role, setRole] = useState<UserRole>(UserRole.STAFF);
 
-  useEffect(() => { if (user) setRole(user.role as UserRole); }, [user]);
+  useEffect(() => {
+    if (user) setRole(user.role as UserRole);
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try { await changeUserRole.mutateAsync({ id: user!.id, data: { role } }); onClose(); }
-    catch { /* handled by mutation */ }
+    try {
+      await changeUserRole.mutateAsync({ id: user!.id, data: { role } });
+      onClose();
+    } catch {
+      /* handled by mutation */
+    }
   };
 
   return (
@@ -532,11 +629,13 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <PencilSimple size={18} weight="duotone" className="text-gold" /> Change Role
+            <PencilSimple size={18} weight="duotone" className="text-gold" />{" "}
+            Change Role
           </DialogTitle>
           <DialogDescription>
             Update role for{" "}
-            <span className="font-medium text-text-primary">{user?.email}</span>.
+            <span className="font-medium text-text-primary">{user?.email}</span>
+            .
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
@@ -545,7 +644,9 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
             <RoleDropdown value={role} onChange={(v) => setRole(v)} />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={changeUserRole.isPending}>
               {changeUserRole.isPending ? "Saving…" : "Save Role"}
             </Button>
@@ -558,14 +659,23 @@ function ChangeRoleModal({ user, onClose }: { user: UserResponse | null; onClose
 
 // ─── Change Email Modal ───────────────────────────────────────────────────────
 
-function ChangeEmailModal({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
+function ChangeEmailModal({
+  user,
+  onClose,
+}: {
+  user: UserResponse | null;
+  onClose: () => void;
+}) {
   const queryClient = useQueryClient();
   const [newEmail, setNewEmail] = useState("");
   const [err, setErr] = useState("");
 
   const mutation = useMutation({
     mutationFn: (email: string) =>
-      apiClient.patch<ApiResponse<UserResponse>>(`/superadmin/users/${user!.id}/email`, { email }),
+      apiClient.patch<ApiResponse<UserResponse>>(
+        `/superadmin/users/${user!.id}/email`,
+        { email },
+      ),
     onSuccess: () => {
       toast.success("Email updated successfully");
       queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.users() });
@@ -592,11 +702,13 @@ function ChangeEmailModal({ user, onClose }: { user: UserResponse | null; onClos
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <EnvelopeSimple size={18} weight="duotone" className="text-info" /> Change Email Address
+            <EnvelopeSimple size={18} weight="duotone" className="text-info" />{" "}
+            Change Email Address
           </DialogTitle>
           <DialogDescription>
             Update the email address for{" "}
-            <span className="font-medium text-text-primary">{user?.email}</span>.
+            <span className="font-medium text-text-primary">{user?.email}</span>
+            .
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
@@ -607,13 +719,18 @@ function ChangeEmailModal({ user, onClose }: { user: UserResponse | null; onClos
               type="email"
               placeholder="new@company.com"
               value={newEmail}
-              onChange={(e) => { setNewEmail(e.target.value); setErr(""); }}
+              onChange={(e) => {
+                setNewEmail(e.target.value);
+                setErr("");
+              }}
               required
             />
           </div>
           {err && <p className="text-xs text-danger">{err}</p>}
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? "Updating…" : "Update Email"}
             </Button>
@@ -626,11 +743,19 @@ function ChangeEmailModal({ user, onClose }: { user: UserResponse | null; onClos
 
 // ─── User Leads Sheet ─────────────────────────────────────────────────────────
 
-function UserLeadsSheet({ user, onClose }: { user: UserResponse | null; onClose: () => void }) {
+function UserLeadsSheet({
+  user,
+  onClose,
+}: {
+  user: UserResponse | null;
+  onClose: () => void;
+}) {
   const { data: leads, isLoading } = useQuery({
     queryKey: ["superadmin", "users", user?.id, "leads"],
     queryFn: async () => {
-      const res = await apiClient.get<ApiResponse<Lead[]>>(`/superadmin/users/${user!.id}/leads`);
+      const res = await apiClient.get<ApiResponse<Lead[]>>(
+        `/superadmin/users/${user!.id}/leads`,
+      );
       return res.data.data;
     },
     enabled: !!user,
@@ -653,27 +778,46 @@ function UserLeadsSheet({ user, onClose }: { user: UserResponse | null; onClose:
               ))}
             </div>
           ) : !leads?.length ? (
-            <p className="text-sm text-text-muted text-center py-8">No leads found</p>
+            <p className="text-sm text-text-muted text-center py-8">
+              No leads found
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Telegram ID</th>
-                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Display Name</th>
-                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Status</th>
-                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">Created At</th>
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
+                      Telegram ID
+                    </th>
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
+                      Display Name
+                    </th>
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
+                      Status
+                    </th>
+                    <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
+                      Created At
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {leads.map((lead) => (
-                    <tr key={lead.id} className="border-b border-border/50 hover:bg-elevated/50">
-                      <td className="py-2 px-3 text-xs data-mono text-text-secondary">{lead.telegramUserId}</td>
-                      <td className="py-2 px-3 text-xs text-text-primary">{lead.displayName ?? "—"}</td>
+                    <tr
+                      key={lead.id}
+                      className="border-b border-border/50 hover:bg-elevated/50"
+                    >
+                      <td className="py-2 px-3 text-xs data-mono text-text-secondary">
+                        {lead.telegramUserId}
+                      </td>
+                      <td className="py-2 px-3 text-xs text-text-primary">
+                        {lead.displayName ?? "—"}
+                      </td>
                       <td className="py-2 px-3">
                         <Badge className="text-[10px]">{lead.status}</Badge>
                       </td>
-                      <td className="py-2 px-3 text-xs text-text-muted">{timeAgo(lead.createdAt)}</td>
+                      <td className="py-2 px-3 text-xs text-text-muted">
+                        {timeAgo(lead.createdAt)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -690,8 +834,17 @@ function UserLeadsSheet({ user, onClose }: { user: UserResponse | null; onClose:
 
 export function UsersPanel() {
   const { user: authUser } = useAuthStore();
-  const { data: users = [], isLoading: isLoadingUsers, refetch: refetchUsers } = useSuperadminUsers();
-  const { data: auditLogs = [], isLoading: isLoadingLogs, refetch: refetchAuditLogs } = useAuditLogs({ take: 100 });
+  const {
+    data: users = [],
+    isLoading: isLoadingUsers,
+    refetch: refetchUsers,
+  } = useSuperadminUsers();
+  const auditLogsParams = useMemo(() => ({ take: 100 }), []);
+  const {
+    data: auditLogs = [],
+    isLoading: isLoadingLogs,
+    refetch: refetchAuditLogs,
+  } = useAuditLogs(auditLogsParams);
   const { data: ragStats, isLoading: isLoadingRag } = useSuperadminRagStats();
   const deactivateUser = useDeactivateSuperadminUser();
   const reactivateUser = useReactivateSuperadminUser();
@@ -700,8 +853,11 @@ export function UsersPanel() {
   const [showCreate, setShowCreate] = useState(false);
   const [roleModal, setRoleModal] = useState<UserResponse | null>(null);
   const [passwordModal, setPasswordModal] = useState<UserResponse | null>(null);
-  const [deactivateTarget, setDeactivateTarget] = useState<UserResponse | null>(null);
-  const [changeEmailTarget, setChangeEmailTarget] = useState<UserResponse | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<UserResponse | null>(
+    null,
+  );
+  const [changeEmailTarget, setChangeEmailTarget] =
+    useState<UserResponse | null>(null);
   const [leadsTarget, setLeadsTarget] = useState<UserResponse | null>(null);
 
   // Table states
@@ -709,14 +865,17 @@ export function UsersPanel() {
   const [userFilters, setUserFilters] = useState<ColumnFiltersState>([]);
   const [userVisibility, setUserVisibility] = useState<VisibilityState>({});
 
-  const [auditSorting, setAuditSorting] = useState<SortingState>([{ id: "createdAt", desc: true }]);
+  const [auditSorting, setAuditSorting] = useState<SortingState>([
+    { id: "createdAt", desc: true },
+  ]);
   const [auditFilters, setAuditFilters] = useState<ColumnFiltersState>([]);
   const [auditVisibility, setAuditVisibility] = useState<VisibilityState>({});
 
   const handleDeactivateConfirm = useCallback(async () => {
     if (!deactivateTarget) return;
     try {
-      if (deactivateTarget.isActive) await deactivateUser.mutateAsync(deactivateTarget.id);
+      if (deactivateTarget.isActive)
+        await deactivateUser.mutateAsync(deactivateTarget.id);
       else await reactivateUser.mutateAsync(deactivateTarget.id);
     } finally {
       setDeactivateTarget(null);
@@ -741,7 +900,11 @@ export function UsersPanel() {
   const userTable = useReactTable({
     data: users,
     columns: userColumns,
-    state: { sorting: userSorting, columnFilters: userFilters, columnVisibility: userVisibility },
+    state: {
+      sorting: userSorting,
+      columnFilters: userFilters,
+      columnVisibility: userVisibility,
+    },
     onSortingChange: setUserSorting,
     onColumnFiltersChange: setUserFilters,
     onColumnVisibilityChange: setUserVisibility,
@@ -757,7 +920,11 @@ export function UsersPanel() {
   const auditTable = useReactTable({
     data: auditLogs,
     columns: auditColumns,
-    state: { sorting: auditSorting, columnFilters: auditFilters, columnVisibility: auditVisibility },
+    state: {
+      sorting: auditSorting,
+      columnFilters: auditFilters,
+      columnVisibility: auditVisibility,
+    },
     onSortingChange: setAuditSorting,
     onColumnFiltersChange: setAuditFilters,
     onColumnVisibilityChange: setAuditVisibility,
@@ -774,18 +941,35 @@ export function UsersPanel() {
     <TooltipProvider>
       <div className="space-y-6">
         {/* ── Modals ── */}
-        <CreateUserModal open={showCreate} onClose={() => setShowCreate(false)} />
+        <CreateUserModal
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+        />
         <ChangeRoleModal user={roleModal} onClose={() => setRoleModal(null)} />
-        <ForcePasswordModal user={passwordModal} onClose={() => setPasswordModal(null)} />
-        <ChangeEmailModal user={changeEmailTarget} onClose={() => setChangeEmailTarget(null)} />
-        <UserLeadsSheet user={leadsTarget} onClose={() => setLeadsTarget(null)} />
+        <ForcePasswordModal
+          user={passwordModal}
+          onClose={() => setPasswordModal(null)}
+        />
+        <ChangeEmailModal
+          user={changeEmailTarget}
+          onClose={() => setChangeEmailTarget(null)}
+        />
+        <UserLeadsSheet
+          user={leadsTarget}
+          onClose={() => setLeadsTarget(null)}
+        />
 
-        <AlertDialog open={!!deactivateTarget} onOpenChange={(o) => !o && setDeactivateTarget(null)}>
+        <AlertDialog
+          open={!!deactivateTarget}
+          onOpenChange={(o) => !o && setDeactivateTarget(null)}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle className="flex items-center gap-2">
                 <Warning size={18} weight="duotone" className="text-warning" />
-                {deactivateTarget?.isActive ? "Deactivate User?" : "Reactivate User?"}
+                {deactivateTarget?.isActive
+                  ? "Deactivate User?"
+                  : "Reactivate User?"}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {deactivateTarget?.isActive
@@ -797,7 +981,11 @@ export function UsersPanel() {
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeactivateConfirm}
-                className={deactivateTarget?.isActive ? "bg-danger hover:bg-danger/90" : ""}
+                className={
+                  deactivateTarget?.isActive
+                    ? "bg-danger hover:bg-danger/90"
+                    : ""
+                }
               >
                 {deactivateTarget?.isActive ? "Deactivate" : "Reactivate"}
               </AlertDialogAction>
@@ -809,9 +997,15 @@ export function UsersPanel() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-text-primary">Users</h1>
-            <p className="text-sm text-text-secondary mt-1">Platform-wide user management</p>
+            <p className="text-sm text-text-secondary mt-1">
+              Platform-wide user management
+            </p>
           </div>
-          <Button size="sm" className="gap-1.5 shrink-0" onClick={() => setShowCreate(true)}>
+          <Button
+            size="sm"
+            className="gap-1.5 shrink-0"
+            onClick={() => setShowCreate(true)}
+          >
             <UserPlus size={15} weight="bold" /> Add User
           </Button>
         </div>
@@ -831,7 +1025,8 @@ export function UsersPanel() {
               </p>
             </div>
             <Button
-              size="sm" variant="ghost"
+              size="sm"
+              variant="ghost"
               className="gap-1.5 text-text-secondary hover:text-text-primary"
               onClick={() => refetchUsers()}
             >
@@ -861,13 +1056,20 @@ export function UsersPanel() {
             <div className="px-5 py-4 bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-sm">
               <div>
                 <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                  <Database size={16} weight="duotone" className="text-warning" />
+                  <Database
+                    size={16}
+                    weight="duotone"
+                    className="text-warning"
+                  />
                   Audit Log
                 </h2>
-                <p className="text-xs text-text-secondary mt-0.5">Recent system events</p>
+                <p className="text-xs text-text-secondary mt-0.5">
+                  Recent system events
+                </p>
               </div>
               <Button
-                size="sm" variant="ghost"
+                size="sm"
+                variant="ghost"
                 className="gap-1.5 text-text-secondary hover:text-text-primary"
                 onClick={() => refetchAuditLogs()}
               >
@@ -894,7 +1096,10 @@ export function UsersPanel() {
           {ragStats ? (
             <div
               className="page-panel bg-elevated rounded-xl p-5"
-              style={{ backgroundImage: "linear-gradient(135deg, color-mix(in srgb, var(--color-gold) 7%, transparent) 0%, transparent 60%)" }}
+              style={{
+                backgroundImage:
+                  "linear-gradient(135deg, color-mix(in srgb, var(--color-gold) 7%, transparent) 0%, transparent 60%)",
+              }}
             >
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-5">
                 <Brain size={16} weight="duotone" className="text-[--gold]" />
@@ -902,17 +1107,48 @@ export function UsersPanel() {
               </h2>
               <div className="space-y-4">
                 {[
-                  { label: "Hit Rate", value: `${(ragStats.ragHitRate ?? 0).toFixed(1)}%`, sub: "Queries matched KB", color: "text-success" },
-                  { label: "Avg Chunks / Reply", value: (ragStats.avgChunksPerRequest ?? 0).toFixed(2), sub: "Per reply retrieved", color: "text-info" },
-                  { label: "Zero-Hit Queries", value: String(ragStats.zeroHitCount ?? 0), sub: "No KB match found", color: "text-danger" },
-                  { label: "Total AI Tokens", value: `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`, sub: "Cumulative usage", color: "text-[--gold]" },
+                  {
+                    label: "Hit Rate",
+                    value: `${(ragStats.ragHitRate ?? 0).toFixed(1)}%`,
+                    sub: "Queries matched KB",
+                    color: "text-success",
+                  },
+                  {
+                    label: "Avg Chunks / Reply",
+                    value: (ragStats.avgChunksPerRequest ?? 0).toFixed(2),
+                    sub: "Per reply retrieved",
+                    color: "text-info",
+                  },
+                  {
+                    label: "Zero-Hit Queries",
+                    value: String(ragStats.zeroHitCount ?? 0),
+                    sub: "No KB match found",
+                    color: "text-danger",
+                  },
+                  {
+                    label: "Total AI Tokens",
+                    value: `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`,
+                    sub: "Cumulative usage",
+                    color: "text-[--gold]",
+                  },
                 ].map(({ label, value, sub, color }) => (
-                  <div key={label} className="flex items-start justify-between gap-2">
+                  <div
+                    key={label}
+                    className="flex items-start justify-between gap-2"
+                  >
                     <div>
-                      <p className="text-xs text-text-secondary leading-tight">{label}</p>
-                      <p className="text-[11px] text-text-muted mt-0.5">{sub}</p>
+                      <p className="text-xs text-text-secondary leading-tight">
+                        {label}
+                      </p>
+                      <p className="text-[11px] text-text-muted mt-0.5">
+                        {sub}
+                      </p>
                     </div>
-                    <p className={`text-lg font-bold data-mono shrink-0 ${color}`}>{value}</p>
+                    <p
+                      className={`text-lg font-bold data-mono shrink-0 ${color}`}
+                    >
+                      {value}
+                    </p>
                   </div>
                 ))}
               </div>

@@ -67,6 +67,8 @@ import {
 } from "@/components/ui/file-type-badge";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 
 // ── Interaction → display mappings ───────────────────────────────────────────
 
@@ -418,17 +420,13 @@ export default function LeadDetailPage({
     .slice(0, 2);
   const depositBalance = Number(lead.depositBalance ?? 0) || 0;
 
-  // Status badge mapping
-  const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
-    NEW: { label: "New", cls: "badge-new" },
-    CONTACTED: { label: "Contacted", cls: "badge-contacted" },
-    DEPOSIT_REPORTED: { label: "Proof Submitted", cls: "badge-pending" },
-    DEPOSIT_CONFIRMED: { label: "Verified", cls: "badge-confirmed" },
-  };
-  const statusBadge = STATUS_BADGE[lead.status] ?? {
-    label: lead.status,
-    cls: "",
-  };
+  const statusBadge = LEAD_STATUS_BADGE[lead.status];
+  const statusLabel = statusBadge
+    ? lead.status
+        .split("_")
+        .map((w: string) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ")
+    : lead.status;
 
   return (
     <TooltipProvider>
@@ -472,9 +470,10 @@ export default function LeadDetailPage({
                         {lead.displayName}
                       </h2>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <Badge className={`badge ${statusBadge.cls}`}>
-                          {statusBadge.label}
-                        </Badge>
+                        <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold", statusBadge?.cls)}>
+                          <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", statusBadge?.dotCls)} />
+                          {statusLabel}
+                        </span>
                         {handover ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 text-[11px] font-semibold shadow-sm">
                             <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -484,9 +483,9 @@ export default function LeadDetailPage({
                             {t(K.lead.handoverBadge)}
                           </span>
                         ) : (
-                          <Badge className="badge badge-live flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/10 text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-500/20">
                             <Robot className="h-3 w-3" /> {t(K.lead.botActive)}
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     </div>
@@ -551,7 +550,7 @@ export default function LeadDetailPage({
                   ].map(({ label, value, subValue, Icon: FieldIcon }) => (
                     <div
                       key={label}
-                      className="flex items-start gap-3 p-3 bg-card rounded-lg shadow-sm"
+                      className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg"
                     >
                       <FieldIcon className="h-4 w-4 text-text-muted flex-shrink-0 mt-0.5" />
                       <div className="min-w-0">
@@ -572,7 +571,7 @@ export default function LeadDetailPage({
                 </div>
 
                 {/* Telegram */}
-                <div className="flex items-center gap-3 p-3 bg-card rounded-lg shadow-sm border border-[#229ED9]/10">
+                <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border-subtle">
                   <div className="w-7 h-7 rounded-md bg-[#229ED9]/10 flex items-center justify-center flex-shrink-0">
                     <Icon icon="logos:telegram" className="h-4 w-4" />
                   </div>
@@ -629,8 +628,9 @@ export default function LeadDetailPage({
                     <>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button
-                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-success text-white text-xs font-semibold shadow-sm hover:bg-success/90 active:scale-[0.97] transition-all"
+                          <Button
+                            size="sm"
+                            className="bg-success hover:bg-success/90 text-white gap-1.5"
                             onClick={() => setShowVerifyModal(true)}
                           >
                             <CheckCircle
@@ -638,19 +638,21 @@ export default function LeadDetailPage({
                               weight="fill"
                             />
                             {t(K.lead.verify)}
-                          </button>
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent>Verify deposit proof</TooltipContent>
                       </Tooltip>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button
-                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-danger/20 bg-danger/5 text-danger text-xs font-medium hover:bg-danger/10 active:scale-[0.97] transition-all"
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-danger/20 bg-danger/5 text-danger hover:bg-danger/10 hover:text-danger gap-1.5"
                             onClick={() => setShowRejectModal(true)}
                           >
                             <XCircle className="h-3.5 w-3.5" weight="fill" />
                             {t(K.lead.reject)}
-                          </button>
+                          </Button>
                         </TooltipTrigger>
                         <TooltipContent>Reject deposit</TooltipContent>
                       </Tooltip>
@@ -661,13 +663,15 @@ export default function LeadDetailPage({
                   {lead.status === LeadStatus.DEPOSIT_CONFIRMED && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button
-                          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-warning/30 bg-warning/8 text-warning text-xs font-medium hover:bg-warning/15 active:scale-[0.97] transition-all"
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-warning/30 bg-warning/8 text-warning hover:bg-warning/15 hover:text-warning gap-1.5"
                           onClick={() => setShowRevertModal(true)}
                         >
                           <ArrowCounterClockwise className="h-3.5 w-3.5" />
                           {t(K.lead.revert)}
-                        </button>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent>
                         Revert accidental verification
@@ -679,13 +683,15 @@ export default function LeadDetailPage({
                   {lead.status === LeadStatus.REJECTED && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button
-                          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-info/20 bg-info/5 text-info text-xs font-medium hover:bg-info/10 active:scale-[0.97] transition-all"
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-info/20 bg-info/5 text-info hover:bg-info/10 hover:text-info gap-1.5"
                           onClick={() => setShowReopenModal(true)}
                         >
                           <ArrowClockwise className="h-3.5 w-3.5" />
                           {t(K.lead.reopen)}
-                        </button>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent>Re-open for review</TooltipContent>
                     </Tooltip>
@@ -694,9 +700,11 @@ export default function LeadDetailPage({
                   {/* Edit — always visible */}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
                         disabled={isBlocked}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border-default bg-card text-text-secondary text-xs font-medium hover:border-text-muted hover:text-text-primary active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => {
                           if (isBlocked) return;
                           setEditHfmId(lead.hfmBrokerId ?? "");
@@ -707,7 +715,7 @@ export default function LeadDetailPage({
                       >
                         <PencilSimple className="h-3.5 w-3.5" />
                         {t(K.lead.edit)}
-                      </button>
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       {isBlocked
@@ -728,9 +736,9 @@ export default function LeadDetailPage({
                     {t("lead.proof")}
                   </h3>
                 </div>
-                <Badge className="badge badge-pending">
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-semibold bg-muted text-text-secondary">
                   {attachments.length}
-                </Badge>
+                </span>
               </div>
               {attachments.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-10 text-text-muted">

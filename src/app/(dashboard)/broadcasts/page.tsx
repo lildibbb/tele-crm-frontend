@@ -182,7 +182,7 @@ export default function BroadcastsPage() {
         ].map(({ icon, label, value, bg }) => (
           <div
             key={label}
-            className="bg-card rounded-xl border border-border p-4 flex items-center gap-3 shadow-sm"
+            className="bg-card rounded-xl border border-border-subtle p-4 flex items-center gap-3 shadow-[var(--shadow-card)]"
           >
             <div
               className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 ${bg}`}
@@ -203,8 +203,8 @@ export default function BroadcastsPage() {
 
       <div className="max-w-2xl space-y-6">
         {/* ── Compose card ─────────────────────────────────────────────────── */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-border bg-muted/30">
+        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
+          <div className="px-5 py-3.5 border-b border-border-subtle bg-muted/50">
             <h2 className="font-sans font-semibold text-sm text-foreground">
               {t(K.broadcast.compose)}
             </h2>
@@ -246,14 +246,14 @@ export default function BroadcastsPage() {
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 ring-1 ring-inset ring-red-500/20 text-red-700 dark:text-red-400 text-sm font-sans">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-danger/8 ring-1 ring-inset ring-danger/20 text-danger text-sm font-sans">
                 <Warning className="h-4 w-4 flex-shrink-0" />
                 {error}
               </div>
             )}
 
             {lastEnqueued !== null && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 ring-1 ring-inset ring-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-sans">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-success/8 ring-1 ring-inset ring-success/20 text-success text-sm font-sans">
                 <CheckCircle className="h-4 w-4 flex-shrink-0" />
                 {t(K.broadcast.enqueuedFor)} <strong>{lastEnqueued}</strong>{" "}
                 recipient(s)
@@ -273,7 +273,9 @@ export default function BroadcastsPage() {
               <Button
                 onClick={() => setShowConfirm(true)}
                 disabled={!message.trim() || isSending}
-                className="gap-2 bg-crimson hover:bg-crimson/90 text-white text-sm"
+                variant="default"
+                size="sm"
+                className="gap-1.5 px-4 min-w-[90px]"
               >
                 {isSending ? (
                   <>
@@ -292,8 +294,8 @@ export default function BroadcastsPage() {
         </div>
 
         {/* ── History table ─────────────────────────────────────────────────── */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-border bg-muted/30 flex items-center justify-between">
+        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
+          <div className="px-5 py-3.5 border-b border-border-subtle bg-muted/50 flex items-center justify-between">
             <h2 className="font-sans font-semibold text-sm text-foreground">
               {t(K.broadcast.history)}
             </h2>
@@ -314,7 +316,7 @@ export default function BroadcastsPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
                   <TableHead>{t(K.broadcast.col.message)}</TableHead>
                   <TableHead className="w-28">
                     {t(K.broadcast.col.status)}
@@ -376,7 +378,7 @@ export default function BroadcastsPage() {
           {historyTotal > 20 && (
             <div className="px-5 py-3 border-t border-border bg-muted/20 flex items-center justify-between">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 disabled={historyPage === 1}
                 onClick={() => setHistoryPage((p) => p - 1)}
@@ -389,7 +391,7 @@ export default function BroadcastsPage() {
                 {totalPages}
               </span>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 disabled={historyPage >= totalPages}
                 onClick={() => setHistoryPage((p) => p + 1)}

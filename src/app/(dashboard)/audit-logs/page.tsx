@@ -525,10 +525,10 @@ export default function AuditLogsPage() {
       )}
 
       {/* ── Table ── */}
-      <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
+      <div className="bg-card rounded-xl border border-border-subtle overflow-hidden">
         {isLoading && items.length === 0 ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+            <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
           </div>
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-16 text-text-muted">
@@ -539,20 +539,20 @@ export default function AuditLogsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm font-sans">
               <thead>
-                <tr className="bg-card border-b border-border-subtle shadow-sm">
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                <tr className="bg-muted/30 border-b border-border-subtle">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
                     {t(K.auditLog.col.actor)}
                   </th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
                     {t(K.auditLog.col.action)}
                   </th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
                     {t(K.auditLog.col.entity)}
                   </th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
                     {t(K.auditLog.col.change)}
                   </th>
-                  <th className="text-left px-4 py-3 text-xs uppercase tracking-wider text-text-muted font-medium">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-text-secondary">
                     {t(K.auditLog.col.timestamp)}
                   </th>
                 </tr>
@@ -571,7 +571,7 @@ export default function AuditLogsPage() {
                     <tr
                       key={log.id}
                       onClick={() => setSelected(log)}
-                      className="cursor-pointer hover:bg-card/60 transition-colors border-b border-border-subtle/50 last:border-0 shadow-sm"
+                      className="cursor-pointer hover:bg-muted/50 transition-colors border-b border-border-subtle last:border-0"
                     >
                       {/* Actor */}
                       <td className="px-4 py-3 whitespace-nowrap">
