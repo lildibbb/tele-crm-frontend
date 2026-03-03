@@ -1,8 +1,6 @@
 "use client";
 
 import { useRef, useState, useEffect, useMemo, useCallback } from "react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
 import { toast } from "sonner";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileVerification } from "@/components/mobile";
@@ -56,9 +54,6 @@ import { useT, K } from "@/i18n";
 import { getVerificationColumns } from "./_components/verification-columns";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
 import { FileTypeBadge } from "@/components/ui/file-type-badge";
-
-// Register GSAP plugin
-gsap.registerPlugin(useGSAP);
 
 const TAB_FILTERS = ["PENDING", "ALL"] as const;
 
@@ -903,38 +898,6 @@ export default function VerificationPage() {
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // GSAP entrance stats
-  useGSAP(
-    () => {
-      gsap.from(".verify-stat", {
-        opacity: 0,
-        y: 14,
-        duration: 0.45,
-        stagger: 0.08,
-        ease: "power2.out",
-      });
-    },
-    { scope: containerRef, dependencies: [] },
-  );
-
-  // GSAP entrance rows
-  useGSAP(
-    () => {
-      const rows = containerRef.current?.querySelectorAll("tbody tr");
-      if (rows && rows.length > 0) {
-        gsap.from(rows, {
-          opacity: 0,
-          y: 8,
-          duration: 0.3,
-          stagger: 0.04,
-          ease: "power2.out",
-          clearProps: "all",
-        });
-      }
-    },
-    { scope: containerRef, dependencies: [leads.length, filter] },
-  );
 
   if (isMobile) {
     return <MobileVerification />;

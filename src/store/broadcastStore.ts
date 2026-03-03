@@ -53,6 +53,8 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
         const { message, photoUrl } = get();
         if (!message.trim()) return;
         set({ isSending: true, error: null, lastEnqueued: null }, false, "send/pending");
+        // Snapshot history before any optimistic changes so the catch can rollback
+        const previousHistory = get().history;
         try {
           const input: BroadcastInput = { message: message.trim() };
           if (photoUrl.trim()) input.photoUrl = photoUrl.trim();
@@ -61,8 +63,6 @@ export const useBroadcastStore = create<BroadcastState & BroadcastActions>()(
           const enqueued = payload?.enqueued ?? 0;
           const logId = payload?.logId;
 
-          // Snapshot history before optimistic add so callers can detect rollback
-          const previousHistory = get().history;
           // Optimistically prepend a QUEUED entry
           if (logId) {
             const optimistic: BroadcastLog = {

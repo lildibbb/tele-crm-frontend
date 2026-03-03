@@ -1085,7 +1085,7 @@ export default function LeadDetailPage({
         {/* ── Verify Modal ── */}
         <Dialog open={showVerifyModal} onOpenChange={setShowVerifyModal}>
           <DialogContent className="max-w-sm rounded-3xl">
-            <div ref={verifyRef}>
+            <div>
               <DialogHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-full bg-success/15 border border-success/25 flex items-center justify-center flex-shrink-0">
@@ -1130,7 +1130,7 @@ export default function LeadDetailPage({
         {/* ── Reject Modal ── */}
         <Dialog open={showRejectModal} onOpenChange={setShowRejectModal}>
           <DialogContent className="max-w-sm rounded-3xl">
-            <div ref={rejectRef}>
+            <div>
               <DialogHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-full bg-danger/15 border border-danger/25 flex items-center justify-center flex-shrink-0">
@@ -1182,7 +1182,7 @@ export default function LeadDetailPage({
         {/* ── Edit Modal ── */}
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
           <DialogContent className="max-w-md rounded-3xl">
-            <div ref={editRef}>
+            <div>
               <DialogHeader>
                 <DialogTitle className="font-bold text-xl text-text-primary">
                   {t("lead.edit.title")}
@@ -1263,7 +1263,7 @@ export default function LeadDetailPage({
         {/* ── Revert Modal ── */}
         <Dialog open={showRevertModal} onOpenChange={setShowRevertModal}>
           <DialogContent className="max-w-sm rounded-3xl">
-            <div ref={revertRef}>
+            <div>
               <DialogHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-full bg-warning/15 border border-warning/25 flex items-center justify-center flex-shrink-0">
@@ -1308,7 +1308,7 @@ export default function LeadDetailPage({
         {/* ── Reopen Modal ── */}
         <Dialog open={showReopenModal} onOpenChange={setShowReopenModal}>
           <DialogContent className="max-w-sm rounded-3xl">
-            <div ref={reopenRef}>
+            <div>
               <DialogHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 rounded-full bg-info/15 border border-info/25 flex items-center justify-center flex-shrink-0">
