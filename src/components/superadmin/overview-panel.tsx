@@ -1,15 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
 import { AreaChart, Area, ResponsiveContainer } from "recharts";
 import { useT, K } from "@/i18n";
-import { useSuperadminStore } from "@/store/superadminStore";
+import {
+  useSuperadminUsers,
+  useSuperadminRagStats,
+  useSuperadminQueues,
+  useSuperadminTokenUsage,
+  useSuperadminKbHealth,
+  useSuperadminSystemHealth,
+} from "@/queries/useSuperadminQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Users,
   CheckCircle,
   Brain,
   Lightning,
+  Pulse,
 } from "@phosphor-icons/react";
 
 // ─── KPI Tile ────────────────────────────────────────────────────────────────
@@ -63,27 +70,13 @@ function KpiTile({ icon: Icon, label, value, sub, accent, loading }: KpiTileProp
 
 export function OverviewPanel() {
   const t = useT();
-  const {
-    users,
-    ragStats,
-    queues,
-    tokenUsage,
-    kbHealth,
-    isLoadingUsers,
-    isLoadingRag,
-    isLoadingOps,
-    fetchUsers,
-    fetchRagStats,
-    fetchOpsData,
-  } = useSuperadminStore();
-
-  useEffect(() => {
-    fetchUsers();
-    fetchRagStats();
-    fetchOpsData();
-    const interval = setInterval(() => { fetchOpsData(); }, 30_000);
-    return () => clearInterval(interval);
-  }, [fetchUsers, fetchRagStats, fetchOpsData]);
+  const { data: users = [], isLoading: isLoadingUsers } = useSuperadminUsers();
+  const { data: ragStats, isLoading: isLoadingRag } = useSuperadminRagStats();
+  const { data: queues, isLoading: isLoadingQueues } = useSuperadminQueues();
+  const { data: tokenUsage, isLoading: isLoadingTokenUsage } = useSuperadminTokenUsage();
+  const { data: kbHealth, isLoading: isLoadingKbHealth } = useSuperadminKbHealth();
+  const { data: systemHealth, isLoading: isLoadingSystemHealth } = useSuperadminSystemHealth();
+  const isLoadingOps = isLoadingQueues || isLoadingTokenUsage || isLoadingKbHealth;
 
   const activeUsers = users.filter((u) => u.isActive).length;
   const ragHitRate = ragStats ? `${(ragStats.ragHitRate ?? 0).toFixed(1)}%` : "—";
@@ -236,6 +229,48 @@ export function OverviewPanel() {
                   </span>
                 ))}
               </div>
+            </div>
+          ) : (
+            <span className="text-[11px] text-text-muted font-sans">—</span>
+          )}
+        </div>
+
+        {/* System Health */}
+        <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-sans font-semibold text-[13px] text-text-primary flex items-center gap-1.5">
+              <Pulse size={14} weight="duotone" className="text-info" />
+              System Health
+            </span>
+            {systemHealth && (
+              <span className={`text-[10px] font-sans font-semibold px-1.5 py-0.5 rounded-full ${
+                systemHealth.status === 'ok'
+                  ? 'bg-emerald-400/15 text-emerald-400'
+                  : systemHealth.status === 'degraded'
+                  ? 'bg-amber-400/15 text-amber-400'
+                  : 'bg-red-400/15 text-red-400'
+              }`}>
+                {systemHealth.status === 'ok' ? 'Operational' : systemHealth.status === 'degraded' ? 'Degraded' : 'Down'}
+              </span>
+            )}
+          </div>
+          {isLoadingSystemHealth && !systemHealth ? (
+            <div className="space-y-1"><Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-3/4" /><Skeleton className="h-3 w-2/3" /></div>
+          ) : systemHealth ? (
+            <div className="space-y-1.5">
+              {systemHealth.checks.map((check) => (
+                <div key={check.name} className="flex items-center justify-between text-[11px] font-sans">
+                  <div className="flex items-center gap-1.5">
+                    <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      check.status === 'ok' ? 'bg-emerald-400' : check.status === 'degraded' ? 'bg-amber-400' : 'bg-red-400'
+                    }`} />
+                    <span className="text-text-secondary capitalize">{check.name}</span>
+                  </div>
+                  {check.latencyMs !== undefined && (
+                    <span className="data-mono text-text-muted">{check.latencyMs}ms</span>
+                  )}
+                </div>
+              ))}
             </div>
           ) : (
             <span className="text-[11px] text-text-muted font-sans">—</span>

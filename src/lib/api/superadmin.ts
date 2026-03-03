@@ -40,6 +40,18 @@ export interface QueueJobCount {
 }
 export interface QueueStats { queues: QueueJobCount[] }
 
+export interface AdminSession {
+  id: string;
+  userId: string;
+  deviceId: string | null;
+  userAgent: string | null;
+  ipAddress: string | null;
+  lastActiveAt: string;
+  createdAt: string;
+  expiresAt: string;
+  isRevoked: boolean;
+}
+
 export interface TokenDay { date: string; tokens: number; estimatedCostUsd: number }
 export interface TokenUsageData {
   daily: TokenDay[];
@@ -52,6 +64,21 @@ export interface KbHealthData {
   byStatus: Record<string, number>;
   byType: Record<string, number>;
   embeddingCoverage: { total: number; embedded: number };
+}
+
+export type HealthStatus = 'ok' | 'degraded' | 'down';
+
+export interface SystemHealthCheck {
+  name: string;
+  status: HealthStatus;
+  latencyMs?: number;
+  details?: unknown;
+}
+
+export interface SystemHealthData {
+  status: HealthStatus;
+  checks: SystemHealthCheck[];
+  timestamp: string;
 }
 
 /**
@@ -105,12 +132,31 @@ export const superadminApi = {
     const res = await apiClient.get<ApiResponse<QueueStats>>('/superadmin/queues');
     return res.data.data;
   },
+  retryFailed: async (name: string): Promise<{ retried: number }> => {
+    const res = await apiClient.post<ApiResponse<{ retried: number }>>(`/superadmin/queues/${name}/retry-failed`);
+    return res.data.data;
+  },
+  purgeFailed: async (name: string): Promise<{ purged: number }> => {
+    const res = await apiClient.delete<ApiResponse<{ purged: number }>>(`/superadmin/queues/${name}/failed`);
+    return res.data.data;
+  },
+  listSessions: async (): Promise<AdminSession[]> => {
+    const res = await apiClient.get<ApiResponse<AdminSession[]>>('/superadmin/sessions');
+    return res.data.data;
+  },
+  revokeSession: async (id: string): Promise<void> => {
+    await apiClient.delete(`/superadmin/sessions/${id}`);
+  },
   getTokenUsage: async (): Promise<TokenUsageData> => {
     const res = await apiClient.get<ApiResponse<TokenUsageData>>('/superadmin/token-usage');
     return res.data.data;
   },
   getKbHealth: async (): Promise<KbHealthData> => {
     const res = await apiClient.get<ApiResponse<KbHealthData>>('/superadmin/kb-health');
+    return res.data.data;
+  },
+  getSystemHealth: async (): Promise<SystemHealthData> => {
+    const res = await apiClient.get<ApiResponse<SystemHealthData>>('/superadmin/system-health');
     return res.data.data;
   },
 
