@@ -32,49 +32,66 @@ A clean, minimal light mode is preserved for TMA (Telegram Mini App) screens and
 
 ## 3. Color System
 
-### 3A. Dark Mode Palette (Primary)
+### 3A. Dark Mode Palette — Twitter-Crimson (v3.0)
 
-| Token | Hex | Role |
+| Token | CSS Var | Hex | Role |
+|---|---|---|---|
+| Page background | `--void` | `#000000` | Twitter pure black |
+| App shell / sidebar | `--base` | `#16171a` | Sidebar / nav background |
+| Card surface | `--card` | `#17181c` | Twitter dark card |
+| Popovers / dropdowns | `--elevated` | `#1e2025` | Elevated surfaces |
+| Table rows / inner | `--overlay` | `#1c1d21` | Inner sections |
+| Code blocks / sub-panels | `--surface-sunken` | `#111214` | Deepest inset |
+| Dividers, card borders | `--border-subtle` | `#242628` | Twitter dark border |
+| Input borders, table lines | `--border-default` | `#2e3033` | Slightly stronger |
+| Headings, critical values | `--text-primary` | `#f0f0ff` | — |
+| Labels, captions | `--text-secondary` | `#8888aa` | — |
+| Placeholder, disabled | `--text-muted` | `#555570` | — |
+| Primary brand | `--crimson` | `#c4232d` | CTA buttons, active nav |
+| Brand hover | `--crimson-hover` | `#e02835` | Button hover state |
+| Brand tint bg | `--crimson-subtle` | `rgba(196,35,45,0.10)` | 10% opacity |
+| Brand glow | `--crimson-glow` | `rgba(196,35,45,0.22)` | Glow effect |
+| VIP / premium | `--gold` | `#e8b94f` | Depositing clients |
+| Success | `--color-success` | `#22d3a0` | Verified, confirmed |
+| Warning | `--color-warning` | `#f59e0b` | Pending, review |
+| Danger | `--color-danger` | `#ef4444` | Rejected, error |
+| Info | `--color-info` | `#60a5fa` | Registered, info |
+| Live pulse | `--color-live` | `#ff3b47` | Animated indicator |
+
+### 3B. Light Mode Palette — Twitter-Crimson (v3.0)
+
+| Token | CSS Var | Hex | Role |
+|---|---|---|---|
+| Page background | `--void` | `#f7f8f8` | Twitter off-white (cards float above) |
+| App shell / sidebar | `--base` | `#f0f3f4` | Sidebar / nav background |
+| Card surface | `--card` | `#ffffff` | Pure white (elevated above void) |
+| Popovers / dropdowns | `--elevated` | `#ffffff` | Pure white |
+| Table rows / inner | `--overlay` | `#f0f3f4` | Inner sections |
+| Code blocks / sub-panels | `--surface-sunken` | `#eaecef` | Deeper inset |
+| Dividers, card borders | `--border-subtle` | `#e1eaef` | Twitter border |
+| Input borders, table lines | `--border-default` | `#d5dde3` | Slightly stronger |
+| Headings, critical values | `--text-primary` | `#0f172a` | slate-900 |
+| Labels, captions | `--text-secondary` | `#475569` | slate-600 |
+| Placeholder, disabled | `--text-muted` | `#94a3b8` | slate-400 |
+| Primary brand | `--crimson` | `#dc2626` | red-600 |
+| Brand hover | `--crimson-hover` | `#b91c1c` | red-700 |
+| Brand tint bg | `--crimson-subtle` | `rgba(220,38,38,0.08)` | 8% opacity |
+| VIP / premium | `--gold` | `#a07018` | Amber gold |
+| Success | `--color-success` | `#22d3a0` | Verified, confirmed |
+| Warning | `--color-warning` | `#f59e0b` | Pending, review |
+| Danger | `--color-danger` | `#ef4444` | Rejected, error |
+
+### 3C. Radius System
+
+| Token | Value | Tailwind Class |
 |---|---|---|
-| `--bg-void` | `#080810` | Page background — deep space black |
-| `--bg-base` | `#0E0E1A` | App shell background |
-| `--bg-card` | `#141422` | Card/panel surface |
-| `--bg-elevated` | `#1C1C2E` | Elevated card, modal, dropdown |
-| `--bg-overlay` | `#24243A` | Hover state, tooltip bg |
-| `--border-subtle` | `#2A2A42` | Dividers, card borders |
-| `--border-default` | `#38385A` | Input borders, table lines |
-| `--text-primary` | `#F0F0FF` | Headings, critical values |
-| `--text-secondary` | `#8888AA` | Labels, captions, helper text |
-| `--text-muted` | `#555570` | Placeholder, disabled |
-| `--brand-crimson` | `#C4232D` | Primary brand — CTA buttons, active nav |
-| `--brand-crimson-hover` | `#E02835` | Button hover state |
-| `--brand-crimson-subtle` | `#C4232D1A` | Crimson tint bg (10% opacity) |
-| `--brand-crimson-glow` | `#C4232D33` | Glow effect (20% opacity) |
-| `--accent-gold` | `#E8B94F` | VIP/premium indicators, depositing clients |
-| `--accent-gold-subtle` | `#E8B94F1A` | Gold tint bg |
-| `--status-success` | `#22D3A0` | Verified, confirmed, active |
-| `--status-warning` | `#F59E0B` | Pending, awaiting review |
-| `--status-danger` | `#EF4444` | Rejected, failed, error |
-| `--status-info` | `#60A5FA` | Registered, info states |
-| `--live-pulse` | `#FF3B47` | Live indicator — animated pulse dot |
-
-### 3B. Light Mode Palette (TMA & Preference)
-
-| Token | Hex | Role |
-|---|---|---|
-| `--bg-page` | `#F8F8FC` | Page background |
-| `--bg-card` | `#FFFFFF` | Card surface |
-| `--bg-elevated` | `#F1F1FA` | Sidebar, secondary bg |
-| `--border-default` | `#E2E2F0` | Input borders, dividers |
-| `--text-primary` | `#1A1A2E` | Headings, critical values |
-| `--text-secondary` | `#5A5A7A` | Labels, captions |
-| `--text-muted` | `#9A9AB0` | Placeholder, disabled |
-| `--brand-crimson` | `#9A1B22` | Kept darker in light mode |
-| `--brand-crimson-subtle` | `#9A1B221A` | Tinted bg |
-| `--accent-gold` | `#D4A017` | Gold in light mode |
-| `--status-success` | `#10B981` | Verified states |
-| `--status-warning` | `#F59E0B` | Pending states |
-| `--status-danger` | `#EF4444` | Error/rejected states |
+| `--radius` | `0.4rem` | Base token |
+| `--radius-sm` | `calc(0.4rem - 4px)` ≈ 2px | `rounded-sm` |
+| `--radius-md` | `calc(0.4rem - 2px)` ≈ 4px | `rounded-md` |
+| `--radius-lg` | `0.4rem` ≈ 6px | `rounded-lg` |
+| `--radius-xl` | `calc(0.4rem + 4px)` ≈ 10px | `rounded-xl` |
+| `--radius-2xl` | `calc(0.4rem + 8px)` ≈ 14px | `rounded-2xl` |
+| `--radius-full` | `9999px` | `rounded-full` |
 
 ---
 
