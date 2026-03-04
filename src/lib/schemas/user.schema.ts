@@ -43,7 +43,7 @@ export type CreateUserInput = z.infer<typeof CreateUserSchema>;
 
 export const InviteUserSchema = z.object({
   role: UserRoleSchema,
-  email: z.string().email("Please enter a valid email address").optional(),
+  email: z.string().email("Please enter a valid email address"),
 });
 
 export type InviteUserInput = z.infer<typeof InviteUserSchema>;

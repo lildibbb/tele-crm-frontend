@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Loader2, LockKeyhole, CheckCircle2, ShieldCheck, ArrowRight, RefreshCw } from "lucide-react";
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  CheckCircle2,
+  ShieldCheck,
+  ArrowRight,
+  RefreshCw,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { OTPInput, type SlotProps } from "input-otp";
@@ -22,34 +31,38 @@ import { authApi } from "@/lib/api/auth";
 
 import { cn } from "@/lib/utils";
 import { z } from "zod/v4";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 
 // Password strength rules
 const PASSWORD_RULES = [
   { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
   { label: "One uppercase letter", test: (p: string) => /[A-Z]/.test(p) },
   { label: "One number", test: (p: string) => /[0-9]/.test(p) },
-  { label: "One special character", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+  {
+    label: "One special character",
+    test: (p: string) => /[^A-Za-z0-9]/.test(p),
+  },
 ];
 
 // Framer Motion variants for smooth animations
-const pageVariants = {
+const pageVariants: Variants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
 };
 
-const stepVariants = {
+const stepVariants: Variants = {
   initial: { opacity: 0, x: 50 },
   animate: { opacity: 1, x: 0 },
   exit: { opacity: 0, x: -50 },
 };
 
-const iconVariants = {
+const iconVariants: Variants = {
   initial: { scale: 0.5, opacity: 0 },
-  animate: { 
-    scale: 1, 
+  animate: {
+    scale: 1,
     opacity: 1,
-    transition: { type: "spring", stiffness: 300, damping: 20 }
+    transition: { type: "spring", stiffness: 300, damping: 20 },
   },
 };
 
@@ -100,7 +113,8 @@ function SuccessPage({ onGoToLogin }: { onGoToLogin: () => void }) {
         transition={{ delay: 0.3 }}
         className="font-sans text-sm text-text-secondary mb-8"
       >
-        Your password has been securely updated. You can now sign in with your new password.
+        Your password has been securely updated. You can now sign in with your
+        new password.
       </motion.p>
 
       <motion.div
@@ -130,25 +144,30 @@ function StepIndicator({ currentStep }: { currentStep: 1 | 2 }) {
           <motion.div
             initial={false}
             animate={{
-              backgroundColor: step <= currentStep ? "var(--color-crimson)" : "var(--color-border-default)",
-              borderColor: step <= currentStep ? "var(--color-crimson)" : "var(--color-border-default)",
+              backgroundColor:
+                step <= currentStep
+                  ? "var(--color-crimson)"
+                  : "var(--color-border-default)",
+              borderColor:
+                step <= currentStep
+                  ? "var(--color-crimson)"
+                  : "var(--color-border-default)",
             }}
             className={cn(
               "w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-medium transition-colors",
-              step <= currentStep ? "text-white" : "text-text-muted"
+              step <= currentStep ? "text-white" : "text-text-muted",
             )}
           >
-            {step < currentStep ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              step
-            )}
+            {step < currentStep ? <CheckCircle2 className="h-4 w-4" /> : step}
           </motion.div>
           {step < 2 && (
             <motion.div
               initial={false}
               animate={{
-                backgroundColor: step < currentStep ? "var(--color-crimson)" : "var(--color-border-default)",
+                backgroundColor:
+                  step < currentStep
+                    ? "var(--color-crimson)"
+                    : "var(--color-border-default)",
               }}
               className="w-12 h-0.5 mx-1"
             />
@@ -165,10 +184,11 @@ function OTPSlot(props: SlotProps) {
     <div
       className={cn(
         "border-input bg-background text-foreground flex size-12 items-center justify-center rounded-lg border-2 font-mono text-xl font-bold transition-all duration-200",
-        { 
-          "border-crimson ring-2 ring-crimson/30 z-10 shadow-lg shadow-crimson/20": props.isActive,
+        {
+          "border-crimson ring-2 ring-crimson/30 z-10 shadow-lg shadow-crimson/20":
+            props.isActive,
           "border-border-default": !props.isActive,
-        }
+        },
       )}
     >
       {props.char !== null && (
@@ -185,11 +205,11 @@ function OTPSlot(props: SlotProps) {
 }
 
 // Step 1: OTP Verification
-function StepOneVerification({ 
-  onNext, 
+function StepOneVerification({
+  onNext,
   form,
   submittedEmail,
-}: { 
+}: {
   onNext: () => void;
   form: any;
   submittedEmail: string;
@@ -212,7 +232,10 @@ function StepOneVerification({
   // Resend countdown timer
   useEffect(() => {
     if (resendCountdown > 0) {
-      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+      const timer = setTimeout(
+        () => setResendCountdown(resendCountdown - 1),
+        1000,
+      );
       return () => clearTimeout(timer);
     }
   }, [resendCountdown]);
@@ -222,14 +245,14 @@ function StepOneVerification({
     setError(null);
 
     try {
-      // Simulate API call - in real app, verify OTP with backend
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+      // Local validation only for step 1
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       if (code.length === 4) {
-        // Animate to step 2
+        // Animate to step 2 where actual reset happens
         setTimeout(() => {
           onNext();
-        }, 800);
+        }, 300);
       } else {
         setError("Invalid verification code. Please try again.");
         form.setValue("code", "");
@@ -243,10 +266,18 @@ function StepOneVerification({
 
   async function handleResend() {
     setIsResending(true);
-    // Simulate resend API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setResendCountdown(60);
-    setIsResending(false);
+    try {
+      // Hit the actual API to resend the code
+      await authApi.forgotPassword({ email: submittedEmail });
+      setResendCountdown(60);
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to resend code. Please try again.";
+      setError(message);
+    } finally {
+      setIsResending(false);
+    }
   }
 
   return (
@@ -318,9 +349,7 @@ function StepOneVerification({
 
       {/* Resend */}
       <div className="text-center">
-        <p className="text-text-muted text-sm mb-2">
-          Didn't receive the code?
-        </p>
+        <p className="text-text-muted text-sm mb-2">Didn't receive the code?</p>
         <Button
           variant="ghost"
           size="sm"
@@ -340,17 +369,16 @@ function StepOneVerification({
           )}
         </Button>
       </div>
-
     </motion.div>
   );
 }
 
 // Step 2: New Password
-function StepTwoPassword({ 
+function StepTwoPassword({
   onSubmit,
   form,
   isSubmitting,
-}: { 
+}: {
   onSubmit: (data: any) => void;
   form: any;
   isSubmitting: boolean;
@@ -362,9 +390,15 @@ function StepTwoPassword({
   const confirmPassword = form.watch("confirmPassword");
 
   const passScore = PASSWORD_RULES.filter((r) => r.test(password || "")).length;
-  
+
   const barColor =
-    passScore <= 1 ? "#C4232D" : passScore === 2 ? "#F59E0B" : passScore === 3 ? "#60A5FA" : "#22D3A0";
+    passScore <= 1
+      ? "#C4232D"
+      : passScore === 2
+        ? "#F59E0B"
+        : passScore === 3
+          ? "#60A5FA"
+          : "#22D3A0";
 
   const passwordsMatch = password === confirmPassword && password.length > 0;
 
@@ -421,7 +455,11 @@ function StepTwoPassword({
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-text-muted hover:text-text-secondary"
                       onClick={() => setShowPass(!showPass)}
                     >
-                      {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPass ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </FormControl>
@@ -439,9 +477,14 @@ function StepTwoPassword({
                         <motion.div
                           key={i}
                           className="flex-1 h-1.5 rounded-full"
-                          initial={{ backgroundColor: "var(--color-border-default)" }}
+                          initial={{
+                            backgroundColor: "var(--color-border-default)",
+                          }}
                           animate={{
-                            backgroundColor: i <= passScore ? barColor : "var(--color-border-default)",
+                            backgroundColor:
+                              i <= passScore
+                                ? barColor
+                                : "var(--color-border-default)",
                           }}
                           transition={{ duration: 0.3 }}
                         />
@@ -450,7 +493,7 @@ function StepTwoPassword({
 
                     {/* Strength label */}
                     <div className="flex justify-between items-center">
-                      <span 
+                      <span
                         className="text-xs font-medium"
                         style={{ color: barColor }}
                       >
@@ -464,17 +507,24 @@ function StepTwoPassword({
                     {/* Rules */}
                     <div className="grid grid-cols-2 gap-1.5 mt-2">
                       {PASSWORD_RULES.map((rule) => (
-                        <div key={rule.label} className="flex items-center gap-1.5">
+                        <div
+                          key={rule.label}
+                          className="flex items-center gap-1.5"
+                        >
                           <div
                             className={cn(
                               "w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
-                              rule.test(password) ? "bg-success" : "bg-border-default"
+                              rule.test(password)
+                                ? "bg-success"
+                                : "bg-border-default",
                             )}
                           />
                           <p
                             className={cn(
                               "text-[10px] font-sans truncate",
-                              rule.test(password) ? "text-success" : "text-text-muted"
+                              rule.test(password)
+                                ? "text-success"
+                                : "text-text-muted",
                             )}
                           >
                             {rule.label}
@@ -505,7 +555,8 @@ function StepTwoPassword({
                       placeholder="Confirm new password"
                       className={cn(
                         "pr-10 h-11 focus-visible:ring-crimson/50 focus-visible:border-crimson",
-                        passwordsMatch && "border-success focus-visible:ring-success/30"
+                        passwordsMatch &&
+                          "border-success focus-visible:ring-success/30",
                       )}
                       {...field}
                     />
@@ -516,12 +567,18 @@ function StepTwoPassword({
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-text-muted hover:text-text-secondary"
                       onClick={() => setShowConfirmPass(!showConfirmPass)}
                     >
-                      {showConfirmPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showConfirmPass ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </FormControl>
                 {confirmPassword && !passwordsMatch && (
-                  <p className="text-xs text-danger mt-1">Passwords do not match</p>
+                  <p className="text-xs text-danger mt-1">
+                    Passwords do not match
+                  </p>
                 )}
                 <FormMessage className="text-xs" />
               </FormItem>
@@ -555,29 +612,32 @@ function StepTwoPassword({
 }
 
 // Main component
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const emailFromUrl = searchParams.get("email") ?? "";
   const [step, setStep] = useState<1 | 2>(1);
   const [isCompleted, setCompleted] = useState(false);
-  const [submittedEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Extended schema with confirmPassword for client-side validation
-  const formWithConfirmSchema = z.object({
-    email: z.string().email("Please enter a valid email address"),
-    code: z.string().length(4, "Code must be exactly 4 digits"),
-    newPassword: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string(),
-  }).refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+  const formWithConfirmSchema = z
+    .object({
+      email: z.string().email("Please enter a valid email address"),
+      code: z.string().length(4, "Code must be exactly 4 digits"),
+      newPassword: z.string().min(8, "Password must be at least 8 characters"),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    });
 
   const form = useForm<z.infer<typeof formWithConfirmSchema>>({
-    resolver: zodResolver(formWithConfirmSchema),
-    defaultValues: { 
-      email: submittedEmail || "", 
-      code: "", 
+    resolver: standardSchemaResolver(formWithConfirmSchema),
+    defaultValues: {
+      email: emailFromUrl,
+      code: "",
       newPassword: "",
       confirmPassword: "",
     },
@@ -599,8 +659,8 @@ export default function ResetPasswordPage() {
       setCompleted(true);
     } catch (err: unknown) {
       const message =
-        (err as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message ?? "Failed to reset password. Please try again.";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to reset password. Please try again.";
       form.setError("root", { message });
     } finally {
       setIsSubmitting(false);
@@ -623,7 +683,10 @@ export default function ResetPasswordPage() {
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
             className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.08]"
-            style={{ background: "radial-gradient(circle, #22D3A0 0%, transparent 70%)" }}
+            style={{
+              background:
+                "radial-gradient(circle, #22D3A0 0%, transparent 70%)",
+            }}
             animate={{
               scale: [1, 1.1, 1],
               opacity: [0.06, 0.1, 0.06],
@@ -653,7 +716,9 @@ export default function ResetPasswordPage() {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.06]"
-          style={{ background: "radial-gradient(circle, #C4232D 0%, transparent 70%)" }}
+          style={{
+            background: "radial-gradient(circle, #C4232D 0%, transparent 70%)",
+          }}
           animate={{
             scale: [1, 1.05, 1],
             opacity: [0.04, 0.08, 0.04],
@@ -690,7 +755,7 @@ export default function ResetPasswordPage() {
                 key="step1"
                 onNext={handleNextStep}
                 form={form}
-                submittedEmail={submittedEmail}
+                submittedEmail={emailFromUrl}
               />
             ) : (
               <StepTwoPassword
@@ -717,5 +782,13 @@ export default function ResetPasswordPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

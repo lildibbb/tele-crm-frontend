@@ -22,13 +22,25 @@ import { getDeviceId, getUserAgent } from "@/lib/deviceId";
 /* ── Brand mark ───────────────────────────────────────────── */
 function TitanMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
       {/* Top bar — full width */}
       <rect x="2" y="3" width="20" height="3.5" rx="1.75" fill="currentColor" />
       {/* Vertical stem — left aligned */}
       <rect x="2" y="3" width="3.5" height="18" rx="1.75" fill="currentColor" />
       {/* Bottom accent — right offset */}
-      <rect x="9" y="17.5" width="13" height="3.5" rx="1.75" fill="currentColor" />
+      <rect
+        x="9"
+        y="17.5"
+        width="13"
+        height="3.5"
+        rx="1.75"
+        fill="currentColor"
+      />
     </svg>
   );
 }
@@ -37,23 +49,74 @@ function TitanMark({ className }: { className?: string }) {
 function SignalNetwork() {
   // 25 nodes: [cx, cy] in a 100×100 viewBox
   const nodes: [number, number][] = [
-    [8, 12], [22, 8], [38, 15], [55, 6], [72, 18], [90, 9],
-    [14, 28], [32, 35], [50, 25], [66, 32], [84, 24],
-    [5, 47], [20, 54], [36, 45], [52, 52], [68, 44], [86, 50],
-    [11, 68], [28, 75], [44, 65], [61, 72], [79, 62],
-    [17, 88], [40, 82], [63, 90],
+    [8, 12],
+    [22, 8],
+    [38, 15],
+    [55, 6],
+    [72, 18],
+    [90, 9],
+    [14, 28],
+    [32, 35],
+    [50, 25],
+    [66, 32],
+    [84, 24],
+    [5, 47],
+    [20, 54],
+    [36, 45],
+    [52, 52],
+    [68, 44],
+    [86, 50],
+    [11, 68],
+    [28, 75],
+    [44, 65],
+    [61, 72],
+    [79, 62],
+    [17, 88],
+    [40, 82],
+    [63, 90],
   ];
 
   const edges: [number, number][] = [
-    [0,1],[1,2],[2,3],[3,4],[4,5],
-    [0,6],[1,6],[2,7],[3,8],[4,9],[5,10],
-    [6,7],[7,8],[8,9],[9,10],
-    [6,11],[7,12],[8,13],[9,14],[10,15],[10,16],
-    [11,12],[12,13],[13,14],[14,15],[15,16],
-    [12,17],[13,18],[14,19],[15,20],[16,21],
-    [17,18],[18,19],[19,20],[20,21],
-    [17,22],[19,23],[21,24],
-    [22,23],[23,24],
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [3, 4],
+    [4, 5],
+    [0, 6],
+    [1, 6],
+    [2, 7],
+    [3, 8],
+    [4, 9],
+    [5, 10],
+    [6, 7],
+    [7, 8],
+    [8, 9],
+    [9, 10],
+    [6, 11],
+    [7, 12],
+    [8, 13],
+    [9, 14],
+    [10, 15],
+    [10, 16],
+    [11, 12],
+    [12, 13],
+    [13, 14],
+    [14, 15],
+    [15, 16],
+    [12, 17],
+    [13, 18],
+    [14, 19],
+    [15, 20],
+    [16, 21],
+    [17, 18],
+    [18, 19],
+    [19, 20],
+    [20, 21],
+    [17, 22],
+    [19, 23],
+    [21, 24],
+    [22, 23],
+    [23, 24],
   ];
 
   const activeNodes = new Set([2, 8, 14, 19]);
@@ -68,7 +131,12 @@ function SignalNetwork() {
     >
       <defs>
         <filter id="node-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="0" stdDeviation="1.5" floodColor="rgba(196,35,45,0.9)" />
+          <feDropShadow
+            dx="0"
+            dy="0"
+            stdDeviation="1.5"
+            floodColor="rgba(196,35,45,0.9)"
+          />
         </filter>
       </defs>
 
@@ -76,8 +144,10 @@ function SignalNetwork() {
       {edges.map(([a, b], i) => (
         <line
           key={i}
-          x1={nodes[a][0]} y1={nodes[a][1]}
-          x2={nodes[b][0]} y2={nodes[b][1]}
+          x1={nodes[a][0]}
+          y1={nodes[a][1]}
+          x2={nodes[b][0]}
+          y2={nodes[b][1]}
           stroke="rgba(196,35,45,0.14)"
           strokeWidth="0.18"
           className="dark:stroke-[rgba(196,35,45,0.14)] stroke-[rgba(220,38,38,0.08)]"
@@ -88,14 +158,22 @@ function SignalNetwork() {
       {nodes.map(([cx, cy], i) => (
         <circle
           key={i}
-          cx={cx} cy={cy}
+          cx={cx}
+          cy={cy}
           r={i === glowNode ? 0.8 : 0.55}
           fill={i === glowNode ? "rgba(196,35,45,0.7)" : "rgba(196,35,45,0.3)"}
-          className={i >= 12 ? "dark:fill-[rgba(196,35,45,0.3)] fill-[rgba(220,38,38,0.14)]" : "dark:fill-[rgba(196,35,45,0.3)] fill-[rgba(220,38,38,0.12)]"}
+          className={
+            i >= 12
+              ? "dark:fill-[rgba(196,35,45,0.3)] fill-[rgba(220,38,38,0.14)]"
+              : "dark:fill-[rgba(196,35,45,0.3)] fill-[rgba(220,38,38,0.12)]"
+          }
           filter={i === glowNode ? "url(#node-glow)" : undefined}
           style={
             activeNodes.has(i)
-              ? { animation: `pulse-node 3s ease-in-out infinite`, animationDelay: `${(i % 4) * 0.8}s` }
+              ? {
+                  animation: `pulse-node 3s ease-in-out infinite`,
+                  animationDelay: `${(i % 4) * 0.8}s`,
+                }
               : undefined
           }
         />
@@ -208,10 +286,6 @@ export default function LoginPage() {
               TITAN <span className="text-crimson">JOURNAL</span>
             </h1>
           </div>
-          <p className="text-text-secondary font-sans text-sm mt-4 lg:text-base max-w-md leading-relaxed selection:bg-crimson/30">
-            The intelligent command center for managing funnels, optimising
-            conversions, and driving growth.
-          </p>
         </div>
 
         {/* Footer badges */}

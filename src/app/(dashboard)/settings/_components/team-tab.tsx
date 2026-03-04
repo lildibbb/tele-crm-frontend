@@ -320,7 +320,7 @@ export function TeamTab() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-medium text-text-secondary">
-                        Email Address (optional)
+                        Email Address <span className="text-crimson">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input

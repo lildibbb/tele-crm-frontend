@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
   };
 
   const handleContinue = () => {
-    router.push("/reset-password");
+    router.push(`/reset-password?email=${encodeURIComponent(submittedEmail ?? "")}`);
   };
 
   const handleResend = async () => {
