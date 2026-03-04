@@ -9,13 +9,15 @@ import {
   X,
   FunnelSimple,
   DownloadSimple,
+  UserSwitch,
 } from "@phosphor-icons/react";
 import { ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { leadsApi } from "@/lib/api/leads";
 import { LeadStatus } from "@/types/enums";
 import type { Lead } from "@/queries/useLeadsQuery";
-import { useLeadsList } from "@/queries/useLeadsQuery";
+import { useLeadsList, useBulkSetHandover } from "@/queries/useLeadsQuery";
+import { useAuthStore } from "@/store/authStore";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +31,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadsListProps {
@@ -187,6 +190,9 @@ function PullIndicator({ visible }: { visible: boolean }) {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
+  const { user } = useAuthStore();
+  const role = user?.role ?? "STAFF";
+  const canHandover = role === "OWNER" || role === "ADMIN";
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [search, setSearch] = useState("");
   const [skip, setSkip] = useState(0);
@@ -194,6 +200,7 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [showSortSheet, setShowSortSheet] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const bulkHandoverMutation = useBulkSetHandover();
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
 
@@ -377,29 +384,43 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
               </span>
             )}
           </span>
-          <button
-            onClick={() => setShowSortSheet(true)}
-            className={cn(
-              "flex items-center gap-1 font-sans text-[12px] transition-colors",
-              sortOption !== "newest" ? "text-crimson font-semibold" : "text-text-muted",
+          <div className="flex items-center gap-2">
+            {canHandover && (
+              <div className="flex items-center gap-1.5 border border-border-subtle rounded-lg px-2.5 h-9 bg-elevated">
+                <UserSwitch size={14} className="text-text-secondary" />
+                <span className="font-sans text-[12px] text-text-secondary">Handover</span>
+                <Switch
+                  checked={false}
+                  onCheckedChange={(mode) => bulkHandoverMutation.mutate(mode)}
+                  disabled={bulkHandoverMutation.isPending}
+                  className="scale-75"
+                />
+              </div>
             )}
-            aria-label="Sort leads"
-          >
-            <ArrowUpDown size={14} />
-            {sortOption !== "newest" ? activeSort.label : "Newest"}
-          </button>
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="w-9 h-9 rounded-xl bg-elevated flex items-center justify-center active:scale-[0.93] transition-transform disabled:opacity-50"
-            aria-label="Export XLSX"
-          >
-            {exporting ? (
-              <div className="w-4 h-4 border-2 border-crimson border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <DownloadSimple size={18} className="text-text-secondary" />
-            )}
-          </button>
+            <button
+              onClick={() => setShowSortSheet(true)}
+              className={cn(
+                "flex items-center gap-1 font-sans text-[12px] transition-colors",
+                sortOption !== "newest" ? "text-crimson font-semibold" : "text-text-muted",
+              )}
+              aria-label="Sort leads"
+            >
+              <ArrowUpDown size={14} />
+              {sortOption !== "newest" ? activeSort.label : "Newest"}
+            </button>
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="w-9 h-9 rounded-xl bg-elevated flex items-center justify-center active:scale-[0.93] transition-transform disabled:opacity-50"
+              aria-label="Export XLSX"
+            >
+              {exporting ? (
+                <div className="w-4 h-4 border-2 border-crimson border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <DownloadSimple size={18} className="text-text-secondary" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Lead cards / Skeleton / Empty */}

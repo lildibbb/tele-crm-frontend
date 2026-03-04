@@ -18,8 +18,6 @@ import {
   ShieldCheck,
   SignOut,
   Lock,
-  Bell,
-  CurrencyDollar,
   MoonStars,
   Translate,
   Palette,
@@ -175,7 +173,7 @@ const BOT_ITEMS: SettingsItem[] = [
     iconColor: "text-text-secondary",
     iconBg: "bg-elevated",
     label: "Bot Config",
-    href: "/settings",
+    href: "/settings/bot-config",
   },
   {
     id: "knowledge",
@@ -267,7 +265,6 @@ const TIMEZONES = [
   "Australia/Sydney",
 ] as const;
 
-const NOTIF_PREFS_KEY = "notif_prefs";
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileSettings({
@@ -281,11 +278,6 @@ export default function MobileSettings({
   const { theme, setTheme } = useTheme();
 
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
-  const [notifications, setNotifications] = useState({
-    newLeadAlerts: true,
-    depositReports: true,
-    verificationUpdates: true,
-  });
   const [language, setLanguage] = useState<string>("en");
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
@@ -297,27 +289,6 @@ export default function MobileSettings({
   const [pendingTz, setPendingTz] = useState<string>(defaultTz);
   const [tzSaving, setTzSaving] = useState(false);
   const [tzStatus, setTzStatus] = useState<"idle" | "success" | "error">("idle");
-
-  // ── Persist notifications to localStorage ──────────────────────────────────
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(NOTIF_PREFS_KEY);
-      if (stored) setNotifications(JSON.parse(stored));
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const toggleNotification = (key: keyof typeof notifications) =>
-    setNotifications((p) => {
-      const next = { ...p, [key]: !p[key] };
-      try {
-        localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
 
   const handleSaveTz = async () => {
     setTzSaving(true);
@@ -404,28 +375,6 @@ export default function MobileSettings({
             ))}
           </SectionCard>
         )}
-
-        {/* ── Notification Preferences ─────────────────────────────── */}
-        <SectionCard header="Notification Preferences">
-          <ToggleRow
-            Icon={Bell}
-            label="New Lead Alerts"
-            checked={notifications.newLeadAlerts}
-            onChange={() => toggleNotification("newLeadAlerts")}
-          />
-          <ToggleRow
-            Icon={CurrencyDollar}
-            label="Deposit Reports"
-            checked={notifications.depositReports}
-            onChange={() => toggleNotification("depositReports")}
-          />
-          <ToggleRow
-            Icon={ShieldCheck}
-            label="Verification Updates"
-            checked={notifications.verificationUpdates}
-            onChange={() => toggleNotification("verificationUpdates")}
-          />
-        </SectionCard>
 
         {/* ── Appearance ───────────────────────────────────────────── */}
         <SectionCard header="Appearance">

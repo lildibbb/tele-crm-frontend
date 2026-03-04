@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
   CheckCircle,
@@ -266,12 +267,14 @@ function VerificationCard({
   onReject,
   onAskMore,
   onViewReceipt,
+  onViewLead,
 }: {
   item: VerificationItem;
   onApprove: () => void;
   onReject: () => void;
   onAskMore: () => void;
   onViewReceipt: () => void;
+  onViewLead: () => void;
 }) {
   const meta = STATUS_META[item.status] ?? STATUS_META[LeadStatus.DEPOSIT_REPORTED];
   const isPending = item.status === LeadStatus.DEPOSIT_REPORTED;
@@ -284,7 +287,10 @@ function VerificationCard({
       )}
     >
       {/* Header row: avatar + name + status badge */}
-      <div className="flex items-center gap-3 p-4 pb-0">
+      <button
+        className="flex items-center gap-3 p-4 pb-0 w-full text-left active:opacity-80 transition-opacity"
+        onClick={onViewLead}
+      >
         <div className="w-11 h-11 rounded-full flex items-center justify-center bg-crimson-subtle shrink-0">
           <span className="font-sans font-bold text-[15px] text-text-primary">
             {item.initials}
@@ -301,7 +307,7 @@ function VerificationCard({
           </div>
         </div>
         <Badge variant="secondary" className="text-[10px] font-medium shrink-0">{meta.label}</Badge>
-      </div>
+      </button>
 
       {/* Deposit + date + receipt */}
       <div className="px-4 pt-3 pb-3">
@@ -389,8 +395,13 @@ export default function MobileVerification({
   onApprove,
   onReject,
 }: MobileVerificationProps) {
+  const router = useRouter();
   const verificationStatuses = `${LeadStatus.DEPOSIT_REPORTED},${LeadStatus.DEPOSIT_CONFIRMED},${LeadStatus.REJECTED}`;
   const { data: leadsResult, isLoading } = useLeadsList({ skip: 0, take: 50, statuses: verificationStatuses });
+  // 3 separate queries for accurate counts (mirrors desktop)
+  const { data: pendingResult } = useLeadsList({ skip: 0, take: 1, status: LeadStatus.DEPOSIT_REPORTED });
+  const { data: approvedResult } = useLeadsList({ skip: 0, take: 1, status: LeadStatus.DEPOSIT_CONFIRMED });
+  const { data: rejectedResult } = useLeadsList({ skip: 0, take: 1, status: LeadStatus.REJECTED });
   const leads = leadsResult?.data ?? [];
   const verifyMutation = useVerifyLead();
   const updateStatusMutation = useUpdateLeadStatus();
@@ -429,13 +440,14 @@ export default function MobileVerification({
       .map(toVerificationItem);
   }, [filter, pendingLeads, allVerificationLeads, processedIds]);
 
-  const pendingCount = useMemo(
+  const localPendingCount = useMemo(
     () => pendingLeads.filter((l) => !processedIds.has(l.id)).length,
     [pendingLeads, processedIds],
   );
+  const pendingCount = pendingResult?.total ?? localPendingCount;
 
-  const approvedToday = leads.filter((l) => l.status === LeadStatus.DEPOSIT_CONFIRMED).length;
-  const rejectedToday = leads.filter((l) => l.status === LeadStatus.REJECTED).length;
+  const approvedToday = approvedResult?.total ?? leads.filter((l) => l.status === LeadStatus.DEPOSIT_CONFIRMED).length;
+  const rejectedToday = rejectedResult?.total ?? leads.filter((l) => l.status === LeadStatus.REJECTED).length;
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const handleApprove = useCallback(
@@ -567,6 +579,7 @@ export default function MobileVerification({
               onReject={() => handleReject(item.id)}
               onAskMore={() => handleAskMore(item.id)}
               onViewReceipt={() => setReceiptPreview({ id: item.id, name: item.leadName })}
+              onViewLead={() => router.push(`/leads/${item.id}`)}
             />
           ))
         )}

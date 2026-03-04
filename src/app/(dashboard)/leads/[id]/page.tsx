@@ -332,19 +332,45 @@ export default function LeadDetailPage({
       <MobileLeadDetail
         lead={lead}
         isLoading={isLoading}
-        onVerify={() =>
-          lead &&
-          updateStatusMutation({
-            id: lead.id,
-            data: { status: LeadStatus.DEPOSIT_CONFIRMED },
-          })
+        onVerify={
+          lead?.status === LeadStatus.DEPOSIT_REPORTED
+            ? () =>
+                lead &&
+                updateStatusMutation({
+                  id: lead.id,
+                  data: { status: LeadStatus.DEPOSIT_CONFIRMED },
+                })
+            : undefined
         }
-        onReject={() =>
-          lead &&
-          updateStatusMutation({
-            id: lead.id,
-            data: { status: LeadStatus.REJECTED },
-          })
+        onReject={
+          lead?.status === LeadStatus.DEPOSIT_REPORTED
+            ? () =>
+                lead &&
+                updateStatusMutation({
+                  id: lead.id,
+                  data: { status: LeadStatus.REJECTED },
+                })
+            : undefined
+        }
+        onRevert={
+          lead?.status === LeadStatus.DEPOSIT_CONFIRMED
+            ? () =>
+                lead &&
+                updateStatusMutation({
+                  id: lead.id,
+                  data: { status: LeadStatus.DEPOSIT_REPORTED },
+                })
+            : undefined
+        }
+        onReopen={
+          lead?.status === LeadStatus.REJECTED
+            ? () =>
+                lead &&
+                updateStatusMutation({
+                  id: lead.id,
+                  data: { status: LeadStatus.DEPOSIT_REPORTED },
+                })
+            : undefined
         }
       />
     );

@@ -22,6 +22,8 @@ import {
   ShieldCheck,
   PaperPlaneTilt,
   ArrowsClockwise,
+  ArrowCounterClockwise,
+  ArrowClockwise,
   Copy,
   Star,
   Robot,
@@ -57,6 +59,8 @@ export interface MobileLeadDetailProps {
   readonly isLoading?: boolean;
   readonly onVerify?: () => void;
   readonly onReject?: () => void;
+  readonly onRevert?: () => void;
+  readonly onReopen?: () => void;
   readonly onUpdateStatus?: () => void;
   readonly onBack?: () => void;
   readonly onSendMessage?: (message: string) => void;
@@ -252,6 +256,8 @@ export default function MobileLeadDetail({
   isLoading = false,
   onVerify,
   onReject,
+  onRevert,
+  onReopen,
   onUpdateStatus,
   onBack,
   onSendMessage,
@@ -844,6 +850,22 @@ export default function MobileLeadDetail({
                 Reject
               </button>
             </div>
+          ) : onRevert ? (
+            <button
+              onClick={onRevert}
+              className="w-full h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-warning border border-warning/30 flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
+            >
+              <ArrowCounterClockwise size={18} weight="bold" />
+              Revert Verification
+            </button>
+          ) : onReopen ? (
+            <button
+              onClick={onReopen}
+              className="w-full h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-info border border-info/30 flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
+            >
+              <ArrowClockwise size={18} weight="bold" />
+              Reopen for Review
+            </button>
           ) : onUpdateStatus ? (
             <button
               onClick={onUpdateStatus}
