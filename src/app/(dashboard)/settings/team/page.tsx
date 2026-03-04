@@ -2,20 +2,20 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useIsMobileHydrated } from "@/lib/hooks/useIsMobile";
 import { MobileSettingsTeam } from "@/components/mobile";
 
 export default function TeamPage() {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileHydrated();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isMobile) {
+    if (isMobile === false) {
       router.replace("/settings?tab=team");
     }
   }, [isMobile, router]);
 
+  if (isMobile === undefined) return null;
   if (isMobile) return <MobileSettingsTeam />;
-
   return null;
 }

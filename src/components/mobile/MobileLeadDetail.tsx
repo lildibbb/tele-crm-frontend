@@ -31,7 +31,7 @@ import {
   DownloadSimple,
   File,
 } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Lead } from "@/queries/useLeadsQuery";
 import { useSetHandover } from "@/queries/useLeadsQuery";
 import { useAuthStore } from "@/store/authStore";
@@ -263,9 +263,11 @@ export default function MobileLeadDetail({
   onSendMessage,
 }: MobileLeadDetailProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const role = user?.role ?? "STAFF";
   const [messageText, setMessageText] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const [mediaPreview, setMediaPreview] = useState<MediaItem | null>(null);
   const handoverMutation = useSetHandover();
 
@@ -294,12 +296,23 @@ export default function MobileLeadDetail({
     router.back();
   }, [onBack, router]);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const trimmed = messageText.trim();
-    if (!trimmed || !onSendMessage) return;
-    onSendMessage(trimmed);
-    setMessageText("");
-  }, [messageText, onSendMessage]);
+    if (!trimmed || !lead?.id || isSending) return;
+    if (onSendMessage) {
+      onSendMessage(trimmed);
+      setMessageText("");
+      return;
+    }
+    setIsSending(true);
+    try {
+      await leadsApi.reply(lead.id, trimmed);
+      setMessageText("");
+      queryClient.invalidateQueries({ queryKey: ["lead-interactions", lead.id] });
+    } finally {
+      setIsSending(false);
+    }
+  }, [messageText, onSendMessage, lead?.id, isSending, queryClient]);
 
   if (isLoading || !lead) return <LoadingSkeleton />;
 
@@ -713,7 +726,7 @@ export default function MobileLeadDetail({
         )}
 
         {/* ── Chat History ─────────────────────────────────────────────── */}
-        {onSendMessage && (
+        {lead.id && (
           <section className="px-4 mb-5">
             <h2 className="font-sans font-bold text-[13px] text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
               <ChatCircleDots size={14} weight="bold" />
@@ -776,7 +789,7 @@ export default function MobileLeadDetail({
         )}
 
         {/* ── Send Message Section ─────────────────────────────────────── */}
-        {onSendMessage && (
+        {lead.id && (
           <section className="px-4 mb-5">
             <h2 className="font-sans font-bold text-[13px] text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
               <ChatCircleDots size={14} weight="bold" />
@@ -794,16 +807,20 @@ export default function MobileLeadDetail({
               </div>
               <button
                 onClick={handleSend}
-                disabled={!messageText.trim()}
+                disabled={!messageText.trim() || isSending}
                 className={cn(
                   "shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-[0.93]",
-                  messageText.trim()
+                  messageText.trim() && !isSending
                     ? "bg-crimson text-white shadow-lg"
                     : "bg-elevated text-text-muted",
                 )}
                 aria-label="Send message"
               >
-                <PaperPlaneTilt size={20} weight="fill" />
+                {isSending ? (
+                  <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                ) : (
+                  <PaperPlaneTilt size={20} weight="fill" />
+                )}
               </button>
             </div>
           </section>
@@ -812,7 +829,7 @@ export default function MobileLeadDetail({
 
       {/* ── Sticky Action Bar ──────────────────────────────────────────── */}
       {(canVerify || !!onUpdateStatus || role !== "STAFF") && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-t border-border-subtle px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border-subtle px-4 pt-3 pb-[calc(76px+env(safe-area-inset-bottom))]">
           {/* Handover toggle — OWNER/ADMIN only */}
           {role !== "STAFF" && (
             <div className="flex items-center justify-between mb-3">

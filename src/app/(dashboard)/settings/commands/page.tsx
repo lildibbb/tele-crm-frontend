@@ -2,19 +2,20 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useIsMobileHydrated } from "@/lib/hooks/useIsMobile";
 import { MobileCommands } from "@/components/mobile";
 
 export default function CommandsPage() {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobileHydrated();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isMobile) {
+    if (isMobile === false) {
       router.replace("/settings?tab=commands");
     }
   }, [isMobile, router]);
 
+  if (isMobile === undefined) return null;
   if (isMobile) return <MobileCommands />;
   return null;
 }
