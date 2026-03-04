@@ -31,9 +31,6 @@ const PASSWORD_RULES = [
   { label: "One special character", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
-// Demo OTP code for testing
-const DEMO_OTP_CODE = "1234";
-
 // Framer Motion variants for smooth animations
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -70,7 +67,7 @@ function SuccessPage({ onGoToLogin }: { onGoToLogin: () => void }) {
         variants={iconVariants}
         initial="initial"
         animate="animate"
-        className="w-20 h-20 rounded-full bg-success/20 border-2 border-success/30 flex items-center justify-center mx-auto mb-6 relative"
+        className="flex justify-center mb-6 relative mx-auto"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -81,9 +78,9 @@ function SuccessPage({ onGoToLogin }: { onGoToLogin: () => void }) {
         </motion.div>
         {/* Success ring animation */}
         <motion.div
-          className="absolute inset-0 rounded-full border-2 border-success/50"
-          initial={{ scale: 1, opacity: 0.5 }}
-          animate={{ scale: 1.4, opacity: 0 }}
+          className="absolute w-16 h-16 rounded-full border-2 border-success/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+          initial={{ scale: 0.8, opacity: 0.5 }}
+          animate={{ scale: 1.6, opacity: 0 }}
           transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
         />
       </motion.div>
@@ -228,8 +225,7 @@ function StepOneVerification({
       // Simulate API call - in real app, verify OTP with backend
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // Demo: accept "1234" or any 4-digit code for testing
-      if (code === DEMO_OTP_CODE || code.length === 4) {
+      if (code.length === 4) {
         // Animate to step 2
         setTimeout(() => {
           onNext();
@@ -267,9 +263,7 @@ function StepOneVerification({
         animate="animate"
         className="flex justify-center mb-6"
       >
-        <div className="w-16 h-16 rounded-2xl bg-crimson/20 border border-crimson/30 flex items-center justify-center">
-          <ShieldCheck className="h-8 w-8 text-crimson" />
-        </div>
+        <ShieldCheck className="h-8 w-8 text-crimson" />
       </motion.div>
 
       {/* Header */}
@@ -347,10 +341,6 @@ function StepOneVerification({
         </Button>
       </div>
 
-      {/* Demo hint */}
-      <p className="text-center text-xs text-text-muted mt-6">
-        Demo: Enter {DEMO_OTP_CODE} to verify
-      </p>
     </motion.div>
   );
 }
@@ -392,9 +382,7 @@ function StepTwoPassword({
         animate="animate"
         className="flex justify-center mb-6"
       >
-        <div className="w-16 h-16 rounded-2xl bg-success/20 border border-success/30 flex items-center justify-center">
-          <CheckCircle2 className="h-8 w-8 text-success" />
-        </div>
+        <CheckCircle2 className="h-8 w-8 text-success" />
       </motion.div>
 
       {/* Header */}
@@ -415,7 +403,7 @@ function StepTwoPassword({
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium text-text-secondary">
+                <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
                   New Password
                 </FormLabel>
                 <FormControl>
@@ -423,7 +411,7 @@ function StepTwoPassword({
                     <Input
                       type={showPass ? "text" : "password"}
                       placeholder="Enter new password"
-                      className="pr-10 h-11"
+                      className="pr-10 h-11 focus-visible:ring-crimson/50 focus-visible:border-crimson"
                       {...field}
                     />
                     <Button
@@ -507,7 +495,7 @@ function StepTwoPassword({
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-medium text-text-secondary">
+                <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
                   Confirm Password
                 </FormLabel>
                 <FormControl>
@@ -516,7 +504,7 @@ function StepTwoPassword({
                       type={showConfirmPass ? "text" : "password"}
                       placeholder="Confirm new password"
                       className={cn(
-                        "pr-10 h-11",
+                        "pr-10 h-11 focus-visible:ring-crimson/50 focus-visible:border-crimson",
                         passwordsMatch && "border-success focus-visible:ring-success/30"
                       )}
                       {...field}
@@ -544,9 +532,10 @@ function StepTwoPassword({
           <Button
             type="submit"
             disabled={isSubmitting || !passwordsMatch}
-            className="w-full h-12 mt-2"
+            className="w-full h-12 mt-2 relative overflow-hidden group"
             size="lg"
           >
+            <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
             {isSubmitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -648,7 +637,9 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="w-full max-w-sm">
-          <div className="surface-card p-8 shadow-sm">
+          <div className="surface-card relative overflow-hidden p-8 shadow-sm rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm">
+            {/* Top accent line */}
+            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
             <SuccessPage onGoToLogin={handleGoToLogin} />
           </div>
         </div>
@@ -680,13 +671,13 @@ export default function ResetPasswordPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="surface-card p-7 sm:p-8 shadow-sm"
+          className="surface-card relative overflow-hidden p-8 sm:p-10 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm"
         >
+          {/* Top accent line */}
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
           {/* Logo/Brand */}
           <div className="text-center mb-6">
-            <div className="w-12 h-12 rounded-xl bg-crimson/20 border border-crimson/30 flex items-center justify-center mx-auto mb-4">
-              <LockKeyhole className="h-5 w-5 text-crimson" />
-            </div>
+            <LockKeyhole className="h-6 w-6 text-crimson mx-auto mb-4" />
           </div>
 
           {/* Step Indicator */}

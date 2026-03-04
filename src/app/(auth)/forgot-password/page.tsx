@@ -121,8 +121,10 @@ export default function ForgotPasswordPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="surface-card p-7 sm:p-8 shadow-sm"
+          className="surface-card relative overflow-hidden p-8 sm:p-10 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm"
         >
+          {/* Top accent line */}
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
           {/* Back link */}
           <Link
             href="/login"
@@ -146,24 +148,22 @@ export default function ForgotPasswordPage() {
                   variants={iconVariants}
                   initial="initial"
                   animate="animate"
-                  className="flex justify-center mb-6"
+                  className="flex justify-center mb-6 relative"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-success/20 border border-success/30 flex items-center justify-center relative">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    >
-                      <CheckCircle2 className="h-8 w-8 text-success" />
-                    </motion.div>
-                    {/* Success ring animation */}
-                    <motion.div
-                      className="absolute inset-0 rounded-2xl border-2 border-success/50"
-                      initial={{ scale: 1, opacity: 0.5 }}
-                      animate={{ scale: 1.3, opacity: 0 }}
-                      transition={{ duration: 1.2, repeat: Infinity, delay: 0.5 }}
-                    />
-                  </div>
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  >
+                    <CheckCircle2 className="h-8 w-8 text-success" />
+                  </motion.div>
+                  {/* Success ring animation */}
+                  <motion.div
+                    className="absolute w-14 h-14 rounded-full border-2 border-success/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                    initial={{ scale: 0.8, opacity: 0.5 }}
+                    animate={{ scale: 1.6, opacity: 0 }}
+                    transition={{ duration: 1.2, repeat: Infinity, delay: 0.5 }}
+                  />
                 </motion.div>
 
                 {/* Header */}
@@ -198,9 +198,10 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-3">
                   <Button
                     onClick={handleContinue}
-                    className="w-full h-12"
+                    className="w-full h-12 relative overflow-hidden group"
                     size="lg"
                   >
+                    <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                     Continue to Reset Password
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -251,9 +252,7 @@ export default function ForgotPasswordPage() {
                   animate="animate"
                   className="flex justify-center mb-6"
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-crimson/20 border border-crimson/30 flex items-center justify-center">
-                    <Mail className="h-8 w-8 text-crimson" />
-                  </div>
+                  <Mail className="h-8 w-8 text-crimson" />
                 </motion.div>
 
                 {/* Header */}
@@ -288,14 +287,14 @@ export default function ForgotPasswordPage() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-medium text-text-secondary">
+                          <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
                             Email Address
                           </FormLabel>
                           <FormControl>
                             <Input
                               type="email"
                               placeholder="owner@titanjournal.com"
-                              className="h-11"
+                              className="h-11 focus-visible:ring-crimson/50 focus-visible:border-crimson"
                               {...field}
                             />
                           </FormControl>
@@ -307,9 +306,10 @@ export default function ForgotPasswordPage() {
                     <Button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full h-12 mt-2"
+                      className="w-full h-12 mt-2 relative overflow-hidden group"
                       size="lg"
                     >
+                      <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                       {isLoading ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />

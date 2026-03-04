@@ -115,7 +115,9 @@ function SetupAccountContent() {
           </p>
         </div>
 
-        <div className="surface-card p-7 sm:p-8 shadow-sm">
+        <div className="surface-card relative overflow-hidden p-8 sm:p-10 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm">
+          {/* Top accent line */}
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
           {/* Stepper */}
           <div className="flex items-center gap-2 mb-7">
             {STEPS.map((label, i) => (
@@ -185,7 +187,7 @@ function SetupAccountContent() {
                       name="email"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs font-medium text-text-secondary">
+                          <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
                             Email Address
                           </FormLabel>
                           <FormControl>
@@ -193,7 +195,7 @@ function SetupAccountContent() {
                               type="email"
                               placeholder="your@email.com"
                               readOnly={!!emailFromUrl}
-                              className={emailFromUrl ? "opacity-70" : ""}
+                              className={`focus-visible:ring-crimson/50 focus-visible:border-crimson ${emailFromUrl ? "opacity-70" : ""}`}
                               {...field}
                             />
                           </FormControl>
@@ -208,9 +210,10 @@ function SetupAccountContent() {
                       if (email) setStep(1);
                     }}
                     disabled={!email || !invitationToken}
-                    className="w-full mt-6"
+                    className="w-full mt-6 relative overflow-hidden group"
                     size="lg"
                   >
+                    <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                     Continue →
                   </Button>
                 </>
@@ -232,7 +235,7 @@ function SetupAccountContent() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-medium text-text-secondary">
+                        <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
                           Password
                         </FormLabel>
                         <FormControl>
@@ -240,7 +243,7 @@ function SetupAccountContent() {
                             <Input
                               type={showPass ? "text" : "password"}
                               placeholder="Min. 8 characters"
-                              className="pr-10"
+                              className="pr-10 focus-visible:ring-crimson/50 focus-visible:border-crimson"
                               {...field}
                             />
                             <Button
@@ -277,9 +280,10 @@ function SetupAccountContent() {
                       disabled={
                         form.formState.isSubmitting || password.length < 8
                       }
-                      className="flex-1"
+                      className="flex-1 relative overflow-hidden group"
                       size="lg"
                     >
+                      <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                       {form.formState.isSubmitting ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" /> Setting
@@ -298,8 +302,8 @@ function SetupAccountContent() {
           {/* Step 2: Complete */}
           {step === 2 && (
             <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="h-8 w-8 text-success" />
+              <div className="flex justify-center mb-4">
+                <CheckCircle2 className="h-10 w-10 text-success" />
               </div>
               <h2 className="font-display font-bold text-2xl text-text-primary mb-2">
                 You&apos;re all set!
@@ -313,9 +317,10 @@ function SetupAccountContent() {
               </div>
               <Button
                 onClick={() => router.push("/")}
-                className="w-full"
+                className="w-full relative overflow-hidden group"
                 size="lg"
               >
+                <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                 Go to Command Center →
               </Button>
             </div>
