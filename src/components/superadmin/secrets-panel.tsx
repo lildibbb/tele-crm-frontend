@@ -35,6 +35,7 @@ import {
   EyeSlash,
   PencilSimple,
 } from "@phosphor-icons/react";
+import { useT, K } from "@/i18n";
 
 // ── Well-known keys with labels ───────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ function SetSecretModal({
   secret: SecretMeta | { key: string; description: string | null; updatedBy: null; updatedAt: "" } | null;
   onClose: () => void;
 }) {
+  const t = useT();
   const setSecretMutation = useSetSecret();
   const [value, setValue] = useState("");
   const [show, setShow] = useState(false);
@@ -70,7 +72,7 @@ function SetSecretModal({
       setErr("");
       onClose();
     } catch {
-      setErr("Failed to save secret — check the value and try again.");
+      setErr(t(K.superadmin.secrets.saveFailed));
     }
   };
 
@@ -82,28 +84,28 @@ function SetSecretModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <LockKey size={18} weight="duotone" className="text-info" />
-            {isNew ? "Set Secret" : "Replace Secret"}
+            {isNew ? t(K.superadmin.secrets.setSecret) : t(K.superadmin.secrets.replaceSecret)}
           </DialogTitle>
           <DialogDescription>
             {isNew
-              ? "Store a new encrypted credential."
-              : "You cannot retrieve the existing value — only replace it."}
+              ? t(K.superadmin.secrets.setSecretDesc)
+              : t(K.superadmin.secrets.replaceSecretDesc)}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           <div className="space-y-1">
-            <Label className="text-xs font-medium text-text-secondary">Key</Label>
+            <Label className="text-xs font-medium text-text-secondary">{t(K.superadmin.secrets.key)}</Label>
             <p className="text-sm font-mono text-text-primary">{secret?.key}</p>
             {known && <p className="text-[10px] text-text-muted">{known.hint}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-text-secondary">Value</Label>
+            <Label className="text-xs font-medium text-text-secondary">{t(K.superadmin.secrets.value)}</Label>
             <div className="relative">
               <Input
                 type={show ? "text" : "password"}
                 value={value}
                 onChange={(e) => { setValue(e.target.value); setErr(""); }}
-                placeholder="Paste secret value…"
+                placeholder={t(K.superadmin.secrets.valuePlaceholder)}
                 className="pr-9 text-xs"
                 required
                 autoComplete="new-password"
@@ -119,12 +121,12 @@ function SetSecretModal({
           </div>
           {err && <p className="text-xs text-danger">{err}</p>}
           <div className="p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-300">
-            ⚠️ Once saved, this value is encrypted at rest and <strong>cannot be retrieved</strong> — only replaced.
+            {t(K.superadmin.secrets.warningText)}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose}>{t(K.superadmin.secrets.cancel)}</Button>
             <Button type="submit" disabled={setSecretMutation.isPending || !value.trim()}>
-              {setSecretMutation.isPending ? "Saving…" : "Save Secret"}
+              {setSecretMutation.isPending ? t(K.superadmin.secrets.savingSecret) : t(K.superadmin.secrets.saveSecret)}
             </Button>
           </DialogFooter>
         </form>
@@ -136,6 +138,7 @@ function SetSecretModal({
 // ── SecretsPanel ──────────────────────────────────────────────────────────────
 
 export function SecretsPanel() {
+  const t = useT();
   const { data: secrets = [], isLoading, refetch: refetchSecrets } = useSecretsList();
   const deleteSecretMutation = useDeleteSecret();
   const [editTarget, setEditTarget] = useState<typeof secrets[0] | null>(null);
@@ -166,20 +169,20 @@ export function SecretsPanel() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-danger">
-              <Trash size={16} weight="duotone" /> Delete Secret?
+              <Trash size={16} weight="duotone" /> {t(K.superadmin.secrets.deleteSecret)}
             </AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete <span className="font-mono text-text-primary">{deleteTarget}</span>.
-              The integration using this credential will stop working.
+              {t(K.superadmin.secrets.deleteSecretDesc)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t(K.superadmin.secrets.cancel)}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-danger hover:bg-danger/90"
             >
-              Delete
+              {t(K.superadmin.secrets.delete)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -191,8 +194,8 @@ export function SecretsPanel() {
           <div className="flex items-center gap-2">
             <LockKey size={16} weight="duotone" className="text-gold" />
             <div>
-              <h2 className="text-sm font-semibold text-text-primary">Encrypted Secrets</h2>
-              <p className="text-xs text-text-secondary mt-0.5">AES-256-GCM credentials — values never displayed</p>
+              <h2 className="text-sm font-semibold text-text-primary">{t(K.superadmin.secrets.header)}</h2>
+              <p className="text-xs text-text-secondary mt-0.5">{t(K.superadmin.secrets.headerDesc)}</p>
             </div>
           </div>
           <button onClick={() => void refetchSecrets()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
@@ -204,7 +207,7 @@ export function SecretsPanel() {
           {/* Warning banner */}
           <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-200/80">
             <Warning size={13} weight="fill" className="text-amber-400 shrink-0 mt-0.5" />
-            Values are encrypted at rest. You cannot retrieve a stored secret — only replace it.
+            {t(K.superadmin.secrets.bannerWarning)}
           </div>
 
           {/* Secrets table */}
@@ -219,9 +222,9 @@ export function SecretsPanel() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border-subtle bg-card shadow-sm">
-                    <th className="text-left px-4 py-2.5 font-medium text-text-muted">Key</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">Description</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">Last Updated</th>
+                    <th className="text-left px-4 py-2.5 font-medium text-text-muted">{t(K.superadmin.secrets.key)}</th>
+                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">{t(K.superadmin.secrets.description)}</th>
+                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">{t(K.superadmin.secrets.lastUpdated)}</th>
                     <th className="px-3 py-2.5" />
                   </tr>
                 </thead>
@@ -240,7 +243,7 @@ export function SecretsPanel() {
                               {row.updatedBy && <p className="text-[10px]">{row.updatedBy}</p>}
                             </div>
                           ) : (
-                            <span className="text-text-muted/40">Not set</span>
+                            <span className="text-text-muted/40">{t(K.superadmin.secrets.notSet)}</span>
                           )}
                         </td>
                         <td className="px-3 py-3">
@@ -259,9 +262,9 @@ export function SecretsPanel() {
                               }}
                             >
                               {isStored ? (
-                                <><PencilSimple size={12} /> Replace</>
+                                <><PencilSimple size={12} /> {t(K.superadmin.secrets.replace)}</>
                               ) : (
-                                <><Plus size={12} /> Set</>
+                                <><Plus size={12} /> {t(K.superadmin.secrets.set)}</>
                               )}
                             </Button>
                             {isStored && (

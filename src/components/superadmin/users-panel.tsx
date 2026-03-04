@@ -98,6 +98,7 @@ import {
 } from "@/lib/audit-utils";
 
 import { apiClient } from "@/lib/api/apiClient";
+import { useT, K } from "@/i18n";
 import { queryKeys } from "@/queries/queryKeys";
 import type { ApiResponse } from "@/lib/schemas/common";
 import type { UserResponse } from "@/lib/schemas/user.schema";
@@ -132,6 +133,7 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 function StatusDot({ active }: { active: boolean }) {
+  const t = useT();
   return (
     <span
       className={`inline-flex items-center gap-1.5 text-xs font-medium ${active ? "text-success" : "text-danger"}`}
@@ -139,7 +141,7 @@ function StatusDot({ active }: { active: boolean }) {
       <span
         className={`w-1.5 h-1.5 rounded-full ${active ? "bg-success" : "bg-danger"}`}
       />
-      {active ? "Active" : "Inactive"}
+      {active ? t(K.superadmin.users.active) : t(K.superadmin.users.inactive)}
     </span>
   );
 }
@@ -153,6 +155,7 @@ interface UserColumnsProps {
   onChangeEmail: (u: UserResponse) => void;
   onViewLeads: (u: UserResponse) => void;
   currentUserId: string;
+  t: (key: string, params?: Record<string, string>) => string;
 }
 
 function getUserColumns({
@@ -162,12 +165,13 @@ function getUserColumns({
   onChangeEmail,
   onViewLeads,
   currentUserId,
+  t,
 }: UserColumnsProps): ColumnDef<UserResponse>[] {
   return [
     {
       accessorKey: "email",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label="Email" />
+        <DataTableColumnHeader column={column} label={t(K.superadmin.users.email)} />
       ),
       cell: ({ row }) => (
         <span className="text-sm font-medium text-text-primary data-mono">
@@ -176,7 +180,7 @@ function getUserColumns({
       ),
       enableSorting: true,
       meta: {
-        label: "Email",
+        label: t(K.superadmin.users.email),
         variant: "text",
         placeholder: "Search email…",
       },
@@ -184,7 +188,7 @@ function getUserColumns({
     {
       accessorKey: "role",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label="Role" />
+        <DataTableColumnHeader column={column} label={t(K.superadmin.users.role)} />
       ),
       cell: ({ row }) => <RoleBadge role={row.original.role} />,
       enableSorting: false,
@@ -193,7 +197,7 @@ function getUserColumns({
         return filterValues.includes(row.original.role);
       },
       meta: {
-        label: "Role",
+        label: t(K.superadmin.users.role),
         variant: "multiSelect",
         options: [
           { label: "Superadmin", value: UserRole.SUPERADMIN },
@@ -205,7 +209,7 @@ function getUserColumns({
     },
     {
       accessorKey: "isActive",
-      header: "Status",
+      header: t(K.superadmin.users.status),
       cell: ({ row }) => <StatusDot active={row.original.isActive} />,
       enableSorting: false,
       enableColumnFilter: false,
@@ -213,13 +217,13 @@ function getUserColumns({
     {
       accessorKey: "lastLoginAt",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} label="Last Login" />
+        <DataTableColumnHeader column={column} label={t(K.superadmin.users.lastLogin)} />
       ),
       cell: ({ row }) => (
         <span className="text-xs text-text-muted">
           {row.original.lastLoginAt
             ? timeAgo(row.original.lastLoginAt)
-            : "Never"}
+            : t(K.superadmin.users.never)}
         </span>
       ),
       enableSorting: true,
@@ -253,11 +257,11 @@ function getUserColumns({
                   className="text-gold"
                   weight="duotone"
                 />
-                Change Role
+                {t(K.superadmin.users.changeRole)}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onPassword(u)} className="gap-2">
                 <LockKey size={14} className="text-warning" weight="duotone" />
-                Reset Password
+                {t(K.superadmin.users.resetPassword)}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onChangeEmail(u)}
@@ -268,7 +272,7 @@ function getUserColumns({
                   className="text-info"
                   weight="duotone"
                 />
-                Change Email
+                {t(K.superadmin.users.changeEmail)}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onViewLeads(u)}
@@ -279,7 +283,7 @@ function getUserColumns({
                   className="text-text-secondary"
                   weight="duotone"
                 />
-                View Leads
+                {t(K.superadmin.users.viewLeads)}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -292,7 +296,7 @@ function getUserColumns({
                 ) : (
                   <ArrowCounterClockwise size={14} weight="duotone" />
                 )}
-                {u.isActive ? "Deactivate" : "Reactivate"}
+                {u.isActive ? t(K.superadmin.users.deactivate) : t(K.superadmin.users.reactivate)}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -440,6 +444,7 @@ function CreateUserModal({
   open: boolean;
   onClose: () => void;
 }) {
+  const t = useT();
   const createUser = useCreateSuperadminUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -463,31 +468,30 @@ function CreateUserModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserPlus size={18} weight="duotone" className="text-info" /> Create
-            User
+            <UserPlus size={18} weight="duotone" className="text-info" /> {t(K.superadmin.users.createUser)}
           </DialogTitle>
           <DialogDescription>
-            Add a new CRM user directly (no invitation required).
+            {t(K.superadmin.users.createUserDesc)}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="cu-email">Email</Label>
+            <Label htmlFor="cu-email">{t(K.superadmin.users.email)}</Label>
             <Input
               id="cu-email"
               type="email"
-              placeholder="user@company.com"
+              placeholder={t(K.superadmin.users.emailPlaceholder)}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="cu-password">Password</Label>
+            <Label htmlFor="cu-password">{t(K.superadmin.users.password)}</Label>
             <Input
               id="cu-password"
               type="password"
-              placeholder="Min 8 characters"
+              placeholder={t(K.superadmin.users.passwordPlaceholder)}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -495,7 +499,7 @@ function CreateUserModal({
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Role</Label>
+            <Label>{t(K.superadmin.users.role)}</Label>
             <RoleDropdown value={role} onChange={setRole} />
           </div>
           {createUser.error && (
@@ -505,10 +509,10 @@ function CreateUserModal({
           )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t(K.common.cancel)}
             </Button>
             <Button type="submit" disabled={createUser.isPending}>
-              {createUser.isPending ? "Creating…" : "Create User"}
+              {createUser.isPending ? t(K.superadmin.users.creating) : t(K.superadmin.users.createUser)}
             </Button>
           </DialogFooter>
         </form>
@@ -526,6 +530,7 @@ function ForcePasswordModal({
   user: UserResponse | null;
   onClose: () => void;
 }) {
+  const t = useT();
   const forcePasswordChange = useForceSuperadminPasswordChange();
   const [newPassword, setNewPassword] = useState("");
   const [err, setErr] = useState("");
@@ -533,7 +538,7 @@ function ForcePasswordModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword.length < 8) {
-      setErr("Password must be at least 8 characters");
+      setErr(t(K.superadmin.users.passwordMinLength));
       return;
     }
     try {
@@ -545,7 +550,7 @@ function ForcePasswordModal({
       setErr("");
       onClose();
     } catch {
-      setErr("Failed to reset password");
+      setErr(t(K.superadmin.users.failedToReset));
     }
   };
 
@@ -555,21 +560,21 @@ function ForcePasswordModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <LockKey size={18} weight="duotone" className="text-warning" />{" "}
-            Force Password Reset
+            {t(K.superadmin.users.forcePasswordReset)}
           </DialogTitle>
           <DialogDescription>
             Reset password for{" "}
             <span className="font-medium text-text-primary">{user?.email}</span>
-            . All sessions will be revoked.
+            {". "}{t(K.superadmin.users.forcePasswordDesc)}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="fp-password">New Password</Label>
+            <Label htmlFor="fp-password">{t(K.superadmin.users.newPassword)}</Label>
             <Input
               id="fp-password"
               type="password"
-              placeholder="Min 8 characters"
+              placeholder={t(K.superadmin.users.passwordPlaceholder)}
               value={newPassword}
               onChange={(e) => {
                 setNewPassword(e.target.value);
@@ -582,14 +587,14 @@ function ForcePasswordModal({
           {err && <p className="text-xs text-danger">{err}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t(K.common.cancel)}
             </Button>
             <Button
               type="submit"
               disabled={forcePasswordChange.isPending}
               variant="destructive"
             >
-              {forcePasswordChange.isPending ? "Resetting…" : "Reset Password"}
+              {forcePasswordChange.isPending ? t(K.superadmin.users.resetting) : t(K.superadmin.users.resetPassword)}
             </Button>
           </DialogFooter>
         </form>
@@ -607,6 +612,7 @@ function ChangeRoleModal({
   user: UserResponse | null;
   onClose: () => void;
 }) {
+  const t = useT();
   const changeUserRole = useChangeSuperadminUserRole();
   const [role, setRole] = useState<UserRole>(UserRole.STAFF);
 
@@ -630,25 +636,25 @@ function ChangeRoleModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PencilSimple size={18} weight="duotone" className="text-gold" />{" "}
-            Change Role
+            {t(K.superadmin.users.changeRoleTitle)}
           </DialogTitle>
           <DialogDescription>
-            Update role for{" "}
+            {t(K.superadmin.users.changeRoleDesc)}{" "}
             <span className="font-medium text-text-primary">{user?.email}</span>
             .
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label>New Role</Label>
+            <Label>{t(K.superadmin.users.newRole)}</Label>
             <RoleDropdown value={role} onChange={(v) => setRole(v)} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t(K.common.cancel)}
             </Button>
             <Button type="submit" disabled={changeUserRole.isPending}>
-              {changeUserRole.isPending ? "Saving…" : "Save Role"}
+              {changeUserRole.isPending ? t(K.superadmin.users.saving) : t(K.superadmin.users.saveRole)}
             </Button>
           </DialogFooter>
         </form>
@@ -666,6 +672,7 @@ function ChangeEmailModal({
   user: UserResponse | null;
   onClose: () => void;
 }) {
+  const t = useT();
   const queryClient = useQueryClient();
   const [newEmail, setNewEmail] = useState("");
   const [err, setErr] = useState("");
@@ -677,7 +684,7 @@ function ChangeEmailModal({
         { email },
       ),
     onSuccess: () => {
-      toast.success("Email updated successfully");
+      toast.success(t(K.superadmin.users.emailUpdated));
       queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.users() });
       setNewEmail("");
       setErr("");
@@ -691,7 +698,7 @@ function ChangeEmailModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-      setErr("Please enter a valid email address");
+      setErr(t(K.superadmin.users.invalidEmail));
       return;
     }
     mutation.mutate(newEmail);
@@ -703,21 +710,21 @@ function ChangeEmailModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <EnvelopeSimple size={18} weight="duotone" className="text-info" />{" "}
-            Change Email Address
+            {t(K.superadmin.users.changeEmailTitle)}
           </DialogTitle>
           <DialogDescription>
-            Update the email address for{" "}
+            {t(K.superadmin.users.changeEmailDesc)}{" "}
             <span className="font-medium text-text-primary">{user?.email}</span>
             .
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="ce-email">New Email</Label>
+            <Label htmlFor="ce-email">{t(K.superadmin.users.newEmail)}</Label>
             <Input
               id="ce-email"
               type="email"
-              placeholder="new@company.com"
+              placeholder={t(K.superadmin.users.newEmailPlaceholder)}
               value={newEmail}
               onChange={(e) => {
                 setNewEmail(e.target.value);
@@ -729,10 +736,10 @@ function ChangeEmailModal({
           {err && <p className="text-xs text-danger">{err}</p>}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {t(K.common.cancel)}
             </Button>
             <Button type="submit" disabled={mutation.isPending}>
-              {mutation.isPending ? "Updating…" : "Update Email"}
+              {mutation.isPending ? t(K.superadmin.users.updating) : t(K.superadmin.users.updateEmail)}
             </Button>
           </DialogFooter>
         </form>
@@ -750,6 +757,7 @@ function UserLeadsSheet({
   user: UserResponse | null;
   onClose: () => void;
 }) {
+  const t = useT();
   const { data: leads, isLoading } = useQuery({
     queryKey: ["superadmin", "users", user?.id, "leads"],
     queryFn: async () => {
@@ -767,7 +775,7 @@ function UserLeadsSheet({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ListBullets size={18} weight="duotone" className="text-info" />
-            Leads for {user?.email}
+            {t(K.superadmin.users.leadsFor, { email: user?.email ?? "" })}
           </SheetTitle>
         </SheetHeader>
         <div className="mt-6">
@@ -779,7 +787,7 @@ function UserLeadsSheet({
             </div>
           ) : !leads?.length ? (
             <p className="text-sm text-text-muted text-center py-8">
-              No leads found
+              {t(K.superadmin.users.noLeads)}
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -787,16 +795,16 @@ function UserLeadsSheet({
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
-                      Telegram ID
+                      {t(K.superadmin.users.telegramId)}
                     </th>
                     <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
-                      Display Name
+                      {t(K.superadmin.users.displayName)}
                     </th>
                     <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
-                      Status
+                      {t(K.superadmin.users.status)}
                     </th>
                     <th className="text-left py-2 px-3 text-xs text-text-secondary font-medium">
-                      Created At
+                      {t(K.superadmin.users.createdAt)}
                     </th>
                   </tr>
                 </thead>
@@ -833,6 +841,7 @@ function UserLeadsSheet({
 // ─── Users Panel ──────────────────────────────────────────────────────────────
 
 export function UsersPanel() {
+  const t = useT();
   const { user: authUser } = useAuthStore();
   const {
     data: users = [],
@@ -891,8 +900,9 @@ export function UsersPanel() {
         onChangeEmail: setChangeEmailTarget,
         onViewLeads: setLeadsTarget,
         currentUserId: authUser?.id ?? "",
+        t,
       }),
-    [authUser?.id],
+    [authUser?.id, t],
   );
 
   const auditColumns = useMemo(() => getAuditColumns(), []);
@@ -968,17 +978,17 @@ export function UsersPanel() {
               <AlertDialogTitle className="flex items-center gap-2">
                 <Warning size={18} weight="duotone" className="text-warning" />
                 {deactivateTarget?.isActive
-                  ? "Deactivate User?"
-                  : "Reactivate User?"}
+                  ? t(K.superadmin.users.deactivateTitle)
+                  : t(K.superadmin.users.reactivateTitle)}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {deactivateTarget?.isActive
-                  ? `This will immediately revoke all sessions for ${deactivateTarget?.email}.`
-                  : `This will restore access for ${deactivateTarget?.email}.`}
+                  ? t(K.superadmin.users.deactivateDesc, { email: deactivateTarget?.email ?? "" })
+                  : t(K.superadmin.users.reactivateDesc, { email: deactivateTarget?.email ?? "" })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t(K.common.cancel)}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDeactivateConfirm}
                 className={
@@ -987,7 +997,7 @@ export function UsersPanel() {
                     : ""
                 }
               >
-                {deactivateTarget?.isActive ? "Deactivate" : "Reactivate"}
+                {deactivateTarget?.isActive ? t(K.superadmin.users.deactivate) : t(K.superadmin.users.reactivate)}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -996,9 +1006,9 @@ export function UsersPanel() {
         {/* ── Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Users</h1>
+            <h1 className="text-2xl font-bold text-text-primary">{t(K.superadmin.users.title)}</h1>
             <p className="text-sm text-text-secondary mt-1">
-              Platform-wide user management
+              {t(K.superadmin.users.subtitle)}
             </p>
           </div>
           <Button
@@ -1006,7 +1016,7 @@ export function UsersPanel() {
             className="gap-1.5 shrink-0"
             onClick={() => setShowCreate(true)}
           >
-            <UserPlus size={15} weight="bold" /> Add User
+            <UserPlus size={15} weight="bold" /> {t(K.superadmin.users.addUser)}
           </Button>
         </div>
 
@@ -1016,12 +1026,12 @@ export function UsersPanel() {
             <div>
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
                 <Users size={16} weight="duotone" className="text-info" />
-                User Management
+                {t(K.superadmin.users.userManagement)}
               </h2>
               <p className="text-xs text-text-secondary mt-0.5">
                 {isLoadingUsers
                   ? "Loading…"
-                  : `${userTable.getFilteredRowModel().rows.length} of ${users.length} users`}
+                  : t(K.superadmin.users.usersOf, { filtered: String(userTable.getFilteredRowModel().rows.length), total: String(users.length) })}
               </p>
             </div>
             <Button
@@ -1030,7 +1040,7 @@ export function UsersPanel() {
               className="gap-1.5 text-text-secondary hover:text-text-primary"
               onClick={() => refetchUsers()}
             >
-              <ArrowClockwise size={14} weight="bold" /> Refresh
+              <ArrowClockwise size={14} weight="bold" /> {t(K.superadmin.users.refresh)}
             </Button>
           </div>
 
@@ -1061,10 +1071,10 @@ export function UsersPanel() {
                     weight="duotone"
                     className="text-warning"
                   />
-                  Audit Log
+                  {t(K.superadmin.users.auditLog)}
                 </h2>
                 <p className="text-xs text-text-secondary mt-0.5">
-                  Recent system events
+                  {t(K.superadmin.users.recentEvents)}
                 </p>
               </div>
               <Button
@@ -1073,7 +1083,7 @@ export function UsersPanel() {
                 className="gap-1.5 text-text-secondary hover:text-text-primary"
                 onClick={() => refetchAuditLogs()}
               >
-                <ArrowClockwise size={14} weight="bold" /> Reload
+                <ArrowClockwise size={14} weight="bold" /> {t(K.superadmin.users.reload)}
               </Button>
             </div>
 
@@ -1103,32 +1113,32 @@ export function UsersPanel() {
             >
               <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-5">
                 <Brain size={16} weight="duotone" className="text-[--gold]" />
-                AI / RAG Performance
+                {t(K.superadmin.users.ragPerformance)}
               </h2>
               <div className="space-y-4">
                 {[
                   {
-                    label: "Hit Rate",
+                    label: t(K.superadmin.users.hitRate),
                     value: `${(ragStats.ragHitRate ?? 0).toFixed(1)}%`,
-                    sub: "Queries matched KB",
+                    sub: t(K.superadmin.users.queriesMatchedKb),
                     color: "text-success",
                   },
                   {
-                    label: "Avg Chunks / Reply",
+                    label: t(K.superadmin.users.avgChunks),
                     value: (ragStats.avgChunksPerRequest ?? 0).toFixed(2),
-                    sub: "Per reply retrieved",
+                    sub: t(K.superadmin.users.perReply),
                     color: "text-info",
                   },
                   {
-                    label: "Zero-Hit Queries",
+                    label: t(K.superadmin.users.zeroHitQueries),
                     value: String(ragStats.zeroHitCount ?? 0),
-                    sub: "No KB match found",
+                    sub: t(K.superadmin.users.noKbMatch),
                     color: "text-danger",
                   },
                   {
-                    label: "Total AI Tokens",
+                    label: t(K.superadmin.users.totalAiTokens),
                     value: `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`,
-                    sub: "Cumulative usage",
+                    sub: t(K.superadmin.users.cumulativeUsage),
                     color: "text-[--gold]",
                   },
                 ].map(({ label, value, sub, color }) => (

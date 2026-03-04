@@ -8,6 +8,7 @@
   "nav.auditLogs": "Audit Logs",
   "nav.analytics": "Analytics",
   "nav.settings": "Settings",
+  "nav.botConfig": "Bot Config",
   "nav.superAdmin": "Super Admin",
   "nav.docs": "Documentation",
   "nav.logout": "Sign out",

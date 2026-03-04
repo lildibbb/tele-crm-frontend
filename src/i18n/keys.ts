@@ -18,6 +18,7 @@ export const K = {
     auditLogs: "nav.auditLogs",
     analytics: "nav.analytics",
     settings: "nav.settings",
+    botConfig: "nav.botConfig",
     superAdmin: "nav.superAdmin",
     docs: "nav.docs",
     logout: "nav.logout",

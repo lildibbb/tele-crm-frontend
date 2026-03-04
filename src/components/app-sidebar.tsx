@@ -121,9 +121,14 @@ const ALL_NAV_ITEMS = [
     roles: [
       UserRole.OWNER,
       UserRole.ADMIN,
-      UserRole.STAFF,
       UserRole.SUPERADMIN,
     ],
+  },
+  {
+    href: "/settings",
+    icon: Sliders,
+    labelKey: "nav.botConfig",
+    roles: [UserRole.STAFF],
   },
 ];
 

@@ -8,6 +8,7 @@ const ms: Record<string, string> = {
   "nav.auditLogs": "Log Audit",
   "nav.analytics": "Analitik",
   "nav.settings": "Tetapan",
+  "nav.botConfig": "Konfigurasi Bot",
   "nav.superAdmin": "Super Admin",
   "nav.docs": "Dokumentasi",
   "nav.logout": "Log Keluar",

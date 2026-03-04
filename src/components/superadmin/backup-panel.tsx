@@ -20,6 +20,7 @@ import {
   Clock,
   HardDrives,
 } from "@phosphor-icons/react";
+import { useT, K } from "@/i18n";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,7 @@ const STATUS_CONFIG: Record<
 // ── BackupPanel ───────────────────────────────────────────────────────────────
 
 export function BackupPanel() {
+  const t = useT();
   const {
     data: history = [],
     isLoading: isLoadingHistory,
@@ -92,7 +94,7 @@ export function BackupPanel() {
     } catch (e: unknown) {
       const msg =
         (e as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Save failed";
+          ?.message ?? t(K.superadmin.backup.saveFailed);
       setConfigErr(msg);
       setTimeout(() => setConfigErr(null), 3000);
     } finally {
@@ -103,7 +105,7 @@ export function BackupPanel() {
   const handleTrigger = async () => {
     try {
       await triggerBackupMutation.mutateAsync();
-      setTriggerResult("Backup queued successfully");
+      setTriggerResult(t(K.superadmin.backup.queuedSuccess));
     } catch {
       /* error in triggerBackupMutation.error */
     }
@@ -120,10 +122,10 @@ export function BackupPanel() {
           <HardDrives size={16} weight="duotone" className="text-info" />
           <div>
             <h2 className="text-sm font-semibold text-text-primary">
-              Database Backup
+              {t(K.superadmin.backup.header)}
             </h2>
             <p className="text-xs text-text-secondary mt-0.5">
-              pg_dump → encrypted → S3/R2 storage
+              {t(K.superadmin.backup.headerDesc)}
             </p>
           </div>
         </div>
@@ -146,7 +148,7 @@ export function BackupPanel() {
           {/* Enable toggle */}
           <div className="space-y-2">
             <Label className="text-[11px] font-medium text-text-secondary">
-              Enable Backup
+              {t(K.superadmin.backup.enableBackup)}
             </Label>
             <div className="flex items-center gap-3">
               <Switch
@@ -157,7 +159,7 @@ export function BackupPanel() {
                 disabled={isSavingConfig}
               />
               <span className="text-xs text-text-muted">
-                {backupEnabled ? "On" : "Off"}
+                {backupEnabled ? t(K.superadmin.backup.on) : t(K.superadmin.backup.off)}
               </span>
               {savedKey === "backup.enabled" && (
                 <CheckCircle size={13} className="text-success" />
@@ -168,7 +170,7 @@ export function BackupPanel() {
           {/* Schedule */}
           <div className="space-y-1.5">
             <Label className="text-[11px] font-medium text-text-secondary flex items-center gap-1">
-              <Clock size={11} weight="duotone" /> Schedule
+              <Clock size={11} weight="duotone" /> {t(K.superadmin.backup.schedule)}
             </Label>
             <div className="flex gap-2">
               <select
@@ -179,9 +181,9 @@ export function BackupPanel() {
                 disabled={isSavingConfig}
                 className="flex-1 h-8 rounded-md border border-input bg-transparent px-2 text-xs text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 disabled:opacity-50"
               >
-                <option value="daily">Daily (4 AM)</option>
-                <option value="weekly">Weekly (Sun 4 AM)</option>
-                <option value="monthly">Monthly (1st, 4 AM)</option>
+                <option value="daily">{t(K.superadmin.backup.dailySchedule)}</option>
+                <option value="weekly">{t(K.superadmin.backup.weeklySchedule)}</option>
+                <option value="monthly">{t(K.superadmin.backup.monthlySchedule)}</option>
               </select>
               {savedKey === "backup.schedule" && (
                 <CheckCircle size={13} className="text-success self-center" />
@@ -192,7 +194,7 @@ export function BackupPanel() {
           {/* Retention */}
           <div className="space-y-1.5">
             <Label className="text-[11px] font-medium text-text-secondary">
-              Retention (days)
+              {t(K.superadmin.backup.retentionLabel)}
             </Label>
             <div className="flex gap-2">
               <Input
@@ -212,7 +214,7 @@ export function BackupPanel() {
                   void saveConfig({ "backup.retentionDays": retentionDraft })
                 }
               >
-                {savedKey === "backup.retentionDays" ? "Saved!" : "Save"}
+                {savedKey === "backup.retentionDays" ? t(K.superadmin.backup.saved) : t(K.superadmin.backup.save)}
               </Button>
             </div>
           </div>
@@ -233,7 +235,7 @@ export function BackupPanel() {
             className="h-8 gap-1.5 text-xs"
           >
             <Play size={13} weight="fill" />
-            {triggerBackupMutation.isPending ? "Queuing…" : "Run Backup Now"}
+            {triggerBackupMutation.isPending ? t(K.superadmin.backup.queuing) : t(K.superadmin.backup.runNow)}
           </Button>
           {triggerResult && (
             <span className="text-xs text-success flex items-center gap-1">
@@ -251,7 +253,7 @@ export function BackupPanel() {
         {/* ③ History table */}
         <div className="space-y-2">
           <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted flex items-center gap-1.5">
-            <Database size={11} weight="duotone" /> Recent Backups
+            <Database size={11} weight="duotone" /> {t(K.superadmin.backup.recentBackups)}
           </h3>
 
           {isLoadingHistory ? (
@@ -262,7 +264,7 @@ export function BackupPanel() {
             </div>
           ) : history.length === 0 ? (
             <p className="text-xs text-text-muted py-4 text-center">
-              No backups yet
+              {t(K.superadmin.backup.noBackups)}
             </p>
           ) : (
             <div className="rounded-lg border border-border-subtle overflow-hidden">
@@ -270,16 +272,16 @@ export function BackupPanel() {
                 <thead>
                   <tr className="border-b border-border-subtle bg-card shadow-sm">
                     <th className="text-left px-4 py-2.5 font-medium text-text-muted">
-                      Filename
+                      {t(K.superadmin.backup.filename)}
                     </th>
                     <th className="text-left px-3 py-2.5 font-medium text-text-muted">
-                      Size
+                      {t(K.superadmin.backup.size)}
                     </th>
                     <th className="text-left px-3 py-2.5 font-medium text-text-muted">
-                      Status
+                      {t(K.superadmin.backup.status)}
                     </th>
                     <th className="text-left px-3 py-2.5 font-medium text-text-muted">
-                      Created
+                      {t(K.superadmin.backup.created)}
                     </th>
                   </tr>
                 </thead>
@@ -305,7 +307,7 @@ export function BackupPanel() {
                             <span
                               className={`w-1.5 h-1.5 rounded-full ${sc.dot}`}
                             />
-                            {sc.label}
+                            {log.status === "success" ? t(K.superadmin.backup.statusSuccess) : log.status === "partial" ? t(K.superadmin.backup.statusPartial) : t(K.superadmin.backup.statusFailed)}
                           </span>
                         </td>
                         <td className="px-3 py-2.5 text-text-muted whitespace-nowrap">

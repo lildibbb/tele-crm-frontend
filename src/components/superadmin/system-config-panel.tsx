@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useT, K } from "@/i18n";
 import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,6 +117,7 @@ export const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: s
 // --- System Config Panel ---
 
 export function SystemConfigPanel() {
+  const t = useT();
   const { data: entries = {}, isLoading, refetch: refetchConfig } = useSystemConfig();
   const upsertManyMutation = useUpsertManySystemConfig();
   const isSaving = upsertManyMutation.isPending;
@@ -147,7 +149,7 @@ export function SystemConfigPanel() {
       setSaved(sectionTitle);
       setTimeout(() => setSaved(null), 2500);
     } catch {
-      setErrMsg("Failed to save. Check the values and try again.");
+      setErrMsg(t(K.superadmin.system.saveFailed));
     }
   };
 
@@ -176,9 +178,9 @@ export function SystemConfigPanel() {
         <div>
           <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2">
             <Sliders size={16} weight="duotone" className="text-crimson" />
-            System Configuration
+            {t(K.superadmin.system.header)}
           </h2>
-          <p className="text-xs text-text-secondary mt-0.5">All 27 platform config keys</p>
+          <p className="text-xs text-text-secondary mt-0.5">{t(K.superadmin.system.headerDesc)}</p>
         </div>
         <Button variant="ghost" size="icon" className="h-7 w-7 text-text-muted hover:text-text-primary" onClick={() => void refetchConfig()}>
           <ArrowClockwise size={14} className={isLoading ? "animate-spin" : ""} />
@@ -208,13 +210,19 @@ export function SystemConfigPanel() {
                   className={`h-7 px-3 text-xs gap-1 ${isSectionSaved ? "text-success" : "text-crimson hover:bg-crimson/10"}`}
                 >
                   {isSectionSaved ? <CheckCircle size={13} /> : <Gear size={13} />}
-                  {isSectionSaved ? "Saved!" : isSaving ? "Saving..." : "Save"}
+                  {isSectionSaved ? t(K.superadmin.system.saved) : isSaving ? t(K.superadmin.system.saving) : t(K.superadmin.system.save)}
                 </Button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {section.fields.map((field) => (
                   <div key={field.key} className="space-y-1">
-                    <Label className="text-[11px] font-medium text-text-secondary">{field.label}</Label>
+                    <Label className="text-[11px] font-medium text-text-secondary">
+                      {field.key === "persona.name"
+                        ? t(K.botConfig.botName)
+                        : field.key === "bot.systemPrompt"
+                          ? t(K.botConfig.systemPrompt)
+                          : field.label}
+                    </Label>
                     {field.description && (
                       <p className="text-[10px] text-text-muted leading-snug">{field.description}</p>
                     )}
@@ -249,13 +257,13 @@ export function SystemConfigPanel() {
           <div className="flex items-center justify-between pt-3">
             <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 text-text-muted">
               <DownloadSimple size={13} weight="duotone" />
-              Admin Tools
+              {t(K.superadmin.system.adminTools)}
             </h3>
           </div>
           <div className="rounded-lg border border-border-subtle bg-card p-4 flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-medium text-text-primary">Export Audit Logs</p>
-              <p className="text-[10px] text-text-muted mt-0.5">Download all audit log entries as a CSV file</p>
+              <p className="text-xs font-medium text-text-primary">{t(K.superadmin.system.exportAuditLogs)}</p>
+              <p className="text-[10px] text-text-muted mt-0.5">{t(K.superadmin.system.exportAuditLogsDesc)}</p>
             </div>
             <Button
               size="sm"
@@ -265,7 +273,7 @@ export function SystemConfigPanel() {
               className="h-7 px-3 text-xs gap-1 text-crimson hover:bg-crimson/10 shrink-0"
             >
               <DownloadSimple size={13} />
-              {isExporting ? "Exporting..." : "Export CSV"}
+              {isExporting ? t(K.superadmin.system.exporting) : t(K.superadmin.system.exportCsv)}
             </Button>
           </div>
         </div>

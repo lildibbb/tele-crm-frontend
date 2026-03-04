@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useT, K } from "@/i18n";
 import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import {
@@ -37,6 +38,7 @@ import {
 } from "@phosphor-icons/react";
 
 export function MaintenancePanel() {
+  const t = useT();
   const { data: entries = {} } = useSystemConfig();
   const upsertManyMutation = useUpsertManySystemConfig();
   const { refetch: refetchMaintenanceConfig } = useMaintenanceConfig();
@@ -83,7 +85,7 @@ export function MaintenancePanel() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Save failed";
+          ?.message ?? t(K.superadmin.maintenance.saveFailed);
       setSaveErr(msg);
       setTimeout(() => setSaveErr(null), 4000);
     } finally {
@@ -102,7 +104,7 @@ export function MaintenancePanel() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Save failed";
+          ?.message ?? t(K.superadmin.maintenance.saveFailed);
       setSaveErr(msg);
       setTimeout(() => setSaveErr(null), 4000);
     } finally {
@@ -113,15 +115,15 @@ export function MaintenancePanel() {
   const featureFlags = [
     {
       key: "feature.knowledgeBase.enabled",
-      label: "Knowledge Base",
-      description: "KB file uploads and vector processing",
+      label: t(K.superadmin.maintenance.knowledgeBase),
+      description: t(K.superadmin.maintenance.knowledgeBaseDesc),
       icon: <Brain size={22} weight="duotone" className="text-blue-500" />,
       defaultOn: true,
     },
     {
       key: "feature.broadcast.enabled",
-      label: "Broadcast",
-      description: "Bulk message blasts to leads",
+      label: t(K.superadmin.maintenance.broadcast),
+      description: t(K.superadmin.maintenance.broadcastDesc),
       icon: (
         <Megaphone size={22} weight="duotone" className="text-purple-500" />
       ),
@@ -129,8 +131,8 @@ export function MaintenancePanel() {
     },
     {
       key: "feature.commandMenu.enabled",
-      label: "Command Menus",
-      description: "Bot command menu management",
+      label: t(K.superadmin.maintenance.commandMenus),
+      description: t(K.superadmin.maintenance.commandMenusDesc),
       icon: (
         <TerminalWindow size={22} weight="duotone" className="text-amber-500" />
       ),
@@ -138,8 +140,8 @@ export function MaintenancePanel() {
     },
     {
       key: "followUp.enabled",
-      label: "Follow-Up Automation",
-      description: "Scheduled follow-up messages",
+      label: t(K.superadmin.maintenance.followUpAutomation),
+      description: t(K.superadmin.maintenance.followUpAutomationDesc),
       icon: (
         <ClockCounterClockwise
           size={22}
@@ -158,12 +160,10 @@ export function MaintenancePanel() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-amber-500">
               <Warning size={18} weight="fill" />
-              Enable Maintenance Mode?
+              {t(K.superadmin.maintenance.enableMaintenance)}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will block all write operations for Owner, Admin, and Staff
-              roles. The Telegram bot continues running and SuperAdmin retains
-              full access.
+              {t(K.superadmin.maintenance.enableMaintenanceDesc)}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -172,7 +172,7 @@ export function MaintenancePanel() {
                 setPendingOn(false);
               }}
             >
-              Cancel
+              {t(K.superadmin.maintenance.cancel)}
             </AlertDialogCancel>
             <AlertDialogAction
               className="bg-amber-600 hover:bg-amber-500 text-white"
@@ -181,7 +181,7 @@ export function MaintenancePanel() {
                 void saveMaintenanceMode(pendingOn);
               }}
             >
-              Enable Maintenance
+              {t(K.superadmin.maintenance.enableBtn)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -194,16 +194,15 @@ export function MaintenancePanel() {
             <div>
               <CardTitle className="text-sm flex items-center gap-2">
                 <Warning size={16} weight="fill" className="text-amber-500" />
-                Maintenance Mode
+                {t(K.superadmin.maintenance.maintenanceMode)}
               </CardTitle>
               <CardDescription className="text-xs mt-1">
-                Blocks write operations for non-superadmin users. Bot stays
-                online.
+                {t(K.superadmin.maintenance.maintenanceModeDesc)}
               </CardDescription>
             </div>
             {saved === "maintenance" && (
               <span className="text-xs text-success flex items-center gap-1 font-medium bg-success/10 px-2.5 py-1 rounded-full border border-success/20">
-                <CheckCircle size={14} weight="bold" /> Saved
+                <CheckCircle size={14} weight="bold" /> {t(K.superadmin.maintenance.saved)}
               </span>
             )}
           </CardHeader>
@@ -211,11 +210,11 @@ export function MaintenancePanel() {
           <CardContent className="px-5 py-6 space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <Label className="text-sm font-semibold">Mode Status</Label>
+                <Label className="text-sm font-semibold">{t(K.superadmin.maintenance.modeStatus)}</Label>
                 <p className="text-xs text-text-muted">
                   {maintenanceOn
-                    ? "🔴 Active — staff/owners are in read-only mode"
-                    : "🟢 Inactive — system is fully operational"}
+                    ? t(K.superadmin.maintenance.modeActive)
+                    : t(K.superadmin.maintenance.modeInactive)}
                 </p>
               </div>
               <Switch
@@ -227,9 +226,9 @@ export function MaintenancePanel() {
 
             <div className="space-y-3 pt-4 border-t border-border-subtle">
               <div>
-                <Label className="text-sm font-semibold">Banner Message</Label>
+                <Label className="text-sm font-semibold">{t(K.superadmin.maintenance.bannerMessage)}</Label>
                 <p className="text-xs text-text-muted mt-0.5">
-                  Displayed to all users when maintenance mode is active.
+                  {t(K.superadmin.maintenance.bannerHint)}
                 </p>
               </div>
               <Textarea
@@ -243,7 +242,7 @@ export function MaintenancePanel() {
             {bannerText && (
               <div className="space-y-2 bg-background rounded-lg p-4 border border-border-subtle shadow-sm">
                 <Label className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
-                  Preview
+                  {t(K.superadmin.maintenance.preview)}
                 </Label>
                 <div className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
                   <Warning
@@ -252,7 +251,7 @@ export function MaintenancePanel() {
                     className="shrink-0 text-amber-500"
                   />
                   <div>
-                    <span className="font-semibold">Maintenance Mode — </span>
+                    <span className="font-semibold">{t(K.superadmin.maintenance.maintenanceModePrefix)}</span>
                     {bannerText}
                   </div>
                 </div>
@@ -269,7 +268,7 @@ export function MaintenancePanel() {
               className="h-8 shadow-sm"
             >
               <Gear size={15} className="mr-2" />
-              {isSaving ? "Saving…" : "Save Configuration"}
+              {isSaving ? t(K.superadmin.maintenance.savingConfig) : t(K.superadmin.maintenance.saveConfiguration)}
             </Button>
             {saveErr && (
               <span className="text-sm text-destructive">{saveErr}</span>
@@ -282,11 +281,10 @@ export function MaintenancePanel() {
           <CardHeader className="border-b border-border-subtle bg-muted/20 px-5 py-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Lightning size={16} weight="duotone" className="text-info" />
-              Feature Flags
+              {t(K.superadmin.maintenance.featureFlags)}
             </CardTitle>
             <CardDescription className="text-xs mt-1">
-              Toggle individual platform features independently without
-              deploying.
+              {t(K.superadmin.maintenance.featureFlagsDesc)}
             </CardDescription>
           </CardHeader>
 
@@ -343,7 +341,7 @@ export function MaintenancePanel() {
                           isOn ? "text-emerald-500" : "text-text-muted"
                         }`}
                       >
-                        {isOn ? "Enabled" : "Disabled"}
+                        {isOn ? t(K.superadmin.maintenance.enabled) : t(K.superadmin.maintenance.disabled)}
                       </span>
                       <Switch
                         id={`switch-${flag.key}`}
