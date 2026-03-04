@@ -14,11 +14,12 @@ import {
   Users,
   Lightning,
   ShieldCheck,
+  ClockCounterClockwise,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSuperadminUsers } from "@/queries/useSuperadminQuery";
+import { useSuperadminUsers, useSuperadminAuditLogs } from "@/queries/useSuperadminQuery";
 import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
 import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 
@@ -46,7 +47,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Database,  label: "Backup",           desc: "Scheduled backups & history", href: "/admin/backup",             iconColor: "text-text-secondary", iconBg: "bg-elevated" },
   { icon: LockKey,   label: "Secrets",          desc: "Encrypted credentials",       href: "/admin/secrets",            iconColor: "text-text-secondary", iconBg: "bg-elevated" },
   { icon: GearSix,   label: "System Config",    desc: "All configuration keys",      href: "/settings",                 iconColor: "text-text-secondary", iconBg: "bg-elevated" },
-  { icon: ChartBar,  label: "Google Analytics", desc: "API usage tracking",          href: "/admin/google-analytics",   iconColor: "text-text-secondary", iconBg: "bg-elevated" },
+  { icon: ChartBar,  label: "Google Analytics", desc: "API usage tracking",          href: "/admin/google",             iconColor: "text-text-secondary", iconBg: "bg-elevated" },
 ];
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -55,6 +56,8 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
   const { data: users = [], isLoading: isLoadingUsers } = useSuperadminUsers();
   const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
   const { data: maintenanceConfig } = useMaintenanceConfig();
+  const { data: auditLogs = [], isLoading: isLoadingLogs } = useSuperadminAuditLogs({ take: 8 });
+  const recentLogs = auditLogs.slice(0, 8);
   const maintenanceMode = maintenanceConfig?.maintenanceMode ?? false;
   const featureFlags = maintenanceConfig?.featureFlags ?? { knowledgeBase: true, broadcast: true, commandMenu: true, followUp: true };
   const maintenanceLoaded = maintenanceConfig !== undefined;
@@ -248,6 +251,48 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
             </div>
           </section>
         )}
+        {/* ── Recent Events ──────────────────────────────────────────── */}
+        <section className="px-4">
+          <div className="flex items-center gap-2 mb-3">
+            <ClockCounterClockwise size={14} className="text-text-muted" weight="bold" />
+            <p className="font-sans text-[11px] font-bold text-text-muted uppercase tracking-[0.08em]">
+              Recent Events
+            </p>
+          </div>
+          <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
+            {isLoadingLogs ? (
+              <div className="divide-y divide-border-subtle">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="px-4 py-3.5 space-y-2">
+                    <SkeletonBar className="h-4 w-3/4" />
+                    <SkeletonBar className="h-3 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : recentLogs.length > 0 ? (
+              <div className="divide-y divide-border-subtle">
+                {recentLogs.map((log) => (
+                  <div key={log.id} className="flex items-center gap-3 px-4 py-3 min-h-[44px]">
+                    <Badge variant="secondary" className="text-[10px] font-mono font-bold uppercase tracking-wide shrink-0">
+                      {log.action.replace(/_/g, " ")}
+                    </Badge>
+                    <p className="flex-1 font-sans text-[12px] text-text-secondary truncate min-w-0">
+                      {log.resourceType ?? log.resourceId ?? "—"}
+                    </p>
+                    <span className="font-mono text-[11px] text-text-muted shrink-0">
+                      {new Date(log.createdAt).toLocaleTimeString("en-MY", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-6 text-center">
+                <ClockCounterClockwise size={28} className="text-text-muted mx-auto mb-2" />
+                <p className="font-sans text-[13px] text-text-muted">No recent events</p>
+              </div>
+            )}
+          </div>
+        </section>
       </main>
     </div>
   );

@@ -91,4 +91,7 @@ export type { MobileSettingsTeamProps } from "./MobileSettingsTeam";
 export { default as MobileKnowledgeBase } from "./MobileKnowledgeBase";
 export type { MobileKnowledgeBaseProps } from "./MobileKnowledgeBase";
 
+export { default as MobileIntegrations } from "./MobileIntegrations";
+export type { MobileIntegrationsProps } from "./MobileIntegrations";
+
 export { default as MobileBotConfig } from "./MobileBotConfig";

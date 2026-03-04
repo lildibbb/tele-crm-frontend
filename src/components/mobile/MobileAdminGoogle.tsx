@@ -125,14 +125,13 @@ function OpLogCard({ op }: { op: GoogleOpLog }) {
 export default function MobileAdminGoogle({}: MobileAdminGoogleProps) {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { data, isLoading, error, refetch } = useGoogleAnalyticsStats();
 
   // SUPERADMIN guard
   if (user?.role !== "SUPERADMIN") {
     router.replace("/");
     return null;
   }
-
-  const { data, isLoading, error, refetch } = useGoogleAnalyticsStats();
 
   const stats = data?.stats;
   const ops = data?.recentOps ?? [];

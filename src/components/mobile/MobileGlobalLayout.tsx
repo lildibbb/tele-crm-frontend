@@ -68,6 +68,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/settings/knowledge-base": "Knowledge Base",
   "/settings/commands": "Bot Commands",
   "/settings/bot-config": "Bot Configuration",
+  "/settings/integrations": "Integrations",
 };
 
 function getPageTitle(pathname: string): string {

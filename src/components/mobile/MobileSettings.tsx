@@ -22,6 +22,7 @@ import {
   Translate,
   Palette,
   CheckCircle,
+  LinkSimple,
 } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -190,6 +191,14 @@ const BOT_ITEMS: SettingsItem[] = [
     iconBg: "bg-elevated",
     label: "Command Menu",
     href: "/settings/commands",
+  },
+  {
+    id: "integrations",
+    Icon: LinkSimple,
+    iconColor: "text-text-secondary",
+    iconBg: "bg-elevated",
+    label: "Integrations",
+    href: "/settings/integrations",
   },
 ];
 

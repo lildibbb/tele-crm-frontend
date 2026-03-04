@@ -246,7 +246,7 @@ function AddEntrySheet({
         )}
 
         {mode === "text" && (
-          <div className="px-5 pt-2 pb-6 flex flex-col gap-3 overflow-y-auto">
+          <div className="px-5 pt-2 pb-6 flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: "calc(90dvh - 80px)" }}>
             <SheetHeader className="mb-1 text-left">
               <SheetTitle className="font-sans font-bold text-[18px] text-text-primary">
                 Add Text Entry
@@ -444,7 +444,7 @@ export interface MobileKnowledgeBaseProps {}
 export default function MobileKnowledgeBase({}: MobileKnowledgeBaseProps) {
   const { user } = useAuthStore();
   const role = (user?.role as UserRole) ?? "STAFF";
-  const canEdit = role === "OWNER" || role === "ADMIN";
+  const canEdit = role === "OWNER" || role === "ADMIN" || role === "SUPERADMIN";
 
   const { data: entries, isLoading, isError, refetch } = useKbList();
 
@@ -500,7 +500,7 @@ export default function MobileKnowledgeBase({}: MobileKnowledgeBaseProps) {
       {canEdit && (
         <button
           onClick={() => setAddSheetOpen(true)}
-          className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-5 w-14 h-14 rounded-full bg-crimson shadow-lg flex items-center justify-center active:opacity-80 transition-opacity z-30"
+          className="fixed bottom-[calc(76px+env(safe-area-inset-bottom))] right-5 w-14 h-14 rounded-full bg-crimson shadow-lg flex items-center justify-center active:opacity-80 transition-opacity z-50"
           aria-label="Add knowledge entry"
         >
           <Plus size={24} weight="bold" className="text-white" />

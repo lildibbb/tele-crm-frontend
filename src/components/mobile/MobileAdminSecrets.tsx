@@ -149,10 +149,11 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
                       {/* Set/update value */}
                       <button
                         onClick={() => openEdit(secret)}
-                        className="flex items-center justify-center w-9 h-9 rounded-xl bg-elevated active:scale-[0.93] transition-transform"
+                        className="h-8 px-3 rounded-xl bg-elevated border border-border-subtle active:scale-[0.93] transition-transform font-sans text-[12px] font-semibold text-text-secondary flex items-center gap-1.5"
                         aria-label={`Set secret ${secret.key}`}
                       >
-                        <Eye size={15} className="text-text-secondary" />
+                        <Eye size={13} className="text-text-muted" />
+                        {isSet ? "Replace" : "Set"}
                       </button>
                       {/* Delete */}
                       <button
