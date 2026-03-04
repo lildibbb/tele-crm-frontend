@@ -57,7 +57,7 @@ function SkeletonBox({ className }: { className?: string }) {
 
 function StatCardSkeleton() {
   return (
-    <div className="flex flex-col gap-2.5 rounded-2xl bg-card border border-border-subtle p-4">
+    <div className="flex flex-col gap-2.5 rounded-2xl bg-card p-4">
       <Skeleton className="h-8 w-8 rounded-lg" />
       <Skeleton className="h-7 w-20 rounded-md" />
       <Skeleton className="h-3.5 w-16 rounded" />
@@ -83,7 +83,7 @@ function SectionCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="mx-4 mt-4 rounded-2xl bg-card border border-border-subtle shadow-sm overflow-hidden">
+    <div className="mx-4 mt-4 rounded-2xl bg-card shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2">
           {icon}
@@ -174,12 +174,18 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
   const { data: summary, isLoading } = useAnalyticsSummary({
     timeframe: activePeriod as any,
     ...(activePeriod === "custom" && appliedFrom && appliedTo
-      ? { startDate: new Date(appliedFrom).toISOString(), endDate: new Date(appliedTo).toISOString() }
+      ? {
+          startDate: new Date(appliedFrom).toISOString(),
+          endDate: new Date(appliedTo).toISOString(),
+        }
       : {}),
   });
 
   const formatShort = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    new Date(iso).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
 
   const customApplied = activePeriod === "custom" && appliedFrom && appliedTo;
 
@@ -189,8 +195,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
   // KPI stat card definitions
   const totalLeads = kpi?.totalLeads?.current ?? 0;
   const depositors = kpi?.verifiedClients?.current ?? 0;
-  const conversionRate =
-    totalLeads > 0 ? ((depositors / totalLeads) * 100) : 0;
+  const conversionRate = totalLeads > 0 ? (depositors / totalLeads) * 100 : 0;
 
   const statCards = [
     {
@@ -252,7 +257,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
       iconColor: "text-text-secondary",
       trend:
         conversionRate > 0
-          ? kpi?.verifiedClients?.trend ?? "neutral"
+          ? (kpi?.verifiedClients?.trend ?? "neutral")
           : "neutral",
       change: kpi?.verifiedClients?.changePercentage ?? 0,
     },
@@ -274,7 +279,11 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
     ? [
         { stage: "Leads", count: funnel.new, color: "var(--color-crimson)" },
         { stage: "Submitted", count: funnel.formSubmitted, color: "#F59E0B" },
-        { stage: "Confirmed", count: funnel.depositConfirmed, color: "var(--color-success)" },
+        {
+          stage: "Confirmed",
+          count: funnel.depositConfirmed,
+          color: "var(--color-success)",
+        },
       ]
     : [
         { stage: "Leads", count: totalLeads, color: "var(--color-crimson)" },
@@ -283,7 +292,11 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
           count: kpi?.formSubmissions?.current ?? 0,
           color: "#F59E0B",
         },
-        { stage: "Confirmed", count: depositors, color: "var(--color-success)" },
+        {
+          stage: "Confirmed",
+          count: depositors,
+          color: "var(--color-success)",
+        },
       ];
 
   // Funnel drop-off percentages
@@ -299,322 +312,337 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
 
   return (
     <div className="pb-8">
-          {/* ── Timeframe Chips ─────────────────────────────────────── */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none pt-4">
-            {PERIODS.map((p) => (
-              <button
-                key={p.key}
-                onClick={() => p.key === "custom" ? setDateSheetOpen(true) : setActivePeriod(p.key as string)}
+      {/* ── Timeframe Chips ─────────────────────────────────────── */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none pt-4">
+        {PERIODS.map((p) => (
+          <button
+            key={p.key}
+            onClick={() =>
+              p.key === "custom"
+                ? setDateSheetOpen(true)
+                : setActivePeriod(p.key as string)
+            }
+            className={cn(
+              "shrink-0 px-3 h-7 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors",
+              activePeriod === p.key ||
+                (p.key === "custom" && activePeriod === "custom")
+                ? "bg-crimson text-white"
+                : "bg-elevated text-text-secondary",
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── KPI Stat Cards — 2×2 Grid ──────────────────────────── */}
+      <div className="grid grid-cols-2 gap-3 px-4 pt-4">
+        {isLoading
+          ? [1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)
+          : statCards.map((card) => (
+              <div
+                key={card.id}
                 className={cn(
-                  "shrink-0 px-3 h-7 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors",
-                  (activePeriod === p.key || (p.key === "custom" && activePeriod === "custom"))
-                    ? "bg-crimson text-white"
-                    : "bg-elevated text-text-secondary"
+                  "relative flex flex-col gap-1 rounded-2xl bg-card p-4",
+                  "shadow-sm overflow-hidden transition-shadow active:shadow-md",
+                  "border border-border-subtle",
                 )}
               >
-                {p.label}
-              </button>
+                {/* Accent glow line */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-[2px]"
+                  style={{ background: card.color }}
+                />
+                {/* Icon */}
+                <div
+                  className={cn(
+                    "flex items-center justify-center h-8 w-8 rounded-lg mb-1",
+                    card.bgColor,
+                    card.iconColor,
+                  )}
+                >
+                  {card.icon}
+                </div>
+                {/* Value */}
+                <span className="font-mono text-[22px] font-bold text-text-primary leading-tight tracking-tight">
+                  {card.formatted}
+                </span>
+                {/* Label */}
+                <span className="font-sans text-[12px] text-text-secondary leading-tight">
+                  {card.label}
+                </span>
+                {/* Trend */}
+                <div className="mt-1">
+                  <TrendBadge
+                    trend={card.trend as "up" | "down" | "neutral"}
+                    percentage={card.change}
+                  />
+                </div>
+              </div>
+            ))}
+      </div>
+
+      {/* ── Lead Trend Area Chart ──────────────────────────────── */}
+      <SectionCard
+        title="Lead Trend"
+        icon={
+          <ChartBar
+            size={16}
+            weight="duotone"
+            className="text-text-secondary"
+          />
+        }
+        badge={
+          <Badge variant="secondary" className="text-[10px] font-medium">
+            {customApplied
+              ? `${formatShort(appliedFrom)} – ${formatShort(appliedTo)}`
+              : (PERIODS.find((p) => p.key === activePeriod)?.label ??
+                activePeriod)}
+          </Badge>
+        }
+      >
+        {isLoading ? (
+          <ChartSkeleton height="h-[180px]" />
+        ) : trendData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart
+              data={trendData}
+              margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
+            >
+              <defs>
+                <linearGradient id="maNew" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="maDep" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22D3A0" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#22D3A0" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--border-subtle)"
+                strokeOpacity={0.4}
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tick={{
+                  fill: "var(--text-muted)",
+                  fontSize: 10,
+                  fontFamily: "var(--font-mono)",
+                }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis hide />
+              <Tooltip
+                content={<ChartTooltip />}
+                cursor={{ stroke: "var(--border-subtle)", strokeWidth: 1 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="New Leads"
+                stroke="#60A5FA"
+                strokeWidth={2}
+                fill="url(#maNew)"
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0, fill: "#60A5FA" }}
+              />
+              <Area
+                type="monotone"
+                dataKey="Confirmed"
+                stroke="#22D3A0"
+                strokeWidth={2}
+                fill="url(#maDep)"
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0, fill: "#22D3A0" }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex items-center justify-center h-[180px] rounded-xl bg-elevated/30">
+            <span className="font-sans text-[13px] text-text-muted">
+              No trend data available
+            </span>
+          </div>
+        )}
+
+        {/* Chart legend */}
+        {!isLoading && trendData.length > 0 && (
+          <div className="flex items-center justify-center gap-4 mt-3">
+            {[
+              { label: "Leads", color: "#60A5FA" },
+              { label: "Confirmed", color: "#22D3A0" },
+            ].map((l) => (
+              <span
+                key={l.label}
+                className="flex items-center gap-1.5 font-sans text-[11px] text-text-muted"
+              >
+                <span
+                  className="h-2 w-2 rounded-full shrink-0"
+                  style={{ background: l.color }}
+                />
+                {l.label}
+              </span>
             ))}
           </div>
+        )}
+      </SectionCard>
 
-          {/* ── KPI Stat Cards — 2×2 Grid ──────────────────────────── */}
-          <div className="grid grid-cols-2 gap-3 px-4 pt-4">
-            {isLoading
-              ? [1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)
-              : statCards.map((card) => (
-                  <div
-                    key={card.id}
-                    className={cn(
-                      "relative flex flex-col gap-1 rounded-2xl bg-card border border-border-subtle p-4",
-                      "shadow-sm overflow-hidden transition-shadow active:shadow-md",
-                    )}
-                  >
-                    {/* Accent glow line */}
-                    <div
-                      className="absolute top-0 left-0 right-0 h-[2px]"
-                      style={{ background: card.color }}
-                    />
-                    {/* Icon */}
-                    <div
-                      className={cn(
-                        "flex items-center justify-center h-8 w-8 rounded-lg mb-1",
-                        card.bgColor,
-                        card.iconColor,
-                      )}
-                    >
-                      {card.icon}
-                    </div>
-                    {/* Value */}
-                    <span className="font-mono text-[22px] font-bold text-text-primary leading-tight tracking-tight">
-                      {card.formatted}
-                    </span>
-                    {/* Label */}
-                    <span className="font-sans text-[12px] text-text-secondary leading-tight">
-                      {card.label}
-                    </span>
-                    {/* Trend */}
-                    <div className="mt-1">
-                      <TrendBadge
-                        trend={card.trend as "up" | "down" | "neutral"}
-                        percentage={card.change}
-                      />
-                    </div>
-                  </div>
-                ))}
-          </div>
-
-          {/* ── Lead Trend Area Chart ──────────────────────────────── */}
-          <SectionCard
-            title="Lead Trend"
-            icon={
-              <ChartBar
-                size={16}
-                weight="duotone"
-                className="text-text-secondary"
-              />
-            }
-            badge={
-              <Badge variant="secondary" className="text-[10px] font-medium">
-                {customApplied
-                  ? `${formatShort(appliedFrom)} – ${formatShort(appliedTo)}`
-                  : PERIODS.find(p => p.key === activePeriod)?.label ?? activePeriod}
-              </Badge>
-            }
-          >
-            {isLoading ? (
-              <ChartSkeleton height="h-[180px]" />
-            ) : trendData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={180}>
-                <AreaChart
-                  data={trendData}
-                  margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
-                >
-                  <defs>
-                    <linearGradient id="maNew" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.02} />
-                    </linearGradient>
-                    <linearGradient id="maDep" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22D3A0" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#22D3A0" stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="var(--border-subtle)"
-                    strokeOpacity={0.4}
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    tick={{
-                      fill: "var(--text-muted)",
-                      fontSize: 10,
-                      fontFamily: "var(--font-mono)",
-                    }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval="preserveStartEnd"
-                  />
-                  <YAxis hide />
-                  <Tooltip
-                    content={<ChartTooltip />}
-                    cursor={{ stroke: "var(--border-subtle)", strokeWidth: 1 }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="New Leads"
-                    stroke="#60A5FA"
-                    strokeWidth={2}
-                    fill="url(#maNew)"
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0, fill: "#60A5FA" }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="Confirmed"
-                    stroke="#22D3A0"
-                    strokeWidth={2}
-                    fill="url(#maDep)"
-                    dot={false}
-                    activeDot={{ r: 4, strokeWidth: 0, fill: "#22D3A0" }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-[180px] rounded-xl bg-elevated/30">
-                <span className="font-sans text-[13px] text-text-muted">
-                  No trend data available
-                </span>
-              </div>
-            )}
-
-            {/* Chart legend */}
-            {!isLoading && trendData.length > 0 && (
-              <div className="flex items-center justify-center gap-4 mt-3">
-                {[
-                  { label: "Leads", color: "#60A5FA" },
-                  { label: "Confirmed", color: "#22D3A0" },
-                ].map((l) => (
-                  <span
-                    key={l.label}
-                    className="flex items-center gap-1.5 font-sans text-[11px] text-text-muted"
-                  >
-                    <span
-                      className="h-2 w-2 rounded-full shrink-0"
-                      style={{ background: l.color }}
-                    />
-                    {l.label}
-                  </span>
-                ))}
-              </div>
-            )}
-          </SectionCard>
-
-          {/* ── Funnel Breakdown Bar Chart ─────────────────────────── */}
-          <SectionCard
-            title="Conversion Funnel"
-            icon={
-              <TrendUp
-                size={16}
-                weight="duotone"
-                className="text-text-secondary"
-              />
-            }
-            badge={
-              funnel?.conversionRates?.overall != null ? (
-                <Badge variant="secondary" className="text-[10px] font-medium font-mono">
-                  {funnel.conversionRates.overall.toFixed(1)}% overall
-                </Badge>
-              ) : undefined
-            }
-          >
-            {isLoading ? (
-              <ChartSkeleton height="h-[180px]" />
-            ) : (
-              <>
-                <ResponsiveContainer width="100%" height={180}>
-                  <BarChart
-                    data={funnelWithPct}
-                    margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
-                    barSize={32}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="var(--border-subtle)"
-                      strokeOpacity={0.4}
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="stage"
-                      tick={{
-                        fill: "var(--text-muted)",
-                        fontSize: 10,
-                        fontFamily: "var(--font-mono)",
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis hide />
-                    <Tooltip
-                      content={<ChartTooltip />}
-                      cursor={{ fill: "var(--border-subtle)", fillOpacity: 0.15 }}
-                    />
-                    <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                      {funnelWithPct.map((entry, idx) => (
-                        <Cell
-                          key={`cell-${idx}`}
-                          fill={entry.color}
-                          fillOpacity={0.85}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-
-                {/* Funnel progress bars */}
-                <div className="flex flex-col gap-2.5 mt-4">
-                  {funnelWithPct.map((item) => (
-                    <div key={item.stage} className="flex items-center gap-3">
-                      <span className="w-[80px] shrink-0 font-sans text-[12px] text-text-secondary truncate">
-                        {item.stage}
-                      </span>
-                      <div className="flex-1 h-[6px] rounded-full bg-elevated overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-700 ease-out"
-                          style={{
-                            width: `${item.pct}%`,
-                            background: item.color,
-                          }}
-                        />
-                      </div>
-                      <span className="w-[52px] text-right font-mono text-[12px] font-semibold text-text-primary">
-                        {item.count.toLocaleString()}
-                      </span>
-                      <span className="w-[36px] text-right font-mono text-[11px] text-text-muted">
-                        {item.pct}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </SectionCard>
-
-          {/* ── Custom Date Range Sheet ───────────────────────────── */}
-          <Sheet open={dateSheetOpen} onOpenChange={setDateSheetOpen}>
-            <SheetContent
-              side="bottom"
-              className="rounded-t-2xl bg-base border-border-subtle pb-[env(safe-area-inset-bottom)]"
+      {/* ── Funnel Breakdown Bar Chart ─────────────────────────── */}
+      <SectionCard
+        title="Conversion Funnel"
+        icon={
+          <TrendUp size={16} weight="duotone" className="text-text-secondary" />
+        }
+        badge={
+          funnel?.conversionRates?.overall != null ? (
+            <Badge
+              variant="secondary"
+              className="text-[10px] font-medium font-mono"
             >
-              <SheetHeader>
-                <SheetTitle className="font-sans text-[16px] font-bold text-text-primary">
-                  Custom Date Range
-                </SheetTitle>
-              </SheetHeader>
-              <div className="px-4 space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-sans text-[12px] text-text-muted font-medium">
-                    From
-                  </label>
-                  <Input
-                    type="date"
-                    value={customFrom}
-                    onChange={(e) => setCustomFrom(e.target.value)}
-                    max={customTo || undefined}
-                    className="bg-card border-border-subtle text-text-primary font-mono text-[14px]"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="font-sans text-[12px] text-text-muted font-medium">
-                    To
-                  </label>
-                  <Input
-                    type="date"
-                    value={customTo}
-                    onChange={(e) => setCustomTo(e.target.value)}
-                    min={customFrom || undefined}
-                    className="bg-card border-border-subtle text-text-primary font-mono text-[14px]"
-                  />
-                </div>
-              </div>
-              <SheetFooter className="px-4">
-                <button
-                  onClick={() => {
-                    if (!customFrom || !customTo || new Date(customFrom) >= new Date(customTo)) return;
-                    setAppliedFrom(customFrom);
-                    setAppliedTo(customTo);
-                    setActivePeriod("custom");
-                    setDateSheetOpen(false);
+              {funnel.conversionRates.overall.toFixed(1)}% overall
+            </Badge>
+          ) : undefined
+        }
+      >
+        {isLoading ? (
+          <ChartSkeleton height="h-[180px]" />
+        ) : (
+          <>
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart
+                data={funnelWithPct}
+                margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
+                barSize={32}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--border-subtle)"
+                  strokeOpacity={0.4}
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="stage"
+                  tick={{
+                    fill: "var(--text-muted)",
+                    fontSize: 10,
+                    fontFamily: "var(--font-mono)",
                   }}
-                  disabled={!customFrom || !customTo || new Date(customFrom) >= new Date(customTo)}
-                  className="w-full py-3 rounded-xl bg-crimson text-white font-sans text-[14px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40 disabled:pointer-events-none min-h-[44px]"
-                >
-                  Apply Range
-                </button>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
-        </div>
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis hide />
+                <Tooltip
+                  content={<ChartTooltip />}
+                  cursor={{ fill: "var(--border-subtle)", fillOpacity: 0.15 }}
+                />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                  {funnelWithPct.map((entry, idx) => (
+                    <Cell
+                      key={`cell-${idx}`}
+                      fill={entry.color}
+                      fillOpacity={0.85}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+            {/* Funnel progress bars */}
+            <div className="flex flex-col gap-2.5 mt-4">
+              {funnelWithPct.map((item) => (
+                <div key={item.stage} className="flex items-center gap-3">
+                  <span className="w-[80px] shrink-0 font-sans text-[12px] text-text-secondary truncate">
+                    {item.stage}
+                  </span>
+                  <div className="flex-1 h-[6px] rounded-full bg-elevated overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700 ease-out"
+                      style={{
+                        width: `${item.pct}%`,
+                        background: item.color,
+                      }}
+                    />
+                  </div>
+                  <span className="w-[52px] text-right font-mono text-[12px] font-semibold text-text-primary">
+                    {item.count.toLocaleString()}
+                  </span>
+                  <span className="w-[36px] text-right font-mono text-[11px] text-text-muted">
+                    {item.pct}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </SectionCard>
+
+      {/* ── Custom Date Range Sheet ───────────────────────────── */}
+      <Sheet open={dateSheetOpen} onOpenChange={setDateSheetOpen}>
+        <SheetContent
+          side="bottom"
+          className="rounded-t-2xl bg-base border-border-subtle pb-[env(safe-area-inset-bottom)]"
+        >
+          <SheetHeader>
+            <SheetTitle className="font-sans text-[16px] font-bold text-text-primary">
+              Custom Date Range
+            </SheetTitle>
+          </SheetHeader>
+          <div className="px-4 space-y-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-sans text-[12px] text-text-muted font-medium">
+                From
+              </label>
+              <Input
+                type="date"
+                value={customFrom}
+                onChange={(e) => setCustomFrom(e.target.value)}
+                max={customTo || undefined}
+                className="bg-card border-border-subtle text-text-primary font-mono text-[14px]"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="font-sans text-[12px] text-text-muted font-medium">
+                To
+              </label>
+              <Input
+                type="date"
+                value={customTo}
+                onChange={(e) => setCustomTo(e.target.value)}
+                min={customFrom || undefined}
+                className="bg-card border-border-subtle text-text-primary font-mono text-[14px]"
+              />
+            </div>
+          </div>
+          <SheetFooter className="px-4">
+            <button
+              onClick={() => {
+                if (
+                  !customFrom ||
+                  !customTo ||
+                  new Date(customFrom) >= new Date(customTo)
+                )
+                  return;
+                setAppliedFrom(customFrom);
+                setAppliedTo(customTo);
+                setActivePeriod("custom");
+                setDateSheetOpen(false);
+              }}
+              disabled={
+                !customFrom ||
+                !customTo ||
+                new Date(customFrom) >= new Date(customTo)
+              }
+              className="w-full py-3 rounded-xl bg-crimson text-white font-sans text-[14px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40 disabled:pointer-events-none min-h-[44px]"
+            >
+              Apply Range
+            </button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }

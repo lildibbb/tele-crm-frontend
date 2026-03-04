@@ -40,10 +40,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleString();
 }
 
-export default function AdminSessionsPage() {
-  const isMobile = useIsMobile();
-  if (isMobile) return <MobileAdminSessions />;
-
+function SessionsDesktop() {
   const t = useT();
   const queryClient = useQueryClient();
   const [revokeId, setRevokeId] = useState<string | null>(null);
@@ -189,4 +186,10 @@ export default function AdminSessionsPage() {
       </AlertDialog>
     </div>
   );
+}
+
+export default function AdminSessionsPage() {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileAdminSessions />;
+  return <SessionsDesktop />;
 }

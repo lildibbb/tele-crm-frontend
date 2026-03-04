@@ -65,7 +65,6 @@ export { default as MobileAdminBackup } from "./MobileAdminBackup";
 export type { MobileAdminBackupProps } from "./MobileAdminBackup";
 
 export { default as MobileAdminSecrets } from "./MobileAdminSecrets";
-export type { MobileAdminSecretsProps } from "./MobileAdminSecrets";
 
 export { default as MobileAdminMaintenance } from "./MobileAdminMaintenance";
 export type { MobileAdminMaintenanceProps } from "./MobileAdminMaintenance";

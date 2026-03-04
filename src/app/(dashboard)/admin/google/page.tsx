@@ -95,7 +95,10 @@ function OpRow({ op }: { op: GoogleOpLog }) {
 export default function AdminGooglePage() {
   const isMobile = useIsMobile();
   if (isMobile) return <MobileAdminGoogle />;
+  return <GoogleDesktop />;
+}
 
+function GoogleDesktop() {
   const t = useT();
   const { data, isLoading, error, refetch } = useGoogleAnalyticsStats();
 

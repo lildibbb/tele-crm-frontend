@@ -25,7 +25,10 @@ import { useT, K } from "@/i18n";
 export default function QueuesPage() {
   const isMobile = useIsMobile();
   if (isMobile) return <MobileAdminQueues />;
+  return <QueuesDesktop />;
+}
 
+function QueuesDesktop() {
   const t = useT();
   const queryClient = useQueryClient();
 

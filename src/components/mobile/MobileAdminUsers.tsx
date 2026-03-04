@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   MagnifyingGlass,
@@ -13,6 +19,9 @@ import {
   CaretDown,
   CheckCircle,
   ProhibitInset,
+  Plus,
+  Eye,
+  EyeSlash,
 } from "@phosphor-icons/react";
 import {
   Sheet,
@@ -26,6 +35,7 @@ import { useAuthStore } from "@/store/authStore";
 import { roleBadgeCls } from "@/lib/badge-config";
 import {
   useSuperadminUsers,
+  useCreateSuperadminUser,
   useDeactivateSuperadminUser,
   useReactivateSuperadminUser,
   useChangeSuperadminUserRole,
@@ -231,7 +241,11 @@ function UserActionSheet({
                 className="flex items-center gap-3 w-full min-h-[52px] px-4 rounded-2xl bg-elevated active:bg-card border border-border-subtle transition-colors disabled:opacity-50"
               >
                 <span className="w-8 h-8 rounded-xl bg-danger/10 flex items-center justify-center shrink-0">
-                  <ProhibitInset size={16} weight="fill" className="text-danger" />
+                  <ProhibitInset
+                    size={16}
+                    weight="fill"
+                    className="text-danger"
+                  />
                 </span>
                 <span className="font-sans text-[14px] font-medium text-text-primary">
                   Deactivate User
@@ -248,7 +262,11 @@ function UserActionSheet({
                 {reactivate.isPending ? (
                   <span className="w-4 h-4 border-2 border-success border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <CheckCircle size={16} weight="fill" className="text-success" />
+                  <CheckCircle
+                    size={16}
+                    weight="fill"
+                    className="text-success"
+                  />
                 )}
               </span>
               <span className="font-sans text-[14px] font-medium text-text-primary">
@@ -385,6 +403,169 @@ function UserActionSheet({
   );
 }
 
+// ── Create user sheet ────────────────────────────────────────────────────────
+
+function CreateUserSheet({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<string>(UserRole.STAFF);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+
+  const createUser = useCreateSuperadminUser();
+
+  useEffect(() => {
+    if (!open) {
+      setEmail("");
+      setPassword("");
+      setRole(UserRole.STAFF);
+      setShowPassword(false);
+      setError("");
+    }
+  }, [open]);
+
+  const handleCreate = () => {
+    setError("");
+    if (!email.trim() || !email.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    createUser.mutate(
+      { email: email.trim(), password, role: role as UserResponse["role"] },
+      {
+        onSuccess: () => onClose(),
+        onError: (err) =>
+          setError(
+            err instanceof Error ? err.message : "Failed to create user",
+          ),
+      },
+    );
+  };
+
+  const CREATE_ROLES = [UserRole.SUPERADMIN, UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF] as const;
+
+  return (
+    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent
+        side="bottom"
+        className="rounded-t-3xl bg-card border-border-subtle px-0 pb-[env(safe-area-inset-bottom)]"
+      >
+        <SheetHeader className="px-5 pb-4 border-b border-border-subtle">
+          <div className="w-10 h-1 rounded-full bg-border-default mx-auto mb-4" />
+          <SheetTitle className="font-display font-bold text-[17px] text-text-primary text-left">
+            Create User
+          </SheetTitle>
+        </SheetHeader>
+
+        <div className="px-5 py-4 space-y-4">
+          {/* Email */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="user@example.com"
+              className="w-full h-11 px-3 rounded-xl bg-elevated border border-border-subtle text-[13px] font-sans text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-crimson/30"
+            />
+          </div>
+
+          {/* Password */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Minimum 8 characters"
+                className="w-full h-11 px-3 pr-11 rounded-xl bg-elevated border border-border-subtle text-[13px] font-sans text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-crimson/30"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-text-muted"
+              >
+                {showPassword ? (
+                  <EyeSlash size={16} />
+                ) : (
+                  <Eye size={16} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Role */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+              Role
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {CREATE_ROLES.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRole(r)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-[11px] font-mono font-semibold border transition-colors",
+                    role === r
+                      ? "bg-crimson/10 border-crimson/30 text-crimson"
+                      : "bg-elevated border-border-subtle text-text-secondary active:bg-card",
+                  )}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <p className="text-[12px] text-danger font-sans">{error}</p>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2">
+            <button
+              onClick={onClose}
+              className="flex-1 min-h-[48px] rounded-xl bg-elevated font-sans text-[14px] font-semibold text-text-secondary active:bg-card transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={createUser.isPending}
+              className="flex-1 min-h-[48px] rounded-xl bg-crimson font-sans text-[14px] font-semibold text-white active:bg-crimson/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {createUser.isPending ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Plus size={16} weight="bold" />
+                  Create
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function MobileAdminUsers(_props: MobileAdminUsersProps) {
@@ -393,6 +574,7 @@ export default function MobileAdminUsers(_props: MobileAdminUsersProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
+  const [showCreateSheet, setShowCreateSheet] = useState(false);
   const [page, setPage] = useState(1);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -413,7 +595,12 @@ export default function MobileAdminUsers(_props: MobileAdminUsersProps) {
     }, 300);
   }, []);
 
-  const { data: allUsers = [], isLoading, isError, refetch } = useSuperadminUsers();
+  const {
+    data: allUsers = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useSuperadminUsers();
 
   // Filter + paginate client-side (superadmin endpoint returns all users)
   const filtered = useMemo(() => {
@@ -421,8 +608,7 @@ export default function MobileAdminUsers(_props: MobileAdminUsersProps) {
     if (!q) return allUsers;
     return allUsers.filter(
       (u) =>
-        u.email.toLowerCase().includes(q) ||
-        u.role.toLowerCase().includes(q),
+        u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q),
     );
   }, [allUsers, debouncedSearch]);
 
@@ -434,7 +620,7 @@ export default function MobileAdminUsers(_props: MobileAdminUsersProps) {
   const hasMore = paginated.length < filtered.length;
 
   // Guard: don't render before auth check
-  if (authUser && authUser.role !== UserRole.SUPERADMIN) return null;
+  if (authUser && authUser.role !== UserRole.SUPERADMIN) return <div />;
 
   return (
     <div className="min-h-full bg-void pb-8">
@@ -582,12 +768,36 @@ export default function MobileAdminUsers(_props: MobileAdminUsersProps) {
       )}
 
       {/* ── User actions sheet ───────────────────────────────────────── */}
-      <Sheet open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
+      <Sheet
+        open={!!selectedUser}
+        onOpenChange={(open) => !open && setSelectedUser(null)}
+      >
         <UserActionSheet
           user={selectedUser}
           onClose={() => setSelectedUser(null)}
         />
       </Sheet>
+
+      {/* ── Create user FAB ──────────────────────────────────────────── */}
+      <button
+        onClick={() => setShowCreateSheet(true)}
+        className={cn(
+          "fixed right-5 flex items-center justify-center",
+          "w-14 h-14 rounded-full bg-crimson z-50",
+          "shadow-[0_4px_20px_rgba(196,35,45,0.4)]",
+          "active:scale-95 transition-transform",
+        )}
+        style={{ bottom: "calc(60px + env(safe-area-inset-bottom) + 20px)" }}
+        aria-label="Create user"
+      >
+        <Plus size={24} className="text-white" weight="bold" />
+      </button>
+
+      {/* ── Create user sheet ────────────────────────────────────────── */}
+      <CreateUserSheet
+        open={showCreateSheet}
+        onClose={() => setShowCreateSheet(false)}
+      />
     </div>
   );
 }
