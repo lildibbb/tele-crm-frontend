@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Shield,
   UserIcon,
+  BadgeCheck,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -25,11 +26,20 @@ import {
 import {
   SetupAccountSchema,
   type SetupAccountInput,
+  type InvitationInfo,
 } from "@/lib/schemas/auth.schema";
 import { authApi } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
 
-const STEPS = ["Your Info", "Set Password", "Complete"] as const;
+/** Human-readable role labels */
+const ROLE_LABELS: Record<string, string> = {
+  SUPERADMIN: "Super Admin",
+  OWNER: "Owner",
+  ADMIN: "Administrator",
+  STAFF: "Staff",
+};
+
+const STEPS = ["Set Password", "Complete"] as const;
 
 declare global {
   interface Window {
@@ -43,47 +53,82 @@ function SetupAccountContent() {
   const { setAccessToken } = useAuthStore();
 
   const invitationToken = searchParams.get("token") ?? "";
-  const emailFromUrl = searchParams.get("email") ?? "";
 
-  const [step, setStep] = useState<0 | 1 | 2>(0);
+  // Invitation info fetched from backend before rendering the form
+  const [invitationInfo, setInvitationInfo] = useState<InvitationInfo | null>(
+    null,
+  );
+  const [infoLoading, setInfoLoading] = useState(true);
+  const [infoError, setInfoError] = useState<string | null>(null);
+
+  const [step, setStep] = useState<0 | 1>(0);
   const [showPass, setShowPass] = useState(false);
+  // Resolved email — either from invitation (locked) or user input (open invite)
+  const [resolvedEmail, setResolvedEmail] = useState("");
+
+  // Fetch invitation metadata on mount — determines whether email field is shown
+  useEffect(() => {
+    if (!invitationToken) {
+      setInfoLoading(false);
+      setInfoError("No invitation token found in the URL.");
+      return;
+    }
+    authApi
+      .getInvitationInfo(invitationToken)
+      .then((res) => {
+        const info = res.data.data;
+        setInvitationInfo(info);
+        if (info.email) {
+          // Pre-fill the resolved email; user will never see or edit this field
+          setResolvedEmail(info.email);
+        }
+      })
+      .catch(() => {
+        setInfoError(
+          "This invitation link is invalid, expired, or has already been used.",
+        );
+      })
+      .finally(() => setInfoLoading(false));
+  }, [invitationToken]);
 
   const form = useForm<SetupAccountInput>({
     resolver: standardSchemaResolver(SetupAccountSchema),
     defaultValues: {
       invitationToken,
       initData: "",
-      email: emailFromUrl,
+      email: undefined,
       password: "",
       deviceId: "",
       userAgent: "",
     },
   });
 
-  // Populate Telegram initData once component mounts (client only)
+  // Populate device metadata once component mounts (client only)
   useEffect(() => {
-    const initData = window.Telegram?.WebApp?.initData ?? "";
-    form.setValue("initData", initData);
-
-    if (typeof crypto !== "undefined" && crypto.randomUUID) {
-      form.setValue("deviceId", crypto.randomUUID());
-    } else {
-      form.setValue("deviceId", Math.random().toString(36).substring(2, 15));
-    }
-
-    if (typeof navigator !== "undefined") {
-      form.setValue("userAgent", navigator.userAgent);
-    }
+    form.setValue("initData", window.Telegram?.WebApp?.initData ?? "");
+    form.setValue(
+      "deviceId",
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).substring(2, 15),
+    );
+    form.setValue("userAgent", navigator.userAgent);
   }, [form]);
 
-  const email = form.watch("email");
   const password = form.watch("password");
 
   const onSubmit = async (data: SetupAccountInput) => {
+    // If the invitation pre-fills the email, strip dto.email entirely —
+    // the backend uses invitation.email authoritatively in that case.
+    const payload: SetupAccountInput = invitationInfo?.email
+      ? { ...data, email: undefined }
+      : data;
+
     try {
-      const res = await authApi.setupAccount(data);
+      const res = await authApi.setupAccount(payload);
       setAccessToken(res.data.data.accessToken);
-      setStep(2);
+      setResolvedEmail(res.data.data.user.email);
+      setStep(1);
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -91,6 +136,42 @@ function SetupAccountContent() {
       form.setError("root", { message });
     }
   };
+
+  // ── Loading state ──────────────────────────────────────────────────────────
+  if (infoLoading) {
+    return (
+      <div className="min-h-svh bg-void flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-crimson mx-auto" />
+          <p className="text-text-secondary text-sm font-sans">
+            Verifying your invitation…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Invalid invitation ─────────────────────────────────────────────────────
+  if (infoError) {
+    return (
+      <div className="min-h-svh bg-void flex items-center justify-center p-6">
+        <div className="w-full max-w-sm surface-card p-8 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-danger/10 border border-danger/30 flex items-center justify-center mx-auto">
+            <Shield className="h-6 w-6 text-danger" />
+          </div>
+          <h2 className="font-display font-bold text-xl text-text-primary">
+            Invalid Invitation
+          </h2>
+          <p className="font-sans text-sm text-text-secondary leading-relaxed">
+            {infoError}
+          </p>
+          <p className="font-sans text-xs text-text-muted">
+            Please contact your administrator to receive a new invitation link.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-svh bg-void flex items-center justify-center p-6">
@@ -118,6 +199,7 @@ function SetupAccountContent() {
         <div className="surface-card relative overflow-hidden p-8 sm:p-10 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm">
           {/* Top accent line */}
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
+
           {/* Stepper */}
           <div className="flex items-center gap-2 mb-7">
             {STEPS.map((label, i) => (
@@ -136,27 +218,24 @@ function SetupAccountContent() {
             ))}
           </div>
 
-          {/* Missing token warning */}
-          {!invitationToken && step < 2 && (
-            <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30 text-danger text-xs font-sans">
-              No invitation token found. Please use the link from your
-              invitation email.
-            </div>
-          )}
-
-          {/* Invite badge */}
-          {step < 2 && emailFromUrl && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border-subtle mb-6 shadow-sm">
-              <div className="w-8 h-8 rounded-full bg-crimson/20 border border-crimson/30 flex items-center justify-center flex-shrink-0">
-                <Shield className="h-4 w-4 text-crimson" />
+          {/* Invitation identity badge — always visible on step 0 */}
+          {step === 0 && invitationInfo && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border-subtle mb-6 shadow-sm">
+              <div className="w-8 h-8 rounded-full bg-crimson/20 border border-crimson/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <BadgeCheck className="h-4 w-4 text-crimson" />
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 space-y-0.5">
                 <p className="text-xs font-sans font-medium text-text-secondary">
-                  Invited as
+                  Invitation verified · Role:{" "}
+                  <span className="text-text-primary font-semibold">
+                    {ROLE_LABELS[invitationInfo.role] ?? invitationInfo.role}
+                  </span>
                 </p>
-                <p className="text-[13px] font-mono text-text-primary truncate">
-                  {emailFromUrl}
-                </p>
+                {invitationInfo.email && (
+                  <p className="text-[13px] font-mono text-text-primary truncate">
+                    {invitationInfo.email}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -170,137 +249,109 @@ function SetupAccountContent() {
                 </div>
               )}
 
-              {/* Step 0: Info */}
+              {/* Step 0: Password (only step for pre-filled email invitations) */}
               {step === 0 && (
-                <>
-                  <div className="mb-5">
-                    <h2 className="font-display font-bold text-xl text-text-primary">
-                      Your Information
-                    </h2>
-                    <p className="font-sans text-sm text-text-secondary mt-1">
-                      Confirm your email to continue
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Email Address
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="your@email.com"
-                              readOnly={!!emailFromUrl}
-                              className={`focus-visible:ring-crimson/50 focus-visible:border-crimson ${emailFromUrl ? "opacity-70" : ""}`}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      if (email) setStep(1);
-                    }}
-                    disabled={!email || !invitationToken}
-                    className="w-full mt-6 relative overflow-hidden group"
-                    size="lg"
-                  >
-                    <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
-                    Continue →
-                  </Button>
-                </>
-              )}
-
-              {/* Step 1: Password */}
-              {step === 1 && (
                 <>
                   <div className="mb-5">
                     <h2 className="font-display font-bold text-xl text-text-primary">
                       Set Your Password
                     </h2>
                     <p className="font-sans text-sm text-text-secondary mt-1">
-                      Choose a strong, unique password (min. 8 characters)
+                      {invitationInfo?.email
+                        ? "Your email is pre-confirmed. Choose a strong password to complete setup."
+                        : "Enter your email and choose a strong password."}
                     </p>
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                          Password
-                        </FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showPass ? "text" : "password"}
-                              placeholder="Min. 8 characters"
-                              className="pr-10 focus-visible:ring-crimson/50 focus-visible:border-crimson"
-                              {...field}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-text-muted hover:text-text-secondary"
-                              onClick={() => setShowPass(!showPass)}
-                            >
-                              {showPass ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage className="text-xs" />
-                      </FormItem>
+
+                  <div className="space-y-4">
+                    {/* Email field — only shown for open invitations (no pre-filled email) */}
+                    {!invitationInfo?.email && (
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                              Email Address
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="your@email.com"
+                                className="focus-visible:ring-crimson/50 focus-visible:border-crimson"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage className="text-xs" />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
-                  <div className="flex gap-3 mt-6">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setStep(0)}
-                      size="lg"
-                      className="flex-shrink-0"
-                    >
-                      ← Back
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={
-                        form.formState.isSubmitting || password.length < 8
-                      }
-                      className="flex-1 relative overflow-hidden group"
-                      size="lg"
-                    >
-                      <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
-                      {form.formState.isSubmitting ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" /> Setting
-                          up…
-                        </>
-                      ) : (
-                        "Complete Setup"
+
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                            Password
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showPass ? "text" : "password"}
+                                placeholder="Min. 8 characters"
+                                className="pr-10 focus-visible:ring-crimson/50 focus-visible:border-crimson"
+                                {...field}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-text-muted hover:text-text-secondary"
+                                onClick={() => setShowPass(!showPass)}
+                              >
+                                {showPass ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-xs" />
+                        </FormItem>
                       )}
-                    </Button>
+                    />
                   </div>
+
+                  <Button
+                    type="submit"
+                    disabled={
+                      form.formState.isSubmitting ||
+                      password.length < 8 ||
+                      (!invitationInfo?.email && !form.watch("email"))
+                    }
+                    className="w-full mt-6 relative overflow-hidden group"
+                    size="lg"
+                  >
+                    <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+                    {form.formState.isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Setting up…
+                      </>
+                    ) : (
+                      "Complete Setup →"
+                    )}
+                  </Button>
                 </>
               )}
             </form>
           </Form>
 
-          {/* Step 2: Complete */}
-          {step === 2 && (
+          {/* Step 1: Complete */}
+          {step === 1 && (
             <div className="text-center py-4">
               <div className="flex justify-center mb-4">
                 <CheckCircle2 className="h-10 w-10 text-success" />
@@ -311,10 +362,12 @@ function SetupAccountContent() {
               <p className="font-sans text-sm text-text-secondary leading-relaxed mb-2">
                 Welcome to Titan Journal CRM.
               </p>
-              <div className="flex items-center justify-center gap-2 text-xs font-sans text-text-secondary mb-6">
-                <UserIcon className="h-3 w-3" />
-                <span className="data-mono">{emailFromUrl || email}</span>
-              </div>
+              {resolvedEmail && (
+                <div className="flex items-center justify-center gap-2 text-xs font-sans text-text-secondary mb-6">
+                  <UserIcon className="h-3 w-3" />
+                  <span className="font-mono">{resolvedEmail}</span>
+                </div>
+              )}
               <Button
                 onClick={() => router.push("/")}
                 className="w-full relative overflow-hidden group"
@@ -344,3 +397,4 @@ export default function SetupAccountPage() {
     </Suspense>
   );
 }
+

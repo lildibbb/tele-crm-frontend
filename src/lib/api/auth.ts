@@ -7,6 +7,7 @@ import type {
   ChangeOwnPasswordInput,
   ChangePasswordInput,
   AuthResponse,
+  InvitationInfo,
   Session,
 } from "@/lib/schemas/auth.schema";
 import type { UserResponse } from "@/lib/schemas/user.schema";
@@ -29,6 +30,16 @@ export const authApi = {
    * Revokes current session and clears the refresh cookie. Returns 204 No Content.
    */
   logout: () => apiClient.post<ApiResponse<void>>("/auth/logout"),
+
+  /**
+   * Returns public metadata (email, role) for a valid pending invitation token.
+   * Used by the setup-account page before rendering to know whether to show the email field.
+   * Does NOT consume the token.
+   */
+  getInvitationInfo: (token: string) =>
+    apiClient.get<ApiResponse<InvitationInfo>>("/auth/invitation-info", {
+      params: { token },
+    }),
 
   /**
    * Completes onboarding for an invited user: validates invitation token + Telegram initData.
