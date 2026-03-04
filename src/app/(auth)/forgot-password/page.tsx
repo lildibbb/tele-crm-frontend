@@ -37,10 +37,10 @@ const pageVariants = {
 
 const iconVariants = {
   initial: { scale: 0.5, opacity: 0 },
-  animate: { 
-    scale: 1, 
+  animate: {
+    scale: 1,
     opacity: 1,
-    transition: { type: "spring", stiffness: 300, damping: 20 }
+    transition: { ease: "easeOut", duration: 0.2 },
   },
 };
 
@@ -101,18 +101,9 @@ export default function ForgotPasswordPage() {
     <div className="min-h-svh bg-void flex items-center justify-center p-6">
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
+        <div
           className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.06]"
           style={{ background: "radial-gradient(circle, #C4232D 0%, transparent 70%)" }}
-          animate={{
-            scale: [1, 1.05, 1],
-            opacity: [0.04, 0.08, 0.04],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
         />
       </div>
 
@@ -153,17 +144,12 @@ export default function ForgotPasswordPage() {
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                    transition={{ delay: 0.15, ease: "easeOut", duration: 0.2 }}
                   >
                     <CheckCircle2 className="h-8 w-8 text-success" />
                   </motion.div>
-                  {/* Success ring animation */}
-                  <motion.div
-                    className="absolute w-14 h-14 rounded-full border-2 border-success/40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                    initial={{ scale: 0.8, opacity: 0.5 }}
-                    animate={{ scale: 1.6, opacity: 0 }}
-                    transition={{ duration: 1.2, repeat: Infinity, delay: 0.5 }}
-                  />
+                  {/* Success ring — CSS pulse, no JS loop */}
+                  <div className="absolute w-14 h-14 rounded-full border-2 border-success/30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
                 </motion.div>
 
                 {/* Header */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -12,8 +12,10 @@ import {
   Pulse,
   ClockCounterClockwise,
 } from "@phosphor-icons/react";
-import { useSuperadminUsers, useSuperadminAuditLogs, useSuperadminRagStats } from "@/queries/useSuperadminQuery";
+import { useSuperadminUsers, useSuperadminAuditLogs, useSuperadminRagStats, useSuperadminSystemHealth } from "@/queries/useSuperadminQuery";
 import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
+import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
+import { useUpsertSystemConfig } from "@/queries/useSystemConfigQuery";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,21 +41,24 @@ function SkeletonHealthCard() {
 // ── Component ──────────────────────────────────────────────────────────────────
 export default function MobileAdminDashboard(_props: MobileAdminDashboardProps) {
   const router = useRouter();
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
   const { data: users = [], isLoading: isLoadingUsers } = useSuperadminUsers();
   const { data: auditLogs = [], isLoading: isLoadingLogs } = useSuperadminAuditLogs({ skip: 0, take: 8 });
   const { data: ragStats, isLoading: isLoadingRag } = useSuperadminRagStats();
   const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
+  const { data: healthData, isLoading: isLoadingHealth } = useSuperadminSystemHealth();
+  const { data: maintenanceConfig } = useMaintenanceConfig();
+  const { mutate: upsertSystemConfig } = useUpsertSystemConfig();
 
+  const maintenanceMode = maintenanceConfig?.maintenanceMode ?? false;
   const kpi = summary?.kpi;
   const activeUsers = users.filter((u) => u.isActive).length;
   const totalUsers  = users.length;
 
-  const healthSystems = [
-    { label: "API Server", status: "operational" as const, latency: "24ms" },
-    { label: "Database",   status: "operational" as const, latency: "8ms" },
-    { label: "Queue",      status: ragStats ? "operational" as const : "degraded" as const, latency: ragStats ? "12ms" : "—" },
-  ];
+  const healthSystems = (healthData?.checks ?? []).map((check) => ({
+    label: check.name,
+    status: (check.status === "ok" ? "operational" : check.status) as keyof typeof statusConfig,
+    latency: check.latencyMs != null ? `${check.latencyMs}ms` : "—",
+  }));
 
   const statusConfig = {
     operational: { dot: "bg-success", text: "text-success", label: "Healthy" },
@@ -82,7 +87,7 @@ export default function MobileAdminDashboard(_props: MobileAdminDashboardProps) 
               </p>
             </div>
             <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
-              {(isLoadingRag || analyticsLoading)
+              {(isLoadingRag || analyticsLoading || isLoadingHealth)
                 ? [1, 2, 3].map((i) => <SkeletonHealthCard key={i} />)
                 : healthSystems.map((sys) => {
                     const cfg = statusConfig[sys.status];
@@ -155,7 +160,7 @@ export default function MobileAdminDashboard(_props: MobileAdminDashboardProps) 
                   </div>
                 </div>
                 <button
-                  onClick={() => setMaintenanceMode(!maintenanceMode)}
+                  onClick={() => upsertSystemConfig({ key: "system.maintenanceMode", value: String(!maintenanceMode) })}
                   className={cn(
                     "relative w-[52px] h-[30px] rounded-full transition-colors duration-200 min-h-[44px] flex items-center",
                     maintenanceMode ? "bg-warning" : "bg-elevated"

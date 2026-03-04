@@ -1,8 +1,17 @@
 "use client";
 import { SystemConfigPanel } from "@/components/superadmin/system-config-panel";
+import { MobileAdminSystem } from "@/components/mobile";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useT, K } from "@/i18n";
+
 export default function AdminSystemPage() {
+  const isMobile = useIsMobile();
   const t = useT();
+
+  if (isMobile) {
+    return <MobileAdminSystem />;
+  }
+
   return (
     <div className="space-y-6">
       <div>

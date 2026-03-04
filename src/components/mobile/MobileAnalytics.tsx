@@ -13,6 +13,14 @@ import {
   ArrowRight,
 } from "@phosphor-icons/react";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import {
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -159,15 +167,38 @@ function TrendBadge({
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileAnalytics({}: MobileAnalyticsProps) {
   const [range, setRange] = useState<DateRange>("7D");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [dateSheetOpen, setDateSheetOpen] = useState(false);
+  const [appliedFrom, setAppliedFrom] = useState("");
+  const [appliedTo, setAppliedTo] = useState("");
   const chipScrollRef = useRef<HTMLDivElement>(null);
-  const { data: summary, isLoading } = useAnalyticsSummary({ timeframe: TIMEFRAME_MAP[range] as never });
+  const { data: summary, isLoading } = useAnalyticsSummary({
+    timeframe: TIMEFRAME_MAP[range] as never,
+    ...(range === "Custom" && appliedFrom && appliedTo
+      ? { startDate: new Date(appliedFrom).toISOString(), endDate: new Date(appliedTo).toISOString() }
+      : {}),
+  });
 
   const handleRangeChange = useCallback(
     (r: DateRange) => {
-      setRange(r);
+      if (r === "Custom") {
+        setDateSheetOpen(true);
+      } else {
+        setRange(r);
+      }
     },
     [],
   );
+
+  const formatShort = (iso: string) =>
+    new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  const customApplied = range === "Custom" && appliedFrom && appliedTo;
+  const chipLabel = (r: DateRange) =>
+    r === "Custom" && customApplied
+      ? `${formatShort(appliedFrom)} – ${formatShort(appliedTo)}`
+      : r;
 
   const kpi = summary?.kpi;
   const trendSeries = summary?.trendSeries ?? [];
@@ -302,14 +333,14 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
                     : "bg-card text-text-muted border border-border-subtle",
                 )}
               >
-                {r === "Custom" && (
+                {!(r === "Custom" && customApplied) && r === "Custom" && (
                   <CalendarBlank
                     size={14}
                     weight="bold"
                     className="inline mr-1 -mt-0.5"
                   />
                 )}
-                {r}
+                {chipLabel(r)}
               </button>
             ))}
           </div>
@@ -372,7 +403,9 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
             }
             badge={
               <Badge variant="secondary" className="text-[10px] font-medium">
-                {range === "Today" ? "Today" : range === "7D" ? "7 days" : "30 days"}
+                {customApplied
+                  ? `${formatShort(appliedFrom)} – ${formatShort(appliedTo)}`
+                  : range === "Today" ? "Today" : range === "7D" ? "7 days" : "30 days"}
               </Badge>
             }
           >
@@ -555,6 +588,61 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
               </>
             )}
           </SectionCard>
+
+          {/* ── Custom Date Range Sheet ───────────────────────────── */}
+          <Sheet open={dateSheetOpen} onOpenChange={setDateSheetOpen}>
+            <SheetContent
+              side="bottom"
+              className="rounded-t-2xl bg-base border-border-subtle pb-[env(safe-area-inset-bottom)]"
+            >
+              <SheetHeader>
+                <SheetTitle className="font-sans text-[16px] font-bold text-text-primary">
+                  Custom Date Range
+                </SheetTitle>
+              </SheetHeader>
+              <div className="px-4 space-y-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-[12px] text-text-muted font-medium">
+                    From
+                  </label>
+                  <Input
+                    type="date"
+                    value={customFrom}
+                    onChange={(e) => setCustomFrom(e.target.value)}
+                    max={customTo || undefined}
+                    className="bg-card border-border-subtle text-text-primary font-mono text-[14px]"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-sans text-[12px] text-text-muted font-medium">
+                    To
+                  </label>
+                  <Input
+                    type="date"
+                    value={customTo}
+                    onChange={(e) => setCustomTo(e.target.value)}
+                    min={customFrom || undefined}
+                    className="bg-card border-border-subtle text-text-primary font-mono text-[14px]"
+                  />
+                </div>
+              </div>
+              <SheetFooter className="px-4">
+                <button
+                  onClick={() => {
+                    if (!customFrom || !customTo || new Date(customFrom) >= new Date(customTo)) return;
+                    setAppliedFrom(customFrom);
+                    setAppliedTo(customTo);
+                    setRange("Custom");
+                    setDateSheetOpen(false);
+                  }}
+                  disabled={!customFrom || !customTo || new Date(customFrom) >= new Date(customTo)}
+                  className="w-full py-3 rounded-xl bg-crimson text-white font-sans text-[14px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40 disabled:pointer-events-none min-h-[44px]"
+                >
+                  Apply Range
+                </button>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </div>
   );
 }

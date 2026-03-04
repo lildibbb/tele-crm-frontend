@@ -23,6 +23,13 @@ import {
   ClipboardText,
   BookOpen,
   UserCircle,
+  Queue,
+  DeviceMobile,
+  GoogleLogo,
+  Wrench,
+  HardDrives,
+  Key,
+  Warning,
 } from "@phosphor-icons/react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
@@ -45,6 +52,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/audit-logs": "Audit Logs",
   "/analytics": "Analytics",
   "/settings": "Settings",
+  "/settings/team": "Team",
   "/profile": "Profile",
   "/admin": "Admin",
   "/admin/overview": "Overview",
@@ -54,7 +62,11 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/backup": "Backup",
   "/admin/secrets": "Secrets",
   "/admin/google": "Google Analytics",
+  "/admin/queues": "Queues",
+  "/admin/sessions": "All Sessions",
   "/docs": "Documentation",
+  "/settings/knowledge-base": "Knowledge Base",
+  "/settings/commands": "Bot Commands",
 };
 
 function getPageTitle(pathname: string): string {
@@ -121,6 +133,22 @@ function getQuickLinks(role: UserRole): QuickLink[] {
     { label: "Settings", href: "/settings", Icon: Sliders },
     { label: "Docs", href: "/docs", Icon: BookOpen },
   ];
+  if (role === "SUPERADMIN") {
+    return [
+      { label: "Overview", href: "/admin/overview", Icon: Crown },
+      { label: "Users", href: "/admin/users", Icon: Users },
+      { label: "Queues", href: "/admin/queues", Icon: Queue },
+      { label: "Sessions", href: "/admin/sessions", Icon: DeviceMobile },
+      { label: "Google", href: "/admin/google", Icon: GoogleLogo },
+      { label: "System", href: "/admin/system", Icon: Wrench },
+      { label: "Backup", href: "/admin/backup", Icon: HardDrives },
+      { label: "Secrets", href: "/admin/secrets", Icon: Key },
+      { label: "Maintenance", href: "/admin/maintenance", Icon: Warning },
+      { label: "Audit Logs", href: "/audit-logs", Icon: ClipboardText },
+      { label: "Settings", href: "/settings", Icon: Sliders },
+      { label: "Docs", href: "/docs", Icon: BookOpen },
+    ];
+  }
   if (role === "STAFF") {
     return common.filter((l) => !["Audit Logs"].includes(l.label));
   }

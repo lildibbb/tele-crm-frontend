@@ -148,7 +148,7 @@ function SetupAccountContent() {
       <div className="min-h-svh bg-void flex items-center justify-center">
         <div className="text-center space-y-3">
           <Loader2 className="h-8 w-8 animate-spin text-crimson mx-auto" />
-          <p className="text-text-secondary text-sm font-sans">Verifying your invitation…</p>
+          <p className="text-text-secondary text-sm font-sans tracking-wide">Verifying your invitation…</p>
         </div>
       </div>
     );
@@ -157,11 +157,10 @@ function SetupAccountContent() {
   // ── Invalid invitation ─────────────────────────────────────────────────────
   if (infoError) {
     return (
-      <div className="min-h-svh bg-void flex items-center justify-center p-6">
-        <div className="w-full max-w-sm surface-card p-8 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-danger/10 border border-danger/30 flex items-center justify-center mx-auto">
-            <Shield className="h-6 w-6 text-danger" />
-          </div>
+      <div className="min-h-svh bg-void flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-sm surface-card relative p-8 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 text-center space-y-4">
+          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-danger/30 to-transparent" />
+          <Shield className="h-10 w-10 text-danger mx-auto" />
           <h2 className="font-display font-bold text-xl text-text-primary">Invalid Invitation</h2>
           <p className="font-sans text-sm text-text-secondary leading-relaxed">{infoError}</p>
           <p className="font-sans text-xs text-text-muted">
@@ -223,48 +222,62 @@ function SetupAccountContent() {
 
   // ── Form ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-svh bg-void flex items-center justify-center p-6">
+    <div className="min-h-svh bg-void flex items-center justify-center p-4 sm:p-6">
+      {/* Ambient glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full opacity-[0.05]"
-          style={{ background: "radial-gradient(circle, #E8B94F 0%, transparent 70%)" }}
+          className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.06]"
+          style={{ background: "radial-gradient(circle, #C4232D 0%, transparent 70%)" }}
         />
       </div>
 
-      <div className="w-full max-w-sm animate-in-up">
-        {/* Logo */}
+      <div className="w-full max-w-sm sm:max-w-md animate-in-up relative">
+        {/* Wordmark */}
         <div className="text-center mb-6">
           <h1 className="font-display font-extrabold text-2xl text-text-primary tracking-tight">
             TITAN <span className="text-crimson">JOURNAL</span>
           </h1>
-          <p className="text-text-secondary text-xs font-sans mt-1">Account Setup</p>
+          <p className="text-text-muted text-xs font-sans mt-1 tracking-widest uppercase">Account Setup</p>
         </div>
 
-        <div className="surface-card relative overflow-hidden p-8 sm:p-10 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm">
+        <div className="surface-card relative overflow-hidden p-6 sm:p-8 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm">
+          {/* Top accent line */}
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
 
-          {/* Identity badge */}
+          {/* Identity header — replaces old bordered box */}
           {invitationInfo && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-card border border-border-subtle mb-6 shadow-sm">
-              <div className="w-8 h-8 rounded-full bg-crimson/20 border border-crimson/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <BadgeCheck className="h-4 w-4 text-crimson" />
-              </div>
-              <div className="min-w-0 space-y-0.5">
-                <p className="text-xs font-sans font-medium text-text-secondary">
-                  Invitation verified · Role:{" "}
-                  <span className="text-text-primary font-semibold">
-                    {ROLE_LABELS[invitationInfo.role] ?? invitationInfo.role}
+            <div className="text-center mb-7">
+              {/* Avatar circle */}
+              <div className="relative inline-flex mb-3">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-crimson/20 to-crimson/5 border border-crimson/25 flex items-center justify-center shadow-[0_0_20px_var(--crimson-glow)]">
+                  <span className="text-xl font-display font-bold text-crimson select-none">
+                    {(invitationInfo.email?.[0] ?? "?").toUpperCase()}
                   </span>
+                </div>
+                {/* Verified tick */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-background border border-border-subtle flex items-center justify-center">
+                  <BadgeCheck className="h-3.5 w-3.5 text-crimson" />
+                </div>
+              </div>
+
+              {/* Email */}
+              {invitationInfo.email && (
+                <p className="font-mono text-sm text-text-primary font-medium truncate max-w-full px-4">
+                  {invitationInfo.email}
                 </p>
-                {invitationInfo.email && (
-                  <p className="text-[13px] font-mono text-text-primary truncate">
-                    {invitationInfo.email}
-                  </p>
-                )}
+              )}
+
+              {/* Role pill */}
+              <div className="inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-crimson/8 border border-crimson/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-crimson animate-pulse" />
+                <span className="text-[11px] font-sans font-semibold text-crimson uppercase tracking-widest">
+                  {ROLE_LABELS[invitationInfo.role] ?? invitationInfo.role}
+                </span>
               </div>
             </div>
           )}
 
+          {/* Section heading */}
           <div className="mb-5">
             <h2 className="font-display font-bold text-xl text-text-primary">Set Your Password</h2>
             <p className="font-sans text-sm text-text-secondary mt-1">
@@ -310,7 +323,7 @@ function SetupAccountContent() {
 
                     {/* Strength bar */}
                     {password.length > 0 && (
-                      <div className="space-y-1.5 pt-1">
+                      <div className="space-y-2 pt-1">
                         <div className="flex gap-1">
                           {[1, 2, 3, 4].map((seg) => (
                             <div
@@ -324,10 +337,10 @@ function SetupAccountContent() {
                             />
                           ))}
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2">
                           <span
                             className={cn(
-                              "text-[11px] font-sans font-medium transition-colors duration-300",
+                              "text-[11px] font-sans font-semibold transition-colors duration-300 shrink-0",
                               strengthScore === 1 && "text-danger",
                               strengthScore === 2 && "text-amber-400",
                               strengthScore === 3 && "text-blue-400",
@@ -336,16 +349,18 @@ function SetupAccountContent() {
                           >
                             {STRENGTH_LABELS[strengthScore]}
                           </span>
-                          <div className="flex gap-3">
+                          {/* 2×2 grid so rules never overflow on mobile */}
+                          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
                             {PASSWORD_RULES.map((rule) => (
                               <span
                                 key={rule.label}
                                 className={cn(
-                                  "text-[10px] font-sans transition-colors duration-200",
+                                  "text-[10px] font-sans transition-colors duration-200 flex items-center gap-0.5",
                                   rule.test(password) ? "text-success" : "text-text-muted",
                                 )}
                               >
-                                {rule.test(password) ? "✓" : "·"} {rule.label}
+                                <span className="text-[9px]">{rule.test(password) ? "✓" : "·"}</span>
+                                {rule.label}
                               </span>
                             ))}
                           </div>
@@ -388,6 +403,11 @@ function SetupAccountContent() {
                         </button>
                       </div>
                     </FormControl>
+                    {passwordsMatch && (
+                      <p className="text-[11px] text-success font-sans flex items-center gap-1 pt-0.5">
+                        <CheckCircle2 className="h-3 w-3" /> Passwords match
+                      </p>
+                    )}
                     <FormMessage className="text-xs" />
                   </FormItem>
                 )}
@@ -412,6 +432,14 @@ function SetupAccountContent() {
             </form>
           </Form>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-[11px] font-sans text-text-muted mt-5 tracking-wide">
+          By completing setup you agree to our{" "}
+          <span className="text-text-secondary underline underline-offset-2 cursor-pointer hover:text-text-primary transition-colors">
+            Terms of Service
+          </span>
+        </p>
       </div>
     </div>
   );

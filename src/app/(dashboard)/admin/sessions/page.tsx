@@ -1,5 +1,7 @@
 "use client";
 
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import MobileAdminSessions from "@/components/mobile/MobileAdminSessions";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -39,6 +41,9 @@ function formatDate(iso: string) {
 }
 
 export default function AdminSessionsPage() {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileAdminSessions />;
+
   const t = useT();
   const queryClient = useQueryClient();
   const [revokeId, setRevokeId] = useState<string | null>(null);

@@ -9,6 +9,7 @@ import {
   X,
   FunnelSimple,
 } from "@phosphor-icons/react";
+import { ArrowUpDown } from "lucide-react";
 import { LeadStatus } from "@/types/enums";
 import type { Lead } from "@/queries/useLeadsQuery";
 import { useLeadsList } from "@/queries/useLeadsQuery";
@@ -19,6 +20,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { timeAgo, getInitials } from "@/lib/format";
 import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadsListProps {
@@ -153,6 +160,14 @@ const FILTER_TABS: { id: FilterTab; label: string }[] = [
 
 const PAGE_SIZE = 20;
 
+// ── Sort options ───────────────────────────────────────────────────────────────
+type SortOption = "newest" | "oldest" | "status";
+const SORT_OPTIONS: { id: SortOption; label: string; orderBy: string; order: "asc" | "desc" }[] = [
+  { id: "newest", label: "Newest First", orderBy: "createdAt", order: "desc" },
+  { id: "oldest", label: "Oldest First", orderBy: "createdAt", order: "asc" },
+  { id: "status", label: "Status", orderBy: "status", order: "asc" },
+];
+
 // ── Pull-to-refresh indicator ──────────────────────────────────────────────────
 function PullIndicator({ visible }: { visible: boolean }) {
   return (
@@ -173,14 +188,20 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
   const [search, setSearch] = useState("");
   const [skip, setSkip] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
+  const [showSortSheet, setShowSortSheet] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
+
+  const activeSort = SORT_OPTIONS.find((s) => s.id === sortOption)!;
 
   const { data: leadsResult, isLoading, refetch } = useLeadsList({
     skip,
     take: PAGE_SIZE,
     status: filter === "ALL" ? undefined : filter,
     search: search || undefined,
+    orderBy: activeSort.orderBy,
+    order: activeSort.order,
   });
   const leads = leadsResult?.data ?? [];
   const total = leadsResult?.total ?? 0;
@@ -328,10 +349,17 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
               </span>
             )}
           </span>
-          <span className="flex items-center gap-1 font-sans text-[12px] text-text-muted">
-            <SortAscending size={14} />
-            Newest
-          </span>
+          <button
+            onClick={() => setShowSortSheet(true)}
+            className={cn(
+              "flex items-center gap-1 font-sans text-[12px] transition-colors",
+              sortOption !== "newest" ? "text-crimson font-semibold" : "text-text-muted",
+            )}
+            aria-label="Sort leads"
+          >
+            <ArrowUpDown size={14} />
+            {sortOption !== "newest" ? activeSort.label : "Newest"}
+          </button>
         </div>
 
         {/* Lead cards / Skeleton / Empty */}
@@ -385,6 +413,32 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
       >
         <Plus size={24} className="text-white" weight="bold" />
       </button>
+
+      {/* Sort sheet */}
+      <Sheet open={showSortSheet} onOpenChange={setShowSortSheet}>
+        <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-[env(safe-area-inset-bottom)]">
+          <SheetHeader className="px-4 pb-2">
+            <SheetTitle className="text-left text-[17px]">Sort By</SheetTitle>
+          </SheetHeader>
+          <div className="divide-y divide-border-subtle">
+            {SORT_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => { setSortOption(opt.id); setSkip(0); setShowSortSheet(false); }}
+                className="flex items-center justify-between w-full px-5 min-h-[52px] active:bg-elevated/60 transition-colors"
+              >
+                <span className={cn(
+                  "font-sans text-[15px]",
+                  sortOption === opt.id ? "text-crimson font-semibold" : "text-text-primary",
+                )}>{opt.label}</span>
+                {sortOption === opt.id && (
+                  <span className="w-2 h-2 rounded-full bg-crimson shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

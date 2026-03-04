@@ -1,7 +1,9 @@
 "use client";
 import { UsersPanel } from "@/components/superadmin/users-panel";
-import { useT, K } from "@/i18n";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { MobileAdminUsers } from "@/components/mobile";
 export default function AdminUsersPage() {
-  const t = useT();
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileAdminUsers />;
   return <UsersPanel />;
 }

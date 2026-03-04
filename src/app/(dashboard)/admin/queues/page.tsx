@@ -1,5 +1,7 @@
 "use client";
 
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import MobileAdminQueues from "@/components/mobile/MobileAdminQueues";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +23,9 @@ import { ArrowsClockwise, Trash } from "@phosphor-icons/react";
 import { useT, K } from "@/i18n";
 
 export default function QueuesPage() {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileAdminQueues />;
+
   const t = useT();
   const queryClient = useQueryClient();
 

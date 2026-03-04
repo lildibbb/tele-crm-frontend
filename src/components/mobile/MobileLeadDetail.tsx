@@ -27,7 +27,9 @@ import {
   Robot,
 } from "@phosphor-icons/react";
 import type { Lead } from "@/queries/useLeadsQuery";
+import { useSetHandover } from "@/queries/useLeadsQuery";
 import { useAuthStore } from "@/store/authStore";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -244,6 +246,7 @@ export default function MobileLeadDetail({
   const { user } = useAuthStore();
   const role = user?.role ?? "STAFF";
   const [messageText, setMessageText] = useState("");
+  const handoverMutation = useSetHandover();
 
   const handleBack = useCallback(() => {
     if (onBack) {
@@ -697,40 +700,56 @@ export default function MobileLeadDetail({
       </main>
 
       {/* ── Sticky Action Bar ──────────────────────────────────────────── */}
-      {canVerify ? (
+      {(canVerify || !!onUpdateStatus || role !== "STAFF") && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-t border-border-subtle px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
-          <div className="flex gap-3">
+          {/* Handover toggle — OWNER/ADMIN only */}
+          {role !== "STAFF" && (
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-sans text-[14px] font-medium text-text-primary">
+                Handover
+              </span>
+              <div className="flex items-center gap-2">
+                {handoverMutation.isPending && (
+                  <div className="w-4 h-4 rounded-full border-2 border-crimson border-t-transparent animate-spin" />
+                )}
+                <Switch
+                  checked={lead.handoverMode ?? false}
+                  onCheckedChange={(checked) =>
+                    handoverMutation.mutate({ id: lead.id!, mode: checked })
+                  }
+                  disabled={handoverMutation.isPending}
+                />
+              </div>
+            </div>
+          )}
+          {canVerify ? (
+            <div className="flex gap-3">
+              <button
+                onClick={onVerify}
+                className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-crimson text-white flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
+              >
+                <CheckCircle size={20} weight="bold" />
+                Verify
+              </button>
+              <button
+                onClick={onReject}
+                className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-text-secondary border border-border-subtle flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
+              >
+                <XCircle size={20} weight="bold" className="text-text-secondary" />
+                Reject
+              </button>
+            </div>
+          ) : onUpdateStatus ? (
             <button
-              onClick={onVerify}
-              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-crimson text-white flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
+              onClick={onUpdateStatus}
+              className="w-full h-[52px] rounded-xl font-sans font-bold text-[15px] text-white bg-crimson flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
             >
-              <CheckCircle size={20} weight="bold" />
-              Verify
+              <ArrowsClockwise size={18} weight="bold" />
+              Update Status
             </button>
-            <button
-              onClick={onReject}
-              className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-text-secondary border border-border-subtle flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
-            >
-              <XCircle
-                size={20}
-                weight="bold"
-                className="text-text-secondary"
-              />
-              Reject
-            </button>
-          </div>
+          ) : null}
         </div>
-      ) : onUpdateStatus ? (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-xl border-t border-border-subtle px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
-          <button
-            onClick={onUpdateStatus}
-            className="w-full h-[52px] rounded-xl font-sans font-bold text-[15px] text-white bg-crimson flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
-          >
-            <ArrowsClockwise size={18} weight="bold" />
-            Update Status
-          </button>
-        </div>
-      ) : null}
+      )}
     </div>
   );
 }

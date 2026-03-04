@@ -1,5 +1,6 @@
 "use client";
 import { BackupPanel } from "@/components/superadmin/backup-panel";
+import { MobileAdminBackup } from "@/components/mobile";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { useT, K } from "@/i18n";
 
@@ -8,11 +9,7 @@ export default function AdminBackupPage() {
   const t = useT();
 
   if (isMobile) {
-    return (
-      <div className="px-4 py-4">
-        <BackupPanel />
-      </div>
-    );
+    return <MobileAdminBackup />;
   }
 
   return (

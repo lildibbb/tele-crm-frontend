@@ -460,13 +460,13 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                           {isConfirming ? (
                             <div className="flex items-center gap-2 p-2.5 rounded-lg bg-danger/5">
                               <span className="font-sans text-[12px] text-text-secondary flex-1">
-                                Cancel this follow-up?
+                                {t(K.followUp.cancelTitle)}
                               </span>
                               <button
                                 onClick={() => setCancelTargetId(null)}
                                 className="h-9 min-w-[60px] px-3 rounded-lg text-[12px] font-sans font-semibold bg-card border border-border-subtle text-text-secondary active:scale-95 transition-transform"
                               >
-                                Keep
+                                {t(K.followUp.keep)}
                               </button>
                               <button
                                 onClick={() => void handleCancel(item.id)}
@@ -478,7 +478,7 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
                                 ) : (
                                   <X className="h-3 w-3" weight="bold" />
                                 )}
-                                Cancel
+                                {t(K.followUp.cancelBtn)}
                               </button>
                             </div>
                           ) : (

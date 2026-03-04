@@ -15,9 +15,12 @@ import { useLeadsList, useVerifyLead, useUpdateLeadStatus } from "@/queries/useL
 import type { Lead } from "@/queries/useLeadsQuery";
 import { LeadStatus } from "@/types/enums";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
+import { leadsApi } from "@/lib/api/leads";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -392,7 +395,10 @@ export default function MobileVerification({
   const verifyMutation = useVerifyLead();
   const updateStatusMutation = useUpdateLeadStatus();
   const [filter, setFilter] = useState<FilterTab>("PENDING");
-  const openModal = (_id: string, _kind: string) => { /* askMore modal not supported on mobile */ };
+  const [askMoreLeadId, setAskMoreLeadId] = useState<string | null>(null);
+  const [askMoreMsg, setAskMoreMsg] = useState("");
+  const [askMoreError, setAskMoreError] = useState<string | null>(null);
+  const [askMoreSending, setAskMoreSending] = useState(false);
 
   const [receiptPreview, setReceiptPreview] = useState<{ id: string; name: string } | null>(null);
 
@@ -457,9 +463,11 @@ export default function MobileVerification({
 
   const handleAskMore = useCallback(
     (id: string) => {
-      openModal(id, "askMore");
+      setAskMoreLeadId(id);
+      setAskMoreMsg("");
+      setAskMoreError(null);
     },
-    [openModal],
+    [],
   );
 
   return (
@@ -572,6 +580,62 @@ export default function MobileVerification({
           onClose={() => setReceiptPreview(null)}
         />
       )}
+
+      {/* ── Ask More Sheet ───────────────────────────────────────────────────── */}
+      <Sheet
+        open={!!askMoreLeadId}
+        onOpenChange={(open) => { if (!open) { setAskMoreLeadId(null); setAskMoreMsg(""); setAskMoreError(null); } }}
+      >
+        <SheetContent side="bottom" className="rounded-t-xl px-4 pb-[calc(24px+env(safe-area-inset-bottom))] pt-0">
+          {/* Drag handle */}
+          <div className="flex justify-center pt-3 pb-4">
+            <div className="w-10 h-1 rounded-full bg-border-subtle" />
+          </div>
+          <p className="font-sans font-semibold text-[16px] text-text-primary mb-3">
+            Ask for more info
+          </p>
+          <Textarea
+            placeholder="Type your message…"
+            value={askMoreMsg}
+            onChange={(e) => setAskMoreMsg(e.target.value)}
+            rows={4}
+            className="resize-none mb-3"
+          />
+          {askMoreError && (
+            <p className="font-sans text-[13px] text-danger mb-2">{askMoreError}</p>
+          )}
+          <button
+            disabled={!askMoreMsg.trim() || askMoreSending}
+            onClick={async () => {
+              if (!askMoreLeadId || !askMoreMsg.trim()) return;
+              setAskMoreSending(true);
+              setAskMoreError(null);
+              try {
+                await leadsApi.reply(askMoreLeadId, askMoreMsg.trim());
+                toast.success("Message sent");
+                setAskMoreLeadId(null);
+                setAskMoreMsg("");
+              } catch (err) {
+                setAskMoreError(err instanceof Error ? err.message : "Failed to send message");
+              } finally {
+                setAskMoreSending(false);
+              }
+            }}
+            className={cn(
+              "w-full h-[48px] rounded-xl font-sans font-semibold text-[15px] flex items-center justify-center gap-2 transition-colors",
+              askMoreMsg.trim() && !askMoreSending
+                ? "bg-crimson text-white active:scale-[0.97]"
+                : "bg-elevated text-text-muted cursor-not-allowed",
+            )}
+          >
+            {askMoreSending ? (
+              <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+            ) : (
+              "Send"
+            )}
+          </button>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

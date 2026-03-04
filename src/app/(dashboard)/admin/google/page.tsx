@@ -1,5 +1,7 @@
 "use client";
 
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import MobileAdminGoogle from "@/components/mobile/MobileAdminGoogle";
 import { Icon } from "@iconify/react";
 import { ArrowClockwise, CheckCircle, XCircle, Clock } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -91,6 +93,9 @@ function OpRow({ op }: { op: GoogleOpLog }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AdminGooglePage() {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MobileAdminGoogle />;
+
   const t = useT();
   const { data, isLoading, error, refetch } = useGoogleAnalyticsStats();
 

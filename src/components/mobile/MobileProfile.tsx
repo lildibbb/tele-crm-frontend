@@ -21,6 +21,7 @@ import {
   SpinnerGap,
   CalendarBlank,
   Clock,
+  Globe,
 } from "@phosphor-icons/react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useAuthStore } from "@/store/authStore";
 import { usersApi } from "@/lib/api/users";
 import { UserRole } from "@/types/enums";
@@ -261,6 +268,23 @@ function PasswordChangeForm({
   );
 }
 
+// ── Timezone options ───────────────────────────────────────────────────────────
+const TIMEZONE_OPTIONS = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Singapore",
+  "Asia/Tokyo",
+  "Australia/Sydney",
+];
+
 // ── Main ───────────────────────────────────────────────────────────────────────
 export interface MobileProfileProps {
   readonly onBack?: () => void;
@@ -281,6 +305,33 @@ export default function MobileProfile({
   const { user, logout } = useAuthStore();
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [showTzSheet, setShowTzSheet] = useState(false);
+  const [tzPending, setTzPending] = useState<string>("");
+  const [tzSaving, setTzSaving] = useState(false);
+  const [tzSaved, setTzSaved] = useState(false);
+
+  const currentTz = user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const handleOpenTzSheet = () => {
+    setTzPending(currentTz);
+    setTzSaved(false);
+    setShowTzSheet(true);
+  };
+
+  const handleSaveTz = async () => {
+    if (!tzPending || tzPending === currentTz) { setShowTzSheet(false); return; }
+    setTzSaving(true);
+    try {
+      await usersApi.updateTimezone(tzPending);
+      toast.success("Timezone updated");
+      setTzSaved(true);
+      setShowTzSheet(false);
+    } catch {
+      toast.error("Failed to update timezone");
+    } finally {
+      setTzSaving(false);
+    }
+  };
 
   const role = (user?.role ?? "STAFF") as UserRole;
   const email = user?.email ?? "user@example.com";
@@ -383,6 +434,28 @@ export default function MobileProfile({
           />
         </SectionGroup>
 
+        {/* ── Preferences section ──────────────────────────────────── */}
+        <SectionGroup header="Preferences">
+          <button
+            onClick={handleOpenTzSheet}
+            className="flex items-center gap-3 w-full px-4 min-h-[48px] active:bg-elevated/60 transition-colors group"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
+              <Globe size={16} className="text-text-secondary" weight="regular" />
+            </span>
+            <span className="flex-1 font-sans text-[14px] text-text-primary text-left">
+              Timezone
+            </span>
+            <span className="font-sans text-[12px] font-medium text-text-secondary mr-1 truncate max-w-[160px]">
+              {currentTz}
+            </span>
+            <CaretRight
+              size={14}
+              className="text-text-muted shrink-0 group-active:translate-x-0.5 transition-transform"
+            />
+          </button>
+        </SectionGroup>
+
         {/* ── Password section ─────────────────────────────────────── */}
         <SectionGroup header={t(K.profile.changePassword)}>
           {!showPasswordForm ? (
@@ -447,6 +520,47 @@ export default function MobileProfile({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ── Timezone bottom sheet ──────────────────────────────────── */}
+      <Sheet open={showTzSheet} onOpenChange={setShowTzSheet}>
+        <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-[env(safe-area-inset-bottom)]">
+          <SheetHeader className="px-4 pb-2">
+            <SheetTitle className="text-left text-[17px]">Select Timezone</SheetTitle>
+          </SheetHeader>
+          <div className="overflow-y-auto max-h-[55vh] divide-y divide-border-subtle">
+            {TIMEZONE_OPTIONS.map((tz) => (
+              <button
+                key={tz}
+                onClick={() => setTzPending(tz)}
+                className="flex items-center justify-between w-full px-5 min-h-[48px] active:bg-elevated/60 transition-colors"
+              >
+                <span className="font-sans text-[14px] text-text-primary">{tz}</span>
+                {tzPending === tz && (
+                  <CheckCircle size={18} weight="fill" className="text-crimson shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="px-4 pt-3">
+            <button
+              onClick={handleSaveTz}
+              disabled={tzSaving}
+              className={cn(
+                "w-full h-11 rounded-xl font-sans font-semibold text-[14px] transition-all flex items-center justify-center gap-2",
+                tzSaving
+                  ? "bg-elevated text-text-muted cursor-not-allowed"
+                  : "bg-crimson text-white active:scale-[0.98] active:bg-crimson-hover",
+              )}
+            >
+              {tzSaving ? (
+                <><SpinnerGap size={16} className="animate-spin" />Saving…</>
+              ) : (
+                "Save"
+              )}
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
