@@ -7,9 +7,9 @@ import {
   Users,
   UserCheck,
   CurrencyDollar,
-  TrendUp,
+  ChatCircleDots,
   ShieldCheck,
-  Plus,
+  UploadSimple,
   ArrowRight,
   Megaphone,
   GearSix,
@@ -28,9 +28,7 @@ import { Badge } from "@/components/ui/badge";
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface OwnerHomeProps {
   readonly onMoreOpen?: () => void;
-  readonly onAddLead?: () => void;
   readonly onViewAllLeads?: () => void;
-  readonly onVerificationBanner?: () => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -67,9 +65,7 @@ function SkeletonActivityCard() {
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function OwnerHome({
   onMoreOpen,
-  onAddLead,
   onViewAllLeads,
-  onVerificationBanner,
 }: OwnerHomeProps) {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -82,7 +78,6 @@ export default function OwnerHome({
   const totalLeads = kpi?.totalLeads?.current ?? 0;
   const registered = kpi?.formSubmissions?.current ?? 0;
   const depositing = kpi?.verifiedClients?.current ?? 0;
-  const conversionRate = totalLeads > 0 ? ((depositing / totalLeads) * 100).toFixed(1) : "0.0";
 
   const kpiCards = [
     {
@@ -99,7 +94,7 @@ export default function OwnerHome({
       iconBg: "bg-elevated",
       iconColor: "text-text-secondary",
       value: String(registered || "—"),
-      label: "Verified",
+      label: "Pending Verifications",
       trend: kpi?.formSubmissions?.trend,
       trendPct: kpi?.formSubmissions?.changePercentage,
     },
@@ -108,25 +103,25 @@ export default function OwnerHome({
       iconBg: "bg-elevated",
       iconColor: "text-text-secondary",
       value: String(depositing || "—"),
-      label: "Deposits",
+      label: "Total Depositors",
       trend: kpi?.verifiedClients?.trend,
       trendPct: kpi?.verifiedClients?.changePercentage,
     },
     {
-      Icon: TrendUp,
+      Icon: ChatCircleDots,
       iconBg: "bg-elevated",
       iconColor: "text-text-secondary",
-      value: `${conversionRate}%`,
-      label: "Conversion",
-      trend: undefined as string | undefined,
-      trendPct: undefined as number | undefined,
+      value: String(kpi?.contactedLeads?.current || "—"),
+      label: "Contacted Leads",
+      trend: kpi?.contactedLeads?.trend,
+      trendPct: kpi?.contactedLeads?.changePercentage,
     },
   ];
 
   const quickActions = [
-    { Icon: Plus, label: "Add Lead", color: "bg-crimson", textColor: "text-white", action: onAddLead },
+    { Icon: UploadSimple, label: "Import CSV", color: "bg-elevated", textColor: "text-text-secondary", action: () => router.push("/leads") },
     { Icon: Megaphone, label: "Broadcast", color: "bg-elevated", textColor: "text-text-secondary", action: () => router.push("/broadcasts") },
-    { Icon: ShieldCheck, label: "Verify", color: "bg-elevated", textColor: "text-text-secondary", action: onVerificationBanner },
+    { Icon: ShieldCheck, label: "Verify", color: "bg-elevated", textColor: "text-text-secondary", action: () => router.push("/verification") },
     { Icon: GearSix, label: "Settings", color: "bg-elevated", textColor: "text-text-secondary", action: () => router.push("/settings") },
   ];
 
@@ -190,7 +185,7 @@ export default function OwnerHome({
         {pendingCount > 0 && (
           <section className="px-4">
             <button
-              onClick={onVerificationBanner}
+              onClick={() => router.push("/verification")}
               className="w-full flex items-center gap-3 p-4 rounded-2xl bg-[color-mix(in_srgb,var(--crimson)_8%,transparent)] active:scale-[0.97] transition-transform"
             >
               <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-[color-mix(in_srgb,var(--crimson)_15%,transparent)]">
@@ -267,16 +262,6 @@ export default function OwnerHome({
           </div>
         </section>
       </div>
-
-      {/* ── FAB ──────────────────────────────────────────── */}
-      <button
-        onClick={onAddLead}
-        className="fixed right-5 flex items-center justify-center w-14 h-14 rounded-full bg-crimson shadow-lg active:scale-95 transition-transform z-30"
-        style={{ bottom: "calc(60px + env(safe-area-inset-bottom) + 20px)", boxShadow: "0 4px 24px var(--crimson-glow)" }}
-        aria-label="Add Lead"
-      >
-        <Plus size={24} color="white" weight="bold" />
-      </button>
     </div>
   );
 }

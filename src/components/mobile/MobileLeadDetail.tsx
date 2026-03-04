@@ -25,11 +25,17 @@ import {
   Copy,
   Star,
   Robot,
+  X,
+  DownloadSimple,
+  File,
 } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import type { Lead } from "@/queries/useLeadsQuery";
 import { useSetHandover } from "@/queries/useLeadsQuery";
 import { useAuthStore } from "@/store/authStore";
+import { attachmentsApi, leadsApi } from "@/lib/api";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -38,6 +44,14 @@ import { formatDate, formatDateTime, timeAgo, getInitials } from "@/lib/format";
 import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
+type MediaItem = {
+  url: string;
+  type: "image" | "video" | "file";
+  name: string;
+  mimeType?: string | null;
+  size?: number | null;
+};
+
 export interface MobileLeadDetailProps {
   readonly lead?: Partial<Lead>;
   readonly isLoading?: boolean;
@@ -246,7 +260,25 @@ export default function MobileLeadDetail({
   const { user } = useAuthStore();
   const role = user?.role ?? "STAFF";
   const [messageText, setMessageText] = useState("");
+  const [mediaPreview, setMediaPreview] = useState<MediaItem | null>(null);
   const handoverMutation = useSetHandover();
+
+  const { data: attachmentsData } = useQuery({
+    queryKey: ["lead-attachments", lead?.id],
+    queryFn: () => attachmentsApi.findByLead(lead!.id!).then((r) => r.data.data ?? []),
+    enabled: !!lead?.id,
+    staleTime: 30_000,
+  });
+  const attachments = attachmentsData ?? [];
+
+  const { data: interactionsData } = useQuery({
+    queryKey: ["lead-interactions", lead?.id],
+    queryFn: () => leadsApi.getInteractions(lead!.id!, { skip: 0, take: 30 }).then((r) => r.data.data ?? []),
+    enabled: !!lead?.id,
+    refetchInterval: 5000,
+    staleTime: 0,
+  });
+  const interactions = interactionsData ?? [];
 
   const handleBack = useCallback(() => {
     if (onBack) {
@@ -435,7 +467,7 @@ export default function MobileLeadDetail({
     !!lead.depositBalance;
 
   // Mock attachments from deposit proof (placeholder thumbnails)
-  const hasAttachments = hasDeposit;
+  const hasAttachments = attachments.length > 0;
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background text-text-primary font-sans">
@@ -616,31 +648,41 @@ export default function MobileLeadDetail({
             <h2 className="font-sans font-bold text-[13px] text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
               <PaperclipHorizontal size={14} weight="bold" />
               Attachments
+              <span className="text-[10px] font-mono ml-1 text-text-muted">{attachments.length}</span>
             </h2>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
-              {/* Deposit proof placeholder */}
-              <div className="shrink-0 w-[120px] h-[90px] rounded-xl bg-card border border-border-subtle flex flex-col items-center justify-center gap-1 snap-start active:scale-[0.96] transition-transform">
-                <ImageIcon
-                  size={24}
-                  weight="duotone"
-                  className="text-text-muted"
-                />
-                <span className="text-[10px] font-sans text-text-muted">
-                  Deposit Proof
-                </span>
-              </div>
-              {lead.hfmBrokerId && (
-                <div className="shrink-0 w-[120px] h-[90px] rounded-xl bg-card border border-border-subtle flex flex-col items-center justify-center gap-1 snap-start active:scale-[0.96] transition-transform">
-                  <FileText
-                    size={24}
-                    weight="duotone"
-                    className="text-text-muted"
-                  />
-                  <span className="text-[10px] font-sans text-text-muted">
-                    HFM Statement
-                  </span>
-                </div>
-              )}
+              {attachments.map((file) => {
+                const isImg = file.mimeType?.startsWith("image/");
+                const isVid = file.mimeType?.startsWith("video/");
+                const fileName = file.fileKey?.split("/").pop() ?? file.fileUrl?.split("/").pop() ?? "File";
+                return (
+                  <button
+                    key={file.id}
+                    onClick={() => setMediaPreview({
+                      url: file.fileUrl,
+                      type: isImg ? "image" : isVid ? "video" : "file",
+                      name: fileName,
+                      mimeType: file.mimeType,
+                      size: file.size,
+                    })}
+                    className="shrink-0 snap-start w-[110px] h-[80px] rounded-xl overflow-hidden bg-elevated border border-border-subtle active:scale-[0.95] transition-transform relative group"
+                  >
+                    {isImg ? (
+                      <img
+                        src={file.fileUrl}
+                        alt={fileName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-text-muted">
+                        <File size={24} weight="duotone" />
+                        <span className="text-[9px] font-sans truncate max-w-[80px] px-1">{fileName}</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                  </button>
+                );
+              })}
             </div>
           </section>
         )}
@@ -660,6 +702,69 @@ export default function MobileLeadDetail({
                   isLast={idx === timeline.length - 1}
                 />
               ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Chat History ─────────────────────────────────────────────── */}
+        {onSendMessage && (
+          <section className="px-4 mb-5">
+            <h2 className="font-sans font-bold text-[13px] text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <ChatCircleDots size={14} weight="bold" />
+              Conversation
+              {interactions.length > 0 && (
+                <span className="text-[10px] font-mono ml-1 text-text-muted">{interactions.length}</span>
+              )}
+            </h2>
+            <div
+              className="space-y-2 max-h-[300px] overflow-y-auto rounded-xl bg-card border border-border-subtle p-3"
+              style={{ scrollbarWidth: "thin" }}
+            >
+              {interactions.length === 0 ? (
+                <p className="text-[12px] font-sans text-text-muted text-center py-6">No messages yet</p>
+              ) : (
+                interactions.map((msg, i) => {
+                  const isSystem = msg.type === "SYSTEM_STATUS_CHANGE";
+                  const isBot = msg.type === "AUTO_REPLY_SENT";
+                  const isUser = msg.type === "MESSAGE_RECEIVED";
+
+                  if (isSystem) {
+                    return (
+                      <div key={msg.id ?? i} className="text-center">
+                        <span className="text-[10px] font-sans italic text-text-muted bg-elevated px-3 py-1 rounded-full">
+                          {msg.content ?? ""}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={msg.id ?? i} className={`flex ${isUser ? "justify-start" : "justify-end"}`}>
+                      <div className={cn(
+                        "max-w-[85%] rounded-2xl px-3 py-2",
+                        isUser
+                          ? "bg-elevated border border-border-default"
+                          : isBot
+                          ? "bg-success/10 border border-success/20"
+                          : "bg-crimson/10 border border-crimson/20"
+                      )}>
+                        {!isUser && isBot && (
+                          <p className="text-[9px] font-sans font-bold text-success uppercase tracking-wider mb-1">Bot</p>
+                        )}
+                        {!isUser && !isBot && (
+                          <p className="text-[9px] font-sans font-bold text-crimson uppercase tracking-wider mb-1">Agent</p>
+                        )}
+                        {msg.content && (
+                          <p className="text-[13px] font-sans text-text-primary leading-relaxed">{msg.content}</p>
+                        )}
+                        <p className="text-[10px] font-mono text-text-muted mt-1">
+                          {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </section>
         )}
@@ -749,6 +854,60 @@ export default function MobileLeadDetail({
             </button>
           ) : null}
         </div>
+      )}
+
+      {/* ── Media Lightbox ── */}
+      {mediaPreview && (
+        <Dialog open onOpenChange={() => setMediaPreview(null)}>
+          <DialogContent className="max-w-sm mx-4 p-0 overflow-hidden rounded-2xl bg-[#0a0a0f] border-border-subtle">
+            <div className="relative">
+              <button
+                onClick={() => setMediaPreview(null)}
+                className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+              >
+                <X size={16} />
+              </button>
+              <div className="flex items-center justify-center min-h-[200px] max-h-[60vh] overflow-hidden bg-black">
+                {mediaPreview.type === "image" ? (
+                  <img
+                    src={mediaPreview.url}
+                    alt={mediaPreview.name}
+                    className="w-full max-h-[60vh] object-contain"
+                  />
+                ) : mediaPreview.type === "video" ? (
+                  <video
+                    src={mediaPreview.url}
+                    controls
+                    className="w-full max-h-[60vh] object-contain"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-3 p-10 text-white/60">
+                    <File size={48} weight="duotone" />
+                    <p className="text-sm">{mediaPreview.name}</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-black/40">
+                <p className="text-[12px] font-sans text-white/80 truncate flex-1 mr-3">
+                  {mediaPreview.name}
+                </p>
+                {mediaPreview.url && (
+                  <button
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = mediaPreview.url;
+                      a.download = mediaPreview.name;
+                      a.click();
+                    }}
+                    className="shrink-0 px-3 h-7 rounded-lg bg-white/10 border border-white/20 text-[11px] font-semibold text-white/70 flex items-center gap-1.5 hover:bg-white/20 transition-colors"
+                  >
+                    <DownloadSimple size={13} /> Download
+                  </button>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   CaretLeft,
   CaretRight,
   Camera,
-  PencilSimple,
   LockKey,
   Monitor,
   Bell,
@@ -22,9 +21,12 @@ import {
   CalendarBlank,
   Clock,
   Globe,
+  Crosshair,
+  MagnifyingGlass,
 } from "@phosphor-icons/react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -268,27 +270,81 @@ function PasswordChangeForm({
   );
 }
 
-// ── Timezone options ───────────────────────────────────────────────────────────
-const TIMEZONE_OPTIONS = [
-  "UTC",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Asia/Dubai",
-  "Asia/Kolkata",
-  "Asia/Singapore",
-  "Asia/Tokyo",
-  "Australia/Sydney",
+// ── Timezone groups ────────────────────────────────────────────────────────────
+const TZ_GROUPS = [
+  {
+    region: "UTC",
+    zones: [{ tz: "UTC", label: "UTC (UTC+0)" }],
+  },
+  {
+    region: "Americas",
+    zones: [
+      { tz: "America/New_York", label: "New York (UTC-5/-4)" },
+      { tz: "America/Chicago", label: "Chicago (UTC-6/-5)" },
+      { tz: "America/Denver", label: "Denver (UTC-7/-6)" },
+      { tz: "America/Los_Angeles", label: "Los Angeles (UTC-8/-7)" },
+      { tz: "America/Toronto", label: "Toronto (UTC-5/-4)" },
+      { tz: "America/Vancouver", label: "Vancouver (UTC-8/-7)" },
+      { tz: "America/Sao_Paulo", label: "São Paulo (UTC-3)" },
+      { tz: "America/Mexico_City", label: "Mexico City (UTC-6/-5)" },
+    ],
+  },
+  {
+    region: "Europe",
+    zones: [
+      { tz: "Europe/London", label: "London (UTC+0/+1)" },
+      { tz: "Europe/Paris", label: "Paris (UTC+1/+2)" },
+      { tz: "Europe/Berlin", label: "Berlin (UTC+1/+2)" },
+      { tz: "Europe/Rome", label: "Rome (UTC+1/+2)" },
+      { tz: "Europe/Madrid", label: "Madrid (UTC+1/+2)" },
+      { tz: "Europe/Amsterdam", label: "Amsterdam (UTC+1/+2)" },
+      { tz: "Europe/Moscow", label: "Moscow (UTC+3)" },
+      { tz: "Europe/Istanbul", label: "Istanbul (UTC+3)" },
+    ],
+  },
+  {
+    region: "Africa & Middle East",
+    zones: [
+      { tz: "Africa/Cairo", label: "Cairo (UTC+2)" },
+      { tz: "Africa/Lagos", label: "Lagos (UTC+1)" },
+      { tz: "Africa/Johannesburg", label: "Johannesburg (UTC+2)" },
+      { tz: "Asia/Dubai", label: "Dubai (UTC+4)" },
+      { tz: "Asia/Riyadh", label: "Riyadh (UTC+3)" },
+      { tz: "Asia/Baghdad", label: "Baghdad (UTC+3)" },
+      { tz: "Asia/Tehran", label: "Tehran (UTC+3:30)" },
+    ],
+  },
+  {
+    region: "Asia",
+    zones: [
+      { tz: "Asia/Kolkata", label: "India (UTC+5:30)" },
+      { tz: "Asia/Dhaka", label: "Dhaka (UTC+6)" },
+      { tz: "Asia/Bangkok", label: "Bangkok (UTC+7)" },
+      { tz: "Asia/Ho_Chi_Minh", label: "Ho Chi Minh (UTC+7)" },
+      { tz: "Asia/Jakarta", label: "Jakarta (UTC+7)" },
+      { tz: "Asia/Singapore", label: "Singapore (UTC+8)" },
+      { tz: "Asia/Kuala_Lumpur", label: "Kuala Lumpur (UTC+8)" },
+      { tz: "Asia/Manila", label: "Manila (UTC+8)" },
+      { tz: "Asia/Hong_Kong", label: "Hong Kong (UTC+8)" },
+      { tz: "Asia/Shanghai", label: "Shanghai (UTC+8)" },
+      { tz: "Asia/Seoul", label: "Seoul (UTC+9)" },
+      { tz: "Asia/Tokyo", label: "Tokyo (UTC+9)" },
+    ],
+  },
+  {
+    region: "Oceania",
+    zones: [
+      { tz: "Australia/Perth", label: "Perth (UTC+8)" },
+      { tz: "Australia/Adelaide", label: "Adelaide (UTC+9:30)" },
+      { tz: "Australia/Sydney", label: "Sydney (UTC+10/+11)" },
+      { tz: "Pacific/Auckland", label: "Auckland (UTC+12/+13)" },
+    ],
+  },
 ];
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export interface MobileProfileProps {
   readonly onBack?: () => void;
-  readonly onEditProfile?: () => void;
   readonly onChangePassword?: () => void;
   readonly onActiveSessions?: () => void;
   readonly onSignOut?: () => void;
@@ -296,7 +352,6 @@ export interface MobileProfileProps {
 
 export default function MobileProfile({
   onBack,
-  onEditProfile,
   onChangePassword,
   onActiveSessions,
   onSignOut,
@@ -309,8 +364,25 @@ export default function MobileProfile({
   const [tzPending, setTzPending] = useState<string>("");
   const [tzSaving, setTzSaving] = useState(false);
   const [tzSaved, setTzSaved] = useState(false);
+  const [liveClock, setLiveClock] = useState("");
+  const [tzSearch, setTzSearch] = useState("");
 
   const currentTz = user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  useEffect(() => {
+    const tz = tzPending || currentTz;
+    function tick() {
+      const now = new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit", minute: "2-digit",
+        hour12: false,
+        timeZone: tz,
+      }).format(new Date());
+      setLiveClock(now);
+    }
+    tick();
+    const id = setInterval(tick, 15_000);
+    return () => clearInterval(id);
+  }, [tzPending, currentTz]);
 
   const handleOpenTzSheet = () => {
     setTzPending(currentTz);
@@ -423,11 +495,6 @@ export default function MobileProfile({
         {/* ── Account section ──────────────────────────────────────── */}
         <SectionGroup header={t(K.profile.tab.account)}>
           <AccountRow
-            Icon={PencilSimple}
-            label="Edit Profile"
-            onClick={onEditProfile}
-          />
-          <AccountRow
             Icon={Monitor}
             label={t(K.settings.sessions)}
             onClick={onActiveSessions}
@@ -522,42 +589,87 @@ export default function MobileProfile({
       </AlertDialog>
 
       {/* ── Timezone bottom sheet ──────────────────────────────────── */}
-      <Sheet open={showTzSheet} onOpenChange={setShowTzSheet}>
-        <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-[env(safe-area-inset-bottom)]">
-          <SheetHeader className="px-4 pb-2">
-            <SheetTitle className="text-left text-[17px]">Select Timezone</SheetTitle>
+      <Sheet open={showTzSheet} onOpenChange={(open) => { setShowTzSheet(open); if (!open) setTzSearch(""); }}>
+        <SheetContent side="bottom" className="max-h-[80vh] flex flex-col rounded-t-2xl px-4 pb-[env(safe-area-inset-bottom)]">
+          <SheetHeader className="pb-2">
+            <SheetTitle>Select Timezone</SheetTitle>
           </SheetHeader>
-          <div className="overflow-y-auto max-h-[55vh] divide-y divide-border-subtle">
-            {TIMEZONE_OPTIONS.map((tz) => (
-              <button
-                key={tz}
-                onClick={() => setTzPending(tz)}
-                className="flex items-center justify-between w-full px-5 min-h-[48px] active:bg-elevated/60 transition-colors"
-              >
-                <span className="font-sans text-[14px] text-text-primary">{tz}</span>
-                {tzPending === tz && (
-                  <CheckCircle size={18} weight="fill" className="text-crimson shrink-0" />
-                )}
-              </button>
-            ))}
+
+          {/* Live clock display */}
+          {liveClock && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-elevated rounded-xl mb-3">
+              <Clock size={16} className="text-text-muted" />
+              <span className="font-mono text-lg font-bold text-text-primary">{liveClock}</span>
+              <span className="text-[11px] text-text-muted ml-auto">{tzPending || "UTC"}</span>
+            </div>
+          )}
+
+          {/* Auto-detect button */}
+          {(() => {
+            const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            if (browserTz !== (tzPending || user?.timezone)) {
+              return (
+                <button
+                  onClick={() => setTzPending(browserTz)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-elevated border border-border-subtle text-[12px] font-sans text-text-secondary mb-3"
+                >
+                  <Crosshair size={14} />
+                  Auto-detect: use {browserTz}
+                </button>
+              );
+            }
+          })()}
+
+          {/* Search input */}
+          <div className="relative mb-3">
+            <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              value={tzSearch}
+              onChange={(e) => setTzSearch(e.target.value)}
+              placeholder="Search timezone..."
+              className="w-full bg-elevated border border-border-subtle rounded-xl pl-8 pr-3 py-2 text-[13px] font-sans text-text-primary placeholder:text-text-muted outline-none"
+            />
           </div>
-          <div className="px-4 pt-3">
-            <button
+
+          {/* Grouped timezone list */}
+          <div className="flex-1 overflow-y-auto space-y-4" style={{ scrollbarWidth: "thin" }}>
+            {TZ_GROUPS.map((group) => {
+              const filtered = group.zones.filter(
+                z => !tzSearch || z.label.toLowerCase().includes(tzSearch.toLowerCase()) || z.tz.toLowerCase().includes(tzSearch.toLowerCase())
+              );
+              if (filtered.length === 0) return null;
+              return (
+                <div key={group.region}>
+                  <p className="text-[10px] font-sans font-bold text-text-muted uppercase tracking-wider px-1 mb-2">{group.region}</p>
+                  <div className="space-y-1">
+                    {filtered.map((z) => (
+                      <button
+                        key={z.tz}
+                        onClick={() => setTzPending(z.tz)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-colors",
+                          tzPending === z.tz ? "bg-crimson/10 text-crimson" : "hover:bg-elevated text-text-primary"
+                        )}
+                      >
+                        <span className="text-[13px] font-sans">{z.label}</span>
+                        {tzPending === z.tz && <CheckCircle size={16} weight="fill" className="text-crimson shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Save button */}
+          <div className="pt-3 pb-safe-bottom">
+            <Button
+              className="w-full h-12 bg-crimson hover:bg-crimson/90 text-white font-semibold rounded-xl"
               onClick={handleSaveTz}
               disabled={tzSaving}
-              className={cn(
-                "w-full h-11 rounded-xl font-sans font-semibold text-[14px] transition-all flex items-center justify-center gap-2",
-                tzSaving
-                  ? "bg-elevated text-text-muted cursor-not-allowed"
-                  : "bg-crimson text-white active:scale-[0.98] active:bg-crimson-hover",
-              )}
             >
-              {tzSaving ? (
-                <><SpinnerGap size={16} className="animate-spin" />Saving…</>
-              ) : (
-                "Save"
-              )}
-            </button>
+              {tzSaving ? "Saving..." : "Save Timezone"}
+            </Button>
           </div>
         </SheetContent>
       </Sheet>

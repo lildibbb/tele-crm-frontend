@@ -8,8 +8,11 @@ import {
   SortAscending,
   X,
   FunnelSimple,
+  DownloadSimple,
 } from "@phosphor-icons/react";
 import { ArrowUpDown } from "lucide-react";
+import { toast } from "sonner";
+import { leadsApi } from "@/lib/api/leads";
 import { LeadStatus } from "@/types/enums";
 import type { Lead } from "@/queries/useLeadsQuery";
 import { useLeadsList } from "@/queries/useLeadsQuery";
@@ -190,6 +193,7 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [showSortSheet, setShowSortSheet] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
 
@@ -249,6 +253,30 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
   const loadMore = () => {
     setSkip(skip + PAGE_SIZE);
   };
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const res = await leadsApi.exportExcel();
+      const blob = new Blob([res.data as BlobPart], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `leads_export_${date}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Export downloaded");
+    } catch {
+      toast.error("Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const hasFilters = search !== "" || filter !== "ALL";
   const showSkeleton = isLoading && leads.length === 0;
@@ -359,6 +387,18 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
           >
             <ArrowUpDown size={14} />
             {sortOption !== "newest" ? activeSort.label : "Newest"}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="w-9 h-9 rounded-xl bg-elevated flex items-center justify-center active:scale-[0.93] transition-transform disabled:opacity-50"
+            aria-label="Export XLSX"
+          >
+            {exporting ? (
+              <div className="w-4 h-4 border-2 border-crimson border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <DownloadSimple size={18} className="text-text-secondary" />
+            )}
           </button>
         </div>
 

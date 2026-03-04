@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState } from "react";
 import {
   ChartBar,
   UsersThree,
@@ -9,7 +9,6 @@ import {
   TrendUp,
   TrendDown,
   Percent,
-  CalendarBlank,
   ArrowRight,
 } from "@phosphor-icons/react";
 import {
@@ -40,16 +39,16 @@ import { Badge } from "@/components/ui/badge";
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileAnalyticsProps {}
 
-type DateRange = "Today" | "7D" | "30D" | "Custom";
-
-const DATE_RANGES: DateRange[] = ["Today", "7D", "30D", "Custom"];
-
-const TIMEFRAME_MAP: Record<DateRange, string> = {
-  Today: "today",
-  "7D": "this_week",
-  "30D": "last_30_days",
-  Custom: "custom",
-};
+const PERIODS = [
+  { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
+  { key: "this_week", label: "This Week" },
+  { key: "this_month", label: "This Month" },
+  { key: "last_30_days", label: "Last 30 Days" },
+  { key: "last_90_days", label: "Last 90 Days" },
+  { key: "all_time", label: "All Time" },
+  { key: "custom", label: "Custom" },
+] as const;
 
 // ── Skeleton primitives ────────────────────────────────────────────────────────
 function SkeletonBox({ className }: { className?: string }) {
@@ -166,39 +165,23 @@ function TrendBadge({
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileAnalytics({}: MobileAnalyticsProps) {
-  const [range, setRange] = useState<DateRange>("7D");
+  const [activePeriod, setActivePeriod] = useState("this_week");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [appliedFrom, setAppliedFrom] = useState("");
   const [appliedTo, setAppliedTo] = useState("");
-  const chipScrollRef = useRef<HTMLDivElement>(null);
   const { data: summary, isLoading } = useAnalyticsSummary({
-    timeframe: TIMEFRAME_MAP[range] as never,
-    ...(range === "Custom" && appliedFrom && appliedTo
+    timeframe: activePeriod as any,
+    ...(activePeriod === "custom" && appliedFrom && appliedTo
       ? { startDate: new Date(appliedFrom).toISOString(), endDate: new Date(appliedTo).toISOString() }
       : {}),
   });
 
-  const handleRangeChange = useCallback(
-    (r: DateRange) => {
-      if (r === "Custom") {
-        setDateSheetOpen(true);
-      } else {
-        setRange(r);
-      }
-    },
-    [],
-  );
-
   const formatShort = (iso: string) =>
     new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-  const customApplied = range === "Custom" && appliedFrom && appliedTo;
-  const chipLabel = (r: DateRange) =>
-    r === "Custom" && customApplied
-      ? `${formatShort(appliedFrom)} – ${formatShort(appliedTo)}`
-      : r;
+  const customApplied = activePeriod === "custom" && appliedFrom && appliedTo;
 
   const kpi = summary?.kpi;
   const trendSeries = summary?.trendSeries ?? [];
@@ -236,7 +219,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
     },
     {
       id: "formSubmissions",
-      label: "Form Submissions",
+      label: "Pending Verification",
       value: kpi?.formSubmissions?.current ?? 0,
       formatted: (kpi?.formSubmissions?.current ?? 0).toLocaleString(),
       icon: <UserCheck size={20} weight="duotone" />,
@@ -248,7 +231,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
     },
     {
       id: "deposits",
-      label: "Deposits",
+      label: "Total Depositors",
       value: depositors,
       formatted: depositors.toLocaleString(),
       icon: <Wallet size={20} weight="duotone" />,
@@ -260,7 +243,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
     },
     {
       id: "conversion",
-      label: "Conversion",
+      label: "Conversion Rate",
       value: conversionRate,
       formatted: `${conversionRate.toFixed(1)}%`,
       icon: <Percent size={20} weight="duotone" />,
@@ -317,30 +300,19 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
   return (
     <div className="pb-8">
           {/* ── Timeframe Chips ─────────────────────────────────────── */}
-          <div
-            ref={chipScrollRef}
-            className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-4 pb-1 snap-x snap-mandatory"
-          >
-            {DATE_RANGES.map((r) => (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none pt-4">
+            {PERIODS.map((p) => (
               <button
-                key={r}
-                onClick={() => handleRangeChange(r)}
+                key={p.key}
+                onClick={() => p.key === "custom" ? setDateSheetOpen(true) : setActivePeriod(p.key as string)}
                 className={cn(
-                  "shrink-0 snap-start h-[36px] min-w-[44px] px-5 rounded-full font-sans text-[13px] font-semibold",
-                  "transition-all duration-200 active:scale-95 select-none",
-                  range === r
-                    ? "bg-elevated text-text-primary"
-                    : "bg-card text-text-muted border border-border-subtle",
+                  "shrink-0 px-3 h-7 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors",
+                  (activePeriod === p.key || (p.key === "custom" && activePeriod === "custom"))
+                    ? "bg-crimson text-white"
+                    : "bg-elevated text-text-secondary"
                 )}
               >
-                {!(r === "Custom" && customApplied) && r === "Custom" && (
-                  <CalendarBlank
-                    size={14}
-                    weight="bold"
-                    className="inline mr-1 -mt-0.5"
-                  />
-                )}
-                {chipLabel(r)}
+                {p.label}
               </button>
             ))}
           </div>
@@ -405,7 +377,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
               <Badge variant="secondary" className="text-[10px] font-medium">
                 {customApplied
                   ? `${formatShort(appliedFrom)} – ${formatShort(appliedTo)}`
-                  : range === "Today" ? "Today" : range === "7D" ? "7 days" : "30 days"}
+                  : PERIODS.find(p => p.key === activePeriod)?.label ?? activePeriod}
               </Badge>
             }
           >
@@ -632,7 +604,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
                     if (!customFrom || !customTo || new Date(customFrom) >= new Date(customTo)) return;
                     setAppliedFrom(customFrom);
                     setAppliedTo(customTo);
-                    setRange("Custom");
+                    setActivePeriod("custom");
                     setDateSheetOpen(false);
                   }}
                   disabled={!customFrom || !customTo || new Date(customFrom) >= new Date(customTo)}
