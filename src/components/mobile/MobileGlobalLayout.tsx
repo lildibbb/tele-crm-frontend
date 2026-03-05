@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   DotsThreeOutline,
   Crown,
-  SignOut,
   CaretRight,
   ChartBar,
   Sliders,
@@ -22,7 +21,6 @@ import {
   Megaphone,
   ClipboardText,
   BookOpen,
-  UserCircle,
   Queue,
   DeviceMobile,
   GoogleLogo,
@@ -93,9 +91,14 @@ interface Tab {
 function getTabsForRole(role: UserRole): Tab[] {
   if (role === "SUPERADMIN") {
     return [
-      { id: "home", label: "Overview", Icon: SquaresFour, href: "/" },
-      { id: "leads", label: "Orgs", Icon: Users, href: "/admin/users" },
-      { id: "verify", label: "Admin", Icon: Crown, href: "/admin/overview" },
+      { id: "home", label: "Overview", Icon: Crown, href: "/admin/overview" },
+      { id: "leads", label: "Team", Icon: Users, href: "/settings/team" },
+      {
+        id: "verify",
+        label: "Audit",
+        Icon: ClipboardText,
+        href: "/audit-logs",
+      },
       { id: "more", label: "More", Icon: DotsThreeOutline },
     ];
   }
@@ -137,7 +140,6 @@ function getQuickLinks(role: UserRole): QuickLink[] {
   ];
   if (role === "SUPERADMIN") {
     return [
-      { label: "Overview", href: "/admin/overview", Icon: Crown },
       { label: "Users", href: "/admin/users", Icon: Users },
       { label: "Queues", href: "/admin/queues", Icon: Queue },
       { label: "Sessions", href: "/admin/sessions", Icon: DeviceMobile },
@@ -146,7 +148,7 @@ function getQuickLinks(role: UserRole): QuickLink[] {
       { label: "Backup", href: "/admin/backup", Icon: HardDrives },
       { label: "Secrets", href: "/admin/secrets", Icon: Key },
       { label: "Maintenance", href: "/admin/maintenance", Icon: Warning },
-      { label: "Audit Logs", href: "/audit-logs", Icon: ClipboardText },
+      { label: "Analytics", href: "/analytics", Icon: ChartBar },
       { label: "Settings", href: "/settings", Icon: Sliders },
       { label: "Docs", href: "/docs", Icon: BookOpen },
     ];
@@ -166,7 +168,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
 
 function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
 
   const role = (user?.role as UserRole) ?? "STAFF";
   const email = user?.email ?? "";
@@ -182,12 +184,6 @@ function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
     },
     [onClose, router],
   );
-
-  const handleSignOut = useCallback(async () => {
-    onClose();
-    await logout();
-    router.replace("/login");
-  }, [onClose, logout, router]);
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -270,22 +266,6 @@ function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               className="text-text-muted shrink-0"
             />
           </button>
-
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-3 w-full px-3.5 py-3 mt-1 rounded-xl active:bg-elevated transition-colors min-h-[48px]"
-          >
-            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-elevated shrink-0">
-              <SignOut
-                size={18}
-                weight="regular"
-                className="text-text-secondary"
-              />
-            </span>
-            <span className="font-sans text-[13px] text-danger font-medium">
-              Sign Out
-            </span>
-          </button>
         </div>
 
         <div style={{ height: "max(16px, env(safe-area-inset-bottom))" }} />
@@ -317,6 +297,10 @@ export default function MobileGlobalLayout({
 
   const { data: maintenanceConfig } = useMaintenanceConfig();
   const maintenanceMode = maintenanceConfig?.maintenanceMode ?? false;
+
+  // Full-screen pages (chat) bypass the global chrome
+  const isChatPage = /^\/leads\/[^/]+\/chat$/.test(pathname);
+  if (isChatPage) return <>{children}</>;
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-void text-text-primary font-sans">
