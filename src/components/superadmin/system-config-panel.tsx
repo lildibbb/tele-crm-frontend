@@ -19,6 +19,7 @@ import {
   CurrencyDollar,
   DownloadSimple,
   ChatText,
+  Plug,
 } from "@phosphor-icons/react";
 import { Switch } from "@/components/ui/switch";
 import { apiClient } from "@/lib/api/apiClient";
@@ -110,6 +111,35 @@ export const CONFIG_SECTIONS: { title: string; icon: React.ElementType; color: s
       { key: "ai.googleEmbeddingModel", label: "Google Embedding Model", description: "e.g. text-embedding-004", type: "text" },
       { key: "ai.costPerInputToken", label: "Cost Per Input Token ($)", description: "USD per token, e.g. 0.000000150", type: "number" },
       { key: "ai.costPerOutputToken", label: "Cost Per Output Token ($)", description: "USD per token, e.g. 0.000000600", type: "number" },
+    ],
+  },
+  {
+    title: "Integrations", icon: Plug, color: "text-primary",
+    fields: [
+      {
+        key: "integration.googleSheets.enabled",
+        label: "Google Sheets Enabled",
+        description: "Allow owners/admins to connect a Google Spreadsheet for lead sync",
+        type: "toggle",
+      },
+      {
+        key: "integration.googleDrive.enabled",
+        label: "Google Drive Enabled",
+        description: "Allow owners/admins to connect a Google Drive folder for attachment uploads",
+        type: "toggle",
+      },
+      {
+        key: "integration.googleSheets.guideVideoUrl",
+        label: "Sheets Setup Video URL",
+        description: "Optional Loom/YouTube link shown in the Sheets setup guide (e.g. https://loom.com/share/…). Leave blank to hide.",
+        type: "text",
+      },
+      {
+        key: "integration.googleDrive.guideVideoUrl",
+        label: "Drive Setup Video URL",
+        description: "Optional Loom/YouTube link shown in the Drive setup guide (e.g. https://loom.com/share/…). Leave blank to hide.",
+        type: "text",
+      },
     ],
   },
 ];
