@@ -238,6 +238,7 @@ function SetupGuide({
   const label = type === "sheets" ? "spreadsheet" : "folder";
   const productLabel = type === "sheets" ? "Google Spreadsheet" : "Google Drive folder";
   const idLabel = type === "sheets" ? "Spreadsheet" : "Folder";
+  const hasEmail = Boolean(email?.trim());
 
   return (
     <div className="rounded-xl border border-border-subtle overflow-hidden">
@@ -275,7 +276,14 @@ function SetupGuide({
                 Open your {productLabel}, click <strong>Share</strong>, and add this email
                 as an <strong>Editor</strong>:
               </p>
-              <EmailCopyChip email={email} />
+              {hasEmail ? (
+                <EmailCopyChip email={email} />
+              ) : (
+                <p className="text-[10px] text-amber-500/90 leading-snug">
+                  Service account email missing — ask your technical admin to re-save the service account
+                  in Superadmin → Secrets so we can show it here.
+                </p>
+              )}
               <p className="text-[10px] text-amber-500/80 leading-snug">
                 ⚠ Must be <strong>Editor</strong> — Viewer access will cause sync failures.
               </p>
@@ -314,7 +322,7 @@ function SetupGuide({
                 </p>
               </div>
               <p className="text-[11px] text-text-secondary leading-snug">
-                Changes take effect on the next scheduled sync (daily at 2 AM) or when manually triggered.
+                Changes take effect on the next scheduled sync cycle.
               </p>
             </div>
           </div>
@@ -490,7 +498,7 @@ export function IntegrationsTab() {
 
           <SetupGuide
             type="sheets"
-            email={serviceAccountEmail || "service account not configured — contact your admin"}
+            email={serviceAccountEmail}
             videoUrl={sheetsVideoUrl}
             defaultOpen={sheetsStatus() === "needs-id"}
           />
@@ -537,7 +545,7 @@ export function IntegrationsTab() {
 
           <SetupGuide
             type="drive"
-            email={serviceAccountEmail || "service account not configured — contact your admin"}
+            email={serviceAccountEmail}
             videoUrl={driveVideoUrl}
             defaultOpen={driveStatus() === "needs-id"}
           />
