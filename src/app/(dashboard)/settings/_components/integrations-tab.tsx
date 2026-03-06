@@ -15,14 +15,15 @@ import {
   Warning,
   Eye,
   EyeSlash,
-  Question,
   Lock,
+  Copy,
+  BookOpen,
+  ShareNetwork,
+  LinkSimple,
+  PlugsConnected,
+  CaretDown,
+  Play,
 } from "@phosphor-icons/react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
 // ── Google Product Icons ───────────────────────────────────────────────────────
 
@@ -79,14 +80,12 @@ function InlineToggle({
   );
 }
 
-// ── ID Input (friendly, non-technical) ────────────────────────────────────────
+// ── ID Input ───────────────────────────────────────────────────────────────────
 
 function IdInput({
   secretKey,
   label,
   placeholder,
-  helpTitle,
-  helpContent,
   existingMeta,
   disabled,
   onSaved,
@@ -94,8 +93,6 @@ function IdInput({
   secretKey: string;
   label: string;
   placeholder?: string;
-  helpTitle: string;
-  helpContent: React.ReactNode;
   existingMeta: SecretMeta | undefined;
   disabled?: boolean;
   onSaved: () => void;
@@ -126,20 +123,7 @@ function IdInput({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center gap-1.5">
-        <Label className="text-xs font-medium text-text-secondary">{label}</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <button type="button" className="text-text-muted hover:text-text-secondary transition-colors">
-              <Question size={13} />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-72 text-xs space-y-1.5 p-3">
-            <p className="font-semibold text-text-primary">{helpTitle}</p>
-            <div className="text-text-secondary leading-snug">{helpContent}</div>
-          </PopoverContent>
-        </Popover>
-      </div>
+      <Label className="text-xs font-medium text-text-secondary">{label}</Label>
       {existingMeta && (
         <p className="text-[10px] text-text-muted">
           ✓ Connected · Last updated {new Date(existingMeta.updatedAt).toLocaleDateString()}
@@ -176,6 +160,179 @@ function IdInput({
         </Button>
       </div>
       {err && <p className="text-[10px] text-danger">{err}</p>}
+    </div>
+  );
+}
+
+// ── Email copy chip ────────────────────────────────────────────────────────────
+
+function EmailCopyChip({ email }: { email: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = () => {
+    void navigator.clipboard.writeText(email);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      title="Click to copy"
+      className="flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-card border border-border-subtle font-mono text-[11px] text-text-primary hover:border-crimson/40 active:scale-[0.99] transition-all group"
+    >
+      <span className="flex-1 text-left truncate">{email}</span>
+      {copied ? (
+        <CheckCircle size={13} className="text-success shrink-0" />
+      ) : (
+        <Copy size={13} className="text-text-muted group-hover:text-text-primary shrink-0 transition-colors" />
+      )}
+    </button>
+  );
+}
+
+// ── URL anatomy diagram ────────────────────────────────────────────────────────
+
+function URLAnatomyDiagram({ type }: { type: "sheets" | "drive" }) {
+  const parts =
+    type === "sheets"
+      ? { prefix: "docs.google.com/spreadsheets/d/", suffix: "/edit" }
+      : { prefix: "drive.google.com/drive/folders/", suffix: "" };
+
+  return (
+    <div className="flex flex-wrap items-center font-mono text-[10px] bg-card border border-border-subtle rounded-lg px-2.5 py-2 text-text-muted overflow-x-auto gap-0">
+      <span>{parts.prefix}</span>
+      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-crimson/10 text-crimson border border-crimson/20 mx-0.5 select-all">
+        YOUR-ID
+      </span>
+      {parts.suffix && <span>{parts.suffix}</span>}
+    </div>
+  );
+}
+
+// ── Step badge ─────────────────────────────────────────────────────────────────
+
+function StepBadge({ n }: { n: number }) {
+  return (
+    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-crimson/10 text-crimson text-[10px] font-bold flex items-center justify-center mt-0.5">
+      {n}
+    </span>
+  );
+}
+
+// ── Setup guide ────────────────────────────────────────────────────────────────
+
+function SetupGuide({
+  type,
+  email,
+  videoUrl,
+  defaultOpen = false,
+}: {
+  type: "sheets" | "drive";
+  email: string;
+  videoUrl?: string;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const label = type === "sheets" ? "spreadsheet" : "folder";
+  const productLabel = type === "sheets" ? "Google Spreadsheet" : "Google Drive folder";
+  const idLabel = type === "sheets" ? "Spreadsheet" : "Folder";
+
+  return (
+    <div className="rounded-xl border border-border-subtle overflow-hidden">
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-card hover:bg-elevated transition-colors text-xs text-text-secondary group"
+      >
+        <span className="flex items-center gap-1.5 font-medium">
+          <BookOpen size={13} className="text-text-muted" />
+          How to connect — 3 steps
+        </span>
+        <CaretDown
+          size={12}
+          className={`text-text-muted transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Body */}
+      {open && (
+        <div className="px-4 py-4 bg-elevated space-y-4 border-t border-border-subtle">
+
+          {/* Step 1 — Share */}
+          <div className="flex gap-3">
+            <StepBadge n={1} />
+            <div className="space-y-2 flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <ShareNetwork size={13} className="text-crimson shrink-0" />
+                <p className="text-xs font-semibold text-text-primary">
+                  Share your {label} with TitanCRM
+                </p>
+              </div>
+              <p className="text-[11px] text-text-secondary leading-snug">
+                Open your {productLabel}, click <strong>Share</strong>, and add this email
+                as an <strong>Editor</strong>:
+              </p>
+              <EmailCopyChip email={email} />
+              <p className="text-[10px] text-amber-500/80 leading-snug">
+                ⚠ Must be <strong>Editor</strong> — Viewer access will cause sync failures.
+              </p>
+            </div>
+          </div>
+
+          <div className="h-px bg-border-subtle ml-8" />
+
+          {/* Step 2 — Find ID */}
+          <div className="flex gap-3">
+            <StepBadge n={2} />
+            <div className="space-y-2 flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <LinkSimple size={13} className="text-crimson shrink-0" />
+                <p className="text-xs font-semibold text-text-primary">
+                  Copy your {idLabel} ID from the URL
+                </p>
+              </div>
+              <p className="text-[11px] text-text-secondary leading-snug">
+                Look at the browser URL bar — your ID is the long code highlighted below:
+              </p>
+              <URLAnatomyDiagram type={type} />
+            </div>
+          </div>
+
+          <div className="h-px bg-border-subtle ml-8" />
+
+          {/* Step 3 — Paste & connect */}
+          <div className="flex gap-3">
+            <StepBadge n={3} />
+            <div className="space-y-2 flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <PlugsConnected size={13} className="text-crimson shrink-0" />
+                <p className="text-xs font-semibold text-text-primary">
+                  Paste the ID above and click Connect
+                </p>
+              </div>
+              <p className="text-[11px] text-text-secondary leading-snug">
+                Changes take effect on the next scheduled sync (daily at 2 AM) or when manually triggered.
+              </p>
+            </div>
+          </div>
+
+          {/* Optional video walkthrough */}
+          {videoUrl && (
+            <a
+              href={videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-crimson hover:text-crimson/80 transition-colors font-medium ml-8"
+            >
+              <Play size={11} weight="fill" />
+              Watch 2-min walkthrough →
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -227,6 +384,12 @@ export function IntegrationsTab() {
 
   const sheetsEnabled = getVal("integration.googleSheets.enabled") === "true";
   const driveEnabled  = getVal("integration.googleDrive.enabled") === "true";
+
+  // SA email surfaced by the backend when the service account JSON was saved.
+  // Shown in the setup guide so the user knows which email to share their Sheet/Folder with.
+  const serviceAccountEmail  = getVal("integration.serviceAccount.email", "");
+  const sheetsVideoUrl       = getVal("integration.googleSheets.guideVideoUrl", "") || undefined;
+  const driveVideoUrl        = getVal("integration.googleDrive.guideVideoUrl", "") || undefined;
 
   const cred = (key: string) => credentials.find((c) => c.key === key);
 
@@ -320,20 +483,16 @@ export function IntegrationsTab() {
             secretKey="google.sheetId"
             label="Your Spreadsheet"
             placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
-            helpTitle="How to find your Spreadsheet ID"
-            helpContent={
-              <div className="space-y-1">
-                <p>1. Open your Google Sheets spreadsheet</p>
-                <p>2. Look at the URL bar — copy the long code:</p>
-                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all shadow-sm">
-                  docs.google.com/spreadsheets/d/<strong className="text-info">ID</strong>/edit
-                </p>
-                <p>3. Paste that code above</p>
-              </div>
-            }
             existingMeta={cred("google.sheetId")}
             disabled={isAwaitingSetup}
             onSaved={loadCredentials}
+          />
+
+          <SetupGuide
+            type="sheets"
+            email={serviceAccountEmail || "service account not configured — contact your admin"}
+            videoUrl={sheetsVideoUrl}
+            defaultOpen={sheetsStatus() === "needs-id"}
           />
         </div>
       </div>
@@ -371,25 +530,17 @@ export function IntegrationsTab() {
             secretKey="google.driveFolderId"
             label="Your Drive Folder"
             placeholder="e.g. 1A2b3C4d5E6f7G8h9I0j"
-            helpTitle="How to find your Drive Folder ID"
-            helpContent={
-              <div className="space-y-1">
-                <p>1. Open Google Drive and go to your folder</p>
-                <p>2. Look at the URL bar — copy the code at the end:</p>
-                <p className="font-mono text-[10px] bg-card px-2 py-1 rounded break-all shadow-sm">
-                  drive.google.com/drive/folders/<strong className="text-info">ID</strong>
-                </p>
-                <p>3. Paste that code above</p>
-              </div>
-            }
             existingMeta={cred("google.driveFolderId")}
             disabled={isAwaitingSetup}
             onSaved={loadCredentials}
           />
 
-          <p className="text-[11px] text-text-muted">
-            Uses the same Google connection as Sheets — no separate setup needed.
-          </p>
+          <SetupGuide
+            type="drive"
+            email={serviceAccountEmail || "service account not configured — contact your admin"}
+            videoUrl={driveVideoUrl}
+            defaultOpen={driveStatus() === "needs-id"}
+          />
         </div>
       </div>
 
