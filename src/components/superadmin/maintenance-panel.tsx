@@ -158,7 +158,7 @@ export function MaintenancePanel() {
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-amber-500">
+            <AlertDialogTitle className="flex items-center gap-2 text-warning">
               <Warning size={18} weight="fill" />
               {t(K.superadmin.maintenance.enableMaintenance)}
             </AlertDialogTitle>
@@ -191,7 +191,7 @@ export function MaintenancePanel() {
         {/* Header */}
         <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle shadow-sm">
           <div className="flex items-center gap-2">
-            <Warning size={16} weight="fill" className="text-amber-500" />
+            <Warning size={16} weight="fill" className="text-warning" />
             <div>
               <h2 className="text-sm font-semibold text-text-primary">
                 {t(K.superadmin.maintenance.maintenanceMode)}
@@ -226,7 +226,7 @@ export function MaintenancePanel() {
         <div className="px-5 py-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
-              <Label className="text-sm font-semibold">
+              <Label className="text-sm font-semibold text-text-primary">
                 {t(K.superadmin.maintenance.modeStatus)}
               </Label>
               <p className="text-xs text-text-muted">
@@ -245,7 +245,7 @@ export function MaintenancePanel() {
           </div>
 
           <div className="space-y-2 pt-5 border-t border-border-subtle">
-            <Label className="text-sm font-semibold">
+            <Label className="text-sm font-semibold text-text-primary">
               {t(K.superadmin.maintenance.bannerMessage)}
             </Label>
             <p className="text-xs text-text-muted">
@@ -261,14 +261,14 @@ export function MaintenancePanel() {
 
           {bannerText && (
             <div className="space-y-1.5 mt-2">
-              <Label className="text-[10px] text-text-muted uppercase tracking-wider font-medium">
+              <Label className="text-xs text-text-muted uppercase tracking-wider font-medium">
                 {t(K.superadmin.maintenance.preview)}
               </Label>
               <div className="flex items-center gap-2 text-sm text-text-primary mt-1">
                 <Warning
                   size={14}
                   weight="duotone"
-                  className="shrink-0 text-amber-500"
+                  className="shrink-0 text-warning"
                 />
                 <div>
                   <span className="font-semibold">
