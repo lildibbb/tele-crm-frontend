@@ -1,22 +1,21 @@
 "use client";
 
-import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import MobileAdminSessions from "@/components/mobile/MobileAdminSessions";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
+  type VisibilityState,
+} from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { EmptyState } from "@/components/ui/empty-state";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -27,23 +26,168 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { superadminApi } from "@/lib/api/superadmin";
+import { superadminApi, type AdminSession } from "@/lib/api/superadmin";
 import { queryKeys } from "@/queries/queryKeys";
 import { ProhibitInset } from "@phosphor-icons/react";
 import { useT, K } from "@/i18n";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import MobileAdminSessions from "@/components/mobile/MobileAdminSessions";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 
 function truncate(str: string, len = 12) {
   return str.length <= len ? str : `${str.slice(0, len)}…`;
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString();
+  return new Date(iso).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getSessionColumns({
+  onRevoke,
+  t,
+}: {
+  onRevoke: (id: string) => void;
+  t: (key: string, params?: Record<string, string>) => string;
+}): ColumnDef<AdminSession>[] {
+  return [
+    {
+      accessorKey: "id",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t(K.superadmin.sessions.sessionId)}
+        />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="font-mono text-xs text-text-secondary"
+          title={row.original.id}
+        >
+          {truncate(row.original.id, 16)}
+        </span>
+      ),
+      enableSorting: false,
+      meta: {
+        label: t(K.superadmin.sessions.sessionId),
+        variant: "text",
+        placeholder: "Search session ID…",
+      },
+    },
+    {
+      accessorKey: "userId",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t(K.superadmin.sessions.userId)}
+        />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="font-mono text-xs text-text-secondary"
+          title={row.original.userId}
+        >
+          {truncate(row.original.userId, 16)}
+        </span>
+      ),
+      enableSorting: false,
+      meta: {
+        label: t(K.superadmin.sessions.userId),
+        variant: "text",
+        placeholder: "Search user ID…",
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t(K.superadmin.sessions.createdAt)}
+        />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-text-secondary whitespace-nowrap">
+          {formatDate(row.original.createdAt)}
+        </span>
+      ),
+      enableSorting: true,
+      enableColumnFilter: false,
+    },
+    {
+      accessorKey: "expiresAt",
+      header: ({ column }) => (
+        <DataTableColumnHeader
+          column={column}
+          label={t(K.superadmin.sessions.expiresAt)}
+        />
+      ),
+      cell: ({ row }) => (
+        <span className="text-sm text-text-secondary whitespace-nowrap">
+          {formatDate(row.original.expiresAt)}
+        </span>
+      ),
+      enableSorting: true,
+      enableColumnFilter: false,
+    },
+    {
+      accessorKey: "userAgent",
+      header: t(K.superadmin.sessions.userAgent),
+      cell: ({ row }) => (
+        <span
+          className="text-xs text-text-secondary max-w-[220px] truncate block"
+          title={row.original.userAgent ?? undefined}
+        >
+          {row.original.userAgent ?? "—"}
+        </span>
+      ),
+      enableSorting: false,
+      meta: {
+        label: t(K.superadmin.sessions.userAgent),
+        variant: "text",
+        placeholder: "Filter user agent…",
+      },
+    },
+    {
+      id: "actions",
+      header: () => (
+        <span className="sr-only">{t(K.superadmin.sessions.actions)}</span>
+      ),
+      cell: ({ row }) => (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => onRevoke(row.original.id)}
+            className="gap-1.5 h-7 text-xs"
+          >
+            <ProhibitInset size={13} />
+            {t(K.superadmin.sessions.revoke)}
+          </Button>
+        </div>
+      ),
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableHiding: false,
+    },
+  ];
 }
 
 function SessionsDesktop() {
   const t = useT();
   const queryClient = useQueryClient();
   const [revokeId, setRevokeId] = useState<string | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "createdAt", desc: true },
+  ]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: queryKeys.superadmin.sessions(),
@@ -62,6 +206,25 @@ function SessionsDesktop() {
     onError: () => toast.error(t(K.superadmin.toast.sessionRevokeFailed)),
   });
 
+  const columns = useMemo(
+    () => getSessionColumns({ onRevoke: setRevokeId, t }),
+    [t],
+  );
+
+  const table = useReactTable({
+    data: sessions,
+    columns,
+    state: { sorting, columnFilters, columnVisibility },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: { pagination: { pageSize: 15 } },
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -69,93 +232,25 @@ function SessionsDesktop() {
           {t(K.superadmin.sessions.title)}
         </h1>
         <p className="text-sm text-text-secondary mt-1">
-          {t(K.superadmin.sessions.subtitle)}
+          {isLoading
+            ? t(K.superadmin.sessions.subtitle)
+            : `${t(K.superadmin.sessions.subtitle)} · ${sessions.length} active sessions`}
         </p>
       </div>
 
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            {t(K.superadmin.sessions.count)}
-            {!isLoading && ` (${sessions.length})`}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t(K.superadmin.sessions.sessionId)}</TableHead>
-                <TableHead>{t(K.superadmin.sessions.userId)}</TableHead>
-                <TableHead>{t(K.superadmin.sessions.createdAt)}</TableHead>
-                <TableHead>{t(K.superadmin.sessions.expiresAt)}</TableHead>
-                <TableHead>{t(K.superadmin.sessions.userAgent)}</TableHead>
-                <TableHead className="text-right">
-                  {t(K.superadmin.sessions.actions)}
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 6 }).map((__, j) => (
-                      <TableCell key={j}>
-                        <Skeleton className="h-4 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : sessions.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="p-0">
-                    <EmptyState title={t(K.superadmin.sessions.noSessions)} />
-                  </TableCell>
-                </TableRow>
-              ) : (
-                sessions.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell
-                      className="font-mono text-xs text-text-secondary"
-                      title={s.id}
-                    >
-                      {truncate(s.id, 16)}
-                    </TableCell>
-                    <TableCell
-                      className="font-mono text-xs text-text-secondary"
-                      title={s.userId}
-                    >
-                      {truncate(s.userId, 16)}
-                    </TableCell>
-                    <TableCell className="text-sm text-text-secondary whitespace-nowrap">
-                      {formatDate(s.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-sm text-text-secondary whitespace-nowrap">
-                      {formatDate(s.expiresAt)}
-                    </TableCell>
-                    <TableCell
-                      className="text-xs text-text-secondary max-w-[200px] truncate"
-                      title={s.userAgent ?? undefined}
-                    >
-                      {s.userAgent ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => setRevokeId(s.id)}
-                        className="gap-1.5"
-                      >
-                        <ProhibitInset size={14} />
-                        {t(K.superadmin.sessions.revoke)}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <div>
+        {isLoading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <DataTable table={table}>
+            <DataTableToolbar table={table} />
+          </DataTable>
+        )}
+      </div>
 
       <AlertDialog
         open={!!revokeId}
