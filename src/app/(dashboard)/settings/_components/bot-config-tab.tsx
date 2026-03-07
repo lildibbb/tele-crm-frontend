@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileSettings } from "@/components/mobile";
+import { toast } from "sonner";
 import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
 import { useT, K } from "@/i18n";
 
@@ -50,16 +51,21 @@ export function BotConfigTab() {
   }, [entries, isLoading, initialised]);
 
   const handleSave = async () => {
-    await upsertManyMutation.mutateAsync({
-      "persona.name": draft.name,
-      "bot.systemPrompt": draft.systemPrompt,
-      "bot.welcomeMessage": draft.greeting,
-      "bot.groupId": draft.groupId,
-      "bot.groupThreadEnabled": String(draft.groupThreadEnabled),
-      "bot.forwardEnabled": String(draft.forwardEnabled),
-      "bot.active": String(draft.active),
-      "followUp.enabled": String(draft.followUpEnabled),
-    });
+    try {
+      await upsertManyMutation.mutateAsync({
+        "persona.name": draft.name,
+        "bot.systemPrompt": draft.systemPrompt,
+        "bot.welcomeMessage": draft.greeting,
+        "bot.groupId": draft.groupId,
+        "bot.groupThreadEnabled": String(draft.groupThreadEnabled),
+        "bot.forwardEnabled": String(draft.forwardEnabled),
+        "bot.active": String(draft.active),
+        "followUp.enabled": String(draft.followUpEnabled),
+      });
+      toast.success("Bot configuration saved.");
+    } catch {
+      toast.error("Failed to save configuration. Please try again.");
+    }
   };
 
   if (isMobile) {
@@ -88,7 +94,7 @@ export function BotConfigTab() {
         {/* General Settings */}
         <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
           <div className="px-5 py-4 bg-card rounded-t-xl shadow-sm">
-            <h3 className="font-sans font-semibold text-[14px] text-text-primary">
+            <h3 className="font-sans font-semibold text-sm text-text-primary">
               {t(K.botConfig.generalSettings)}
             </h3>
           </div>
@@ -115,7 +121,7 @@ export function BotConfigTab() {
                 className="resize-none"
                 disabled={isLoading}
               />
-              <p className="text-[11px] text-text-muted mt-1 font-sans">
+              <p className="text-xs text-text-muted mt-1 font-sans">
                 {t(K.botConfig.greetingHint)}
               </p>
             </div>
@@ -131,7 +137,7 @@ export function BotConfigTab() {
                 className="text-sm font-mono"
                 disabled={isLoading}
               />
-              <p className="text-[11px] text-text-muted mt-1 font-sans">
+              <p className="text-xs text-text-muted mt-1 font-sans">
                 {t(K.botConfig.groupIdHint)}
               </p>
             </div>
@@ -156,7 +162,7 @@ export function BotConfigTab() {
         {/* AI Behavior */}
         <div className="bg-elevated rounded-xl overflow-hidden md:col-span-2 lg:col-span-1">
           <div className="px-5 py-4 bg-card rounded-t-xl flex items-center justify-between shadow-sm">
-            <h3 className="font-sans font-semibold text-[14px] text-text-primary">
+            <h3 className="font-sans font-semibold text-sm text-text-primary">
               {t(K.botConfig.aiBehavior)}
             </h3>
             <Switch
@@ -176,7 +182,7 @@ export function BotConfigTab() {
                 className="resize-none font-mono text-xs"
                 disabled={isLoading}
               />
-              <p className="text-[11px] text-text-muted mt-1 font-sans">
+              <p className="text-xs text-text-muted mt-1 font-sans">
                 {t(K.botConfig.systemPromptHint)}
               </p>
             </div>
