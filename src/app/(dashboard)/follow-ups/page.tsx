@@ -15,7 +15,7 @@ import {
 } from "@phosphor-icons/react";
 import { followUpsApi } from "@/lib/api/followUps";
 import type { FollowUp } from "@/lib/schemas/followUp.schema";
-import { FollowUpStatus } from "@/types/enums";
+import { FollowUpStatus, UserRole } from "@/types/enums";
 import { parseApiData, parsePaginatedData } from "@/lib/api/parseResponse";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useT, K } from "@/i18n";
+import { useAuthStore } from "@/store/authStore";
+import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileFollowUps } from "@/components/mobile";
 
@@ -81,6 +83,19 @@ type FailedJob = {
 export default function FollowUpsPage() {
   const isMobile = useIsMobile();
   const t = useT();
+  const visibility = useFeatureVisibility();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === UserRole.SUPERADMIN;
+
+  if (!isSuperAdmin && !visibility.followUps) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-3 text-text-secondary">
+        <Timer size={48} weight="duotone" className="opacity-30" />
+        <p className="text-sm font-medium">This feature is not available.</p>
+      </div>
+    );
+  }
+
   const TYPE_LABELS: Record<string, string> = {
     follow_up_register: t(K.followUp.type.register),
     follow_up_deposit: t(K.followUp.type.deposit),

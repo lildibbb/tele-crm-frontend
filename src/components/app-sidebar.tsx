@@ -51,6 +51,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 import { EllipsisVertical } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
@@ -147,6 +148,7 @@ export function AppSidebar() {
   const role = user?.role as UserRole | undefined;
   const isSuperAdmin = role === UserRole.SUPERADMIN;
   const isAdminPath = pathname.startsWith("/admin");
+  const visibility = useFeatureVisibility();
 
   // Auto-expand admin group when on an admin route
   const [adminOpen, setAdminOpen] = useState(() => isAdminPath);
@@ -155,9 +157,14 @@ export function AppSidebar() {
   }, [isAdminPath]);
 
   // Filter nav items by current user's role
-  const visibleItems = ALL_NAV_ITEMS.filter((item) =>
-    role ? item.roles.includes(role) : false,
-  );
+  const visibleItems = ALL_NAV_ITEMS.filter((item) => {
+    if (!role || !item.roles.includes(role)) return false;
+    // Superadmin always sees all navigation items
+    if (role === UserRole.SUPERADMIN) return true;
+    // Hide Follow-ups if superadmin has disabled the feature
+    if (item.href === '/follow-ups' && !visibility.followUps) return false;
+    return true;
+  });
 
   return (
     <Sidebar collapsible="icon" variant="inset">
