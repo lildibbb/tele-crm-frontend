@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Icon } from "@iconify/react";
 import {
   CheckCircle,
@@ -111,7 +111,10 @@ function OpLogCard({ op }: { op: GoogleOpLog }) {
         </div>
 
         {op.errorMessage && (
-          <p className="font-sans text-[11px] text-danger mt-1 truncate" title={op.errorMessage}>
+          <p
+            className="font-sans text-[11px] text-danger mt-1 truncate"
+            title={op.errorMessage}
+          >
             {op.errorMessage}
           </p>
         )}
@@ -127,11 +130,12 @@ export default function MobileAdminGoogle({}: MobileAdminGoogleProps) {
   const { user } = useAuthStore();
   const { data, isLoading, error, refetch } = useGoogleAnalyticsStats();
 
-  // SUPERADMIN guard
-  if (user?.role !== "SUPERADMIN") {
-    router.replace("/");
-    return null;
-  }
+  // SUPERADMIN guard — useEffect to avoid hook ordering violation
+  useEffect(() => {
+    if (user?.role !== "SUPERADMIN") router.replace("/");
+  }, [user, router]);
+
+  if (user?.role !== "SUPERADMIN") return <div />;
 
   const stats = data?.stats;
   const ops = data?.recentOps ?? [];
@@ -166,7 +170,9 @@ export default function MobileAdminGoogle({}: MobileAdminGoogleProps) {
       {error && (
         <div className="mx-4 mb-3 px-3.5 py-3 rounded-xl bg-danger/10 border border-danger/20">
           <p className="font-sans text-[12px] text-danger">
-            {error instanceof Error ? error.message : "Failed to load analytics"}
+            {error instanceof Error
+              ? error.message
+              : "Failed to load analytics"}
           </p>
         </div>
       )}
@@ -206,7 +212,9 @@ export default function MobileAdminGoogle({}: MobileAdminGoogleProps) {
                 <XCircle
                   size={20}
                   weight="duotone"
-                  className={totalFailures > 0 ? "text-danger" : "text-text-muted"}
+                  className={
+                    totalFailures > 0 ? "text-danger" : "text-text-muted"
+                  }
                 />
               }
               accent={totalFailures > 0 ? "bg-danger/10" : "bg-elevated"}

@@ -49,7 +49,7 @@ import { useAuthStore } from "@/store/authStore";
 import { usersApi } from "@/lib/api/users";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
-import { useT, K } from "@/i18n";
+import { useT, K, useLocale } from "@/i18n";
 import { formatDate } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -132,12 +132,17 @@ function PasswordChangeForm({
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<{ newPassword?: string; confirmPassword?: string }>({});
+  const [errors, setErrors] = useState<{
+    newPassword?: string;
+    confirmPassword?: string;
+  }>({});
 
   const validate = useCallback(() => {
     const e: typeof errors = {};
-    if (newPassword.length < 8) e.newPassword = "Password must be at least 8 characters";
-    if (confirmPassword !== newPassword) e.confirmPassword = "Passwords do not match";
+    if (newPassword.length < 8)
+      e.newPassword = "Password must be at least 8 characters";
+    if (confirmPassword !== newPassword)
+      e.confirmPassword = "Passwords do not match";
     setErrors(e);
     return Object.keys(e).length === 0;
   }, [newPassword, confirmPassword]);
@@ -172,7 +177,8 @@ function PasswordChangeForm({
             value={newPassword}
             onChange={(e) => {
               setNewPassword(e.target.value);
-              if (errors.newPassword) setErrors((p) => ({ ...p, newPassword: undefined }));
+              if (errors.newPassword)
+                setErrors((p) => ({ ...p, newPassword: undefined }));
             }}
             placeholder="••••••••"
             className={cn(
@@ -213,7 +219,8 @@ function PasswordChangeForm({
             value={confirmPassword}
             onChange={(e) => {
               setConfirmPassword(e.target.value);
-              if (errors.confirmPassword) setErrors((p) => ({ ...p, confirmPassword: undefined }));
+              if (errors.confirmPassword)
+                setErrors((p) => ({ ...p, confirmPassword: undefined }));
             }}
             placeholder="••••••••"
             className={cn(
@@ -357,6 +364,7 @@ export default function MobileProfile({
   onSignOut,
 }: MobileProfileProps) {
   const t = useT();
+  const { locale, setLocale } = useLocale();
   const { user, logout } = useAuthStore();
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
@@ -367,13 +375,15 @@ export default function MobileProfile({
   const [liveClock, setLiveClock] = useState("");
   const [tzSearch, setTzSearch] = useState("");
 
-  const currentTz = user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const currentTz =
+    user?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
     const tz = tzPending || currentTz;
     function tick() {
       const now = new Intl.DateTimeFormat("en-US", {
-        hour: "2-digit", minute: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
         hour12: false,
         timeZone: tz,
       }).format(new Date());
@@ -391,10 +401,20 @@ export default function MobileProfile({
   };
 
   const handleSaveTz = async () => {
-    if (!tzPending || tzPending === currentTz) { setShowTzSheet(false); return; }
+    if (!tzPending || tzPending === currentTz) {
+      setShowTzSheet(false);
+      return;
+    }
     setTzSaving(true);
     try {
       await usersApi.updateTimezone(tzPending);
+      // Update authStore so the UI reflects the new timezone immediately
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        useAuthStore.setState({
+          user: { ...currentUser, timezone: tzPending },
+        });
+      }
       toast.success("Timezone updated");
       setTzSaved(true);
       setShowTzSheet(false);
@@ -508,13 +528,42 @@ export default function MobileProfile({
             className="flex items-center gap-3 w-full px-4 min-h-[48px] active:bg-elevated/60 transition-colors group"
           >
             <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
-              <Globe size={16} className="text-text-secondary" weight="regular" />
+              <Globe
+                size={16}
+                className="text-text-secondary"
+                weight="regular"
+              />
             </span>
             <span className="flex-1 font-sans text-[14px] text-text-primary text-left">
               Timezone
             </span>
             <span className="font-sans text-[12px] font-medium text-text-secondary mr-1 truncate max-w-[160px]">
               {currentTz}
+            </span>
+            <CaretRight
+              size={14}
+              className="text-text-muted shrink-0 group-active:translate-x-0.5 transition-transform"
+            />
+          </button>
+          <button
+            onClick={() => {
+              const next = locale === "en" ? "ms" : "en";
+              setLocale(next);
+            }}
+            className="flex items-center gap-3 w-full px-4 min-h-[48px] active:bg-elevated/60 transition-colors group"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
+              <Translate
+                size={16}
+                className="text-text-secondary"
+                weight="regular"
+              />
+            </span>
+            <span className="flex-1 font-sans text-[14px] text-text-primary text-left">
+              Language
+            </span>
+            <span className="font-sans text-[12px] font-medium text-text-secondary mr-1">
+              {locale === "en" ? "English" : "Bahasa Melayu"}
             </span>
             <CaretRight
               size={14}
@@ -531,7 +580,11 @@ export default function MobileProfile({
               className="flex items-center gap-3 w-full px-4 min-h-[48px] active:bg-elevated/60 transition-colors group"
             >
               <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-elevated shrink-0">
-                <LockKey size={16} className="text-text-secondary" weight="regular" />
+                <LockKey
+                  size={16}
+                  className="text-text-secondary"
+                  weight="regular"
+                />
               </span>
               <span className="flex-1 font-sans text-[14px] text-text-primary text-left">
                 {t(K.profile.changePassword)}
@@ -567,13 +620,16 @@ export default function MobileProfile({
       </main>
 
       {/* ── Sign-out confirmation dialog ───────────────────────────── */}
-      <AlertDialog open={showSignOutConfirm} onOpenChange={setShowSignOutConfirm}>
+      <AlertDialog
+        open={showSignOutConfirm}
+        onOpenChange={setShowSignOutConfirm}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Sign out?</AlertDialogTitle>
             <AlertDialogDescription>
-              You will be signed out of this device. You can sign back in at
-              any time.
+              You will be signed out of this device. You can sign back in at any
+              time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -589,8 +645,17 @@ export default function MobileProfile({
       </AlertDialog>
 
       {/* ── Timezone bottom sheet ──────────────────────────────────── */}
-      <Sheet open={showTzSheet} onOpenChange={(open) => { setShowTzSheet(open); if (!open) setTzSearch(""); }}>
-        <SheetContent side="bottom" className="max-h-[80vh] flex flex-col rounded-t-2xl px-4 pb-[env(safe-area-inset-bottom)]">
+      <Sheet
+        open={showTzSheet}
+        onOpenChange={(open) => {
+          setShowTzSheet(open);
+          if (!open) setTzSearch("");
+        }}
+      >
+        <SheetContent
+          side="bottom"
+          className="max-h-[80vh] flex flex-col rounded-t-2xl px-4 pb-[env(safe-area-inset-bottom)]"
+        >
           <SheetHeader className="pb-2">
             <SheetTitle>Select Timezone</SheetTitle>
           </SheetHeader>
@@ -599,8 +664,12 @@ export default function MobileProfile({
           {liveClock && (
             <div className="flex items-center gap-2 px-4 py-3 bg-elevated rounded-xl mb-3">
               <Clock size={16} className="text-text-muted" />
-              <span className="font-mono text-lg font-bold text-text-primary">{liveClock}</span>
-              <span className="text-[11px] text-text-muted ml-auto">{tzPending || "UTC"}</span>
+              <span className="font-mono text-lg font-bold text-text-primary">
+                {liveClock}
+              </span>
+              <span className="text-[11px] text-text-muted ml-auto">
+                {tzPending || "UTC"}
+              </span>
             </div>
           )}
 
@@ -622,7 +691,10 @@ export default function MobileProfile({
 
           {/* Search input */}
           <div className="relative mb-3">
-            <MagnifyingGlass size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+            <MagnifyingGlass
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+            />
             <input
               value={tzSearch}
               onChange={(e) => setTzSearch(e.target.value)}
@@ -632,15 +704,23 @@ export default function MobileProfile({
           </div>
 
           {/* Grouped timezone list */}
-          <div className="flex-1 overflow-y-auto space-y-4" style={{ scrollbarWidth: "thin" }}>
+          <div
+            className="flex-1 overflow-y-auto space-y-4"
+            style={{ scrollbarWidth: "thin" }}
+          >
             {TZ_GROUPS.map((group) => {
               const filtered = group.zones.filter(
-                z => !tzSearch || z.label.toLowerCase().includes(tzSearch.toLowerCase()) || z.tz.toLowerCase().includes(tzSearch.toLowerCase())
+                (z) =>
+                  !tzSearch ||
+                  z.label.toLowerCase().includes(tzSearch.toLowerCase()) ||
+                  z.tz.toLowerCase().includes(tzSearch.toLowerCase()),
               );
               if (filtered.length === 0) return null;
               return (
                 <div key={group.region}>
-                  <p className="text-[10px] font-sans font-bold text-text-muted uppercase tracking-wider px-1 mb-2">{group.region}</p>
+                  <p className="text-[10px] font-sans font-bold text-text-muted uppercase tracking-wider px-1 mb-2">
+                    {group.region}
+                  </p>
                   <div className="space-y-1">
                     {filtered.map((z) => (
                       <button
@@ -648,11 +728,19 @@ export default function MobileProfile({
                         onClick={() => setTzPending(z.tz)}
                         className={cn(
                           "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-colors",
-                          tzPending === z.tz ? "bg-crimson/10 text-crimson" : "hover:bg-elevated text-text-primary"
+                          tzPending === z.tz
+                            ? "bg-crimson/10 text-crimson"
+                            : "hover:bg-elevated text-text-primary",
                         )}
                       >
                         <span className="text-[13px] font-sans">{z.label}</span>
-                        {tzPending === z.tz && <CheckCircle size={16} weight="fill" className="text-crimson shrink-0" />}
+                        {tzPending === z.tz && (
+                          <CheckCircle
+                            size={16}
+                            weight="fill"
+                            className="text-crimson shrink-0"
+                          />
+                        )}
                       </button>
                     ))}
                   </div>

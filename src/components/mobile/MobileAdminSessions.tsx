@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DeviceMobile,
   Desktop,
@@ -109,22 +109,32 @@ function SessionCard({
         <p className="font-sans font-semibold text-[13px] text-text-primary truncate">
           {deviceName}
           {browserName && (
-            <span className="text-text-muted font-normal"> · {browserName}</span>
+            <span className="text-text-muted font-normal">
+              {" "}
+              · {browserName}
+            </span>
           )}
         </p>
-        <p className="font-mono text-[11px] text-text-muted mt-0.5 truncate" title={session.userId}>
+        <p
+          className="font-mono text-[11px] text-text-muted mt-0.5 truncate"
+          title={session.userId}
+        >
           uid: {truncateId(session.userId)}
         </p>
         <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
           {session.ipAddress && (
             <div className="flex items-center gap-1">
               <WifiHigh size={11} className="text-text-muted shrink-0" />
-              <span className="font-mono text-[11px] text-text-muted">{session.ipAddress}</span>
+              <span className="font-mono text-[11px] text-text-muted">
+                {session.ipAddress}
+              </span>
             </div>
           )}
           <div className="flex items-center gap-1">
             <Clock size={11} className="text-text-muted shrink-0" />
-            <span className="font-mono text-[11px] text-text-muted">{timeAgo(session.lastActiveAt)}</span>
+            <span className="font-mono text-[11px] text-text-muted">
+              {timeAgo(session.lastActiveAt)}
+            </span>
           </div>
           <div className="flex items-center gap-1">
             <Globe size={11} className="text-text-muted shrink-0" />
@@ -167,22 +177,28 @@ export default function MobileAdminSessions({}: MobileAdminSessionsProps) {
   const [revokeId, setRevokeId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  // SUPERADMIN guard
-  if (user?.role !== "SUPERADMIN") {
-    router.replace("/");
-    return null;
-  }
+  // SUPERADMIN guard — useEffect to avoid hook ordering violation
+  useEffect(() => {
+    if (user?.role !== "SUPERADMIN") router.replace("/");
+  }, [user, router]);
 
-  const { data: sessions = [], isLoading, refetch } = useQuery({
+  const {
+    data: sessions = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: queryKeys.superadmin.sessions(),
     queryFn: () => superadminApi.listSessions(),
+    enabled: user?.role === "SUPERADMIN",
   });
 
   const revokeMutation = useMutation({
     mutationFn: (id: string) => superadminApi.revokeSession(id),
     onSuccess: (_, id) => {
       toast.success(`Session ${truncateId(id, 12)} revoked`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.sessions() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.superadmin.sessions(),
+      });
       setRevokeId(null);
     },
     onError: () => toast.error("Failed to revoke session"),
@@ -203,9 +219,12 @@ export default function MobileAdminSessions({}: MobileAdminSessionsProps) {
             </span>
             <div>
               <p className="font-sans font-semibold text-[13px] text-text-primary">
-                {isLoading ? "—" : activeSessions.length} active session{activeSessions.length !== 1 ? "s" : ""}
+                {isLoading ? "—" : activeSessions.length} active session
+                {activeSessions.length !== 1 ? "s" : ""}
               </p>
-              <p className="font-sans text-[11px] text-text-muted">across all users</p>
+              <p className="font-sans text-[11px] text-text-muted">
+                across all users
+              </p>
             </div>
           </div>
           <button
@@ -223,9 +242,14 @@ export default function MobileAdminSessions({}: MobileAdminSessionsProps) {
 
       {/* ── Admin notice ───────────────────────────────────────────── */}
       <div className="mx-4 mb-3 flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-warning/8 border border-warning/20">
-        <ShieldWarning size={16} weight="fill" className="text-warning shrink-0 mt-0.5" />
+        <ShieldWarning
+          size={16}
+          weight="fill"
+          className="text-warning shrink-0 mt-0.5"
+        />
         <p className="font-sans text-[12px] text-warning leading-relaxed">
-          These are all active sessions system-wide. Revoking a session signs out that user immediately.
+          These are all active sessions system-wide. Revoking a session signs
+          out that user immediately.
         </p>
       </div>
 
@@ -276,7 +300,8 @@ export default function MobileAdminSessions({}: MobileAdminSessionsProps) {
             onClick={() => setPage((p) => p + 1)}
             className="w-full min-h-[46px] flex items-center justify-center rounded-2xl border border-border-default bg-elevated font-sans font-semibold text-[14px] text-text-secondary active:bg-card transition-colors"
           >
-            Load more ({activeSessions.length - visibleSessions.length} remaining)
+            Load more ({activeSessions.length - visibleSessions.length}{" "}
+            remaining)
           </button>
         </div>
       )}

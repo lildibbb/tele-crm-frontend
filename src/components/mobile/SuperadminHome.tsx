@@ -17,9 +17,11 @@ import {
 } from "@phosphor-icons/react";
 import { LiveDot } from "./MobileShell";
 import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
+import { useAuditLogs } from "@/queries/useAuditLogsQuery";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { timeAgo } from "@/lib/format";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface SuperadminHomeProps {
@@ -49,20 +51,13 @@ const HEALTH_CHECKS = [
   { name: "File Storage", status: "warning" as const, latency: "89ms" },
 ];
 
-const AUDIT_EVENTS = [
-  { id: "1", action: "User login", actor: "admin@org.com", time: "2 min ago", type: "auth" as const },
-  { id: "2", action: "Lead status changed", actor: "staff@org.com", time: "15 min ago", type: "data" as const },
-  { id: "3", action: "Backup completed", actor: "system", time: "1 hour ago", type: "system" as const },
-  { id: "4", action: "New user created", actor: "admin@org.com", time: "3 hours ago", type: "auth" as const },
-  { id: "5", action: "Config updated", actor: "superadmin", time: "5 hours ago", type: "system" as const },
-];
-
 // ── Main ───────────────────────────────────────────────────────────────────────
-export default function SuperadminHome({
-  onOrgClick,
-}: SuperadminHomeProps) {
+export default function SuperadminHome({ onOrgClick }: SuperadminHomeProps) {
   const router = useRouter();
   const { data: summary, isLoading } = useAnalyticsSummary();
+  const { data: auditLogs = [], isLoading: auditLoading } = useAuditLogs({
+    take: 5,
+  });
 
   const kpi = summary?.kpi;
   const totalLeads = kpi?.totalLeads?.current ?? 0;
@@ -93,143 +88,229 @@ export default function SuperadminHome({
   ];
 
   const quickActions = [
-    { Icon: Users, label: "Manage Users", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/admin/users") },
-    { Icon: Wrench, label: "Maintenance", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/admin/maintenance") },
-    { Icon: ClipboardText, label: "Audit Logs", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/audit-logs") },
-    { Icon: Database, label: "Backups", color: "bg-elevated", textColor: "text-text-secondary", onClick: () => router.push("/admin/backup") },
+    {
+      Icon: Users,
+      label: "Manage Users",
+      color: "bg-elevated",
+      textColor: "text-text-secondary",
+      onClick: () => router.push("/admin/users"),
+    },
+    {
+      Icon: Wrench,
+      label: "Maintenance",
+      color: "bg-elevated",
+      textColor: "text-text-secondary",
+      onClick: () => router.push("/admin/maintenance"),
+    },
+    {
+      Icon: ClipboardText,
+      label: "Audit Logs",
+      color: "bg-elevated",
+      textColor: "text-text-secondary",
+      onClick: () => router.push("/audit-logs"),
+    },
+    {
+      Icon: Database,
+      label: "Backups",
+      color: "bg-elevated",
+      textColor: "text-text-secondary",
+      onClick: () => router.push("/admin/backup"),
+    },
   ];
 
   return (
-      <div className="pb-6 space-y-5">
-        {/* ── KPI Cards ─────────────────────────────────────── */}
-        <section className="px-4 pt-4">
-          <div className="grid grid-cols-3 gap-2">
-            {isLoading
-              ? [1, 2, 3].map((i) => <SkeletonKpiCard key={i} />)
-              : kpiCards.map((card) => (
-                  <div
-                    key={card.label}
-                    className="flex flex-col gap-1.5 p-3 rounded-2xl bg-card border border-border-subtle shadow-sm"
-                  >
-                    <span className={cn("flex items-center justify-center w-10 h-10 rounded-xl", card.iconBg)}>
-                      <card.Icon size={20} className={card.iconColor} weight="fill" />
-                    </span>
-                    <span className="font-mono font-bold text-[22px] leading-tight text-text-primary">
-                      {card.value}
-                    </span>
-                    <span className="font-sans text-[11px] text-text-secondary leading-tight">
-                      {card.label}
-                    </span>
-                  </div>
-                ))}
-          </div>
-        </section>
-
-        {/* ── Quick Actions ─────────────────────────────────── */}
-        <section className="px-4">
-          <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider mb-3">
-            Quick Actions
-          </h2>
-          <div className="flex items-center gap-4">
-            {quickActions.map((qa) => (
-              <button
-                key={qa.label}
-                onClick={qa.onClick}
-                className="flex flex-col items-center gap-2 min-w-[56px] active:scale-95 transition-transform"
-              >
-                <span className={cn("flex items-center justify-center w-14 h-14 rounded-2xl shadow-sm", qa.color)}>
-                  <qa.Icon size={22} className={qa.textColor} weight="bold" />
-                </span>
-                <span className="font-sans text-[11px] text-text-secondary">{qa.label}</span>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* ── System Health ──────────────────────────────────── */}
-        <section className="px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
-              System Health
-            </h2>
-            <LiveDot />
-          </div>
-          <div className="rounded-2xl bg-card border border-border-subtle shadow-sm divide-y divide-border-subtle overflow-hidden">
-            {isLoading
-              ? [1, 2, 3, 4].map((i) => (
-                  <div key={i} className="px-4 py-3">
-                    <SkeletonRow />
-                  </div>
-                ))
-              : HEALTH_CHECKS.map((check) => (
-                  <div key={check.name} className="flex items-center gap-3 px-4 py-3">
-                    {check.status === "healthy" ? (
-                      <CheckCircle size={18} className="text-text-secondary shrink-0" weight="fill" />
-                    ) : (
-                      <WarningCircle size={18} className="text-text-secondary shrink-0" weight="fill" />
+    <div className="pb-6 space-y-5">
+      {/* ── KPI Cards ─────────────────────────────────────── */}
+      <section className="px-4 pt-4">
+        <div className="grid grid-cols-3 gap-2">
+          {isLoading
+            ? [1, 2, 3].map((i) => <SkeletonKpiCard key={i} />)
+            : kpiCards.map((card) => (
+                <div
+                  key={card.label}
+                  className="flex flex-col gap-1.5 p-3 rounded-2xl bg-card border border-border-subtle shadow-sm"
+                >
+                  <span
+                    className={cn(
+                      "flex items-center justify-center w-10 h-10 rounded-xl",
+                      card.iconBg,
                     )}
-                    <span className="font-sans text-[13px] text-text-primary flex-1">{check.name}</span>
-                    <span className="font-mono text-[12px] text-text-secondary">
-                      {check.latency}
+                  >
+                    <card.Icon
+                      size={20}
+                      className={card.iconColor}
+                      weight="fill"
+                    />
+                  </span>
+                  <span className="font-mono font-bold text-[22px] leading-tight text-text-primary">
+                    {card.value}
+                  </span>
+                  <span className="font-sans text-[11px] text-text-secondary leading-tight">
+                    {card.label}
+                  </span>
+                </div>
+              ))}
+        </div>
+      </section>
+
+      {/* ── Quick Actions ─────────────────────────────────── */}
+      <section className="px-4">
+        <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider mb-3">
+          Quick Actions
+        </h2>
+        <div className="flex items-center gap-4">
+          {quickActions.map((qa) => (
+            <button
+              key={qa.label}
+              onClick={qa.onClick}
+              className="flex flex-col items-center gap-2 min-w-[56px] active:scale-95 transition-transform"
+            >
+              <span
+                className={cn(
+                  "flex items-center justify-center w-14 h-14 rounded-2xl shadow-sm",
+                  qa.color,
+                )}
+              >
+                <qa.Icon size={22} className={qa.textColor} weight="bold" />
+              </span>
+              <span className="font-sans text-[11px] text-text-secondary">
+                {qa.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── System Health ──────────────────────────────────── */}
+      <section className="px-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
+            System Health
+          </h2>
+          <LiveDot />
+        </div>
+        <div className="rounded-2xl bg-card border border-border-subtle shadow-sm divide-y divide-border-subtle overflow-hidden">
+          {isLoading
+            ? [1, 2, 3, 4].map((i) => (
+                <div key={i} className="px-4 py-3">
+                  <SkeletonRow />
+                </div>
+              ))
+            : HEALTH_CHECKS.map((check) => (
+                <div
+                  key={check.name}
+                  className="flex items-center gap-3 px-4 py-3"
+                >
+                  {check.status === "healthy" ? (
+                    <CheckCircle
+                      size={18}
+                      className="text-text-secondary shrink-0"
+                      weight="fill"
+                    />
+                  ) : (
+                    <WarningCircle
+                      size={18}
+                      className="text-text-secondary shrink-0"
+                      weight="fill"
+                    />
+                  )}
+                  <span className="font-sans text-[13px] text-text-primary flex-1">
+                    {check.name}
+                  </span>
+                  <span className="font-mono text-[12px] text-text-secondary">
+                    {check.latency}
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] font-medium"
+                  >
+                    {check.status === "healthy" ? "OK" : "SLOW"}
+                  </Badge>
+                </div>
+              ))}
+        </div>
+      </section>
+
+      {/* ── Recent Audit Events ───────────────────────────── */}
+      <section className="px-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
+            Recent Audit Events
+          </h2>
+        </div>
+        <div className="space-y-2">
+          {auditLoading ? (
+            [1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-[56px] rounded-xl" />
+            ))
+          ) : auditLogs.length === 0 ? (
+            <div className="rounded-xl bg-card border border-border-subtle p-6 text-center">
+              <p className="font-sans text-[13px] text-text-muted">
+                No recent audit events
+              </p>
+            </div>
+          ) : (
+            auditLogs.map((log) => {
+              // Determine event type from action string
+              const actionStr = log.action;
+              const isAuth =
+                actionStr.startsWith("USER_") ||
+                actionStr === "PASSWORD_CHANGED";
+              const isSystem =
+                actionStr.startsWith("SYSTEM_") ||
+                actionStr.startsWith("KB_") ||
+                actionStr.startsWith("COMMAND_MENU_");
+              const typeConfig = isAuth
+                ? { icon: ShieldCheck, bg: "bg-elevated" }
+                : isSystem
+                  ? { icon: Wrench, bg: "bg-elevated" }
+                  : { icon: ClipboardText, bg: "bg-elevated" };
+              const EventIcon = typeConfig.icon;
+              const displayAction = actionStr
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase())
+                .toLowerCase()
+                .replace(/^./, (c) => c.toUpperCase());
+
+              return (
+                <div
+                  key={log.id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle shadow-sm"
+                >
+                  <span
+                    className={cn(
+                      "flex items-center justify-center w-8 h-8 rounded-lg shrink-0",
+                      typeConfig.bg,
+                    )}
+                  >
+                    <EventIcon
+                      size={16}
+                      className="text-text-secondary"
+                      weight="fill"
+                    />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-sans font-medium text-[13px] text-text-primary truncate block">
+                      {displayAction}
                     </span>
-                    <Badge variant="secondary" className="text-[10px] font-medium">
-                      {check.status === "healthy" ? "OK" : "SLOW"}
-                    </Badge>
-                  </div>
-                ))}
-          </div>
-        </section>
-
-        {/* ── Recent Audit Events ───────────────────────────── */}
-        <section className="px-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-sans font-semibold text-[13px] text-text-muted uppercase tracking-wider">
-              Recent Audit Events
-            </h2>
-          </div>
-          <div className="space-y-2">
-            {isLoading
-              ? [1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-[56px] rounded-xl" />
-                ))
-              : AUDIT_EVENTS.map((event) => {
-                  const typeConfig = {
-                    auth:   { icon: ShieldCheck, bg: "bg-elevated" },
-                    data:   { icon: ClipboardText, bg: "bg-elevated" },
-                    system: { icon: Wrench, bg: "bg-elevated" },
-                  }[event.type];
-                  const EventIcon = typeConfig.icon;
-
-                  return (
-                    <div
-                      key={event.id}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle shadow-sm"
-                    >
-                      <span className={cn("flex items-center justify-center w-8 h-8 rounded-lg shrink-0", typeConfig.bg)}>
-                        <EventIcon size={16} className="text-text-secondary" weight="fill" />
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="font-mono text-[11px] text-text-muted truncate">
+                        {log.userEmail ?? "system"}
                       </span>
-                      <div className="flex-1 min-w-0">
-                        <span className="font-sans font-medium text-[13px] text-text-primary truncate block">
-                          {event.action}
-                        </span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="font-mono text-[11px] text-text-muted truncate">
-                            {event.actor}
-                          </span>
-                          <span className="text-text-muted">·</span>
-                          <span className="font-sans text-[11px] text-text-muted flex items-center gap-1 shrink-0">
-                            <Clock size={10} />
-                            {event.time}
-                          </span>
-                        </div>
-                      </div>
-                      <CaretRight size={14} className="text-text-muted shrink-0" />
+                      <span className="text-text-muted">·</span>
+                      <span className="font-sans text-[11px] text-text-muted flex items-center gap-1 shrink-0">
+                        <Clock size={10} />
+                        {timeAgo(log.createdAt)}
+                      </span>
                     </div>
-                  );
-                })}
-          </div>
-        </section>
-      </div>
+                  </div>
+                  <CaretRight size={14} className="text-text-muted shrink-0" />
+                </div>
+              );
+            })
+          )}
+        </div>
+      </section>
+    </div>
   );
 }
-

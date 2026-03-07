@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowsClockwise,
   Trash,
@@ -62,9 +62,17 @@ function QueueCard({
 }) {
   const stats = [
     { label: "Waiting", value: queue.waiting, color: "text-text-secondary" },
-    { label: "Active", value: queue.active, color: queue.active > 0 ? "text-info" : "text-text-secondary" },
+    {
+      label: "Active",
+      value: queue.active,
+      color: queue.active > 0 ? "text-info" : "text-text-secondary",
+    },
     { label: "Done", value: queue.completed, color: "text-success" },
-    { label: "Failed", value: queue.failed, color: queue.failed > 0 ? "text-danger" : "text-text-secondary" },
+    {
+      label: "Failed",
+      value: queue.failed,
+      color: queue.failed > 0 ? "text-danger" : "text-text-secondary",
+    },
   ];
 
   return (
@@ -78,7 +86,10 @@ function QueueCard({
           {queue.name}
         </p>
         {queue.failed > 0 && (
-          <Badge variant="destructive" className="text-[10px] px-2 py-0.5 shrink-0">
+          <Badge
+            variant="destructive"
+            className="text-[10px] px-2 py-0.5 shrink-0"
+          >
             {queue.failed} failed
           </Badge>
         )}
@@ -87,11 +98,13 @@ function QueueCard({
       {/* Stats row */}
       <div className="grid grid-cols-4 gap-2">
         {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl bg-elevated p-2 text-center"
-          >
-            <p className={cn("font-display text-[16px] font-bold leading-none", s.color)}>
+          <div key={s.label} className="rounded-xl bg-elevated p-2 text-center">
+            <p
+              className={cn(
+                "font-display text-[16px] font-bold leading-none",
+                s.color,
+              )}
+            >
               {s.value}
             </p>
             <p className="font-sans text-[9px] text-text-muted mt-1 uppercase tracking-wide">
@@ -212,25 +225,29 @@ export default function MobileAdminQueues({}: MobileAdminQueuesProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
-  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(
+    null,
+  );
 
-  // SUPERADMIN guard
-  if (user?.role !== "SUPERADMIN") {
-    router.replace("/");
-    return null;
-  }
+  // SUPERADMIN guard — useEffect to avoid hook ordering violation
+  useEffect(() => {
+    if (user?.role !== "SUPERADMIN") router.replace("/");
+  }, [user, router]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: queryKeys.superadmin.queues(),
     queryFn: () => superadminApi.getQueues(),
     refetchInterval: 30_000,
+    enabled: user?.role === "SUPERADMIN",
   });
 
   const retryMutation = useMutation({
     mutationFn: (name: string) => superadminApi.retryFailed(name),
     onSuccess: (result, name) => {
       toast.success(`Retried ${result.retried} job(s) in "${name}"`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.queues() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.superadmin.queues(),
+      });
       setConfirmAction(null);
     },
     onError: () => toast.error("Failed to retry jobs"),
@@ -240,7 +257,9 @@ export default function MobileAdminQueues({}: MobileAdminQueuesProps) {
     mutationFn: (name: string) => superadminApi.purgeFailed(name),
     onSuccess: (result, name) => {
       toast.success(`Purged ${result.purged} job(s) from "${name}"`);
-      queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.queues() });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.superadmin.queues(),
+      });
       setConfirmAction(null);
     },
     onError: () => toast.error("Failed to purge jobs"),
@@ -270,10 +289,15 @@ export default function MobileAdminQueues({}: MobileAdminQueuesProps) {
             </span>
             <div>
               <p className="font-sans font-semibold text-[13px] text-text-primary">
-                {isLoading ? "—" : queues.length} queue{queues.length !== 1 ? "s" : ""}
+                {isLoading ? "—" : queues.length} queue
+                {queues.length !== 1 ? "s" : ""}
               </p>
               <p className="font-sans text-[11px] text-text-muted">
-                {isLoading ? "—" : totalFailed > 0 ? `${totalFailed} failed job(s)` : "No failures"}
+                {isLoading
+                  ? "—"
+                  : totalFailed > 0
+                    ? `${totalFailed} failed job(s)`
+                    : "No failures"}
               </p>
             </div>
           </div>
@@ -293,9 +317,15 @@ export default function MobileAdminQueues({}: MobileAdminQueuesProps) {
       {/* ── Failed warning ─────────────────────────────────────────── */}
       {!isLoading && totalFailed > 0 && (
         <div className="mx-4 mb-3 flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-danger/8 border border-danger/20">
-          <Warning size={16} weight="fill" className="text-danger shrink-0 mt-0.5" />
+          <Warning
+            size={16}
+            weight="fill"
+            className="text-danger shrink-0 mt-0.5"
+          />
           <p className="font-sans text-[12px] text-danger leading-relaxed">
-            {totalFailed} failed job(s) across {queues.filter((q) => q.failed > 0).length} queue(s). Review and retry or purge.
+            {totalFailed} failed job(s) across{" "}
+            {queues.filter((q) => q.failed > 0).length} queue(s). Review and
+            retry or purge.
           </p>
         </div>
       )}

@@ -3,7 +3,10 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileAnalytics } from "@/components/mobile";
-import { useAnalyticsSummary, useAnalyticsVelocity } from "@/queries/useAnalyticsQuery";
+import {
+  useAnalyticsSummary,
+  useAnalyticsVelocity,
+} from "@/queries/useAnalyticsQuery";
 import { useAuthStore } from "@/store/authStore";
 import {
   TrendUp,
@@ -49,7 +52,6 @@ const TIMEFRAMES: Timeframe[] = [
   "last_90_days",
   "all_time",
 ];
-
 
 /**
  * Format a trendSeries date string for x-axis based on granularity.
@@ -117,11 +119,7 @@ const FUNNEL_FILLS = {
 };
 
 // ── Tooltip components ───────────────────────────────────────────
-function AreaTip({
-  active,
-  payload,
-  label,
-}: ChartTooltipProps) {
+function AreaTip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div
@@ -188,11 +186,7 @@ function AreaTip({
   );
 }
 
-function BarTip({
-  active,
-  payload,
-  label,
-}: ChartTooltipProps) {
+function BarTip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div
@@ -330,22 +324,25 @@ export default function AnalyticsPage() {
   const { data: velocityData } = useAnalyticsVelocity();
   const user = useAuthStore((s) => s.user);
   const isSuperAdmin = user?.role === "SUPERADMIN";
-  const [ragStats, setRagStats] = useState<import("@/lib/schemas/analytics.schema").RagStats | null>(null);
+  const [ragStats, setRagStats] = useState<
+    import("@/lib/schemas/analytics.schema").RagStats | null
+  >(null);
   const [ragLoading, setRagLoading] = useState(false);
 
   // Fetch RAG stats — SUPERADMIN only, no call for other roles
   useEffect(() => {
     if (!isSuperAdmin) return;
     setRagLoading(true);
-    analyticsApi.getRagStats()
+    analyticsApi
+      .getRagStats()
       .then((res) => {
         const d = parseApiData<RagStats>(res.data);
         setRagStats(d ?? null);
       })
       .catch(() => toast.error(t(K.common.error.loadAnalytics)))
       .finally(() => setRagLoading(false));
-  // Mount-only effect — deps intentionally omitted (fetch RAG stats once when role is known)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Mount-only effect — deps intentionally omitted (fetch RAG stats once when role is known)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuperAdmin]);
 
   // ── Derived data from summary API ──────────────────────────────
@@ -385,19 +382,19 @@ export default function AnalyticsPage() {
 
   const timeframeLabel = (tf: Timeframe): string => {
     const map: Record<Timeframe, string> = {
-      today:        t(K.common.period.today),
-      yesterday:    t(K.common.period.yesterday),
-      this_week:    t(K.common.period.weekly),
-      this_month:   t(K.common.period.monthly),
+      today: t(K.common.period.today),
+      yesterday: t(K.common.period.yesterday),
+      this_week: t(K.common.period.weekly),
+      this_month: t(K.common.period.monthly),
       last_30_days: t(K.common.period.last30Days),
       last_90_days: t(K.common.period.last90Days),
-      all_time:     t(K.common.period.allTime),
-      custom:       t(K.common.period.custom),
+      all_time: t(K.common.period.allTime),
+      custom: t(K.common.period.custom),
     };
     return map[tf];
   };
 
-  const handleTimeframeChange= (tf: Timeframe) => {
+  const handleTimeframeChange = (tf: Timeframe) => {
     if (tf === timeframe) return;
     setContentVisible(false);
     setTimeout(() => {
@@ -469,7 +466,7 @@ export default function AnalyticsPage() {
       {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
         {isLoading && !summary ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-[120px] rounded-2xl" />
           ))
         ) : (
@@ -553,8 +550,16 @@ export default function AnalyticsPage() {
                     <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="gDep" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-success)" stopOpacity={0.38} />
-                    <stop offset="95%" stopColor="var(--color-success)" stopOpacity={0.02} />
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-success)"
+                      stopOpacity={0.38}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-success)"
+                      stopOpacity={0.02}
+                    />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -569,7 +574,12 @@ export default function AnalyticsPage() {
                   interval={xAxisInterval(trendData.length)}
                 />
                 <YAxis hide />
-                <Tooltip content={<AreaTip />} offset={12} isAnimationActive={false} wrapperStyle={{ pointerEvents: "none" }} />
+                <Tooltip
+                  content={<AreaTip />}
+                  offset={12}
+                  isAnimationActive={false}
+                  wrapperStyle={{ pointerEvents: "none" }}
+                />
                 <Area
                   type="monotone"
                   dataKey="New Leads"
@@ -686,10 +696,7 @@ export default function AnalyticsPage() {
                     "Submitted → Confirmed",
                     summary.funnel.conversionRates.submittedToConfirmed,
                   ],
-                  [
-                    "Overall",
-                    summary.funnel.conversionRates.overall,
-                  ],
+                  ["Overall", summary.funnel.conversionRates.overall],
                 ].map(([label, val]) => (
                   <div key={label as string} className="flex justify-between">
                     <span className="text-[10px] text-text-muted">{label}</span>
@@ -726,7 +733,11 @@ export default function AnalyticsPage() {
               >
                 <defs>
                   <linearGradient id="gSrc" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="var(--color-crimson)" stopOpacity={0.9} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--color-crimson)"
+                      stopOpacity={0.9}
+                    />
                     <stop
                       offset="100%"
                       stopColor="var(--color-crimson)"
@@ -747,7 +758,12 @@ export default function AnalyticsPage() {
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<BarTip />} offset={12} isAnimationActive={false} wrapperStyle={{ pointerEvents: "none" }} />
+                <Tooltip
+                  content={<BarTip />}
+                  offset={12}
+                  isAnimationActive={false}
+                  wrapperStyle={{ pointerEvents: "none" }}
+                />
                 <Bar dataKey="value" fill="url(#gSrc)" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -784,9 +800,15 @@ export default function AnalyticsPage() {
                 <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   {t(K.analytics.velocity.title)}
                 </h2>
-                <ArrowsLeftRight size={20} weight="duotone" className="text-text-muted" />
+                <ArrowsLeftRight
+                  size={20}
+                  weight="duotone"
+                  className="text-text-muted"
+                />
               </div>
-              <p className="text-xs font-sans mb-5 text-text-muted">{t(K.analytics.velocity.subtitle)}</p>
+              <p className="text-xs font-sans mb-5 text-text-muted">
+                {t(K.analytics.velocity.subtitle)}
+              </p>
               {!velocityData || velocityData.newToSubmitted.count < 5 ? (
                 <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
                   {t(K.analytics.velocity.noData)}
@@ -794,9 +816,21 @@ export default function AnalyticsPage() {
               ) : (
                 <div className="space-y-3">
                   {[
-                    { label: t(K.analytics.velocity.newToSubmit),      value: velocityData.newToSubmitted.p50,         color: "#a855f7" },
-                    { label: t(K.analytics.velocity.submitToConfirm),  value: velocityData.submittedToConfirmed.p50,   color: "var(--color-success)" },
-                    { label: t(K.analytics.velocity.newToConfirm),     value: velocityData.newToConfirmed.p50,         color: "var(--color-crimson)" },
+                    {
+                      label: t(K.analytics.velocity.newToSubmit),
+                      value: velocityData.newToSubmitted.p50,
+                      color: "#a855f7",
+                    },
+                    {
+                      label: t(K.analytics.velocity.submitToConfirm),
+                      value: velocityData.submittedToConfirmed.p50,
+                      color: "var(--color-success)",
+                    },
+                    {
+                      label: t(K.analytics.velocity.newToConfirm),
+                      value: velocityData.newToConfirmed.p50,
+                      color: "var(--color-crimson)",
+                    },
                   ].map(({ label, value, color }) => {
                     const max = Math.max(
                       velocityData.newToSubmitted.p50 ?? 0,
@@ -810,13 +844,19 @@ export default function AnalyticsPage() {
                         <div className="flex justify-between text-[11px] font-sans mb-1">
                           <span className="text-text-muted">{label}</span>
                           <span className="data-mono" style={{ color }}>
-                            {value != null ? `${value} ${t(K.analytics.velocity.days)}` : "—"}
+                            {value != null
+                              ? `${value} ${t(K.analytics.velocity.days)}`
+                              : "—"}
                           </span>
                         </div>
                         <div className="h-2 rounded-full bg-void/40">
                           <div
                             className="h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${pct}%`, background: color, opacity: 0.8 }}
+                            style={{
+                              width: `${pct}%`,
+                              background: color,
+                              opacity: 0.8,
+                            }}
                           />
                         </div>
                       </div>
@@ -832,10 +872,15 @@ export default function AnalyticsPage() {
                 <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   {t(K.analytics.velocity.distribution)}
                 </h2>
-                <ChartBar size={20} weight="duotone" className="text-text-muted" />
+                <ChartBar
+                  size={20}
+                  weight="duotone"
+                  className="text-text-muted"
+                />
               </div>
               <p className="text-xs font-sans mb-5 text-text-muted">
-                {t(K.analytics.velocity.p25)} · {t(K.analytics.velocity.p50)} · {t(K.analytics.velocity.p75)}
+                {t(K.analytics.velocity.p25)} · {t(K.analytics.velocity.p50)} ·{" "}
+                {t(K.analytics.velocity.p75)}
               </p>
               {!velocityData || velocityData.newToSubmitted.count < 5 ? (
                 <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
@@ -847,15 +892,15 @@ export default function AnalyticsPage() {
                     data={[
                       {
                         name: t(K.analytics.velocity.newToSubmit),
-                        p25:  velocityData.newToSubmitted.p25,
-                        p50:  velocityData.newToSubmitted.p50,
-                        p75:  velocityData.newToSubmitted.p75,
+                        p25: velocityData.newToSubmitted.p25,
+                        p50: velocityData.newToSubmitted.p50,
+                        p75: velocityData.newToSubmitted.p75,
                       },
                       {
                         name: t(K.analytics.velocity.newToConfirm),
-                        p25:  velocityData.newToConfirmed.p25,
-                        p50:  velocityData.newToConfirmed.p50,
-                        p75:  velocityData.newToConfirmed.p75,
+                        p25: velocityData.newToConfirmed.p25,
+                        p50: velocityData.newToConfirmed.p50,
+                        p75: velocityData.newToConfirmed.p75,
                       },
                     ]}
                     margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
@@ -864,30 +909,77 @@ export default function AnalyticsPage() {
                   >
                     <XAxis
                       dataKey="name"
-                      tick={{ fontSize: 10, fill: "var(--text-muted)", fontFamily: "inherit" }}
+                      tick={{
+                        fontSize: 10,
+                        fill: "var(--text-muted)",
+                        fontFamily: "inherit",
+                      }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis hide />
                     <Tooltip
                       content={(props) => {
-                        const { active, payload, label } = props as unknown as ChartTooltipProps;
+                        const { active, payload, label } =
+                          props as unknown as ChartTooltipProps;
                         if (!active || !payload?.length) return null;
                         return (
-                          <div style={{ background: "var(--elevated)", border: "1px solid var(--border-subtle)", borderRadius: 10, padding: "8px 12px" }}>
-                            <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{label}</p>
+                          <div
+                            style={{
+                              background: "var(--elevated)",
+                              border: "1px solid var(--border-subtle)",
+                              borderRadius: 10,
+                              padding: "8px 12px",
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontSize: 11,
+                                color: "var(--text-muted)",
+                                marginBottom: 4,
+                              }}
+                            >
+                              {label}
+                            </p>
                             {payload.map((p: ChartTooltipEntry) => (
-                              <p key={p.name} style={{ fontSize: 12, color: p.fill, fontFamily: "var(--font-jetbrains-mono, monospace)" }}>
-                                {p.name}: {p.value ?? "—"} {t(K.analytics.velocity.days)}
+                              <p
+                                key={p.name}
+                                style={{
+                                  fontSize: 12,
+                                  color: p.fill,
+                                  fontFamily:
+                                    "var(--font-jetbrains-mono, monospace)",
+                                }}
+                              >
+                                {p.name}: {p.value ?? "—"}{" "}
+                                {t(K.analytics.velocity.days)}
                               </p>
                             ))}
                           </div>
                         );
                       }}
                     />
-                    <Bar dataKey="p25" name={t(K.analytics.velocity.p25)} fill="#a855f7" fillOpacity={0.4} radius={[4,4,0,0]} />
-                    <Bar dataKey="p50" name={t(K.analytics.velocity.p50)} fill="#a855f7" fillOpacity={0.8} radius={[4,4,0,0]} />
-                    <Bar dataKey="p75" name={t(K.analytics.velocity.p75)} fill="#a855f7" fillOpacity={0.3} radius={[4,4,0,0]} />
+                    <Bar
+                      dataKey="p25"
+                      name={t(K.analytics.velocity.p25)}
+                      fill="#a855f7"
+                      fillOpacity={0.4}
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="p50"
+                      name={t(K.analytics.velocity.p50)}
+                      fill="#a855f7"
+                      fillOpacity={0.8}
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="p75"
+                      name={t(K.analytics.velocity.p75)}
+                      fill="#a855f7"
+                      fillOpacity={0.3}
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -901,8 +993,12 @@ export default function AnalyticsPage() {
         <div className="mt-6 bg-elevated rounded-xl border border-border-subtle p-5">
           <div className="flex items-center gap-2 mb-4">
             <Pulse size={16} className="text-accent" weight="duotone" />
-            <h3 className="font-sans font-semibold text-sm text-text-primary">RAG Quality</h3>
-            <span className="text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle ml-auto shadow-sm">SUPERADMIN</span>
+            <h3 className="font-sans font-semibold text-sm text-text-primary">
+              RAG Quality
+            </h3>
+            <span className="text-[10px] font-mono text-text-muted bg-card px-2 py-0.5 rounded-full border border-border-subtle ml-auto shadow-sm">
+              SUPERADMIN
+            </span>
           </div>
           {ragLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -913,17 +1009,52 @@ export default function AnalyticsPage() {
           ) : ragStats ? (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: "Hit Rate", value: `${ragStats.ragHitRate.toFixed(1)}%`, color: "text-success" },
-                { label: "Avg Chunks", value: ragStats.avgChunksPerRequest.toFixed(2), color: "text-accent" },
-                { label: "Zero Hits", value: ragStats.zeroHitCount.toString(), color: "text-danger" },
-                { label: "Total Requests", value: ragStats.totalRequests.toLocaleString(), color: "text-text-primary" },
-                { label: "Prompt Tokens", value: ragStats.totalPromptTokens.toLocaleString(), color: "text-text-primary" },
-                { label: "Completion Tokens", value: ragStats.totalCompletionTokens.toLocaleString(), color: "text-text-primary" },
-                { label: "RAG Hits", value: ragStats.ragHitCount.toLocaleString(), color: "text-text-primary" },
+                {
+                  label: "Hit Rate",
+                  value: `${ragStats.ragHitRate.toFixed(1)}%`,
+                  color: "text-success",
+                },
+                {
+                  label: "Avg Chunks",
+                  value: ragStats.avgChunksPerRequest.toFixed(2),
+                  color: "text-accent",
+                },
+                {
+                  label: "Zero Hits",
+                  value: ragStats.zeroHitCount.toString(),
+                  color: "text-danger",
+                },
+                {
+                  label: "Total Requests",
+                  value: ragStats.totalRequests.toLocaleString(),
+                  color: "text-text-primary",
+                },
+                {
+                  label: "Prompt Tokens",
+                  value: ragStats.totalPromptTokens.toLocaleString(),
+                  color: "text-text-primary",
+                },
+                {
+                  label: "Completion Tokens",
+                  value: ragStats.totalCompletionTokens.toLocaleString(),
+                  color: "text-text-primary",
+                },
+                {
+                  label: "RAG Hits",
+                  value: ragStats.ragHitCount.toLocaleString(),
+                  color: "text-text-primary",
+                },
               ].map(({ label, value, color }) => (
-                <div key={label} className="bg-card rounded-xl p-3 border border-border-subtle flex flex-col gap-1 shadow-sm">
-                  <p className={`font-mono text-lg font-bold ${color}`}>{value}</p>
-                  <p className="font-sans text-[10px] text-text-muted uppercase tracking-wider">{label}</p>
+                <div
+                  key={label}
+                  className="bg-card rounded-xl p-3 border border-border-subtle flex flex-col gap-1 shadow-sm"
+                >
+                  <p className={`font-mono text-lg font-bold ${color}`}>
+                    {value}
+                  </p>
+                  <p className="font-sans text-[10px] text-text-muted uppercase tracking-wider">
+                    {label}
+                  </p>
                 </div>
               ))}
             </div>

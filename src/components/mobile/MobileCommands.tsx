@@ -126,7 +126,7 @@ export default function MobileCommands(_props: MobileCommandsProps) {
     setEditLabel(cmd.label);
   }
 
-  if (role === "STAFF") return null;
+  if (role === "STAFF") return <div />;
 
   return (
     <div className="flex flex-col min-h-screen bg-void text-text-primary font-sans">
@@ -158,9 +158,15 @@ export default function MobileCommands(_props: MobileCommandsProps) {
         ) : commands.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center">
             <div className="w-14 h-14 rounded-2xl bg-elevated border border-border-subtle flex items-center justify-center">
-              <ListBullets size={24} className="text-text-muted" weight="fill" />
+              <ListBullets
+                size={24}
+                className="text-text-muted"
+                weight="fill"
+              />
             </div>
-            <p className="font-sans text-[13px] text-text-muted">No commands yet</p>
+            <p className="font-sans text-[13px] text-text-muted">
+              No commands yet
+            </p>
             <p className="font-sans text-[11px] text-text-muted/60">
               Tap + to add your first bot command
             </p>

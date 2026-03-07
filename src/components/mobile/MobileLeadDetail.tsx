@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   CaretLeft,
@@ -38,6 +38,12 @@ import { useAuthStore } from "@/store/authStore";
 import { attachmentsApi, leadsApi } from "@/lib/api";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -270,10 +276,13 @@ export default function MobileLeadDetail({
   const [isSending, setIsSending] = useState(false);
   const [mediaPreview, setMediaPreview] = useState<MediaItem | null>(null);
   const handoverMutation = useSetHandover();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const { data: attachmentsData } = useQuery({
     queryKey: ["lead-attachments", lead?.id],
-    queryFn: () => attachmentsApi.findByLead(lead!.id!).then((r) => r.data.data ?? []),
+    queryFn: () =>
+      attachmentsApi.findByLead(lead!.id!).then((r) => r.data.data ?? []),
     enabled: !!lead?.id,
     staleTime: 30_000,
   });
@@ -281,12 +290,22 @@ export default function MobileLeadDetail({
 
   const { data: interactionsData } = useQuery({
     queryKey: ["lead-interactions", lead?.id],
-    queryFn: () => leadsApi.getInteractions(lead!.id!, { skip: 0, take: 30 }).then((r) => r.data.data ?? []),
+    queryFn: () =>
+      leadsApi
+        .getInteractions(lead!.id!, { skip: 0, take: 30 })
+        .then((r) => r.data.data ?? []),
     enabled: !!lead?.id,
     refetchInterval: 5000,
     staleTime: 0,
   });
   const interactions = interactionsData ?? [];
+
+  // Auto-scroll chat to latest message
+  useEffect(() => {
+    if (chatEndRef.current && interactions.length > 0) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [interactions]);
 
   const handleBack = useCallback(() => {
     if (onBack) {
@@ -308,7 +327,9 @@ export default function MobileLeadDetail({
     try {
       await leadsApi.reply(lead.id, trimmed);
       setMessageText("");
-      queryClient.invalidateQueries({ queryKey: ["lead-interactions", lead.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["lead-interactions", lead.id],
+      });
     } finally {
       setIsSending(false);
     }
@@ -514,6 +535,7 @@ export default function MobileLeadDetail({
           </span>
         </div>
         <button
+          onClick={() => setMenuOpen(true)}
           className="min-w-[44px] min-h-[44px] flex items-center justify-center text-text-secondary active:opacity-70 transition-opacity"
           aria-label="More options"
         >
@@ -556,7 +578,10 @@ export default function MobileLeadDetail({
             <div className="flex items-center gap-2 flex-wrap justify-center">
               <Badge
                 variant="secondary"
-                className={cn("text-[11px] font-bold uppercase tracking-wider", cfg.cls)}
+                className={cn(
+                  "text-[11px] font-bold uppercase tracking-wider",
+                  cfg.cls,
+                )}
               >
                 {status.replace(/_/g, " ")}
               </Badge>
@@ -667,23 +692,30 @@ export default function MobileLeadDetail({
             <h2 className="font-sans font-bold text-[13px] text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
               <PaperclipHorizontal size={14} weight="bold" />
               Attachments
-              <span className="text-[10px] font-mono ml-1 text-text-muted">{attachments.length}</span>
+              <span className="text-[10px] font-mono ml-1 text-text-muted">
+                {attachments.length}
+              </span>
             </h2>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
               {attachments.map((file) => {
                 const isImg = file.mimeType?.startsWith("image/");
                 const isVid = file.mimeType?.startsWith("video/");
-                const fileName = file.fileKey?.split("/").pop() ?? file.fileUrl?.split("/").pop() ?? "File";
+                const fileName =
+                  file.fileKey?.split("/").pop() ??
+                  file.fileUrl?.split("/").pop() ??
+                  "File";
                 return (
                   <button
                     key={file.id}
-                    onClick={() => setMediaPreview({
-                      url: file.fileUrl,
-                      type: isImg ? "image" : isVid ? "video" : "file",
-                      name: fileName,
-                      mimeType: file.mimeType,
-                      size: file.size,
-                    })}
+                    onClick={() =>
+                      setMediaPreview({
+                        url: file.fileUrl,
+                        type: isImg ? "image" : isVid ? "video" : "file",
+                        name: fileName,
+                        mimeType: file.mimeType,
+                        size: file.size,
+                      })
+                    }
                     className="shrink-0 snap-start w-[110px] h-[80px] rounded-xl overflow-hidden bg-elevated border border-border-subtle active:scale-[0.95] transition-transform relative group"
                   >
                     {isImg ? (
@@ -695,7 +727,9 @@ export default function MobileLeadDetail({
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-text-muted">
                         <File size={24} weight="duotone" />
-                        <span className="text-[9px] font-sans truncate max-w-[80px] px-1">{fileName}</span>
+                        <span className="text-[9px] font-sans truncate max-w-[80px] px-1">
+                          {fileName}
+                        </span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -725,175 +759,165 @@ export default function MobileLeadDetail({
           </section>
         )}
 
-        {/* ── Chat History ─────────────────────────────────────────────── */}
+        {/* ── Chat Button ────────────────────────────────────────────── */}
         {lead.id && (
           <section className="px-4 mb-5">
-            <h2 className="font-sans font-bold text-[13px] text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <ChatCircleDots size={14} weight="bold" />
-              Conversation
-              {interactions.length > 0 && (
-                <span className="text-[10px] font-mono ml-1 text-text-muted">{interactions.length}</span>
-              )}
-            </h2>
-            <div
-              className="space-y-2 max-h-[300px] overflow-y-auto rounded-xl bg-card border border-border-subtle p-3"
-              style={{ scrollbarWidth: "thin" }}
+            <button
+              onClick={() => router.push(`/leads/${lead.id}/chat`)}
+              className="w-full h-[52px] rounded-xl bg-card border border-border-subtle flex items-center justify-center gap-2.5 font-sans font-bold text-[15px] text-crimson active:scale-[0.97] transition-transform shadow-sm"
             >
-              {interactions.length === 0 ? (
-                <p className="text-[12px] font-sans text-text-muted text-center py-6">No messages yet</p>
-              ) : (
-                interactions.map((msg, i) => {
-                  const isSystem = msg.type === "SYSTEM_STATUS_CHANGE";
-                  const isBot = msg.type === "AUTO_REPLY_SENT";
-                  const isUser = msg.type === "MESSAGE_RECEIVED";
-
-                  if (isSystem) {
-                    return (
-                      <div key={msg.id ?? i} className="text-center">
-                        <span className="text-[10px] font-sans italic text-text-muted bg-elevated px-3 py-1 rounded-full">
-                          {msg.content ?? ""}
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={msg.id ?? i} className={`flex ${isUser ? "justify-start" : "justify-end"}`}>
-                      <div className={cn(
-                        "max-w-[85%] rounded-2xl px-3 py-2",
-                        isUser
-                          ? "bg-elevated border border-border-default"
-                          : isBot
-                          ? "bg-success/10 border border-success/20"
-                          : "bg-crimson/10 border border-crimson/20"
-                      )}>
-                        {!isUser && isBot && (
-                          <p className="text-[9px] font-sans font-bold text-success uppercase tracking-wider mb-1">Bot</p>
-                        )}
-                        {!isUser && !isBot && (
-                          <p className="text-[9px] font-sans font-bold text-crimson uppercase tracking-wider mb-1">Agent</p>
-                        )}
-                        {msg.content && (
-                          <p className="text-[13px] font-sans text-text-primary leading-relaxed">{msg.content}</p>
-                        )}
-                        <p className="text-[10px] font-mono text-text-muted mt-1">
-                          {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })
+              <ChatCircleDots size={20} weight="bold" />
+              Open Chat
+              {interactions.length > 0 && (
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-crimson/10 text-[11px] font-mono font-semibold text-crimson">
+                  {interactions.length}
+                </span>
               )}
-            </div>
-          </section>
-        )}
-
-        {/* ── Send Message Section ─────────────────────────────────────── */}
-        {lead.id && (
-          <section className="px-4 mb-5">
-            <h2 className="font-sans font-bold text-[13px] text-text-muted uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              <ChatCircleDots size={14} weight="bold" />
-              Send Message
-            </h2>
-            <div className="flex gap-2 items-end">
-              <div className="flex-1 bg-card border border-border-subtle rounded-xl overflow-hidden transition-colors">
-                <textarea
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Type a message…"
-                  rows={2}
-                  className="w-full bg-transparent px-3.5 py-3 text-[14px] text-text-primary placeholder:text-text-muted resize-none outline-none font-sans"
-                />
-              </div>
-              <button
-                onClick={handleSend}
-                disabled={!messageText.trim() || isSending}
-                className={cn(
-                  "shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-[0.93]",
-                  messageText.trim() && !isSending
-                    ? "bg-crimson text-white shadow-lg"
-                    : "bg-elevated text-text-muted",
-                )}
-                aria-label="Send message"
-              >
-                {isSending ? (
-                  <div className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                ) : (
-                  <PaperPlaneTilt size={20} weight="fill" />
-                )}
-              </button>
-            </div>
+            </button>
           </section>
         )}
       </main>
 
-      {/* ── Sticky Action Bar ──────────────────────────────────────────── */}
-      {(canVerify || !!onUpdateStatus || role !== "STAFF") && (
+      {/* ── Sticky Action Bar — status-dependent ──────────────────────── */}
+      {(canVerify || onRevert || onReopen) && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border-subtle px-4 pt-3 pb-[calc(76px+env(safe-area-inset-bottom))]">
-          {/* Handover toggle — OWNER/ADMIN only */}
-          {role !== "STAFF" && (
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-sans text-[14px] font-medium text-text-primary">
-                Handover
-              </span>
-              <div className="flex items-center gap-2">
-                {handoverMutation.isPending && (
-                  <div className="w-4 h-4 rounded-full border-2 border-crimson border-t-transparent animate-spin" />
-                )}
-                <Switch
-                  checked={lead.handoverMode ?? false}
-                  onCheckedChange={(checked) =>
-                    handoverMutation.mutate({ id: lead.id!, mode: checked })
-                  }
-                  disabled={handoverMutation.isPending}
-                />
-              </div>
-            </div>
-          )}
-          {canVerify ? (
-            <div className="flex gap-3">
+          <div className="flex gap-3">
+            {/* DEPOSIT_REPORTED → Verify + Reject */}
+            {canVerify && (
+              <>
+                <button
+                  onClick={onVerify}
+                  className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-crimson text-white flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
+                >
+                  <CheckCircle size={20} weight="bold" />
+                  Verify
+                </button>
+                <button
+                  onClick={onReject}
+                  className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-text-secondary border border-border-subtle flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
+                >
+                  <XCircle
+                    size={20}
+                    weight="bold"
+                    className="text-text-secondary"
+                  />
+                  Reject
+                </button>
+              </>
+            )}
+            {/* DEPOSIT_CONFIRMED → Revert */}
+            {!canVerify && onRevert && (
               <button
-                onClick={onVerify}
-                className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-crimson text-white flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
+                onClick={onRevert}
+                className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-warning border border-warning/30 flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
               >
-                <CheckCircle size={20} weight="bold" />
-                Verify
+                <ArrowCounterClockwise size={20} weight="bold" />
+                Revert Verification
               </button>
+            )}
+            {/* REJECTED → Reopen */}
+            {!canVerify && !onRevert && onReopen && (
               <button
-                onClick={onReject}
-                className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-text-secondary border border-border-subtle flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
+                onClick={onReopen}
+                className="flex-1 h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-info border border-info/30 flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
               >
-                <XCircle size={20} weight="bold" className="text-text-secondary" />
-                Reject
+                <ArrowClockwise size={20} weight="bold" />
+                Reopen for Review
               </button>
-            </div>
-          ) : onRevert ? (
-            <button
-              onClick={onRevert}
-              className="w-full h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-warning border border-warning/30 flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
-            >
-              <ArrowCounterClockwise size={18} weight="bold" />
-              Revert Verification
-            </button>
-          ) : onReopen ? (
-            <button
-              onClick={onReopen}
-              className="w-full h-[52px] rounded-xl font-sans font-bold text-[15px] bg-elevated text-info border border-info/30 flex items-center justify-center gap-2 active:scale-[0.96] transition-transform"
-            >
-              <ArrowClockwise size={18} weight="bold" />
-              Reopen for Review
-            </button>
-          ) : onUpdateStatus ? (
-            <button
-              onClick={onUpdateStatus}
-              className="w-full h-[52px] rounded-xl font-sans font-bold text-[15px] text-white bg-crimson flex items-center justify-center gap-2 active:scale-[0.96] transition-transform shadow-lg shadow-crimson/20"
-            >
-              <ArrowsClockwise size={18} weight="bold" />
-              Update Status
-            </button>
-          ) : null}
+            )}
+          </div>
         </div>
       )}
+
+      {/* ── 3-dots Action Sheet ───────────────────────────────────────── */}
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetContent
+          side="bottom"
+          className="rounded-t-2xl px-4 pb-[env(safe-area-inset-bottom)]"
+        >
+          <SheetHeader className="pb-3">
+            <SheetTitle className="text-text-primary">Lead Actions</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-2">
+            {/* Handover toggle */}
+            {role !== "STAFF" && (
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-elevated">
+                <div className="flex items-center gap-2">
+                  <UserSwitch
+                    size={18}
+                    weight="bold"
+                    className="text-text-secondary"
+                  />
+                  <span className="font-sans text-[14px] font-medium text-text-primary">
+                    Handover Mode
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {handoverMutation.isPending && (
+                    <div className="w-4 h-4 rounded-full border-2 border-crimson border-t-transparent animate-spin" />
+                  )}
+                  <Switch
+                    checked={lead.handoverMode ?? false}
+                    onCheckedChange={(checked) =>
+                      handoverMutation.mutate({ id: lead.id!, mode: checked })
+                    }
+                    disabled={handoverMutation.isPending}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Revert */}
+            {onRevert && (
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  onRevert();
+                }}
+                className="w-full min-h-[50px] flex items-center justify-center gap-2 rounded-xl bg-elevated font-sans font-semibold text-[15px] text-warning active:opacity-70 transition-opacity"
+              >
+                <ArrowCounterClockwise size={18} weight="bold" />
+                Revert Verification
+              </button>
+            )}
+
+            {/* Reopen */}
+            {onReopen && (
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  onReopen();
+                }}
+                className="w-full min-h-[50px] flex items-center justify-center gap-2 rounded-xl bg-elevated font-sans font-semibold text-[15px] text-info active:opacity-70 transition-opacity"
+              >
+                <ArrowClockwise size={18} weight="bold" />
+                Reopen for Review
+              </button>
+            )}
+
+            {/* Update Status */}
+            {onUpdateStatus && (
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  onUpdateStatus();
+                }}
+                className="w-full min-h-[50px] flex items-center justify-center gap-2 rounded-xl bg-crimson text-white font-sans font-semibold text-[15px] active:opacity-70 transition-opacity"
+              >
+                <ArrowsClockwise size={18} weight="bold" />
+                Update Status
+              </button>
+            )}
+
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="w-full min-h-[50px] flex items-center justify-center rounded-xl bg-elevated font-sans font-semibold text-[15px] text-text-secondary active:bg-card transition-colors mt-1"
+            >
+              Cancel
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* ── Media Lightbox ── */}
       {mediaPreview && (
@@ -951,4 +975,3 @@ export default function MobileLeadDetail({
     </div>
   );
 }
-

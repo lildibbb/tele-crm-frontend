@@ -13,12 +13,12 @@ export default function AdminMaintenancePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto px-1">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-text-primary">
           {t(K.superadmin.maintenance.title)}
         </h1>
-        <p className="text-sm text-text-secondary">
+        <p className="text-sm text-text-secondary mt-1">
           {t(K.superadmin.maintenance.subtitle)}
         </p>
       </div>

@@ -10,30 +10,22 @@ export default function AnalyticsLoading() {
         ))}
       </div>
       {/* KPI row */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="kpi-card p-5 space-y-3 shadow-sm">
-            <div className="flex items-start justify-between">
-              <Skeleton className="h-3 rounded w-24" />
-              <Skeleton className="ios-icon" />
-            </div>
-            <Skeleton className="h-8 rounded w-20" />
-            <Skeleton className="h-3 rounded w-16" />
-          </div>
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-3">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-[120px] rounded-2xl" />
         ))}
       </div>
-      {/* Charts */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 md:gap-4">
-        <div className="xl:col-span-2 chart-card p-5 h-72 shadow-sm">
-          <Skeleton className="h-4 rounded w-40 mb-2" />
-          <Skeleton className="h-3 rounded w-28 mb-6" />
-          <Skeleton className="h-44 rounded-xl" />
-        </div>
-        <div className="chart-card p-5 h-72 shadow-sm">
-          <Skeleton className="h-4 rounded w-28 mb-2" />
-          <Skeleton className="h-3 rounded w-20 mb-6" />
-          <Skeleton className="h-44 rounded-xl" />
-        </div>
+
+      {/* Row 1: Trend chart + Conversion Funnel */}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+        <Skeleton className="xl:col-span-3 h-[300px] rounded-xl" />
+        <Skeleton className="xl:col-span-2 h-[300px] rounded-xl" />
+      </div>
+
+      {/* Row 2: Lead Sources + Velocity */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <Skeleton className="h-[250px] rounded-xl" />
+        <Skeleton className="h-[250px] rounded-xl" />
       </div>
     </div>
   );

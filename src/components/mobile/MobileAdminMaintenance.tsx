@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
-import { useSystemConfig, useUpsertSystemConfig } from "@/queries/useSystemConfigQuery";
+import {
+  useSystemConfig,
+  useUpsertSystemConfig,
+} from "@/queries/useSystemConfigQuery";
 import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
@@ -63,7 +66,9 @@ const FEATURE_FLAGS: {
 ];
 
 // ── Component ──────────────────────────────────────────────────────────────────
-export default function MobileAdminMaintenance(_props: MobileAdminMaintenanceProps) {
+export default function MobileAdminMaintenance(
+  _props: MobileAdminMaintenanceProps,
+) {
   const { user } = useAuthStore();
   const router = useRouter();
 
@@ -87,14 +92,17 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
     setMaintenanceOn(entries["system.maintenanceMode"] === "true");
   }, [entries]);
 
-  if (user?.role !== "SUPERADMIN") return null;
+  if (user?.role !== "SUPERADMIN") return <div />;
 
   const getVal = (key: string, def = "false") => entries[key] ?? def;
 
   const saveMaintenance = async (on: boolean) => {
     setSaving(true);
     try {
-      await upsert.mutateAsync({ key: "system.maintenanceMode", value: on ? "true" : "false" });
+      await upsert.mutateAsync({
+        key: "system.maintenanceMode",
+        value: on ? "true" : "false",
+      });
       setMaintenanceOn(on);
       await refetchMaintenance().catch(() => undefined);
       setSavedKey("system.maintenanceMode");
@@ -140,7 +148,9 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
                 >
                   <Lightning
                     size={22}
-                    className={maintenanceOn ? "text-warning" : "text-text-secondary"}
+                    className={
+                      maintenanceOn ? "text-warning" : "text-text-secondary"
+                    }
                     weight="fill"
                   />
                 </span>
@@ -164,7 +174,11 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
                       {maintenanceOn ? "ACTIVE" : "INACTIVE"}
                     </span>
                     {savedKey === "system.maintenanceMode" && (
-                      <CheckCircle size={12} className="text-success" weight="bold" />
+                      <CheckCircle
+                        size={12}
+                        className="text-success"
+                        weight="bold"
+                      />
                     )}
                   </div>
                 </div>
@@ -194,9 +208,14 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
           {/* Warning banner — shown when ON */}
           {maintenanceOn && (
             <div className="mx-4 mb-4 flex items-start gap-2 rounded-xl bg-warning/10 border border-warning/20 px-3 py-2.5">
-              <Warning size={14} className="text-warning mt-0.5 shrink-0" weight="fill" />
+              <Warning
+                size={14}
+                className="text-warning mt-0.5 shrink-0"
+                weight="fill"
+              />
               <p className="font-sans text-[12px] text-warning font-medium leading-snug">
-                ⚠ Users cannot access the system while maintenance mode is active
+                ⚠ Users cannot access the system while maintenance mode is
+                active
               </p>
             </div>
           )}
@@ -210,7 +229,8 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
         <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
           <div className="divide-y divide-border-subtle">
             {FEATURE_FLAGS.map((flag) => {
-              const isOn = getVal(flag.key, flag.defaultOn ? "true" : "false") !== "false";
+              const isOn =
+                getVal(flag.key, flag.defaultOn ? "true" : "false") !== "false";
               const isSaved = savedKey === flag.key;
               return (
                 <div
@@ -223,7 +243,11 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
                       isOn ? "bg-elevated" : "bg-elevated/40 opacity-50",
                     )}
                   >
-                    <flag.Icon size={18} className={flag.color} weight="duotone" />
+                    <flag.Icon
+                      size={18}
+                      className={flag.color}
+                      weight="duotone"
+                    />
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -231,10 +255,16 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
                         {flag.label}
                       </p>
                       {isSaved && (
-                        <CheckCircle size={12} className="text-success" weight="bold" />
+                        <CheckCircle
+                          size={12}
+                          className="text-success"
+                          weight="bold"
+                        />
                       )}
                     </div>
-                    <p className="font-sans text-[11px] text-text-muted">{flag.desc}</p>
+                    <p className="font-sans text-[11px] text-text-muted">
+                      {flag.desc}
+                    </p>
                   </div>
                   <button
                     onClick={() => void saveFlag(flag.key, !isOn)}
@@ -261,7 +291,10 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
       </div>
 
       {/* Confirm enable maintenance sheet */}
-      <Sheet open={confirmOpen} onOpenChange={(v) => !v && setConfirmOpen(false)}>
+      <Sheet
+        open={confirmOpen}
+        onOpenChange={(v) => !v && setConfirmOpen(false)}
+      >
         <SheetContent
           side="bottom"
           className="p-0 border-t border-border-subtle rounded-t-[20px] bg-base focus:outline-none"
@@ -284,7 +317,8 @@ export default function MobileAdminMaintenance(_props: MobileAdminMaintenancePro
               </div>
             </div>
             <p className="font-sans text-[13px] text-text-secondary">
-              Staff and Owner roles will be blocked. The Telegram bot continues running. You retain full access as SuperAdmin.
+              Staff and Owner roles will be blocked. The Telegram bot continues
+              running. You retain full access as SuperAdmin.
             </p>
             <div className="flex gap-3 pt-1">
               <button

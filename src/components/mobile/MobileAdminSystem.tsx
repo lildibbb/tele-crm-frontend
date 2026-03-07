@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
-import { useSystemConfig, useUpsertSystemConfig } from "@/queries/useSystemConfigQuery";
+import {
+  useSystemConfig,
+  useUpsertSystemConfig,
+} from "@/queries/useSystemConfigQuery";
 import { CONFIG_SECTIONS } from "@/components/superadmin/system-config-panel";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
@@ -39,9 +42,13 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
   const [saving, setSaving] = useState(false);
   const [savedKey, setSavedKey] = useState<string | null>(null);
 
-  if (user?.role !== "SUPERADMIN") return null;
+  if (user?.role !== "SUPERADMIN") return <div />;
 
-  const openEdit = (field: { key: string; label: string; type: "text" | "textarea" | "number" | "toggle" }) => {
+  const openEdit = (field: {
+    key: string;
+    label: string;
+    type: "text" | "textarea" | "number" | "toggle";
+  }) => {
     setEditState({ ...field, currentValue: entries[field.key] ?? "" });
     setDraftValue(entries[field.key] ?? "");
   };
@@ -65,7 +72,10 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="rounded-2xl bg-card border border-border-subtle p-4">
+              <div
+                key={i}
+                className="rounded-2xl bg-card border border-border-subtle p-4"
+              >
                 <Skeleton className="h-4 w-1/3 mb-3" />
                 <div className="space-y-2">
                   <Skeleton className="h-11 w-full" />
@@ -77,7 +87,9 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
         ) : Object.keys(entries).length === 0 && !isLoading ? (
           <div className="rounded-2xl bg-card border border-border-subtle p-8 text-center">
             <Sliders size={28} className="text-text-muted mx-auto mb-2" />
-            <p className="font-sans text-[13px] text-text-muted">No config entries found</p>
+            <p className="font-sans text-[13px] text-text-muted">
+              No config entries found
+            </p>
           </div>
         ) : (
           CONFIG_SECTIONS.map((section) => {
@@ -90,7 +102,12 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
                 {/* Section header */}
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-border-subtle bg-elevated/50">
                   <Icon size={14} weight="duotone" className={section.color} />
-                  <p className={cn("font-sans text-[11px] font-bold uppercase tracking-[0.08em]", section.color)}>
+                  <p
+                    className={cn(
+                      "font-sans text-[11px] font-bold uppercase tracking-[0.08em]",
+                      section.color,
+                    )}
+                  >
                     {section.title}
                   </p>
                 </div>
@@ -107,9 +124,15 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
                         className="w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-elevated transition-colors min-h-[52px]"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="font-sans text-[12px] font-medium text-text-secondary">{field.label}</p>
+                          <p className="font-sans text-[12px] font-medium text-text-secondary">
+                            {field.label}
+                          </p>
                           <p className="font-mono text-[11px] text-text-muted truncate mt-0.5">
-                            {value !== "" ? value : <span className="italic opacity-40">not set</span>}
+                            {value !== "" ? (
+                              value
+                            ) : (
+                              <span className="italic opacity-40">not set</span>
+                            )}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -119,7 +142,13 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
                           >
                             {field.type}
                           </Badge>
-                          {isSaved && <Check size={14} className="text-success" weight="bold" />}
+                          {isSaved && (
+                            <Check
+                              size={14}
+                              className="text-success"
+                              weight="bold"
+                            />
+                          )}
                         </div>
                       </button>
                     );
@@ -147,8 +176,12 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
             <div className="px-5 pb-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="font-sans font-semibold text-[15px] text-text-primary">{editState.label}</p>
-                  <p className="font-mono text-[11px] text-text-muted mt-0.5 truncate">{editState.key}</p>
+                  <p className="font-sans font-semibold text-[15px] text-text-primary">
+                    {editState.label}
+                  </p>
+                  <p className="font-mono text-[11px] text-text-muted mt-0.5 truncate">
+                    {editState.key}
+                  </p>
                 </div>
                 <button
                   onClick={() => setEditState(null)}
@@ -161,7 +194,9 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
               {editState.type === "toggle" ? (
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setDraftValue(draftValue === "true" ? "false" : "true")}
+                    onClick={() =>
+                      setDraftValue(draftValue === "true" ? "false" : "true")
+                    }
                     className={cn(
                       "relative w-[52px] h-[30px] rounded-full transition-colors duration-200",
                       draftValue === "true" ? "bg-success" : "bg-elevated",
@@ -172,7 +207,9 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
                     <span
                       className={cn(
                         "absolute w-[24px] h-[24px] rounded-full bg-white shadow-md transition-transform duration-200",
-                        draftValue === "true" ? "translate-x-[25px]" : "translate-x-[3px]",
+                        draftValue === "true"
+                          ? "translate-x-[25px]"
+                          : "translate-x-[3px]",
                       )}
                     />
                   </button>

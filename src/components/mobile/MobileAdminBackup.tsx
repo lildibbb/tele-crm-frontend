@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation";
 import { useBackupHistory, useTriggerBackup } from "@/queries/useBackupQuery";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { HardDrives, Play, Warning, CheckCircle, Database } from "@phosphor-icons/react";
+import {
+  HardDrives,
+  Play,
+  Warning,
+  CheckCircle,
+  Database,
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import type { BackupStatus } from "@/lib/api/superadmin";
 
@@ -31,7 +37,10 @@ function formatDate(iso: string): string {
   });
 }
 
-const STATUS_CONFIG: Record<BackupStatus, { label: string; dot: string; badge: string }> = {
+const STATUS_CONFIG: Record<
+  BackupStatus,
+  { label: string; dot: string; badge: string }
+> = {
   success: {
     label: "Success",
     dot: "bg-success",
@@ -64,7 +73,7 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [triggerResult, setTriggerResult] = useState<string | null>(null);
 
-  if (user?.role !== "SUPERADMIN") return null;
+  if (user?.role !== "SUPERADMIN") return <div />;
 
   const handleTrigger = async () => {
     setConfirmOpen(false);
@@ -102,8 +111,14 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
         {/* Success notice */}
         {triggerResult && (
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-            <CheckCircle size={16} className="text-success shrink-0" weight="fill" />
-            <p className="font-sans text-[13px] text-success font-medium">{triggerResult}</p>
+            <CheckCircle
+              size={16}
+              className="text-success shrink-0"
+              weight="fill"
+            />
+            <p className="font-sans text-[13px] text-success font-medium">
+              {triggerResult}
+            </p>
           </div>
         )}
 
@@ -125,7 +140,10 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
         {isLoading ? (
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl bg-card border border-border-subtle p-4 space-y-2">
+              <div
+                key={i}
+                className="rounded-2xl bg-card border border-border-subtle p-4 space-y-2"
+              >
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
               </div>
@@ -134,7 +152,9 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
         ) : history.length === 0 ? (
           <div className="rounded-2xl bg-card border border-border-subtle p-8 text-center">
             <Database size={28} className="text-text-muted mx-auto mb-2" />
-            <p className="font-sans text-[13px] text-text-muted">No backups yet</p>
+            <p className="font-sans text-[13px] text-text-muted">
+              No backups yet
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -147,8 +167,12 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-mono text-[12px] text-text-primary truncate">{log.filename}</p>
-                      <p className="font-sans text-[11px] text-text-muted mt-0.5">{formatDate(log.createdAt)}</p>
+                      <p className="font-mono text-[12px] text-text-primary truncate">
+                        {log.filename}
+                      </p>
+                      <p className="font-sans text-[11px] text-text-muted mt-0.5">
+                        {formatDate(log.createdAt)}
+                      </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
                       <span
@@ -157,7 +181,9 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
                           sc.badge,
                         )}
                       >
-                        <span className={cn("w-1.5 h-1.5 rounded-full", sc.dot)} />
+                        <span
+                          className={cn("w-1.5 h-1.5 rounded-full", sc.dot)}
+                        />
                         {sc.label}
                       </span>
                       <span className="font-mono text-[11px] text-text-muted">
@@ -178,7 +204,10 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
       </div>
 
       {/* Confirmation sheet */}
-      <Sheet open={confirmOpen} onOpenChange={(v) => !v && setConfirmOpen(false)}>
+      <Sheet
+        open={confirmOpen}
+        onOpenChange={(v) => !v && setConfirmOpen(false)}
+      >
         <SheetContent
           side="bottom"
           className="p-0 border-t border-border-subtle rounded-t-[20px] bg-base focus:outline-none"
@@ -192,14 +221,17 @@ export default function MobileAdminBackup(_props: MobileAdminBackupProps) {
                 <HardDrives size={24} className="text-info" weight="duotone" />
               </span>
               <div>
-                <p className="font-sans font-semibold text-[16px] text-text-primary">Create Backup</p>
+                <p className="font-sans font-semibold text-[16px] text-text-primary">
+                  Create Backup
+                </p>
                 <p className="font-sans text-[12px] text-text-muted mt-0.5">
                   Queue an immediate database backup
                 </p>
               </div>
             </div>
             <p className="font-sans text-[13px] text-text-secondary">
-              A pg_dump will be taken, encrypted, and uploaded to your configured storage destinations.
+              A pg_dump will be taken, encrypted, and uploaded to your
+              configured storage destinations.
             </p>
             <div className="flex gap-3 pt-1">
               <button

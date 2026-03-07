@@ -1,22 +1,28 @@
 export const queryKeys = {
   leads: {
     all: ["leads"] as const,
-    list: (params: Record<string, unknown>) => ["leads", "list", params] as const,
+    list: (params: Record<string, unknown>) =>
+      ["leads", "list", params] as const,
     detail: (id: string) => ["leads", "detail", id] as const,
   },
   analytics: {
     all: ["analytics"] as const,
-    summary: (params: Record<string, unknown>) => ["analytics", "summary", params] as const,
+    summary: (params: Record<string, unknown>) =>
+      ["analytics", "summary", params] as const,
     dashboard: () => ["analytics", "dashboard"] as const,
     today: () => ["analytics", "today"] as const,
-    weekly: (params?: Record<string, unknown>) => ["analytics", "weekly", params] as const,
-    monthly: (params?: Record<string, unknown>) => ["analytics", "monthly", params] as const,
+    weekly: (params?: Record<string, unknown>) =>
+      ["analytics", "weekly", params] as const,
+    monthly: (params?: Record<string, unknown>) =>
+      ["analytics", "monthly", params] as const,
     velocity: () => ["analytics", "velocity"] as const,
-    ragStats: (params?: Record<string, unknown>) => ["analytics", "ragStats", params] as const,
+    ragStats: (params?: Record<string, unknown>) =>
+      ["analytics", "ragStats", params] as const,
   },
   broadcasts: {
     all: ["broadcasts"] as const,
-    history: (params: Record<string, unknown>) => ["broadcasts", "history", params] as const,
+    history: (params: Record<string, unknown>) =>
+      ["broadcasts", "history", params] as const,
   },
   users: {
     all: ["users"] as const,
@@ -25,7 +31,8 @@ export const queryKeys = {
   },
   auditLogs: {
     all: ["auditLogs"] as const,
-    list: (params?: Record<string, unknown>) => ["auditLogs", "list", params] as const,
+    list: (params?: Record<string, unknown>) =>
+      ["auditLogs", "list", params] as const,
   },
   verification: {
     all: ["verification"] as const,
@@ -46,7 +53,8 @@ export const queryKeys = {
   superadmin: {
     all: ["superadmin"] as const,
     users: () => ["superadmin", "users"] as const,
-    ragStats: (params?: Record<string, unknown>) => ["superadmin", "ragStats", params] as const,
+    ragStats: (params?: Record<string, unknown>) =>
+      ["superadmin", "ragStats", params] as const,
     queues: () => ["superadmin", "queues"] as const,
     sessions: () => ["superadmin", "sessions"] as const,
     tokenUsage: () => ["superadmin", "tokenUsage"] as const,
@@ -60,6 +68,10 @@ export const queryKeys = {
   googleAnalytics: {
     all: ["googleAnalytics"] as const,
     stats: () => ["googleAnalytics", "stats"] as const,
+  },
+  googleOAuth2: {
+    all: ["googleOAuth2"] as const,
+    status: () => ["googleOAuth2", "status"] as const,
   },
   maintenance: {
     all: ["maintenance"] as const,

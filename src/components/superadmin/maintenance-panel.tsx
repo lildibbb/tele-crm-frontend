@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useT, K } from "@/i18n";
-import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
+import {
+  useSystemConfig,
+  useUpsertManySystemConfig,
+} from "@/queries/useSystemConfigQuery";
 import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import {
   AlertDialog,
@@ -14,14 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -117,7 +113,7 @@ export function MaintenancePanel() {
       key: "feature.knowledgeBase.enabled",
       label: t(K.superadmin.maintenance.knowledgeBase),
       description: t(K.superadmin.maintenance.knowledgeBaseDesc),
-      icon: <Brain size={22} weight="duotone" className="text-blue-500" />,
+      icon: <Brain size={18} weight="duotone" className="text-text-muted" />,
       defaultOn: true,
     },
     {
@@ -125,7 +121,7 @@ export function MaintenancePanel() {
       label: t(K.superadmin.maintenance.broadcast),
       description: t(K.superadmin.maintenance.broadcastDesc),
       icon: (
-        <Megaphone size={22} weight="duotone" className="text-purple-500" />
+        <Megaphone size={18} weight="duotone" className="text-text-muted" />
       ),
       defaultOn: true,
     },
@@ -134,7 +130,11 @@ export function MaintenancePanel() {
       label: t(K.superadmin.maintenance.commandMenus),
       description: t(K.superadmin.maintenance.commandMenusDesc),
       icon: (
-        <TerminalWindow size={22} weight="duotone" className="text-amber-500" />
+        <TerminalWindow
+          size={18}
+          weight="duotone"
+          className="text-text-muted"
+        />
       ),
       defaultOn: true,
     },
@@ -144,9 +144,9 @@ export function MaintenancePanel() {
       description: t(K.superadmin.maintenance.followUpAutomationDesc),
       icon: (
         <ClockCounterClockwise
-          size={22}
+          size={18}
           weight="duotone"
-          className="text-emerald-500"
+          className="text-text-muted"
         />
       ),
       defaultOn: true,
@@ -187,109 +187,110 @@ export function MaintenancePanel() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="space-y-6">
-        {/* ── Maintenance Mode Card ─────────────────────────────────────────── */}
-        <Card className="border-border">
-          <CardHeader className="border-b border-border-subtle bg-muted/20 px-5 py-4 flex flex-row items-center justify-between space-y-0">
+      <div className="page-panel bg-elevated rounded-xl overflow-hidden">
+        {/* Header */}
+        <div className="px-5 py-4 bg-card flex items-center justify-between border-b border-border-subtle shadow-sm">
+          <div className="flex items-center gap-2">
+            <Warning size={16} weight="fill" className="text-amber-500" />
             <div>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Warning size={16} weight="fill" className="text-amber-500" />
+              <h2 className="text-sm font-semibold text-text-primary">
                 {t(K.superadmin.maintenance.maintenanceMode)}
-              </CardTitle>
-              <CardDescription className="text-xs mt-1">
+              </h2>
+              <p className="text-xs text-text-secondary mt-0.5">
                 {t(K.superadmin.maintenance.maintenanceModeDesc)}
-              </CardDescription>
+              </p>
             </div>
+          </div>
+          <div className="flex items-center gap-3">
             {saved === "maintenance" && (
               <span className="text-xs text-success flex items-center gap-1 font-medium bg-success/10 px-2.5 py-1 rounded-full border border-success/20">
-                <CheckCircle size={14} weight="bold" /> {t(K.superadmin.maintenance.saved)}
+                <CheckCircle size={14} weight="bold" />{" "}
+                {t(K.superadmin.maintenance.saved)}
               </span>
             )}
-          </CardHeader>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={isSaving}
+              onClick={() => void saveMaintenanceMode(maintenanceOn)}
+              className="h-7 text-xs shadow-sm gap-1.5"
+            >
+              <Gear size={13} />
+              {isSaving
+                ? t(K.superadmin.maintenance.savingConfig)
+                : t(K.superadmin.maintenance.saveConfiguration)}
+            </Button>
+          </div>
+        </div>
 
-          <CardContent className="px-5 py-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-sm font-semibold">{t(K.superadmin.maintenance.modeStatus)}</Label>
-                <p className="text-xs text-text-muted">
-                  {maintenanceOn
-                    ? t(K.superadmin.maintenance.modeActive)
-                    : t(K.superadmin.maintenance.modeInactive)}
-                </p>
-              </div>
+        <div className="px-5 py-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold">
+                {t(K.superadmin.maintenance.modeStatus)}
+              </Label>
+              <p className="text-xs text-text-muted">
+                {maintenanceOn
+                  ? t(K.superadmin.maintenance.modeActive)
+                  : t(K.superadmin.maintenance.modeInactive)}
+              </p>
+            </div>
+            <div className="flex items-center md:justify-end">
               <Switch
                 checked={maintenanceOn}
                 onCheckedChange={(checked) => toggleMaintenance(checked)}
                 disabled={isSaving}
               />
             </div>
+          </div>
 
-            <div className="space-y-3 pt-4 border-t border-border-subtle">
-              <div>
-                <Label className="text-sm font-semibold">{t(K.superadmin.maintenance.bannerMessage)}</Label>
-                <p className="text-xs text-text-muted mt-0.5">
-                  {t(K.superadmin.maintenance.bannerHint)}
-                </p>
-              </div>
-              <Textarea
-                value={bannerText}
-                onChange={(e) => setBannerText(e.target.value)}
-                placeholder="System under maintenance — read-only mode active."
-                className="resize-none min-h-[80px] text-sm"
-              />
-            </div>
+          <div className="space-y-2 pt-5 border-t border-border-subtle">
+            <Label className="text-sm font-semibold">
+              {t(K.superadmin.maintenance.bannerMessage)}
+            </Label>
+            <p className="text-xs text-text-muted">
+              {t(K.superadmin.maintenance.bannerHint)}
+            </p>
+            <Textarea
+              value={bannerText}
+              onChange={(e) => setBannerText(e.target.value)}
+              placeholder="System under maintenance — read-only mode active."
+              className="mt-2 resize-none min-h-[80px] text-sm"
+            />
+          </div>
 
-            {bannerText && (
-              <div className="space-y-2 bg-background rounded-lg p-4 border border-border-subtle shadow-sm">
-                <Label className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
-                  {t(K.superadmin.maintenance.preview)}
-                </Label>
-                <div className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
-                  <Warning
-                    weight="fill"
-                    size={16}
-                    className="shrink-0 text-amber-500"
-                  />
-                  <div>
-                    <span className="font-semibold">{t(K.superadmin.maintenance.maintenanceModePrefix)}</span>
-                    {bannerText}
-                  </div>
+          {bannerText && (
+            <div className="space-y-1.5 mt-2">
+              <Label className="text-[10px] text-text-muted uppercase tracking-wider font-medium">
+                {t(K.superadmin.maintenance.preview)}
+              </Label>
+              <div className="flex items-center gap-2 text-sm text-text-primary mt-1">
+                <Warning
+                  size={14}
+                  weight="duotone"
+                  className="shrink-0 text-amber-500"
+                />
+                <div>
+                  <span className="font-semibold">
+                    {t(K.superadmin.maintenance.maintenanceModePrefix)}
+                  </span>
+                  {bannerText}
                 </div>
               </div>
-            )}
-          </CardContent>
+            </div>
+          )}
+          {saveErr && <p className="text-sm text-destructive">{saveErr}</p>}
+        </div>
 
-          <CardFooter className="border-t border-border-subtle bg-muted/10 px-5 py-4 flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isSaving}
-              onClick={() => void saveMaintenanceMode(maintenanceOn)}
-              className="h-8 shadow-sm"
-            >
-              <Gear size={15} className="mr-2" />
-              {isSaving ? t(K.superadmin.maintenance.savingConfig) : t(K.superadmin.maintenance.saveConfiguration)}
-            </Button>
-            {saveErr && (
-              <span className="text-sm text-destructive">{saveErr}</span>
-            )}
-          </CardFooter>
-        </Card>
-
-        {/* ── Feature Flags Card ──────────────────────────────────────────────── */}
-        <Card className="border-border">
-          <CardHeader className="border-b border-border-subtle bg-muted/20 px-5 py-4">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Lightning size={16} weight="duotone" className="text-info" />
+        {/* Feature Flags */}
+        <div className="px-5 pb-5 pt-2">
+          <div className="space-y-3 pt-5 border-t border-border-subtle">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted flex items-center gap-1.5">
+              <Lightning size={13} weight="duotone" />{" "}
               {t(K.superadmin.maintenance.featureFlags)}
-            </CardTitle>
-            <CardDescription className="text-xs mt-1">
-              {t(K.superadmin.maintenance.featureFlagsDesc)}
-            </CardDescription>
-          </CardHeader>
+            </h3>
 
-          <CardContent className="p-0">
-            <div className="divide-y divide-border-subtle flex flex-col">
+            <div className="rounded-lg border border-border-subtle overflow-hidden bg-card divide-y divide-border-subtle">
               {featureFlags.map((flag) => {
                 const isOn =
                   getVal(flag.key, flag.defaultOn ? "true" : "false") !==
@@ -299,19 +300,13 @@ export function MaintenancePanel() {
                 return (
                   <div
                     key={flag.key}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 hover:bg-muted/5 transition-colors gap-4"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-muted/5 transition-colors gap-4"
                   >
-                    <div className="flex items-start gap-4">
+                    <div className="flex items-start gap-3">
                       <div
-                        className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border shadow-sm transition-colors ${
-                          isOn
-                            ? "border-border-subtle bg-background"
-                            : "border-transparent bg-muted/40 grayscale opacity-60"
-                        }`}
+                        className={`mt-0.5 flex shrink-0 transition-colors ${isOn ? "text-text-primary" : "text-text-muted opacity-60 grayscale"}`}
                       >
-                        <span className="text-lg leading-none block">
-                          {flag.icon}
-                        </span>
+                        {flag.icon}
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -341,7 +336,9 @@ export function MaintenancePanel() {
                           isOn ? "text-emerald-500" : "text-text-muted"
                         }`}
                       >
-                        {isOn ? t(K.superadmin.maintenance.enabled) : t(K.superadmin.maintenance.disabled)}
+                        {isOn
+                          ? t(K.superadmin.maintenance.enabled)
+                          : t(K.superadmin.maintenance.disabled)}
                       </span>
                       <Switch
                         id={`switch-${flag.key}`}
@@ -356,8 +353,8 @@ export function MaintenancePanel() {
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </>
   );

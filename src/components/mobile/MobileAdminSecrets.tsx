@@ -3,19 +3,46 @@
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
-import { useSecretsList, useSetSecret, useDeleteSecret } from "@/queries/useSecretsQuery";
+import {
+  useSecretsList,
+  useSetSecret,
+  useDeleteSecret,
+} from "@/queries/useSecretsQuery";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LockKey, Eye, EyeSlash, Trash, Warning, CheckCircle } from "@phosphor-icons/react";
+import {
+  LockKey,
+  Eye,
+  EyeSlash,
+  Trash,
+  Warning,
+  CheckCircle,
+} from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import type { SecretMeta } from "@/lib/api/superadmin";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAdminSecretsProps {}
+// ── Well-known keys (must match desktop secrets-panel) ────────────────────────
+const KNOWN_KEYS: { key: string; label: string; hint: string }[] = [
+  {
+    key: "google.serviceAccount",
+    label: "Google Service Account JSON",
+    hint: "Full service account JSON from Google Cloud console",
+  },
+  {
+    key: "google.sheetId",
+    label: "Google Sheet ID",
+    hint: "Spreadsheet ID from the Google Sheet URL",
+  },
+  {
+    key: "google.driveFolderId",
+    label: "Google Drive Folder ID",
+    hint: "Folder ID from the Google Drive URL",
+  },
+];
 
 // ── Component ──────────────────────────────────────────────────────────────────
-export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
+export default function MobileAdminSecrets() {
   const { user } = useAuthStore();
   const router = useRouter();
 
@@ -36,7 +63,25 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  if (user?.role !== "SUPERADMIN") return null;
+  if (user?.role !== "SUPERADMIN") return <div />;
+
+  // Merge known keys with stored secrets so Google fields always appear
+  const mergedSecrets: SecretMeta[] = KNOWN_KEYS.map((k) => {
+    const stored = secrets.find((s) => s.key === k.key);
+    return (
+      stored ??
+      ({
+        key: k.key,
+        description: k.label,
+        updatedBy: null,
+        updatedAt: "",
+      } as unknown as SecretMeta)
+    );
+  });
+  // Add any extra secrets from API that aren't in KNOWN_KEYS
+  for (const s of secrets) {
+    if (!KNOWN_KEYS.some((k) => k.key === s.key)) mergedSecrets.push(s);
+  }
 
   const openEdit = (secret: SecretMeta) => {
     setEditSecret(secret);
@@ -48,7 +93,10 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
     if (!editSecret || !newValue) return;
     setSaving(true);
     try {
-      await setSecretMutation.mutateAsync({ key: editSecret.key, value: newValue });
+      await setSecretMutation.mutateAsync({
+        key: editSecret.key,
+        value: newValue,
+      });
       setSavedKey(editSecret.key);
       setTimeout(() => setSavedKey(null), 2000);
       setEditSecret(null);
@@ -81,7 +129,7 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
 
         {/* Header count */}
         <p className="font-sans text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] px-1">
-          Secrets ({secrets.length})
+          Secrets ({mergedSecrets.length})
         </p>
 
         {/* List */}
@@ -97,24 +145,31 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
               </div>
             ))}
           </div>
-        ) : secrets.length === 0 ? (
+        ) : mergedSecrets.length === 0 ? (
           <div className="rounded-2xl bg-card border border-border-subtle p-8 text-center">
             <LockKey size={28} className="text-text-muted mx-auto mb-2" />
-            <p className="font-sans text-[13px] text-text-muted">No secrets configured</p>
+            <p className="font-sans text-[13px] text-text-muted">
+              No secrets configured
+            </p>
           </div>
         ) : (
           <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
             <div className="divide-y divide-border-subtle">
-              {secrets.map((secret) => {
+              {mergedSecrets.map((secret) => {
                 const isSet = !!secret.updatedAt;
                 const isSaved = savedKey === secret.key;
+                const known = KNOWN_KEYS.find((k) => k.key === secret.key);
                 return (
                   <div
                     key={secret.key}
                     className="flex items-center gap-3 px-4 py-3.5 min-h-[56px]"
                   >
                     <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-elevated shrink-0">
-                      <LockKey size={15} className="text-text-secondary" weight="fill" />
+                      <LockKey
+                        size={15}
+                        className="text-text-secondary"
+                        weight="fill"
+                      />
                     </span>
 
                     <div className="flex-1 min-w-0">
@@ -123,7 +178,11 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
                           {secret.key}
                         </p>
                         {isSaved && (
-                          <CheckCircle size={12} className="text-success shrink-0" weight="bold" />
+                          <CheckCircle
+                            size={12}
+                            className="text-success shrink-0"
+                            weight="bold"
+                          />
                         )}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -173,7 +232,10 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
       </div>
 
       {/* Set/update secret sheet */}
-      <Sheet open={!!editSecret} onOpenChange={(v) => !v && setEditSecret(null)}>
+      <Sheet
+        open={!!editSecret}
+        onOpenChange={(v) => !v && setEditSecret(null)}
+      >
         <SheetContent
           side="bottom"
           className="p-0 border-t border-border-subtle rounded-t-[20px] bg-base focus:outline-none"
@@ -185,8 +247,12 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
           {editSecret && (
             <div className="px-5 pb-6 space-y-4">
               <div>
-                <p className="font-sans font-semibold text-[15px] text-text-primary">Set Secret</p>
-                <p className="font-mono text-[11px] text-text-muted mt-0.5">{editSecret.key}</p>
+                <p className="font-sans font-semibold text-[15px] text-text-primary">
+                  Set Secret
+                </p>
+                <p className="font-mono text-[11px] text-text-muted mt-0.5">
+                  {editSecret.key}
+                </p>
               </div>
 
               {/* Masked password input — value is NEVER shown, only written */}
@@ -227,7 +293,10 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
       </Sheet>
 
       {/* Delete confirmation sheet */}
-      <Sheet open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+      <Sheet
+        open={!!deleteTarget}
+        onOpenChange={(v) => !v && setDeleteTarget(null)}
+      >
         <SheetContent
           side="bottom"
           className="p-0 border-t border-border-subtle rounded-t-[20px] bg-base focus:outline-none"
@@ -241,12 +310,17 @@ export default function MobileAdminSecrets(_props: MobileAdminSecretsProps) {
                 <Warning size={24} className="text-danger" weight="fill" />
               </span>
               <div className="min-w-0">
-                <p className="font-sans font-semibold text-[16px] text-text-primary">Delete Secret</p>
-                <p className="font-mono text-[12px] text-text-muted mt-0.5 truncate">{deleteTarget}</p>
+                <p className="font-sans font-semibold text-[16px] text-text-primary">
+                  Delete Secret
+                </p>
+                <p className="font-mono text-[12px] text-text-muted mt-0.5 truncate">
+                  {deleteTarget}
+                </p>
               </div>
             </div>
             <p className="font-sans text-[13px] text-text-secondary">
-              This permanently deletes the secret. Services that rely on it may stop working.
+              This permanently deletes the secret. Services that rely on it may
+              stop working.
             </p>
             <div className="flex gap-3 pt-1">
               <button
