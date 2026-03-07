@@ -34,7 +34,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/authStore";
-import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
+import { useMaintenanceConfig, useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n";
@@ -129,11 +129,22 @@ interface QuickLink {
   Icon: React.ElementType;
 }
 
-function getQuickLinks(role: UserRole): QuickLink[] {
+/**
+ * Returns the quick-link list for the mobile "More" drawer.
+ * Follow-ups is conditionally included based on feature visibility so it
+ * disappears from the drawer when the superadmin has toggled it off.
+ * Superadmins always see all links regardless of visibility flags.
+ */
+function getQuickLinks(
+  role: UserRole,
+  showFollowUps: boolean,
+): QuickLink[] {
   const common: QuickLink[] = [
     { label: "Analytics", href: "/analytics", Icon: ChartBar },
     { label: "Broadcasts", href: "/broadcasts", Icon: Megaphone },
-    { label: "Follow-ups", href: "/follow-ups", Icon: Timer },
+    ...(showFollowUps
+      ? [{ label: "Follow-ups", href: "/follow-ups", Icon: Timer }]
+      : []),
     { label: "Audit Logs", href: "/audit-logs", Icon: ClipboardText },
     { label: "Settings", href: "/settings", Icon: Sliders },
     { label: "Docs", href: "/docs", Icon: BookOpen },
@@ -171,11 +182,15 @@ function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user } = useAuthStore();
 
   const role = (user?.role as UserRole) ?? "STAFF";
+  const isSuperAdmin = role === UserRole.SUPERADMIN;
   const email = user?.email ?? "";
   const name = email.split("@")[0] ?? "User";
   const initials = name[0]?.toUpperCase() ?? "U";
   const roleLabel = ROLE_LABEL[role];
-  const links = getQuickLinks(role);
+
+  const { followUps: followUpsVisible } = useFeatureVisibility();
+  const showFollowUps = isSuperAdmin || followUpsVisible;
+  const links = getQuickLinks(role, showFollowUps);
 
   const navigate = useCallback(
     (href: string) => {

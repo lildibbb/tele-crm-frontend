@@ -18,6 +18,7 @@ import { AiFeedbackTab } from "./ai-feedback-tab";
 import { IntegrationsTab } from "./integrations-tab";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types/enums";
+import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 
 const ALL_SETTINGS_TABS = [
   {
@@ -71,10 +72,28 @@ export function SettingsTabs() {
   const { user } = useAuthStore();
   const role = user?.role as UserRole | undefined;
 
-  const SETTINGS_TABS = useMemo(
-    () => ALL_SETTINGS_TABS.filter((t) => role && t.roles.includes(role)),
-    [role],
-  );
+  const {
+    googleSheets,
+    googleDriveServiceAccount,
+    googleDriveOAuth2,
+  } = useFeatureVisibility();
+  const isSuperAdmin = role === UserRole.SUPERADMIN;
+
+  /**
+   * Hide the Integrations tab when the superadmin has toggled all three Google
+   * features off. During initial load DEFAULT_VISIBILITY is all-false, so the
+   * tab is hidden until the real data confirms at least one feature is on —
+   * this eliminates FOUC for the "feature-off" case.
+   * Superadmins always see the tab regardless of flags.
+   */
+  const allGoogleHidden =
+    !isSuperAdmin && !googleSheets && !googleDriveServiceAccount && !googleDriveOAuth2;
+
+  const SETTINGS_TABS = useMemo(() => {
+    const byRole = ALL_SETTINGS_TABS.filter((t) => role && t.roles.includes(role));
+    if (allGoogleHidden) return byRole.filter((t) => t.value !== "integrations");
+    return byRole;
+  }, [role, allGoogleHidden]);
 
   const tabQuery = searchParams.get("tab");
   const defaultTab = SETTINGS_TABS.some((t) => t.value === tabQuery)

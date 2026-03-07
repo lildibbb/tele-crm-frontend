@@ -87,7 +87,7 @@ export default function FollowUpsPage() {
   const { user } = useAuthStore();
   const isSuperAdmin = user?.role === UserRole.SUPERADMIN;
 
-  if (!isSuperAdmin && !visibility.followUps) {
+  if (!isSuperAdmin && !visibility.isLoading && !visibility.followUps) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-3 text-text-secondary">
         <Timer size={48} weight="duotone" className="opacity-30" />

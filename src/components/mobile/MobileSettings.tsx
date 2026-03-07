@@ -31,6 +31,7 @@ import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import { useT, K } from "@/i18n";
+import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileSettingsProps {
@@ -201,6 +202,19 @@ export default function MobileSettings({
   const role = (user?.role as UserRole) ?? "STAFF";
   const { theme, setTheme } = useTheme();
 
+  const {
+    googleSheets,
+    googleDriveServiceAccount,
+    googleDriveOAuth2,
+  } = useFeatureVisibility();
+  const isSuperAdmin = role === UserRole.SUPERADMIN;
+  /**
+   * Hide the Integrations nav row when the superadmin has disabled all three
+   * Google features. Mirrors the same logic as settings-tabs.tsx.
+   */
+  const allGoogleHidden =
+    !isSuperAdmin && !googleSheets && !googleDriveServiceAccount && !googleDriveOAuth2;
+
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
   const handleBack = () => {
@@ -251,9 +265,8 @@ export default function MobileSettings({
           {BOT_ITEMS.map((item) => (
             <NavRow key={item.id} item={item} />
           ))}
-          {(role === "OWNER" || role === "ADMIN" || role === "SUPERADMIN") && (
-            <NavRow item={INTEGRATION_ITEM} />
-          )}
+          {(role === "OWNER" || role === "ADMIN" || role === "SUPERADMIN") &&
+            !allGoogleHidden && <NavRow item={INTEGRATION_ITEM} />}
         </SectionCard>
 
         {/* ── Team (role-gated) ────────────────────────────────────── */}

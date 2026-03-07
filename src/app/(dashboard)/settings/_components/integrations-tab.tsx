@@ -738,7 +738,7 @@ export function IntegrationsTab() {
     getVal("integration.googleDrive.guideVideoUrl", "") || undefined;
   const serviceAccountReady =
     getVal("integration.serviceAccount.configured") === "true";
-  const isAwaitingSetup = !serviceAccountReady;
+  const isAwaitingSetup = !configLoading && !serviceAccountReady;
 
   const sheetsStatus = (): ConnectionStatus => {
     if (!sheetsEnabled) return "disabled";

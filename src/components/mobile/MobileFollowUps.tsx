@@ -23,8 +23,10 @@ import { useRouter } from "next/navigation";
 import { useT, K } from "@/i18n";
 import { followUpsApi } from "@/lib/api/followUps";
 import type { FollowUp } from "@/lib/schemas/followUp.schema";
-import { FollowUpStatus } from "@/types/enums";
+import { FollowUpStatus, UserRole } from "@/types/enums";
 import { parseApiData, parsePaginatedData } from "@/lib/api/parseResponse";
+import { useAuthStore } from "@/store/authStore";
+import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -144,6 +146,12 @@ function StatPill({
 export default function MobileFollowUps({}: MobileFollowUpsProps) {
   const router = useRouter();
   const t = useT();
+  const { user } = useAuthStore();
+  const {
+    followUps: followUpsVisible,
+    isLoading: visibilityLoading,
+  } = useFeatureVisibility();
+  const isSuperAdmin = (user?.role as UserRole) === UserRole.SUPERADMIN;
 
   const TYPE_LABELS: Record<string, string> = {
     follow_up_register: t(K.followUp.type.register),
@@ -249,6 +257,14 @@ export default function MobileFollowUps({}: MobileFollowUpsProps) {
 
   const hasMore = (page + 1) * PAGE_SIZE < total;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // ── Visibility guard ───────────────────────────────────────────────────────
+  // Wait for real visibility data before redirecting so we don't show a false
+  // "not available" state during the initial fetch (isPlaceholderData=true).
+  if (!visibilityLoading && !isSuperAdmin && !followUpsVisible) {
+    router.replace("/");
+    return null;
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
