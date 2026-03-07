@@ -23,6 +23,7 @@ import {
   ChartLineUp,
   ListBullets,
   Desktop,
+  Eye,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
@@ -65,6 +66,7 @@ const ADMIN_SUB_ITEMS = [
   { href: "/admin/google", icon: ChartLineUp, label: "Google Analytics" },
   { href: "/admin/queues", icon: ListBullets, label: "Queue Manager" },
   { href: "/admin/sessions", icon: Desktop, label: "Sessions" },
+  { href: "/admin/features", icon: Eye, label: "Feature Visibility" },
 ];
 
 const ALL_NAV_ITEMS = [
