@@ -319,6 +319,86 @@
   "settings.commands": "Command Menu",
   "settings.team": "Team Management",
   "settings.sessions": "Active Sessions",
+  "settings.integrations": "Integrations",
+
+  /* ── Integrations Tab ──────────────────────────────── */
+  "integrations.title": "Google Integrations",
+  "integrations.subtitle":
+    "Sync leads to Google Sheets and store files in Google Drive",
+  "integrations.refresh": "Refresh",
+  // Cards
+  "integrations.sheets.name": "Google Sheets",
+  "integrations.sheets.description":
+    "Copy leads automatically into a spreadsheet",
+  "integrations.drive.name": "Google Drive",
+  "integrations.drive.description": "Save lead attachments to a Drive folder",
+  // Status
+  "integrations.status.ready": "Ready to sync",
+  "integrations.status.readySub":
+    "Your connection is active and syncing normally.",
+  "integrations.status.needsId": "Almost there",
+  "integrations.status.needsIdSub":
+    "Paste your ID below to complete the connection.",
+  "integrations.status.awaiting": "Awaiting setup",
+  "integrations.status.awaitingSub":
+    "Your admin needs to connect a Google service account first.",
+  "integrations.status.disabled": "Disabled",
+  "integrations.status.disabledSub":
+    "Enable the toggle above to activate this integration.",
+  "integrations.status.live": "Live",
+  // Setup banner
+  "integrations.setupBanner.title": "Google connection not yet set up",
+  "integrations.setupBanner.desc":
+    "Your technical admin needs to connect a Google service account before you can use these features. Contact your admin to complete the setup — then come back here to add your spreadsheet and folder.",
+  // Credential input
+  "integrations.credential.yourSpreadsheet": "Your Spreadsheet",
+  "integrations.credential.yourDriveFolder": "Your Drive Folder",
+  "integrations.credential.connected": "Connected · {{date}}",
+  "integrations.credential.placeholder": "Paste ID here…",
+  "integrations.credential.placeholderUpdate": "Paste new ID to update…",
+  "integrations.credential.connect": "Connect",
+  "integrations.credential.update": "Update",
+  "integrations.credential.saving": "Saving…",
+  "integrations.credential.saved": "Saved!",
+  // Copy chip
+  "integrations.copy": "Copy",
+  "integrations.copied": "Copied",
+  // Setup guide
+  "integrations.guide.trigger": "How to connect — 3 steps",
+  "integrations.guide.step1Title": "Share your spreadsheet with TitanCRM",
+  "integrations.guide.step1TitleDrive": "Share your folder with TitanCRM",
+  "integrations.guide.step1Body":
+    "Open your Google Spreadsheet, click Share, and add this email as an Editor:",
+  "integrations.guide.step1BodyDrive":
+    "Open your Google Drive folder, click Share, and add this email as an Editor:",
+  "integrations.guide.step1Warning":
+    "⚠ Must be Editor — Viewer access will cause sync failures.",
+  "integrations.guide.emailMissing":
+    "Service account email missing — ask your technical admin to re-save the service account in Superadmin → Secrets.",
+  "integrations.guide.step2Title": "Copy your Spreadsheet ID from the URL",
+  "integrations.guide.step2TitleDrive": "Copy your Folder ID from the URL",
+  "integrations.guide.step2Body":
+    "Look at the browser URL bar — your ID is the long code highlighted below:",
+  "integrations.guide.step3Title": "Paste the ID above and click Connect",
+  "integrations.guide.step3Body":
+    "Changes take effect on the next scheduled sync cycle.",
+  "integrations.guide.watchWalkthrough": "Watch walkthrough",
+  "integrations.guide.videoMinutes": "2-minute video guide",
+  // Footer
+  "integrations.cancel": "Cancel",
+  "integrations.securityNote":
+    "Your IDs are stored securely and never shared with third parties. Changes take effect on the next sync cycle.",
+  "integrations.saveFailed": "Save failed",
+  // Mobile
+  "integrations.mobile.connectNow": "Connect Now",
+  "integrations.mobile.updateId": "Update ID",
+  "integrations.mobile.setupRequired":
+    "Service account setup required. Contact your technical admin.",
+  "integrations.mobile.sheetIdLabel": "Spreadsheet ID",
+  "integrations.mobile.driveFolderIdLabel": "Drive Folder ID",
+  "integrations.mobile.pasteId": "Paste the ID to connect this service",
+  "integrations.mobile.pasteIdUpdate": "Last updated {{date}}",
+  "integrations.mobile.connecting": "Connecting…",
 
   /* ── Bot Config Tab ──────────────────────────────── */
   "botConfig.title": "Bot Configuration",
@@ -797,6 +877,27 @@
   "superadmin.google.upload": "Upload",
   "superadmin.google.ok": "OK",
   "superadmin.google.failed": "Failed",
+
+  /* ── Superadmin Feature Visibility ──────────────────────── */
+  "superadmin.featureVisibility.title": "Feature Visibility",
+  "superadmin.featureVisibility.subtitle": "Permanently hide features from Owner, Admin, and Staff. Superadmin is always unaffected.",
+  "superadmin.featureVisibility.integrations": "Integrations",
+  "superadmin.featureVisibility.features": "Features",
+  "superadmin.featureVisibility.googleSheets": "Google Sheets",
+  "superadmin.featureVisibility.googleSheetsDesc": "Lead export to Google Sheets via Service Account",
+  "superadmin.featureVisibility.googleDriveServiceAccount": "Google Drive (Service Account)",
+  "superadmin.featureVisibility.googleDriveServiceAccountDesc": "Attachment mirror to Google Drive via Service Account",
+  "superadmin.featureVisibility.googleDriveOAuth2": "Google Drive (OAuth2)",
+  "superadmin.featureVisibility.googleDriveOAuth2Desc": "Google Drive connection via OAuth2 user consent",
+  "superadmin.featureVisibility.followUps": "Follow-ups",
+  "superadmin.featureVisibility.followUpsDesc": "Automated follow-up scheduling and management",
+  "superadmin.featureVisibility.confirmDisableTitle": "Hide this feature?",
+  "superadmin.featureVisibility.confirmDisableDesc": "This will hide the feature from all Owner, Admin, and Staff users — they will not see it in the UI or be able to call its API. Only Superadmin can re-enable it.",
+  "superadmin.featureVisibility.disableBtn": "Yes, hide it",
+  "superadmin.featureVisibility.saved": "Saved",
+  "superadmin.featureVisibility.saveFailed": "Failed to save. Please try again.",
+  "superadmin.featureVisibility.hidden": "Hidden",
+  "superadmin.featureVisibility.visible": "Visible",
 
   /* ── Superadmin Toasts ───────────────────────────────────── */
   "superadmin.toast.sessionRevoked": "Session {{id}} revoked",

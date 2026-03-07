@@ -366,6 +366,93 @@ export const K = {
     commands: "settings.commands",
     team: "settings.team",
     sessions: "settings.sessions",
+    integrations: "settings.integrations",
+  },
+
+  /* ── Integrations Tab ────────────────────────── */
+  integrations: {
+    title: "integrations.title",
+    subtitle: "integrations.subtitle",
+    refresh: "integrations.refresh",
+    // Integration cards
+    sheets: {
+      name: "integrations.sheets.name",
+      description: "integrations.sheets.description",
+    },
+    drive: {
+      name: "integrations.drive.name",
+      description: "integrations.drive.description",
+    },
+    // Status
+    status: {
+      ready: "integrations.status.ready",
+      readySub: "integrations.status.readySub",
+      needsId: "integrations.status.needsId",
+      needsIdSub: "integrations.status.needsIdSub",
+      awaiting: "integrations.status.awaiting",
+      awaitingSub: "integrations.status.awaitingSub",
+      disabled: "integrations.status.disabled",
+      disabledSub: "integrations.status.disabledSub",
+      live: "integrations.status.live",
+    },
+    // Service account setup banner
+    setupBanner: {
+      title: "integrations.setupBanner.title",
+      desc: "integrations.setupBanner.desc",
+    },
+    // Credential input
+    credential: {
+      yourSpreadsheet: "integrations.credential.yourSpreadsheet",
+      yourDriveFolder: "integrations.credential.yourDriveFolder",
+      connected: "integrations.credential.connected",
+      placeholder: "integrations.credential.placeholder",
+      placeholderUpdate: "integrations.credential.placeholderUpdate",
+      connect: "integrations.credential.connect",
+      update: "integrations.credential.update",
+      saving: "integrations.credential.saving",
+      saved: "integrations.credential.saved",
+    },
+    // Copy chip
+    copy: "integrations.copy",
+    copied: "integrations.copied",
+    // Setup guide
+    guide: {
+      trigger: "integrations.guide.trigger",
+      // Step 1
+      step1Title: "integrations.guide.step1Title",
+      step1TitleDrive: "integrations.guide.step1TitleDrive",
+      step1Body: "integrations.guide.step1Body",
+      step1BodyDrive: "integrations.guide.step1BodyDrive",
+      step1Warning: "integrations.guide.step1Warning",
+      emailMissing: "integrations.guide.emailMissing",
+      // Step 2
+      step2Title: "integrations.guide.step2Title",
+      step2TitleDrive: "integrations.guide.step2TitleDrive",
+      step2Body: "integrations.guide.step2Body",
+      // Step 3
+      step3Title: "integrations.guide.step3Title",
+      step3Body: "integrations.guide.step3Body",
+      // Video
+      watchWalkthrough: "integrations.guide.watchWalkthrough",
+      videoMinutes: "integrations.guide.videoMinutes",
+    },
+    // Cancel
+    cancel: "integrations.cancel",
+    // Footer
+    securityNote: "integrations.securityNote",
+    // error
+    saveFailed: "integrations.saveFailed",
+    // Mobile-specific
+    mobile: {
+      connectNow: "integrations.mobile.connectNow",
+      updateId: "integrations.mobile.updateId",
+      setupRequired: "integrations.mobile.setupRequired",
+      sheetIdLabel: "integrations.mobile.sheetIdLabel",
+      driveFolderIdLabel: "integrations.mobile.driveFolderIdLabel",
+      pasteId: "integrations.mobile.pasteId",
+      pasteIdUpdate: "integrations.mobile.pasteIdUpdate",
+      connecting: "integrations.mobile.connecting",
+    },
   },
 
   /* ── Bot Config Tab ──────────────────────────────── */
@@ -851,6 +938,27 @@ export const K = {
       noKbMatch: "superadmin.overview.noKbMatch",
       totalAiTokens: "superadmin.overview.totalAiTokens",
       cumulativeUsage: "superadmin.overview.cumulativeUsage",
+    },
+    featureVisibility: {
+      title: "superadmin.featureVisibility.title",
+      subtitle: "superadmin.featureVisibility.subtitle",
+      integrations: "superadmin.featureVisibility.integrations",
+      features: "superadmin.featureVisibility.features",
+      googleSheets: "superadmin.featureVisibility.googleSheets",
+      googleSheetsDesc: "superadmin.featureVisibility.googleSheetsDesc",
+      googleDriveServiceAccount: "superadmin.featureVisibility.googleDriveServiceAccount",
+      googleDriveServiceAccountDesc: "superadmin.featureVisibility.googleDriveServiceAccountDesc",
+      googleDriveOAuth2: "superadmin.featureVisibility.googleDriveOAuth2",
+      googleDriveOAuth2Desc: "superadmin.featureVisibility.googleDriveOAuth2Desc",
+      followUps: "superadmin.featureVisibility.followUps",
+      followUpsDesc: "superadmin.featureVisibility.followUpsDesc",
+      confirmDisableTitle: "superadmin.featureVisibility.confirmDisableTitle",
+      confirmDisableDesc: "superadmin.featureVisibility.confirmDisableDesc",
+      disableBtn: "superadmin.featureVisibility.disableBtn",
+      saved: "superadmin.featureVisibility.saved",
+      saveFailed: "superadmin.featureVisibility.saveFailed",
+      hidden: "superadmin.featureVisibility.hidden",
+      visible: "superadmin.featureVisibility.visible",
     },
     // Toast messages
     toast: {

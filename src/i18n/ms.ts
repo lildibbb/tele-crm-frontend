@@ -326,6 +326,88 @@ const ms: Record<string, string> = {
   "settings.commands": "Menu Arahan",
   "settings.team": "Pengurusan Pasukan",
   "settings.sessions": "Sesi Aktif",
+  "settings.integrations": "Integrasi",
+
+  /* ── Integrations Tab ──────────────────────────────── */
+  "integrations.title": "Integrasi Google",
+  "integrations.subtitle":
+    "Segerakkan prospek ke Google Sheets dan simpan fail ke Google Drive",
+  "integrations.refresh": "Muat Semula",
+  // Cards
+  "integrations.sheets.name": "Google Sheets",
+  "integrations.sheets.description":
+    "Salin prospek secara automatik ke dalam hamparan",
+  "integrations.drive.name": "Google Drive",
+  "integrations.drive.description": "Simpan lampiran prospek ke folder Drive",
+  // Status
+  "integrations.status.ready": "Sedia untuk disegerakkan",
+  "integrations.status.readySub":
+    "Sambungan anda aktif dan berjalan dengan normal.",
+  "integrations.status.needsId": "Hampir selesai",
+  "integrations.status.needsIdSub":
+    "Tampal ID anda di bawah untuk melengkapkan sambungan.",
+  "integrations.status.awaiting": "Menunggu persediaan",
+  "integrations.status.awaitingSub":
+    "Admin anda perlu menyambungkan akaun perkhidmatan Google terlebih dahulu.",
+  "integrations.status.disabled": "Dilumpuhkan",
+  "integrations.status.disabledSub":
+    "Aktifkan togol di atas untuk mengaktifkan integrasi ini.",
+  "integrations.status.live": "Langsung",
+  // Setup banner
+  "integrations.setupBanner.title": "Sambungan Google belum disediakan",
+  "integrations.setupBanner.desc":
+    "Admin teknikal anda perlu menyambungkan akaun perkhidmatan Google sebelum anda boleh menggunakan ciri-ciri ini. Hubungi admin anda untuk melengkapkan persediaan — kemudian kembali ke sini untuk menambah hamparan dan folder anda.",
+  // Credential input
+  "integrations.credential.yourSpreadsheet": "Hamparan Anda",
+  "integrations.credential.yourDriveFolder": "Folder Drive Anda",
+  "integrations.credential.connected": "Disambungkan · {{date}}",
+  "integrations.credential.placeholder": "Tampal ID di sini…",
+  "integrations.credential.placeholderUpdate":
+    "Tampal ID baharu untuk dikemas kini…",
+  "integrations.credential.connect": "Sambung",
+  "integrations.credential.update": "Kemas Kini",
+  "integrations.credential.saving": "Menyimpan…",
+  "integrations.credential.saved": "Disimpan!",
+  // Copy chip
+  "integrations.copy": "Salin",
+  "integrations.copied": "Disalin",
+  // Setup guide
+  "integrations.guide.trigger": "Cara menyambung — 3 langkah",
+  "integrations.guide.step1Title": "Kongsi hamparan anda dengan TitanCRM",
+  "integrations.guide.step1TitleDrive": "Kongsi folder anda dengan TitanCRM",
+  "integrations.guide.step1Body":
+    "Buka Google Spreadsheet anda, klik Kongsi, dan tambah e-mel ini sebagai Editor:",
+  "integrations.guide.step1BodyDrive":
+    "Buka folder Google Drive anda, klik Kongsi, dan tambah e-mel ini sebagai Editor:",
+  "integrations.guide.step1Warning":
+    "⚠ Mesti Editor — akses Penonton akan menyebabkan kegagalan segerak.",
+  "integrations.guide.emailMissing":
+    "E-mel akaun perkhidmatan tiada — minta admin teknikal anda menyimpan semula akaun perkhidmatan dalam Superadmin → Rahsia.",
+  "integrations.guide.step2Title": "Salin ID Hamparan anda dari URL",
+  "integrations.guide.step2TitleDrive": "Salin ID Folder anda dari URL",
+  "integrations.guide.step2Body":
+    "Lihat bar URL pelayar — ID anda ialah kod panjang yang diserlahkan di bawah:",
+  "integrations.guide.step3Title": "Tampal ID di atas dan klik Sambung",
+  "integrations.guide.step3Body":
+    "Perubahan berkuat kuasa pada kitaran segerak berjadual seterusnya.",
+  "integrations.guide.watchWalkthrough": "Tonton panduan",
+  "integrations.guide.videoMinutes": "Video panduan 2 minit",
+  // Footer
+  "integrations.cancel": "Batal",
+  "integrations.securityNote":
+    "ID anda disimpan dengan selamat dan tidak dikongsi dengan pihak ketiga. Perubahan berkuat kuasa pada kitaran segerak seterusnya.",
+  "integrations.saveFailed": "Gagal menyimpan",
+  // Mobile
+  "integrations.mobile.connectNow": "Sambung Sekarang",
+  "integrations.mobile.updateId": "Kemas Kini ID",
+  "integrations.mobile.setupRequired":
+    "Persediaan akaun perkhidmatan diperlukan. Hubungi admin teknikal anda.",
+  "integrations.mobile.sheetIdLabel": "ID Hamparan",
+  "integrations.mobile.driveFolderIdLabel": "ID Folder Drive",
+  "integrations.mobile.pasteId":
+    "Tampal ID untuk menyambungkan perkhidmatan ini",
+  "integrations.mobile.pasteIdUpdate": "Dikemas kini terakhir {{date}}",
+  "integrations.mobile.connecting": "Menyambung…",
 
   /* ── Bot Config Tab ──────────────────────────────── */
   "botConfig.title": "Konfigurasi Bot",
@@ -777,6 +859,27 @@ const ms: Record<string, string> = {
   "superadmin.google.upload": "Muat Naik",
   "superadmin.google.ok": "OK",
   "superadmin.google.failed": "Gagal",
+
+  /* ── Superadmin Feature Visibility ──────────────────────── */
+  "superadmin.featureVisibility.title": "Keterlihatan Ciri",
+  "superadmin.featureVisibility.subtitle": "Sembunyikan ciri-ciri secara kekal dari Pemilik, Admin, dan Kakitangan. Superadmin tidak terjejas.",
+  "superadmin.featureVisibility.integrations": "Integrasi",
+  "superadmin.featureVisibility.features": "Ciri-ciri",
+  "superadmin.featureVisibility.googleSheets": "Google Sheets",
+  "superadmin.featureVisibility.googleSheetsDesc": "Eksport lead ke Google Sheets melalui Service Account",
+  "superadmin.featureVisibility.googleDriveServiceAccount": "Google Drive (Akaun Perkhidmatan)",
+  "superadmin.featureVisibility.googleDriveServiceAccountDesc": "Cerminan lampiran ke Google Drive melalui Service Account",
+  "superadmin.featureVisibility.googleDriveOAuth2": "Google Drive (OAuth2)",
+  "superadmin.featureVisibility.googleDriveOAuth2Desc": "Sambungan Google Drive melalui persetujuan pengguna OAuth2",
+  "superadmin.featureVisibility.followUps": "Susulan",
+  "superadmin.featureVisibility.followUpsDesc": "Penjadualan dan pengurusan susulan automatik",
+  "superadmin.featureVisibility.confirmDisableTitle": "Sembunyikan ciri ini?",
+  "superadmin.featureVisibility.confirmDisableDesc": "Ini akan menyembunyikan ciri daripada semua pengguna Pemilik, Admin, dan Kakitangan — mereka tidak akan melihatnya dalam UI atau dapat memanggil API-nya. Hanya Superadmin yang boleh mengaktifkannya semula.",
+  "superadmin.featureVisibility.disableBtn": "Ya, sembunyikan",
+  "superadmin.featureVisibility.saved": "Disimpan",
+  "superadmin.featureVisibility.saveFailed": "Gagal menyimpan. Sila cuba lagi.",
+  "superadmin.featureVisibility.hidden": "Tersembunyi",
+  "superadmin.featureVisibility.visible": "Kelihatan",
 
   /* ── Superadmin Toasts ───────────────────────────────────── */
   "superadmin.toast.sessionRevoked": "Sesi {{id}} dibatalkan",
