@@ -72,7 +72,10 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error) => {
     // Transform error messages to user-friendly text before propagation
-    if (error.response?.data?.message && typeof error.response.data.message === 'string') {
+    if (
+      error.response?.data?.message &&
+      typeof error.response.data.message === "string"
+    ) {
       error.response.data.message = friendlyError(error.response.data.message);
     }
 
@@ -94,6 +97,7 @@ apiClient.interceptors.response.use(
           "/forgot-password",
           "/reset-password",
           "/setup-account",
+          "/docs-public",
         ];
         const currentPath = window.location.pathname;
         const isPublicRoute = publicRoutes.some(

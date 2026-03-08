@@ -7,6 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -120,7 +128,7 @@ function SetSecretModal({
             </div>
           </div>
           {err && <p className="text-xs text-danger">{err}</p>}
-          <div className="p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-300">
+          <div className="p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-xs text-amber-300">
             {t(K.superadmin.secrets.warningText)}
           </div>
           <DialogFooter>
@@ -205,7 +213,7 @@ export function SecretsPanel() {
 
         <div className="px-5 py-5 space-y-4">
           {/* Warning banner */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-[11px] text-amber-200/80">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-xs text-amber-200/80">
             <Warning size={13} weight="fill" className="text-amber-400 shrink-0 mt-0.5" />
             {t(K.superadmin.secrets.bannerWarning)}
           </div>
@@ -218,73 +226,91 @@ export function SecretsPanel() {
               ))}
             </div>
           ) : (
-            <div className="rounded-lg border border-border-subtle overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border-subtle bg-card shadow-sm">
-                    <th className="text-left px-4 py-2.5 font-medium text-text-muted">{t(K.superadmin.secrets.key)}</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">{t(K.superadmin.secrets.description)}</th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">{t(K.superadmin.secrets.lastUpdated)}</th>
-                    <th className="px-3 py-2.5" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, idx) => {
-                    const isStored = !!row.updatedAt;
-                    const known = KNOWN_KEYS.find((k) => k.key === row.key);
-                    return (
-                      <tr key={row.key} className={`${idx !== 0 ? "border-t border-border-subtle" : ""}`}>
-                        <td className="px-4 py-3 font-mono text-[10px] text-text-secondary">{row.key}</td>
-                        <td className="px-3 py-3 text-text-muted">{known?.label ?? row.description ?? "—"}</td>
-                        <td className="px-3 py-3 text-text-muted whitespace-nowrap">
-                          {isStored ? (
-                            <div>
-                              <p>{new Date(row.updatedAt).toLocaleDateString()}</p>
-                              {row.updatedBy && <p className="text-[10px]">{row.updatedBy}</p>}
-                            </div>
-                          ) : (
-                            <span className="text-text-muted/40">{t(K.superadmin.secrets.notSet)}</span>
-                          )}
-                        </td>
-                        <td className="px-3 py-3">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 px-2 text-[11px] gap-1 text-text-muted hover:text-text-primary"
-                              disabled={deleteSecretMutation.isPending}
-                              onClick={() => {
-                                if (isStored) {
-                                  setEditTarget(row as SecretMeta);
-                                } else {
-                                  setNewKey({ key: row.key, description: row.description, updatedBy: null, updatedAt: "" });
-                                }
-                              }}
-                            >
-                              {isStored ? (
-                                <><PencilSimple size={12} /> {t(K.superadmin.secrets.replace)}</>
-                              ) : (
-                                <><Plus size={12} /> {t(K.superadmin.secrets.set)}</>
-                              )}
-                            </Button>
-                            {isStored && (
+            <div className="overflow-x-auto">
+              <Table>
+                  <TableHeader>
+                    <TableRow className="bg-card hover:bg-card">
+                      <TableHead className="text-xs font-medium text-text-muted">
+                        {t(K.superadmin.secrets.key)}
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-text-muted">
+                        {t(K.superadmin.secrets.description)}
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-text-muted">
+                        {t(K.superadmin.secrets.lastUpdated)}
+                      </TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((row) => {
+                      const isStored = !!row.updatedAt;
+                      const known = KNOWN_KEYS.find((k) => k.key === row.key);
+                      return (
+                        <TableRow key={row.key} className="hover:bg-elevated/50">
+                          <TableCell className="font-mono text-xs text-text-secondary">
+                            {row.key}
+                          </TableCell>
+                          <TableCell className="text-sm text-text-muted">
+                            {known?.label ?? row.description ?? "—"}
+                          </TableCell>
+                          <TableCell className="text-sm text-text-muted whitespace-nowrap">
+                            {isStored ? (
+                              <div>
+                                <p className="text-sm text-text-secondary">
+                                  {new Date(row.updatedAt).toLocaleDateString()}
+                                </p>
+                                {row.updatedBy && (
+                                  <p className="text-xs text-text-muted mt-0.5">
+                                    {row.updatedBy}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-text-muted/50">
+                                {t(K.superadmin.secrets.notSet)}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-end gap-1">
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-7 px-2 text-[11px] gap-1 text-danger/60 hover:text-danger hover:bg-danger/10"
+                                className="h-7 px-2 text-xs gap-1 text-text-muted hover:text-text-primary"
                                 disabled={deleteSecretMutation.isPending}
-                                onClick={() => setDeleteTarget(row.key)}
+                                onClick={() => {
+                                  if (isStored) {
+                                    setEditTarget(row as SecretMeta);
+                                  } else {
+                                    setNewKey({ key: row.key, description: row.description, updatedBy: null, updatedAt: "" });
+                                  }
+                                }}
                               >
-                                <Trash size={12} />
+                                {isStored ? (
+                                  <><PencilSimple size={12} /> {t(K.superadmin.secrets.replace)}</>
+                                ) : (
+                                  <><Plus size={12} /> {t(K.superadmin.secrets.set)}</>
+                                )}
                               </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                              {isStored && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2 text-xs gap-1 text-danger/60 hover:text-danger hover:bg-danger/10"
+                                  disabled={deleteSecretMutation.isPending}
+                                  onClick={() => setDeleteTarget(row.key)}
+                                >
+                                  <Trash size={12} />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+              </Table>
             </div>
           )}
         </div>

@@ -9,7 +9,6 @@ import {
   X,
   CaretLeft,
   CaretRight,
-  Lock,
   Books,
   List,
 } from "@phosphor-icons/react";
@@ -31,25 +30,43 @@ export function DocsClient() {
 
   const [activeChapterId, setActiveChapterId] = useState<string>(CHAPTERS[0].id);
   const [search, setSearch] = useState("");
-  const [navOpen, setNavOpen] = useState(false); // for md breakpoint overlay nav
+  const [navOpen, setNavOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const activeChapter = CHAPTERS.find((c) => c.id === activeChapterId) ?? CHAPTERS[0];
-  const activeIndex   = CHAPTERS.indexOf(activeChapter);
-  const prevChapter   = activeIndex > 0 ? CHAPTERS[activeIndex - 1] : undefined;
-  const nextChapter   = activeIndex < CHAPTERS.length - 1 ? CHAPTERS[activeIndex + 1] : undefined;
-  const BodyComponent = CHAPTER_BODY_MAP[activeChapterId];
+  // Only show chapters accessible to the current user's role.
+  // When role is undefined (public/unauthenticated), all chapters are visible.
+  const visibleChapters = useMemo(
+    () => CHAPTERS.filter((ch) => !getIsRestricted(ch.access, role)),
+    [role],
+  );
+
+  const activeChapter =
+    visibleChapters.find((c) => c.id === activeChapterId) ??
+    visibleChapters[0] ??
+    CHAPTERS[0];
+  const activeIndex   = visibleChapters.indexOf(activeChapter);
+  const prevChapter   = activeIndex > 0 ? visibleChapters[activeIndex - 1] : undefined;
+  const nextChapter   = activeIndex < visibleChapters.length - 1 ? visibleChapters[activeIndex + 1] : undefined;
+  const BodyComponent = CHAPTER_BODY_MAP[activeChapter.id];
+
+  // Auto-navigate to first visible chapter if current becomes restricted
+  useEffect(() => {
+    const isCurrentVisible = visibleChapters.some((ch) => ch.id === activeChapterId);
+    if (!isCurrentVisible && visibleChapters.length > 0) {
+      setActiveChapterId(visibleChapters[0].id);
+    }
+  }, [visibleChapters, activeChapterId]);
 
   const filteredChapters = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return CHAPTERS;
-    return CHAPTERS.filter(
+    if (!q) return visibleChapters;
+    return visibleChapters.filter(
       (ch) =>
         ch.title.toLowerCase().includes(q) ||
         ch.summary.toLowerCase().includes(q) ||
-        ch.tags.some((t) => t.toLowerCase().includes(q))
+        ch.tags.some((t) => t.toLowerCase().includes(q)),
     );
-  }, [search]);
+  }, [search, visibleChapters]);
 
   // Scroll content to top when chapter changes
   useEffect(() => {
@@ -65,28 +82,25 @@ export function DocsClient() {
   const NavList = () => (
     <>
       {filteredChapters.map((ch) => {
-        const Icon      = ch.icon;
-        const isActive  = ch.id === activeChapterId;
-        const restricted = getIsRestricted(ch.access, role);
+        const Icon     = ch.icon;
+        const isActive = ch.id === activeChapter.id;
         const globalIdx = CHAPTERS.indexOf(ch);
         return (
           <button
             key={ch.id}
             onClick={() => navigate(ch.id)}
             className={cn(
-              "w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left transition-colors relative",
+              "w-full flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors relative",
               isActive
                 ? "bg-crimson/8 text-crimson"
                 : "text-text-secondary hover:text-text-primary hover:bg-elevated/50",
-              restricted && "opacity-40"
             )}
           >
-            {/* Active indicator */}
             {isActive && (
               <span className="absolute left-0 inset-y-2 w-[3px] bg-crimson rounded-full" />
             )}
             <Icon
-              size={15}
+              size={14}
               weight={isActive ? "fill" : "regular"}
               className="shrink-0 mt-px"
             />
@@ -96,21 +110,18 @@ export function DocsClient() {
               </span>
               <span
                 className={cn(
-                  "block font-sans text-[12.5px] leading-tight truncate",
-                  isActive ? "font-semibold text-crimson" : "font-medium"
+                  "block text-xs leading-tight truncate",
+                  isActive ? "font-semibold text-crimson" : "font-medium",
                 )}
               >
                 {ch.title}
               </span>
             </span>
-            {restricted && (
-              <Lock size={11} className="shrink-0 text-text-muted/50" weight="fill" />
-            )}
           </button>
         );
       })}
       {filteredChapters.length === 0 && (
-        <p className="px-4 py-8 text-[12px] text-text-muted text-center font-sans">
+        <p className="px-4 py-8 text-xs text-text-muted text-center font-sans">
           No chapters match &ldquo;{search}&rdquo;
         </p>
       )}
@@ -118,36 +129,13 @@ export function DocsClient() {
   );
 
   return (
-    /*
-     * Full-bleed: escape the layout's p-4/p-5 wrapper so docs fills
-     * the entire SidebarInset content area from edge to edge.
-     * Height = viewport minus the h-14 topbar.
-     */
-    <div className="-m-4 md:-m-5 flex h-[calc(100dvh-3.5rem)] overflow-hidden">
+    /* Full-bleed: parent (page.tsx or docs-public layout) has already
+       removed padding, so DocsClient fills the entire content area. */
+    <div className="flex h-[calc(100dvh-3.5rem)] overflow-hidden">
 
       {/* ── Left chapter navigator ─────────────────────────────────────── */}
-      <aside className="hidden lg:flex flex-col w-[220px] xl:w-[248px] shrink-0 border-r border-border-subtle bg-base/80 h-full overflow-hidden">
-        {/* Brand header */}
-        <div className="px-4 pt-5 pb-3.5 border-b border-border-subtle shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-elevated border border-border-subtle flex items-center justify-center">
-              <Books size={14} weight="fill" className="text-text-secondary" />
-            </div>
-            <div>
-              <p className="font-mono text-[9px] text-crimson uppercase tracking-widest leading-none mb-0.5">
-                Titan Journal CRM
-              </p>
-              <p className="font-display font-bold text-[13px] text-text-primary leading-none">
-                Documentation
-              </p>
-            </div>
-          </div>
-          <p className="mt-2.5 font-sans text-[11px] text-text-muted">
-            {CHAPTERS.length} chapters · Full feature guide
-          </p>
-        </div>
-
-        {/* Search */}
+      <aside className="hidden md:flex flex-col w-52 xl:w-56 shrink-0 border-r border-border-subtle bg-base h-full overflow-hidden">
+        {/* Search — starts at the very top, no brand header (main nav handles branding) */}
         <div className="px-3 py-2.5 border-b border-border-subtle shrink-0">
           <div className="relative">
             <MagnifyingGlass
@@ -159,12 +147,12 @@ export function DocsClient() {
               placeholder="Search chapters…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-8 pl-7 pr-7 rounded-lg bg-elevated border border-border-subtle font-sans text-[12px] text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-default transition-colors"
+              className="w-full h-8 pl-7 pr-7 rounded-md bg-elevated border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-border-default transition-colors"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
               >
                 <X size={11} weight="bold" />
               </button>
@@ -173,33 +161,36 @@ export function DocsClient() {
         </div>
 
         {/* Chapter list */}
-        <nav className="flex-1 overflow-y-auto py-1.5 scrollbar-hide">
+        <nav className="flex-1 overflow-y-auto py-1 scrollbar-hide">
           <NavList />
         </nav>
 
         {/* Role badge */}
         {role && (
-          <div className="shrink-0 px-3.5 py-3 border-t border-border-subtle">
+          <div className="shrink-0 px-3 py-2.5 border-t border-border-subtle bg-elevated/30">
             <p className="font-mono text-[9px] text-text-muted uppercase tracking-widest mb-1.5">
-              Signed in as
+              Viewing as
             </p>
             <AccessBadge roles={[role]} />
           </div>
         )}
       </aside>
 
-      {/* ── Mobile/tablet nav overlay (< lg) ───────────────────────────── */}
+      {/* ── Mobile nav overlay (< md) ──────────────────────────────────── */}
       {navOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-50 md:hidden flex">
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setNavOpen(false)}
           />
-          <aside className="relative z-10 flex flex-col w-72 max-w-[85vw] h-full bg-base border-r border-border-subtle">
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border-subtle">
-              <p className="font-display font-bold text-[14px] text-text-primary">Chapters</p>
-              <button onClick={() => setNavOpen(false)} className="text-text-muted">
-                <X size={16} weight="bold" />
+          <aside className="relative z-10 flex flex-col w-64 max-w-[80vw] h-full bg-base border-r border-border-subtle">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
+              <p className="font-display font-semibold text-sm text-text-primary">Chapters</p>
+              <button
+                onClick={() => setNavOpen(false)}
+                className="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-elevated transition-colors"
+              >
+                <X size={14} weight="bold" />
               </button>
             </div>
             <div className="px-3 py-2.5 border-b border-border-subtle">
@@ -210,68 +201,81 @@ export function DocsClient() {
                   placeholder="Search…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full h-8 pl-7 pr-7 rounded-lg bg-elevated border border-border-subtle font-sans text-[12px] text-text-primary placeholder:text-text-muted focus:outline-none transition-colors"
+                  className="w-full h-8 pl-7 pr-7 rounded-md bg-elevated border border-border-subtle text-xs text-text-primary placeholder:text-text-muted focus:outline-none transition-colors"
                 />
               </div>
             </div>
-            <nav className="flex-1 overflow-y-auto py-1.5">
+            <nav className="flex-1 overflow-y-auto py-1">
               <NavList />
             </nav>
+            {role && (
+              <div className="shrink-0 px-3 py-2.5 border-t border-border-subtle bg-elevated/30">
+                <p className="font-mono text-[9px] text-text-muted uppercase tracking-widest mb-1.5">
+                  Viewing as
+                </p>
+                <AccessBadge roles={[role]} />
+              </div>
+            )}
           </aside>
         </div>
       )}
 
-      {/* ── Content area ──────────────────────────────────────────────────── */}
+      {/* ── Content area ──────────────────────────────────────────────── */}
       <div ref={contentRef} className="flex-1 min-w-0 h-full overflow-y-auto">
 
-        {/* Sticky content topbar (mobile nav trigger + breadcrumb) */}
-        <div className="sticky top-0 z-20 flex items-center gap-3 px-6 md:px-10 h-12 bg-base/90 backdrop-blur-xl border-b border-border-subtle">
+        {/* Sticky content topbar */}
+        <div className="sticky top-0 z-20 flex items-center gap-3 px-4 md:px-6 h-10 bg-base/90 backdrop-blur-xl border-b border-border-subtle">
           {/* Mobile nav toggle */}
           <button
             onClick={() => setNavOpen(true)}
-            className="lg:hidden flex items-center gap-1.5 text-text-secondary"
+            className="md:hidden flex items-center gap-1.5 text-text-secondary hover:text-text-primary transition-colors"
           >
-            <List size={16} weight="bold" />
-            <span className="font-sans text-[12px] font-medium">Chapters</span>
+            <List size={14} weight="bold" />
+            <span className="text-xs font-medium">Chapters</span>
           </button>
 
           {/* Breadcrumb */}
-          <div className="hidden lg:flex items-center gap-1.5 font-mono text-[11px] text-text-muted">
+          <div className="hidden md:flex items-center gap-1.5 font-mono text-[10px] text-text-muted">
             <Books size={11} />
             <span>Docs</span>
-            <span className="text-border-default">/</span>
-            <span className="text-text-secondary truncate max-w-[240px]">
+            <span className="text-border-default mx-0.5">/</span>
+            <span className="text-text-secondary truncate max-w-[300px]">
               {activeChapter.title}
             </span>
           </div>
 
-          {/* Progress pill */}
+          {/* Progress + role */}
           <div className="ml-auto flex items-center gap-2">
-            <span className="font-mono text-[10px] text-text-muted">
-              {String(activeIndex + 1).padStart(2, "0")} / {String(CHAPTERS.length).padStart(2, "0")}
+            {role && (
+              <span className="hidden sm:block">
+                <AccessBadge roles={[role]} />
+              </span>
+            )}
+            <span className="font-mono text-[10px] text-text-muted tabular-nums">
+              {String(activeIndex + 1).padStart(2, "0")}&thinsp;/&thinsp;{String(visibleChapters.length).padStart(2, "0")}
             </span>
           </div>
         </div>
 
         {/* Chapter content */}
-        <div className="px-6 md:px-10 py-8">
-          <ChapterHeader chapterMeta={activeChapter} number={activeIndex + 1} role={role} />
+        <div className="px-5 md:px-8 py-6">
+          <ChapterHeader chapterMeta={activeChapter} number={CHAPTERS.indexOf(activeChapter) + 1} role={role} />
 
           {BodyComponent && (
-            <div className="mt-2">
+            <div className="mt-1">
               <BodyComponent role={role} />
             </div>
           )}
 
           {/* Prev / Next navigation */}
-          <div className="flex gap-3 mt-14 pt-8 border-t border-border-subtle">
+          <div className="flex gap-3 mt-8 pt-6 border-t border-border-subtle">
             {prevChapter ? (
               <button
                 onClick={() => navigate(prevChapter.id)}
-                className="flex-1 flex items-center gap-3 px-4 py-3.5 rounded-xl bg-card border border-border-subtle hover:border-border-default transition-colors text-left group"
+                className="flex-1 flex items-center gap-3 px-4 py-3 rounded-xl border border-border-subtle hover:border-border-default bg-elevated/30 hover:bg-elevated/60 transition-colors text-left group"
               >
                 <CaretLeft
-                  size={16}
+                  size={14}
                   weight="bold"
                   className="text-text-muted shrink-0 group-hover:text-text-secondary transition-colors"
                 />
@@ -279,7 +283,7 @@ export function DocsClient() {
                   <p className="font-mono text-[9px] text-text-muted uppercase tracking-widest mb-0.5">
                     Previous
                   </p>
-                  <p className="font-sans text-[13px] font-semibold text-text-primary truncate">
+                  <p className="text-sm font-semibold text-text-primary truncate">
                     {prevChapter.title}
                   </p>
                 </div>
@@ -291,18 +295,18 @@ export function DocsClient() {
             {nextChapter ? (
               <button
                 onClick={() => navigate(nextChapter.id)}
-                className="flex-1 flex items-center justify-end gap-3 px-4 py-3.5 rounded-xl bg-card border border-border-subtle hover:border-border-default transition-colors text-right group"
+                className="flex-1 flex items-center justify-end gap-3 px-4 py-3 rounded-xl border border-border-subtle hover:border-border-default bg-elevated/30 hover:bg-elevated/60 transition-colors text-right group"
               >
                 <div className="min-w-0">
                   <p className="font-mono text-[9px] text-text-muted uppercase tracking-widest mb-0.5">
                     Next
                   </p>
-                  <p className="font-sans text-[13px] font-semibold text-text-primary truncate">
+                  <p className="text-sm font-semibold text-text-primary truncate">
                     {nextChapter.title}
                   </p>
                 </div>
                 <CaretRight
-                  size={16}
+                  size={14}
                   weight="bold"
                   className="text-text-muted shrink-0 group-hover:text-text-secondary transition-colors"
                 />
@@ -313,9 +317,9 @@ export function DocsClient() {
           </div>
 
           {/* Footer */}
-          <footer className="mt-12 pb-16 text-center">
-            <p className="font-mono text-[10px] text-text-muted/50">
-              Titan Journal CRM &middot; Documentation &middot; {CHAPTERS.length} chapters
+          <footer className="mt-8 pb-10 text-center">
+            <p className="font-mono text-[10px] text-text-muted/40 tracking-wide">
+              Titan Journal CRM &middot; Documentation &middot; {visibleChapters.length} chapter{visibleChapters.length !== 1 ? "s" : ""}
             </p>
           </footer>
         </div>

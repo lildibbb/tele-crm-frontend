@@ -500,7 +500,7 @@ export function SystemConfigPanel() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {section.fields.map((field) => (
                   <div key={field.key} className="space-y-1">
-                    <Label className="text-[11px] font-medium text-text-secondary">
+                    <Label className="text-xs font-medium text-text-secondary">
                       {field.key === "persona.name"
                         ? t(K.botConfig.botName)
                         : field.key === "bot.systemPrompt"
@@ -508,7 +508,7 @@ export function SystemConfigPanel() {
                           : field.label}
                     </Label>
                     {field.description && (
-                      <p className="text-[10px] text-text-muted leading-snug">
+                      <p className="text-xs text-text-muted leading-snug">
                         {field.description}
                       </p>
                     )}
@@ -553,7 +553,7 @@ export function SystemConfigPanel() {
               <p className="text-xs font-medium text-text-primary">
                 {t(K.superadmin.system.exportAuditLogs)}
               </p>
-              <p className="text-[10px] text-text-muted mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 {t(K.superadmin.system.exportAuditLogsDesc)}
               </p>
             </div>

@@ -10,7 +10,6 @@ import type {
   InvitationInfo,
   Session,
 } from "@/lib/schemas/auth.schema";
-import type { UserResponse } from "@/lib/schemas/user.schema";
 import type { ApiResponse } from "@/lib/schemas/common";
 
 export const authApi = {
@@ -82,9 +81,4 @@ export const authApi = {
   changeOwnPassword: (data: ChangeOwnPasswordInput) =>
     apiClient.patch<ApiResponse<void>>("/auth/change-own-password", data),
 
-  /**
-   * Directly creates a CRM user without an invitation (SUPERADMIN only).
-   */
-  createUser: (data: { email: string; password: string; role: string }) =>
-    apiClient.post<ApiResponse<UserResponse>>("/auth/users", data),
 };

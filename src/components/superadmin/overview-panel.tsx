@@ -189,26 +189,26 @@ export function OverviewPanel() {
         {/* Bot Health */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-[13px] text-text-primary">
+            <span className="font-sans font-semibold text-sm text-text-primary">
               {t(K.superadminOps.botHealth)}
             </span>
             <div
               className={`w-2 h-2 rounded-full ${ragStats ? "bg-emerald-400" : "bg-text-muted"}`}
             />
           </div>
-          <div className="space-y-1.5 text-[11px] font-sans">
+          <div className="space-y-1.5 text-xs font-sans">
             {isLoadingRag ? (
               <Skeleton className="h-[2px] w-full" />
             ) : (
               <>
                 <div className="flex justify-between">
-                  <span className="text-text-muted text-[11px]">
+                  <span className="text-text-muted text-xs">
                     {t(K.superadminOps.pendingUpdates)}
                   </span>
                   <span className="data-mono text-text-primary">—</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-muted text-[11px]">
+                  <span className="text-text-muted text-xs">
                     {t(K.superadminOps.lastError)}
                   </span>
                   <span className="text-emerald-400">
@@ -223,7 +223,7 @@ export function OverviewPanel() {
         {/* Queue Monitor */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-[13px] text-text-primary">
+            <span className="font-sans font-semibold text-sm text-text-primary">
               {t(K.superadminOps.queues)}
             </span>
             {isLoadingOps && (
@@ -240,7 +240,7 @@ export function OverviewPanel() {
               {queues.queues.map((q) => (
                 <div
                   key={q.name}
-                  className="flex items-center justify-between text-[10px] font-sans"
+                  className="flex items-center justify-between text-xs font-sans"
                 >
                   <span className="text-text-muted truncate max-w-[80px]">
                     {q.name}
@@ -262,14 +262,14 @@ export function OverviewPanel() {
               ))}
             </div>
           ) : (
-            <span className="text-[11px] text-text-muted font-sans">—</span>
+            <span className="text-xs text-text-muted font-sans">—</span>
           )}
         </div>
 
         {/* Token Budget */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-[13px] text-text-primary">
+            <span className="font-sans font-semibold text-sm text-text-primary">
               {t(K.superadminOps.tokenBudget)}
             </span>
           </div>
@@ -277,7 +277,7 @@ export function OverviewPanel() {
             <Skeleton className="h-16 w-full" />
           ) : tokenUsage ? (
             <>
-              <div className="text-[11px] font-sans space-y-0.5 mb-2">
+              <div className="text-xs font-sans space-y-0.5 mb-2">
                 <div className="flex justify-between">
                   <span className="text-text-muted">
                     {t(K.superadminOps.rolling30d)}
@@ -314,14 +314,14 @@ export function OverviewPanel() {
               </ResponsiveContainer>
             </>
           ) : (
-            <span className="text-[11px] text-text-muted font-sans">—</span>
+            <span className="text-xs text-text-muted font-sans">—</span>
           )}
         </div>
 
         {/* KB Health */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-[13px] text-text-primary">
+            <span className="font-sans font-semibold text-sm text-text-primary">
               {t(K.superadminOps.kbHealth)}
             </span>
           </div>
@@ -329,7 +329,7 @@ export function OverviewPanel() {
             <Skeleton className="h-12 w-full" />
           ) : kbHealth ? (
             <div className="space-y-2">
-              <div className="text-[11px] font-sans">
+              <div className="text-xs font-sans">
                 <div className="flex justify-between mb-1">
                   <span className="text-text-muted">
                     {t(K.superadminOps.embeddingCoverage)}
@@ -364,14 +364,14 @@ export function OverviewPanel() {
               </div>
             </div>
           ) : (
-            <span className="text-[11px] text-text-muted font-sans">—</span>
+            <span className="text-xs text-text-muted font-sans">—</span>
           )}
         </div>
 
         {/* System Health */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-[13px] text-text-primary flex items-center gap-1.5">
+            <span className="font-sans font-semibold text-sm text-text-primary flex items-center gap-1.5">
               <Pulse size={14} weight="duotone" className="text-info" />
               {t(K.superadmin.overview.systemHealth)}
             </span>
@@ -404,7 +404,7 @@ export function OverviewPanel() {
               {systemHealth.checks.map((check) => (
                 <div
                   key={check.name}
-                  className="flex items-center justify-between text-[11px] font-sans"
+                  className="flex items-center justify-between text-xs font-sans"
                 >
                   <div className="flex items-center gap-1.5">
                     <div
@@ -429,7 +429,7 @@ export function OverviewPanel() {
               ))}
             </div>
           ) : (
-            <span className="text-[11px] text-text-muted font-sans">—</span>
+            <span className="text-xs text-text-muted font-sans">—</span>
           )}
         </div>
       </div>
@@ -483,7 +483,7 @@ export function OverviewPanel() {
                     <p className="text-xs text-text-secondary leading-tight">
                       {label}
                     </p>
-                    <p className="text-[11px] text-text-muted mt-0.5">{sub}</p>
+                    <p className="text-xs text-text-muted mt-0.5">{sub}</p>
                   </div>
                   <p
                     className={`text-lg font-bold data-mono shrink-0 ${color}`}

@@ -12,6 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Database,
   CheckCircle,
   ArrowClockwise,
@@ -147,7 +155,7 @@ export function BackupPanel() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Enable toggle */}
           <div className="space-y-2">
-            <Label className="text-[11px] font-medium text-text-secondary">
+            <Label className="text-xs font-medium text-text-secondary">
               {t(K.superadmin.backup.enableBackup)}
             </Label>
             <div className="flex items-center gap-3">
@@ -169,7 +177,7 @@ export function BackupPanel() {
 
           {/* Schedule */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-medium text-text-secondary flex items-center gap-1">
+            <Label className="text-xs font-medium text-text-secondary flex items-center gap-1">
               <Clock size={11} weight="duotone" /> {t(K.superadmin.backup.schedule)}
             </Label>
             <div className="flex gap-2">
@@ -193,7 +201,7 @@ export function BackupPanel() {
 
           {/* Retention */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-medium text-text-secondary">
+            <Label className="text-xs font-medium text-text-secondary">
               {t(K.superadmin.backup.retentionLabel)}
             </Label>
             <div className="flex gap-2">
@@ -267,57 +275,58 @@ export function BackupPanel() {
               {t(K.superadmin.backup.noBackups)}
             </p>
           ) : (
-            <div className="rounded-lg border border-border-subtle overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border-subtle bg-card shadow-sm">
-                    <th className="text-left px-4 py-2.5 font-medium text-text-muted">
-                      {t(K.superadmin.backup.filename)}
-                    </th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">
-                      {t(K.superadmin.backup.size)}
-                    </th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">
-                      {t(K.superadmin.backup.status)}
-                    </th>
-                    <th className="text-left px-3 py-2.5 font-medium text-text-muted">
-                      {t(K.superadmin.backup.created)}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((log, idx) => {
-                    const sc =
-                      STATUS_CONFIG[log.status] ?? STATUS_CONFIG.failed;
-                    return (
-                      <tr
-                        key={log.id}
-                        className={`${idx !== 0 ? "border-t border-border-subtle" : ""} hover:bg-elevated/50`}
-                      >
-                        <td className="px-4 py-2.5 font-mono text-[10px] text-text-secondary max-w-[200px] truncate">
-                          {log.filename}
-                        </td>
-                        <td className="px-3 py-2.5 text-text-muted">
-                          {formatBytes(log.sizeBytes)}
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span
-                            className={`flex items-center gap-1.5 ${sc.cls}`}
-                          >
+            <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-card hover:bg-card">
+                      <TableHead className="text-xs font-medium text-text-muted">
+                        {t(K.superadmin.backup.filename)}
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-text-muted">
+                        {t(K.superadmin.backup.size)}
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-text-muted">
+                        {t(K.superadmin.backup.status)}
+                      </TableHead>
+                      <TableHead className="text-xs font-medium text-text-muted">
+                        {t(K.superadmin.backup.created)}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {history.map((log) => {
+                      const sc =
+                        STATUS_CONFIG[log.status] ?? STATUS_CONFIG.failed;
+                      return (
+                        <TableRow key={log.id} className="hover:bg-elevated/50">
+                          <TableCell className="font-mono text-xs text-text-secondary max-w-[200px] truncate">
+                            {log.filename}
+                          </TableCell>
+                          <TableCell className="text-sm text-text-secondary">
+                            {formatBytes(log.sizeBytes)}
+                          </TableCell>
+                          <TableCell>
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${sc.dot}`}
-                            />
-                            {log.status === "success" ? t(K.superadmin.backup.statusSuccess) : log.status === "partial" ? t(K.superadmin.backup.statusPartial) : t(K.superadmin.backup.statusFailed)}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5 text-text-muted whitespace-nowrap">
-                          {formatDate(log.createdAt)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                              className={`inline-flex items-center gap-1.5 text-xs font-medium ${sc.cls}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${sc.dot}`}
+                              />
+                              {log.status === "success"
+                                ? t(K.superadmin.backup.statusSuccess)
+                                : log.status === "partial"
+                                  ? t(K.superadmin.backup.statusPartial)
+                                  : t(K.superadmin.backup.statusFailed)}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-sm text-text-secondary whitespace-nowrap">
+                            {formatDate(log.createdAt)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
             </div>
           )}
         </div>

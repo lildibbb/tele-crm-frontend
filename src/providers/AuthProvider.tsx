@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, type ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
@@ -14,11 +14,13 @@ const PUBLIC_ROUTES = [
   "/register",
   "/deposit",
   "/status",
+  "/docs-public",
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { initAuth, skipAuthCheck, isInitialized, isLoading } = useAuthStore();
+  const router = useRouter();
+  const { initAuth, skipAuthCheck, isInitialized, isLoading, user } = useAuthStore();
 
   // Check if current route is public
   const isPublicRoute = useMemo(() => {
@@ -28,12 +30,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    // Skip authentication initialization on public routes
-    if (isPublicRoute) {
-      // Mark as initialized so the app doesn't get stuck in loading state
+    // Allow auth initialization even on public routes, except for purely "guest-only" routes
+    // This ensures `/docs-public` can recognize the logged-in user's role.
+    const isGuestOnlyRoute = [
+      "/login",
+      "/register",
+      "/forgot-password",
+      "/reset-password",
+    ].some((route) => pathname === route || pathname.startsWith(route + "/"));
+
+    if (isGuestOnlyRoute) {
       skipAuthCheck();
       return;
     }
+
     initAuth();
     // Mount-only effect — deps intentionally omitted
     // initAuth and skipAuthCheck are stable store functions; re-running on pathname
@@ -47,9 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // If not authenticated and trying to access protected route, redirect to login
-    // Note: This handles cases where the user has no valid session
-  }, [isInitialized, isPublicRoute, pathname]);
+    if (!user) {
+      router.replace("/login");
+    }
+  }, [isInitialized, isPublicRoute, user, router]);
 
   if (!isInitialized) {
     return (
