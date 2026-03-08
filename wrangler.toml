@@ -1,0 +1,5 @@
+name = "titanjournal-crm-staging"
+pages_build_output_dir = "out"
+
+[env.production]
+name = "titanjournal"

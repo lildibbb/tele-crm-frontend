@@ -13,11 +13,7 @@ export const API_BASE_URL =
 
 // Create a configured Axios instance
 export const apiClient: AxiosInstance = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL ||
-    (typeof window !== "undefined"
-      ? "/api/v1"
-      : "http://localhost:3001/api/v1"),
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1",
   timeout: 15000,
   withCredentials: true, // sends HTTP-Only refresh_token cookie automatically
   headers: {
