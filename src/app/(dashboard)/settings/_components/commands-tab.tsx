@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
   DndContext,
   closestCenter,
@@ -352,7 +352,7 @@ export function CommandsTab() {
 
   const form = useForm<CreateCommandMenuInput>({
     // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
-    resolver: zodResolver(CreateCommandMenuSchema as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: standardSchemaResolver(CreateCommandMenuSchema),
     defaultValues: {
       command: "",
       label: "",

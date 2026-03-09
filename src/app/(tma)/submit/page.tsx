@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Shield,
@@ -67,7 +67,7 @@ function styledInput(extra?: React.CSSProperties) {
   return { ...inputStyle, ...extra };
 }
 
-export default function TMASubmitPage() {
+function TMASubmitPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
@@ -461,5 +461,13 @@ export default function TMASubmitPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TMASubmitPage() {
+  return (
+    <Suspense>
+      <TMASubmitPageContent />
+    </Suspense>
   );
 }

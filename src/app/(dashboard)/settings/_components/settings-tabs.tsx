@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Bot, BookOpen, Terminal, Users, Brain, Link2 } from "lucide-react";
 import {
   Tabs,
@@ -65,7 +65,7 @@ const ALL_SETTINGS_TABS = [
   },
 ];
 
-export function SettingsTabs() {
+function SettingsTabsInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -165,6 +165,14 @@ export function SettingsTabs() {
         </div>
       </Tabs>
     </div>
+  );
+}
+
+export function SettingsTabs() {
+  return (
+    <Suspense>
+      <SettingsTabsInner />
+    </Suspense>
   );
 }
 

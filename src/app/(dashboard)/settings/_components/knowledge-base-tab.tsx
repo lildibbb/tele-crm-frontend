@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
   Plus,
   Search,
@@ -137,8 +137,7 @@ export function KnowledgeBaseTab() {
   const removeMutation = useRemoveKb();
 
   const form = useForm<CreateKbInput>({
-    // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
-    resolver: zodResolver(CreateKbSchema as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: standardSchemaResolver(CreateKbSchema),
     defaultValues: { title: "", content: "", type: KbType.TEXT },
   });
 

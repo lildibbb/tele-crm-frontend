@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
@@ -83,7 +83,7 @@ function formatDateTime(iso: string | null): string {
   });
 }
 
-export default function TMAStatusPage() {
+function TMAStatusPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
@@ -293,5 +293,13 @@ export default function TMAStatusPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TMAStatusPage() {
+  return (
+    <Suspense>
+      <TMAStatusPageContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { UserPlus, Copy, Check, UserX, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,8 +77,7 @@ export function TeamTab() {
   const deleteInvitationMutation = useDeleteInvitation();
 
   const form = useForm<InviteUserInput>({
-    // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
-    resolver: zodResolver(InviteUserSchema as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: standardSchemaResolver(InviteUserSchema),
     defaultValues: { role: UserRole.STAFF, email: "" },
   });
 
