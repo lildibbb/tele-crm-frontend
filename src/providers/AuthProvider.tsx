@@ -37,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       "/register",
       "/forgot-password",
       "/reset-password",
+      "/setup-account",
+      "/submit",
     ].some((route) => pathname === route || pathname.startsWith(route + "/"));
 
     if (isGuestOnlyRoute) {

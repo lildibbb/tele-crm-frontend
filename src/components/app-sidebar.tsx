@@ -120,11 +120,7 @@ const ALL_NAV_ITEMS = [
     href: "/settings",
     icon: Sliders,
     labelKey: "nav.settings",
-    roles: [
-      UserRole.OWNER,
-      UserRole.ADMIN,
-      UserRole.SUPERADMIN,
-    ],
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
   },
   {
     href: "/settings",
@@ -163,7 +159,7 @@ export function AppSidebar() {
     // Superadmin always sees all navigation items
     if (role === UserRole.SUPERADMIN) return true;
     // Hide Follow-ups if superadmin has disabled the feature
-    if (item.href === '/follow-ups' && !visibility.followUps) return false;
+    if (item.href === "/follow-ups" && !visibility.followUps) return false;
     return true;
   });
 
@@ -173,7 +169,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/l">
+              <Link href="/">
                 <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">
                   {/* Full Logo - Hidden when collapsed */}
                   <div className="flex items-center text-[13px] gap-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
@@ -359,7 +355,8 @@ export function AppSidebar() {
                     <span
                       className={cn(
                         "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold leading-none mt-0.5 w-fit",
-                        user?.role === UserRole.OWNER || user?.role === UserRole.SUPERADMIN
+                        user?.role === UserRole.OWNER ||
+                          user?.role === UserRole.SUPERADMIN
                           ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25"
                           : user?.role === UserRole.ADMIN
                             ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25"
