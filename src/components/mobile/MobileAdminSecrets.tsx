@@ -158,7 +158,6 @@ export default function MobileAdminSecrets() {
               {mergedSecrets.map((secret) => {
                 const isSet = !!secret.updatedAt;
                 const isSaved = savedKey === secret.key;
-                const known = KNOWN_KEYS.find((k) => k.key === secret.key);
                 return (
                   <div
                     key={secret.key}

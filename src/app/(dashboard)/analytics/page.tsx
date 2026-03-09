@@ -25,7 +25,6 @@ import {
   Area,
   BarChart,
   Bar,
-  Cell,
   XAxis,
   YAxis,
   Tooltip,
@@ -287,7 +286,7 @@ function KpiCard({
   return (
     <div className="kpi-stat-card bg-elevated rounded-xl p-5 shadow-sm border border-border-subtle">
       <div className="flex items-start justify-between mb-4">
-        <Icon size={22} weight="duotone" />
+        <Icon size={22} weight="duotone" style={{ color: iconColor }} />
 
         <span
           className={`flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded-full ${

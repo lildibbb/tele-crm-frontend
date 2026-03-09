@@ -3,12 +3,14 @@ import type { FilterOperatorValue } from "@/config/data-table";
 import type { FilterItemSchema } from "@/lib/parsers";
 
 declare module "@tanstack/react-table" {
-  // biome-ignore lint/correctness/noUnusedVariables: TData is used in the TableMeta interface
+  // biome-ignore lint/correctness/noUnusedVariables: required by TanStack declaration merging
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
     queryKeys?: QueryKeys;
   }
 
-  // biome-ignore lint/correctness/noUnusedVariables: TData and TValue are used in the ColumnMeta interface
+  // biome-ignore lint/correctness/noUnusedVariables: required by TanStack declaration merging
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     label?: string;
     placeholder?: string;

@@ -5,7 +5,6 @@ import type {
   ForgotPasswordInput,
   ResetPasswordInput,
   ChangeOwnPasswordInput,
-  ChangePasswordInput,
   AuthResponse,
   InvitationInfo,
   Session,

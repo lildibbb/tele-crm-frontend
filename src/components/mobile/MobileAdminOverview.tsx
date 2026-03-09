@@ -43,7 +43,7 @@ import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import type { HealthStatus } from "@/lib/api/superadmin";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAdminOverviewProps {}
+export type MobileAdminOverviewProps = Record<never, never>
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

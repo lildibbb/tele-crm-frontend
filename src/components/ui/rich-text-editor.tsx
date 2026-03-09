@@ -201,8 +201,8 @@ export function RichTextEditor({
   }, [editor]);
 
   // ── Char count ──────────────────────────────────────────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const charCount: number =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (editor?.storage?.characterCount as any)?.characters?.() ?? 0;
   const isOverLimit = charCount >= maxLength;
 

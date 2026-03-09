@@ -46,8 +46,8 @@ import type { Interaction } from "@/lib/schemas/lead.schema";
 import { LeadStatus } from "@/types/enums";
 import { parseApiData } from "@/lib/api/parseResponse";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 import {
   Dialog,
   DialogContent,
@@ -66,14 +66,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
-  getFileBadgeConfig,
   FileTypeBadge,
   FileTypeChip,
 } from "@/components/ui/file-type-badge";
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
 
 // ── Interaction → display mappings ───────────────────────────────────────────
 

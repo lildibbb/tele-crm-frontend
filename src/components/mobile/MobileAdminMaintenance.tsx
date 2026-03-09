@@ -21,7 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAdminMaintenanceProps {}
+export type MobileAdminMaintenanceProps = Record<never, never>
 
 const FEATURE_FLAGS: {
   key: string;

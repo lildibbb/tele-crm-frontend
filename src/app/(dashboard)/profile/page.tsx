@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock,
@@ -10,7 +10,6 @@ import {
   Clock,
   Globe,
   SlidersHorizontal,
-  MagnifyingGlass,
   CaretUpDown,
   Check,
   Crosshair,

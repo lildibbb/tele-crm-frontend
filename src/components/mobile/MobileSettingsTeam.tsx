@@ -45,7 +45,7 @@ import type {
 import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export interface MobileSettingsTeamProps {}
+export type MobileSettingsTeamProps = Record<never, never>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const ROLE_LABELS: Record<string, string> = {
@@ -256,7 +256,7 @@ export default function MobileSettingsTeam(_props: MobileSettingsTeamProps) {
         role: inviteRole as UserRole,
       });
       // Capture the Telegram deep link from the API response
-      const deepLink = (res as any)?.data?.data?.telegramDeepLink;
+      const deepLink = (res as { data?: { data?: { telegramDeepLink?: string } } })?.data?.data?.telegramDeepLink;
       if (deepLink) {
         setInviteLink(deepLink);
         toast.success("Invite link generated");

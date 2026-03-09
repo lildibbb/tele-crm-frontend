@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-interface KbdProps extends React.HTMLAttributes<HTMLElement> {}
+type KbdProps = React.HTMLAttributes<HTMLElement>
 
 export function Kbd({ className, children, ...props }: KbdProps) {
   return (
@@ -17,7 +17,7 @@ export function Kbd({ className, children, ...props }: KbdProps) {
   );
 }
 
-interface KbdGroupProps extends React.HTMLAttributes<HTMLSpanElement> {}
+type KbdGroupProps = React.HTMLAttributes<HTMLSpanElement>
 
 export function KbdGroup({ className, children, ...props }: KbdGroupProps) {
   return (

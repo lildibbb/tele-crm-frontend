@@ -20,24 +20,14 @@ import {
 } from "@phosphor-icons/react";
 import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
 import { useLeadsList } from "@/queries/useLeadsQuery";
-import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface OwnerHomeProps {
-  readonly onMoreOpen?: () => void;
   readonly onViewAllLeads?: () => void;
 }
-
-const STATUS_COLORS: Record<string, string> = {
-  NEW:               "var(--info)",
-  CONTACTED:         "#60A5FA",
-  DEPOSIT_REPORTED:  "var(--warning)",
-  DEPOSIT_CONFIRMED: "var(--success)",
-  REJECTED:          "var(--danger)",
-};
 
 const STATUS_LABELS: Record<string, string> = {
   NEW:               "NEW",
@@ -64,11 +54,9 @@ function SkeletonActivityCard() {
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function OwnerHome({
-  onMoreOpen,
   onViewAllLeads,
 }: OwnerHomeProps) {
   const router = useRouter();
-  const { user } = useAuthStore();
   const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
   const { data: leadsResult, isLoading: leadsLoading } = useLeadsList({ skip: 0, take: 5, orderBy: "createdAt", order: "desc" });
   const leads = leadsResult?.data ?? [];

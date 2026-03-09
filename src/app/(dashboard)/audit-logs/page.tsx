@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ClipboardText,
   ArrowCounterClockwise,
-  Warning,
   MagnifyingGlass,
   Hash,
   ChartBar,
   Users,
   Calendar,
+  Warning,
   X,
   Copy,
   Check,
@@ -78,7 +78,7 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
             <IconComp
               size={20}
               weight="duotone"
-              className="text-text-secondary flex-shrink-0"
+              className={`${colorCls} flex-shrink-0`}
             />
             <div>
               <h3 className="font-sans font-semibold text-[14px] text-text-primary">
@@ -370,32 +370,28 @@ export default function AuditLogsPage() {
             {
               icon: Hash,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.total),
               value: total.toLocaleString(),
             },
             {
               icon: Calendar,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.today),
               value: String(todayCount),
             },
             {
               icon: ChartBar,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.topAction),
               value: mostCommonAction,
             },
             {
               icon: Users,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.actors),
               value: String(uniqueActors),
             },
-          ].map(({ icon: Icon, color, bg, label, value }) => (
+          ].map(({ icon: Icon, color, label, value }) => (
             <div
               key={label}
               className="bg-card rounded-xl border border-border-subtle p-4 shadow-[var(--shadow-card)]"

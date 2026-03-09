@@ -26,7 +26,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export interface MobileAdminQueuesProps {}
+export type MobileAdminQueuesProps = Record<never, never>
 
 type ConfirmAction = { type: "retry" | "purge"; queue: QueueJobCount };
 

@@ -10,7 +10,6 @@ import {
   UploadSimple,
   CheckCircle,
   SpinnerGap,
-  Plus,
   UserSwitch,
   Robot,
   MagnifyingGlass,
@@ -57,7 +56,6 @@ import { useDataTable } from "@/lib/hooks/use-data-table";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { getLeadsColumns } from "./_components/leads-columns";
 import { Input } from "@/components/ui/input";
-import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
 import { toast } from "sonner";
 
 // Module-level constants — stable parser instances (no re-creation on render)
@@ -74,8 +72,6 @@ export default function LeadsPage() {
   const t = useT();
   const isMobile = useIsMobile();
   const tableRef = useRef<HTMLDivElement>(null);
-  const isBlocked = useIsMaintenanceBlocked();
-
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "ALL">("ALL");
   const [exportStatus, setExportStatus] = useState<"idle" | "loading" | "done">(
     "idle",
@@ -158,8 +154,6 @@ export default function LeadsPage() {
     pageCount,
     initialState: { pagination: { pageSize: 20, pageIndex: 0 } },
   });
-
-  const { pageIndex: tablePageIndex } = table.getState().pagination;
 
   const debouncedSetSearch = useDebouncedCallback((val: string) => {
     setSearchValue(val);

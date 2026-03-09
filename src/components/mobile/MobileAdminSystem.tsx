@@ -16,7 +16,7 @@ import { Check, X, Sliders } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAdminSystemProps {}
+export type MobileAdminSystemProps = Record<never, never>
 
 interface EditState {
   key: string;
@@ -223,7 +223,6 @@ export default function MobileAdminSystem(_props: MobileAdminSystemProps) {
                   value={draftValue}
                   onChange={(e) => setDraftValue(e.target.value)}
                   className="h-11 text-sm font-mono"
-                  // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
                 />
               )}

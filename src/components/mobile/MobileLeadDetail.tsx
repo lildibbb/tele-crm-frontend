@@ -16,11 +16,8 @@ import {
   TelegramLogo,
   ChatCircleDots,
   PaperclipHorizontal,
-  Image as ImageIcon,
-  FileText,
   Clock,
   ShieldCheck,
-  PaperPlaneTilt,
   ArrowsClockwise,
   ArrowCounterClockwise,
   ArrowClockwise,
@@ -315,25 +312,6 @@ export default function MobileLeadDetail({
     router.back();
   }, [onBack, router]);
 
-  const handleSend = useCallback(async () => {
-    const trimmed = messageText.trim();
-    if (!trimmed || !lead?.id || isSending) return;
-    if (onSendMessage) {
-      onSendMessage(trimmed);
-      setMessageText("");
-      return;
-    }
-    setIsSending(true);
-    try {
-      await leadsApi.reply(lead.id, trimmed);
-      setMessageText("");
-      queryClient.invalidateQueries({
-        queryKey: ["lead-interactions", lead.id],
-      });
-    } finally {
-      setIsSending(false);
-    }
-  }, [messageText, onSendMessage, lead?.id, isSending, queryClient]);
 
   if (isLoading || !lead) return <LoadingSkeleton />;
 

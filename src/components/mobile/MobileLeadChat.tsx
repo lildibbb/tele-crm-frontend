@@ -7,7 +7,6 @@ import {
   PaperPlaneTilt,
   Robot,
   UserCircle,
-  Lightning,
 } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { leadsApi } from "@/lib/api";

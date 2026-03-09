@@ -53,7 +53,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -335,9 +334,7 @@ export function CommandsTab() {
   const [editId, setEditId] = useState<string | null>(null);
   const [activePane, setActivePane] = useState<"edit" | "preview">("edit");
   // Track current Tiptap JSON for live preview
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [liveContent, setLiveContent] =
-    useState<Record<string, any>>(EMPTY_TIPTAP_DOC);
+  const [liveContent, setLiveContent] = useState<TiptapDoc>(EMPTY_TIPTAP_DOC);
   const isSubmittingRef = useRef(false);
 
   const { items, isLoading, error, fetchAll, create, update, remove, reorder } =
@@ -818,7 +815,7 @@ export function CommandsTab() {
                           jsonContent={field.value as TiptapDoc}
                           onJsonChange={(json) => {
                             field.onChange(json);
-                            setLiveContent(json);
+                            setLiveContent(json as TiptapDoc);
                           }}
                           placeholder="Enter the message content..."
                           fillHeight

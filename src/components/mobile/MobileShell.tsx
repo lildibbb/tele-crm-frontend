@@ -2,7 +2,6 @@
 
 import React, { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   SquaresFour,
   Users,
@@ -137,7 +136,6 @@ export default function MobileShell({
   showLiveDot = false,
   onBack,
 }: MobileShellProps) {
-  const pathname = usePathname();
   const { user } = useAuthStore();
 
   const role = roleProp ?? (user?.role as UserRole) ?? "STAFF";

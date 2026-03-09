@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export interface MobileAdminGoogleProps {}
+export type MobileAdminGoogleProps = Record<never, never>
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 

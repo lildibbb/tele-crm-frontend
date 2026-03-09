@@ -17,7 +17,6 @@ import {
   CaretDown,
   Play,
   Copy,
-  CheckFat,
 } from "@phosphor-icons/react";
 import { Icon } from "@iconify/react";
 import { cn } from "@/lib/utils";
@@ -44,7 +43,7 @@ import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 import { UserRole } from "@/types/enums";
 
 // ── Types ───────────────────────────────────────────────────────────────────────
-export interface MobileIntegrationsProps {}
+export type MobileIntegrationsProps = Record<never, never>
 
 type ConnectionStatus = "ready" | "needs-id" | "awaiting-setup" | "disabled";
 

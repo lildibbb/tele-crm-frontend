@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   MagnifyingGlass,
   Plus,
-  SortAscending,
   X,
   FunnelSimple,
   DownloadSimple,

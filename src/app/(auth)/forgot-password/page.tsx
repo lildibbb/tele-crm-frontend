@@ -212,7 +212,7 @@ export default function ForgotPasswordPage() {
 
                 {/* Help text */}
                 <p className="text-center text-xs text-text-muted mt-6">
-                  Didn't receive the email? Check your spam folder or{" "}
+                  Didn&apos;t receive the email? Check your spam folder or{" "}
                   <button
                     onClick={handleResend}
                     disabled={isLoading}
@@ -247,7 +247,7 @@ export default function ForgotPasswordPage() {
                     Forgot password?
                   </h2>
                   <p className="font-sans text-sm text-text-secondary">
-                    Enter your email and we'll send a 4-digit reset code.
+                    Enter your email and we&apos;ll send a 4-digit reset code.
                   </p>
                 </div>
 

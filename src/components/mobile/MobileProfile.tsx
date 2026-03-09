@@ -7,10 +7,6 @@ import {
   Camera,
   LockKey,
   Monitor,
-  Bell,
-  CurrencyDollar,
-  ShieldCheck,
-  MoonStars,
   Translate,
   SignOut,
   Eye,
@@ -27,8 +23,6 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -352,14 +346,12 @@ const TZ_GROUPS = [
 // ── Main ───────────────────────────────────────────────────────────────────────
 export interface MobileProfileProps {
   readonly onBack?: () => void;
-  readonly onChangePassword?: () => void;
   readonly onActiveSessions?: () => void;
   readonly onSignOut?: () => void;
 }
 
 export default function MobileProfile({
   onBack,
-  onChangePassword,
   onActiveSessions,
   onSignOut,
 }: MobileProfileProps) {
@@ -371,7 +363,6 @@ export default function MobileProfile({
   const [showTzSheet, setShowTzSheet] = useState(false);
   const [tzPending, setTzPending] = useState<string>("");
   const [tzSaving, setTzSaving] = useState(false);
-  const [tzSaved, setTzSaved] = useState(false);
   const [liveClock, setLiveClock] = useState("");
   const [tzSearch, setTzSearch] = useState("");
 
@@ -396,7 +387,6 @@ export default function MobileProfile({
 
   const handleOpenTzSheet = () => {
     setTzPending(currentTz);
-    setTzSaved(false);
     setShowTzSheet(true);
   };
 
@@ -416,7 +406,6 @@ export default function MobileProfile({
         });
       }
       toast.success("Timezone updated");
-      setTzSaved(true);
       setShowTzSheet(false);
     } catch {
       toast.error("Failed to update timezone");

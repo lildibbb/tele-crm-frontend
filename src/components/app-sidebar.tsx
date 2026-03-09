@@ -15,7 +15,6 @@ import {
   ClipboardText,
   SignOut,
   UserCircle,
-  CaretUpDown,
   CaretDown,
   Warning,
   HardDrives,

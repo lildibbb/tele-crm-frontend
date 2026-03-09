@@ -127,7 +127,6 @@ function SetupAccountContent() {
     confirmPassword.length > 0 && password === confirmPassword;
 
   const onSubmit = async (data: SetupAccountInput) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword: _confirm, ...payload } = data;
     try {
       const res = await authApi.setupAccount(payload as SetupAccountInput);

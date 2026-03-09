@@ -32,12 +32,13 @@ import {
   CartesianGrid,
 } from "recharts";
 import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
+import type { AnalyticsSummaryParams } from "@/lib/schemas/analytics.schema";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAnalyticsProps {}
+export type MobileAnalyticsProps = Record<never, never>
 
 const PERIODS = [
   { key: "today", label: "Today" },
@@ -165,14 +166,14 @@ function TrendBadge({
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileAnalytics({}: MobileAnalyticsProps) {
-  const [activePeriod, setActivePeriod] = useState("this_week");
+  const [activePeriod, setActivePeriod] = useState<AnalyticsSummaryParams["timeframe"]>("this_week");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [appliedFrom, setAppliedFrom] = useState("");
   const [appliedTo, setAppliedTo] = useState("");
   const { data: summary, isLoading } = useAnalyticsSummary({
-    timeframe: activePeriod as any,
+    timeframe: activePeriod,
     ...(activePeriod === "custom" && appliedFrom && appliedTo
       ? {
           startDate: new Date(appliedFrom).toISOString(),
@@ -320,7 +321,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
             onClick={() =>
               p.key === "custom"
                 ? setDateSheetOpen(true)
-                : setActivePeriod(p.key as string)
+                : setActivePeriod(p.key as AnalyticsSummaryParams["timeframe"])
             }
             className={cn(
               "shrink-0 px-3 h-7 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors",

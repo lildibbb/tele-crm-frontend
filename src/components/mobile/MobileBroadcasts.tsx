@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-export interface MobileBroadcastsProps {}
+export type MobileBroadcastsProps = Record<never, never>
 
 const MAX_MSG_LENGTH = 4096;
 

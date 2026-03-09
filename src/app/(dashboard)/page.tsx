@@ -19,7 +19,6 @@ import { useT, K } from "@/i18n";
 // ── Extracted components ────────────────────────────────────────
 import {
   HeroBanner,
-  PERIODS,
   type PeriodValue,
 } from "@/components/dashboard/HeroBanner";
 import { KpiCards } from "@/components/dashboard/KpiCards";
@@ -66,7 +65,7 @@ export default function DashboardPage() {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
-  const { data: summary, isLoading, error } = useAnalyticsSummary({ timeframe: period });
+  const { data: summary, isLoading } = useAnalyticsSummary({ timeframe: period });
   const { data: leadsResult } = useLeadsList({ skip: 0, take: 20 });
   const leads = leadsResult?.data ?? [];
   const widgets = useDashboardLayoutStore((s) => s.widgets);

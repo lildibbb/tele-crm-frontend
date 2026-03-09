@@ -439,7 +439,7 @@ function EntryRow({
 
 // ── Props & main ──────────────────────────────────────────────────────────────
 
-export interface MobileKnowledgeBaseProps {}
+export type MobileKnowledgeBaseProps = Record<never, never>
 
 export default function MobileKnowledgeBase({}: MobileKnowledgeBaseProps) {
   const { user } = useAuthStore();

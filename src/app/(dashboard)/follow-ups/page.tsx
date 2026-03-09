@@ -87,23 +87,7 @@ export default function FollowUpsPage() {
   const { user } = useAuthStore();
   const isSuperAdmin = user?.role === UserRole.SUPERADMIN;
 
-  if (!isSuperAdmin && !visibility.isLoading && !visibility.followUps) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-3 text-text-secondary">
-        <Timer size={48} weight="duotone" className="opacity-30" />
-        <p className="text-sm font-medium">This feature is not available.</p>
-      </div>
-    );
-  }
-
-  const TYPE_LABELS: Record<string, string> = {
-    follow_up_register: t(K.followUp.type.register),
-    follow_up_deposit: t(K.followUp.type.deposit),
-    follow_up_verification: t(K.followUp.type.verification),
-  };
-  const typeLabel = (type: string) =>
-    TYPE_LABELS[type] ?? type.replace(/_/g, " ");
-
+  // All hooks must be declared before any early returns (Rules of Hooks).
   const [tab, setTab] = useState<"scheduled" | "failed">("scheduled");
   const [items, setItems] = useState<FollowUp[]>([]);
   const [total, setTotal] = useState(0);
@@ -158,6 +142,24 @@ export default function FollowUpsPage() {
     if (isMobile) return;
     if (tab === "failed") void loadFailed();
   }, [tab, loadFailed, isMobile]);
+
+  // Early returns come after all hooks.
+  if (!isSuperAdmin && !visibility.isLoading && !visibility.followUps) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-3 text-text-secondary">
+        <Timer size={48} weight="duotone" className="opacity-30" />
+        <p className="text-sm font-medium">This feature is not available.</p>
+      </div>
+    );
+  }
+
+  const TYPE_LABELS: Record<string, string> = {
+    follow_up_register: t(K.followUp.type.register),
+    follow_up_deposit: t(K.followUp.type.deposit),
+    follow_up_verification: t(K.followUp.type.verification),
+  };
+  const typeLabel = (type: string) =>
+    TYPE_LABELS[type] ?? type.replace(/_/g, " ");
 
   if (isMobile) return <MobileFollowUps />;
 

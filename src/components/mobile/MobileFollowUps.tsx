@@ -30,7 +30,7 @@ import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-export interface MobileFollowUpsProps {}
+export type MobileFollowUpsProps = Record<never, never>
 
 type TabKey = "scheduled" | "failed";
 

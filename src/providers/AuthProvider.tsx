@@ -20,7 +20,7 @@ const PUBLIC_ROUTES = [
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { initAuth, skipAuthCheck, isInitialized, isLoading, user } = useAuthStore();
+  const { initAuth, skipAuthCheck, isInitialized, user } = useAuthStore();
 
   // Check if current route is public
   const isPublicRoute = useMemo(() => {

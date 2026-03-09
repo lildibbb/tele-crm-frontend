@@ -25,14 +25,6 @@ export interface StaffHomeProps {
   readonly onMyLeads?: () => void;
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  NEW:               "var(--info)",
-  CONTACTED:         "#60A5FA",
-  DEPOSIT_REPORTED:  "var(--warning)",
-  DEPOSIT_CONFIRMED: "var(--success)",
-  REJECTED:          "var(--danger)",
-};
-
 const STATUS_LABEL: Record<string, string> = {
   NEW:               "NEW",
   CONTACTED:         "CONTACTED",
@@ -66,7 +58,6 @@ export default function StaffHome({
   const total = leadsResult?.total ?? 0;
   const { data: summary, isLoading: analyticsLoading } = useAnalyticsSummary();
 
-  const firstName = user?.email?.split("@")[0] ?? "Staff";
   const pendingCount = summary?.kpi?.formSubmissions?.current ?? 0;
   const registeredToday = summary?.kpi?.formSubmissions?.current ?? 0;
   const loading = isLoading || analyticsLoading;

@@ -13,8 +13,8 @@ import {
   ArrowRight,
   RefreshCw,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, type UseFormReturn } from "react-hook-form";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { OTPInput, type SlotProps } from "input-otp";
 
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,21 @@ import { authApi } from "@/lib/api/auth";
 
 import { cn } from "@/lib/utils";
 import { z } from "zod/v4";
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+
+// ── Schema (module-level so sub-components can reference the inferred type) ─
+const resetPasswordSchema = z
+  .object({
+    email: z.string().email("Please enter a valid email address"),
+    code: z.string().length(4, "Code must be exactly 4 digits"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 // Password strength rules
 const PASSWORD_RULES = [
@@ -207,10 +221,10 @@ function StepOneVerification({
   submittedEmail,
 }: {
   onNext: () => void;
-  form: any;
+  form: UseFormReturn<ResetPasswordFormValues>;
   submittedEmail: string;
 }) {
-  const [isLoading, setLoading] = useState(false);
+  const [_isLoading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendCountdown, setResendCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
@@ -223,6 +237,7 @@ function StepOneVerification({
     if (otpValue?.length === 4) {
       handleVerify(otpValue);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otpValue]);
 
   // Resend countdown timer
@@ -253,7 +268,7 @@ function StepOneVerification({
         setError("Invalid verification code. Please try again.");
         form.setValue("code", "");
       }
-    } catch (err) {
+    } catch {
       setError("Verification failed. Please try again.");
     } finally {
       setLoading(false);
@@ -345,7 +360,7 @@ function StepOneVerification({
 
       {/* Resend */}
       <div className="text-center">
-        <p className="text-text-muted text-sm mb-2">Didn't receive the code?</p>
+        <p className="text-text-muted text-sm mb-2">Didn&apos;t receive the code?</p>
         <Button
           variant="ghost"
           size="sm"
@@ -375,8 +390,8 @@ function StepTwoPassword({
   form,
   isSubmitting,
 }: {
-  onSubmit: (data: any) => void;
-  form: any;
+  onSubmit: (data: ResetPasswordFormValues) => void;
+  form: UseFormReturn<ResetPasswordFormValues>;
   isSubmitting: boolean;
 }) {
   const [showPass, setShowPass] = useState(false);
@@ -616,21 +631,8 @@ function ResetPasswordContent() {
   const [isCompleted, setCompleted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Extended schema with confirmPassword for client-side validation
-  const formWithConfirmSchema = z
-    .object({
-      email: z.string().email("Please enter a valid email address"),
-      code: z.string().length(4, "Code must be exactly 4 digits"),
-      newPassword: z.string().min(8, "Password must be at least 8 characters"),
-      confirmPassword: z.string(),
-    })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-      message: "Passwords do not match",
-      path: ["confirmPassword"],
-    });
-
-  const form = useForm<z.infer<typeof formWithConfirmSchema>>({
-    resolver: standardSchemaResolver(formWithConfirmSchema),
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: standardSchemaResolver(resetPasswordSchema),
     defaultValues: {
       email: emailFromUrl,
       code: "",
@@ -640,7 +642,7 @@ function ResetPasswordContent() {
   });
 
   // Handle final submission
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ResetPasswordFormValues) => {
     setIsSubmitting(true);
 
     try {

@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { AppSidebar, NAV_ITEMS } from "@/components/app-sidebar";
-import { Button } from "@/components/ui/button";
 
 const PAGE_TITLE_KEYS: Record<string, string> = {
   "/": "nav.commandCenter",
