@@ -90,7 +90,7 @@ function LeadCard({ lead }: { lead: Lead }) {
   const initials = getInitials(lead.displayName);
 
   return (
-    <Link href={`/leads/${lead.id}`} className="block">
+    <Link href={`/leads/detail?id=${lead.id}`} className="block">
       <div
         className={cn(
           "flex items-start gap-3 p-3.5 rounded-xl bg-card border border-border-subtle",
@@ -167,7 +167,12 @@ const PAGE_SIZE = 20;
 
 // ── Sort options ───────────────────────────────────────────────────────────────
 type SortOption = "newest" | "oldest" | "status";
-const SORT_OPTIONS: { id: SortOption; label: string; orderBy: string; order: "asc" | "desc" }[] = [
+const SORT_OPTIONS: {
+  id: SortOption;
+  label: string;
+  orderBy: string;
+  order: "asc" | "desc";
+}[] = [
   { id: "newest", label: "Newest First", orderBy: "createdAt", order: "desc" },
   { id: "oldest", label: "Oldest First", orderBy: "createdAt", order: "asc" },
   { id: "status", label: "Status", orderBy: "status", order: "asc" },
@@ -205,7 +210,11 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
 
   const activeSort = SORT_OPTIONS.find((s) => s.id === sortOption)!;
 
-  const { data: leadsResult, isLoading, refetch } = useLeadsList({
+  const {
+    data: leadsResult,
+    isLoading,
+    refetch,
+  } = useLeadsList({
     skip,
     take: PAGE_SIZE,
     status: filter === "ALL" ? undefined : filter,
@@ -387,7 +396,9 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
             {canHandover && (
               <div className="flex items-center gap-1.5 border border-border-subtle rounded-lg px-2.5 h-9 bg-elevated">
                 <UserSwitch size={14} className="text-text-secondary" />
-                <span className="font-sans text-[12px] text-text-secondary">Handover</span>
+                <span className="font-sans text-[12px] text-text-secondary">
+                  Handover
+                </span>
                 <Switch
                   checked={false}
                   onCheckedChange={(mode) => bulkHandoverMutation.mutate(mode)}
@@ -400,7 +411,9 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
               onClick={() => setShowSortSheet(true)}
               className={cn(
                 "flex items-center gap-1 font-sans text-[12px] transition-colors",
-                sortOption !== "newest" ? "text-crimson font-semibold" : "text-text-muted",
+                sortOption !== "newest"
+                  ? "text-crimson font-semibold"
+                  : "text-text-muted",
               )}
               aria-label="Sort leads"
             >
@@ -476,7 +489,10 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
 
       {/* Sort sheet */}
       <Sheet open={showSortSheet} onOpenChange={setShowSortSheet}>
-        <SheetContent side="bottom" className="rounded-t-2xl px-0 pb-[env(safe-area-inset-bottom)]">
+        <SheetContent
+          side="bottom"
+          className="rounded-t-2xl px-0 pb-[env(safe-area-inset-bottom)]"
+        >
           <SheetHeader className="px-4 pb-2">
             <SheetTitle className="text-left text-[17px]">Sort By</SheetTitle>
           </SheetHeader>
@@ -484,13 +500,23 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
             {SORT_OPTIONS.map((opt) => (
               <button
                 key={opt.id}
-                onClick={() => { setSortOption(opt.id); setSkip(0); setShowSortSheet(false); }}
+                onClick={() => {
+                  setSortOption(opt.id);
+                  setSkip(0);
+                  setShowSortSheet(false);
+                }}
                 className="flex items-center justify-between w-full px-5 min-h-[52px] active:bg-elevated/60 transition-colors"
               >
-                <span className={cn(
-                  "font-sans text-[15px]",
-                  sortOption === opt.id ? "text-crimson font-semibold" : "text-text-primary",
-                )}>{opt.label}</span>
+                <span
+                  className={cn(
+                    "font-sans text-[15px]",
+                    sortOption === opt.id
+                      ? "text-crimson font-semibold"
+                      : "text-text-primary",
+                  )}
+                >
+                  {opt.label}
+                </span>
                 {sortOption === opt.id && (
                   <span className="w-2 h-2 rounded-full bg-crimson shrink-0" />
                 )}

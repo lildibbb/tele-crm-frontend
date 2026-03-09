@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileLeadDetail } from "@/components/mobile";
 
@@ -250,8 +250,8 @@ function MediaLightbox({
 export default function LeadDetailClient() {
   const t = useT();
   const isBlocked = useIsMaintenanceBlocked();
-  const params = useParams();
-  const id = params.id as string;
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? "";
   const queryClient = useQueryClient();
   const { data: lead, isLoading } = useLeadDetail(id);
   const { mutate: updateStatusMutation } = useUpdateLeadStatus();

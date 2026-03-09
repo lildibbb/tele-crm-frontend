@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   CaretLeft,
   PaperPlaneTilt,
@@ -21,8 +21,8 @@ import { toast } from "sonner";
 
 export default function MobileLeadChat() {
   const router = useRouter();
-  const params = useParams();
-  const leadId = params.id as string;
+  const searchParams = useSearchParams();
+  const leadId = searchParams.get("id") ?? "";
 
   const { data: lead } = useLeadDetail(leadId);
 

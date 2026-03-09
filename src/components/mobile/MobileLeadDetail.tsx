@@ -741,7 +741,7 @@ export default function MobileLeadDetail({
         {lead.id && (
           <section className="px-4 mb-5">
             <button
-              onClick={() => router.push(`/leads/${lead.id}/chat`)}
+              onClick={() => router.push(`/leads/chat?id=${lead.id}`)}
               className="w-full h-[52px] rounded-xl bg-card border border-border-subtle flex items-center justify-center gap-2.5 font-sans font-bold text-[15px] text-crimson active:scale-[0.97] transition-transform shadow-sm"
             >
               <ChatCircleDots size={20} weight="bold" />

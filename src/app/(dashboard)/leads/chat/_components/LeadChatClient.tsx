@@ -1,19 +1,19 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useIsMobileHydrated } from "@/lib/hooks/useIsMobile";
 import MobileLeadChat from "@/components/mobile/MobileLeadChat";
 
 export default function LeadChatClient() {
   const isMobile = useIsMobileHydrated();
   const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? "";
 
   useEffect(() => {
     if (isMobile === false) {
-      router.replace(`/leads/${id}`);
+      router.replace(`/leads/detail?id=${id}`);
     }
   }, [isMobile, router, id]);
 

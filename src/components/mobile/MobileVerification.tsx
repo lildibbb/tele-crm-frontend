@@ -579,7 +579,7 @@ export default function MobileVerification({
               onReject={() => handleReject(item.id)}
               onAskMore={() => handleAskMore(item.id)}
               onViewReceipt={() => setReceiptPreview({ id: item.id, name: item.leadName })}
-              onViewLead={() => router.push(`/leads/${item.id}`)}
+              onViewLead={() => router.push(`/leads/detail?id=${item.id}`)}
             />
           ))
         )}
