@@ -3,6 +3,11 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileLeadDetail } from "@/components/mobile";
+
+// Dynamic route — no paths pre-generated; SPA fallback handles client-side navigation
+export function generateStaticParams() {
+  return [];
+}
 import {
   CaretLeft,
   CheckCircle,

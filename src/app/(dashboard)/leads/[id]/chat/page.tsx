@@ -5,6 +5,11 @@ import { useRouter, useParams } from "next/navigation";
 import { useIsMobileHydrated } from "@/lib/hooks/useIsMobile";
 import MobileLeadChat from "@/components/mobile/MobileLeadChat";
 
+// Dynamic route — no paths pre-generated; SPA fallback handles client-side navigation
+export function generateStaticParams() {
+  return [];
+}
+
 export default function LeadChatPage() {
   const isMobile = useIsMobileHydrated();
   const router = useRouter();

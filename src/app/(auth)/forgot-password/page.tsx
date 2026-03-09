@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { ArrowLeft, Mail, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod/v4";
 
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ const pageVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
-const iconVariants = {
+const iconVariants: Variants = {
   initial: { scale: 0.5, opacity: 0 },
   animate: {
     scale: 1,
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: standardSchemaResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
 
