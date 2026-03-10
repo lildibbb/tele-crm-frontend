@@ -1,4 +1,5 @@
 import { apiClient } from "./apiClient";
+import type { ApiResponse } from "../schemas/common";
 
 export interface GoogleOAuth2Status {
   connected: boolean;
@@ -10,12 +11,15 @@ export interface GoogleOAuth2Status {
 export const googleOAuth2Api = {
   /** Get the Google OAuth2 consent URL (opens in popup) */
   getConnectUrl: () =>
-    apiClient.get<{ authUrl: string }>("/google/oauth/connect"),
+    apiClient.get<ApiResponse<{ authUrl: string }>>("/google/oauth/connect"),
 
   /** Get current Google OAuth2 connection status */
-  getStatus: () => apiClient.get<GoogleOAuth2Status>("/google/oauth/status"),
+  getStatus: () =>
+    apiClient.get<ApiResponse<GoogleOAuth2Status>>("/google/oauth/status"),
 
   /** Revoke / disconnect the Google OAuth2 connection */
   disconnect: () =>
-    apiClient.delete<{ message: string }>("/google/oauth/disconnect"),
+    apiClient.delete<ApiResponse<{ message: string }>>(
+      "/google/oauth/disconnect",
+    ),
 };

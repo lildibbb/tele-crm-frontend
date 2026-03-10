@@ -133,9 +133,15 @@ function TMASubmitPageContent() {
       });
       setDone(true);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Submission failed. Please try again.";
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Submission failed. Please try again.";
       // Treat "already submitted" conflict as success state
-      if (msg.toLowerCase().includes("already been received") || msg.toLowerCase().includes("already submitted")) {
+      if (
+        msg.toLowerCase().includes("already been received") ||
+        msg.toLowerCase().includes("already submitted")
+      ) {
         setAlreadySubmitted(true);
       } else {
         setSubmitError(msg);
@@ -165,7 +171,8 @@ function TMASubmitPageContent() {
           Invalid Link
         </h2>
         <p className="font-sans text-sm text-center" style={{ color: textSub }}>
-          This link is invalid or missing. Please request a new link from the Telegram bot.
+          This link is invalid or missing. Please request a new link from the
+          Telegram bot.
         </p>
       </div>
     );
@@ -190,11 +197,9 @@ function TMASubmitPageContent() {
         >
           Already Submitted
         </h2>
-        <p
-          className="font-sans text-sm text-center"
-          style={{ color: textSub }}
-        >
-          Your registration and deposit proof have already been received. Our team is reviewing it and will update you via Telegram shortly.
+        <p className="font-sans text-sm text-center" style={{ color: textSub }}>
+          Your registration and deposit proof have already been received. Our
+          team is reviewing it and will update you via Telegram shortly.
         </p>
       </div>
     );
@@ -223,7 +228,8 @@ function TMASubmitPageContent() {
           className="font-sans text-sm text-center mb-6"
           style={{ color: textSub }}
         >
-          Your registration and deposit proof have been received. We will verify and notify you via Telegram shortly.
+          Your registration and deposit proof have been received. We will verify
+          and notify you via Telegram shortly.
         </p>
       </div>
     );
@@ -263,7 +269,10 @@ function TMASubmitPageContent() {
               TITAN <span style={{ color: brand }}>JOURNAL</span> CRM
             </span>
           </div>
-          <div className="h-px bg-tma-border mx-4" style={{ background: border }} />
+          <div
+            className="h-px bg-tma-border mx-4"
+            style={{ background: border }}
+          />
         </div>
 
         {/* Form */}
@@ -273,10 +282,14 @@ function TMASubmitPageContent() {
               className="font-display font-bold text-2xl mb-1"
               style={{ color: textMain }}
             >
-              Registration & Deposit
+              Registration Proof
             </h1>
-            <p className="font-sans text-sm leading-relaxed" style={{ color: textSub }}>
-              Complete your IB account registration and submit your deposit proof in one step.
+            <p
+              className="font-sans text-sm leading-relaxed"
+              style={{ color: textSub }}
+            >
+              Complete your account registration and submit your deposit proof
+              in one step.
             </p>
           </div>
 
@@ -300,10 +313,16 @@ function TMASubmitPageContent() {
                     >
                       <Camera className="h-5 w-5" style={{ color: brand }} />
                     </div>
-                    <p className="font-sans font-medium text-sm" style={{ color: textMain }}>
+                    <p
+                      className="font-sans font-medium text-sm"
+                      style={{ color: textMain }}
+                    >
                       Tap to upload
                     </p>
-                    <p className="font-sans text-xs mt-0.5" style={{ color: textSub }}>
+                    <p
+                      className="font-sans text-xs mt-0.5"
+                      style={{ color: textSub }}
+                    >
                       JPG, PNG, MP4 — max 20MB each
                     </p>
                   </div>
@@ -313,14 +332,24 @@ function TMASubmitPageContent() {
                       <div
                         key={i}
                         className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
-                        style={{ background: "#F0F0FA", border: `1px solid ${border}` }}
+                        style={{
+                          background: "#F0F0FA",
+                          border: `1px solid ${border}`,
+                        }}
                       >
                         {f.preview ? (
-                          <img src={f.preview} alt={f.name} className="w-full h-full object-cover" />
+                          <img
+                            src={f.preview}
+                            alt={f.name}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
                             {f.type === "video" ? (
-                              <FileVideo className="h-6 w-6" style={{ color: brand }} />
+                              <FileVideo
+                                className="h-6 w-6"
+                                style={{ color: brand }}
+                              />
                             ) : (
                               <ImageIcon className="h-6 w-6 opacity-40" />
                             )}
@@ -328,7 +357,10 @@ function TMASubmitPageContent() {
                         )}
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFile(i);
+                          }}
                           className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
                           style={{ background: "rgba(0,0,0,0.6)" }}
                         >
@@ -426,7 +458,6 @@ function TMASubmitPageContent() {
               />
             </InputField>
 
-
             {submitError && (
               <p className="font-sans text-sm text-red-500 text-center">
                 {submitError}
@@ -437,7 +468,11 @@ function TMASubmitPageContent() {
               <button
                 type="submit"
                 disabled={loading || !amount}
-                style={{ background: brand, height: "52px", borderRadius: "16px" }}
+                style={{
+                  background: brand,
+                  height: "52px",
+                  borderRadius: "16px",
+                }}
                 className="w-full flex items-center justify-center gap-2 text-white font-sans font-semibold text-base transition-opacity active:opacity-80 disabled:opacity-60"
               >
                 {loading ? (
