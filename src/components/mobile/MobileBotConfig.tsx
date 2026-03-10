@@ -143,7 +143,7 @@ export default function MobileBotConfig() {
   const handleSave = async () => {
     try {
       const updates: Record<string, string> = {
-        "persona.name": draft.name || "TitanBot",
+        "persona.name": draft.name,
         "bot.systemPrompt": draft.systemPrompt,
         "bot.welcomeMessage": draft.greeting,
         "bot.groupThreadEnabled": String(draft.groupThreadEnabled),
