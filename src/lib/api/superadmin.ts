@@ -168,8 +168,13 @@ export const superadminApi = {
 
   // ── Backup ───────────────────────────────────────────────────────────────
 
+  /**
+   * Queues an immediate backup job. Returns jobId for SSE progress tracking.
+   */
   triggerBackup: () =>
-    apiClient.post<ApiResponse<{ message: string }>>("/superadmin/backup/trigger"),
+    apiClient.post<ApiResponse<{ jobId: string; status: string; destinations: string[] }>>(
+      "/superadmin/backup/trigger",
+    ),
 
   getBackupHistory: (limit = 10) =>
     apiClient.get<ApiResponse<BackupLog[]>>(`/superadmin/backup/history?limit=${limit}`),
