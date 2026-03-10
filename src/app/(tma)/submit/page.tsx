@@ -392,8 +392,8 @@ function TMASubmitPageContent() {
               </p>
             </InputField>
 
-            {/* HFM Broker ID */}
-            <InputField label="HFM Broker ID" required>
+            {/* HFM Account ID */}
+            <InputField label="HFM Account ID" required>
               <input
                 type="text"
                 placeholder="e.g. HFM-12345"
