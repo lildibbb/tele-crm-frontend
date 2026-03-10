@@ -204,13 +204,13 @@ export function AppSidebar() {
 
             return (
               <SidebarMenuItem key={href} className="relative">
+                {/* Water stream: gradient flows right from source, fades to nothing */}
                 {isActive && (
                   <span
-                    className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 z-10 w-[3px] rounded-r-full bg-[var(--color-crimson)]"
+                    className="pointer-events-none absolute inset-y-0 left-0 right-0 z-0 rounded-[3px]"
                     style={{
-                      height: "62%",
-                      boxShadow:
-                        "0 0 8px var(--color-crimson), 0 0 20px rgba(196,35,45,0.40)",
+                      background:
+                        "linear-gradient(to right, rgba(196,35,45,0.20) 0%, rgba(196,35,45,0.09) 22%, rgba(196,35,45,0.02) 58%, transparent 82%)",
                     }}
                     aria-hidden="true"
                   />
@@ -219,11 +219,16 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive}
                   tooltip={label}
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 ${
+                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 relative z-10 ${
                     isActive
-                      ? "bg-gradient-to-r from-[var(--color-crimson)]/[0.12] via-[var(--color-crimson)]/[0.04] to-transparent !text-crimson"
+                      ? "!bg-transparent !text-crimson"
                       : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
                   }`}
+                  style={
+                    isActive
+                      ? { boxShadow: "inset 2px 0 0 rgba(196,35,45,0.65)" }
+                      : undefined
+                  }
                   onClick={() => setOpenMobile(false)}
                 >
                   <Link href={href} className="flex items-center">
@@ -231,11 +236,6 @@ export function AppSidebar() {
                       size={18}
                       weight={isActive ? "fill" : "light"}
                       className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
-                      style={{
-                        filter: isActive
-                          ? "drop-shadow(0 0 5px var(--color-crimson))"
-                          : undefined,
-                      }}
                     />
                     <span className="font-medium ml-2">{label}</span>
                     {href === "/settings" && (
@@ -273,11 +273,10 @@ export function AppSidebar() {
               <SidebarMenuItem className="relative">
                 {isAdminPath && (
                   <span
-                    className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 z-10 w-[3px] rounded-r-full bg-[var(--color-crimson)]"
+                    className="pointer-events-none absolute inset-y-0 left-0 right-0 z-0 rounded-[3px]"
                     style={{
-                      height: "62%",
-                      boxShadow:
-                        "0 0 8px var(--color-crimson), 0 0 20px rgba(196,35,45,0.40)",
+                      background:
+                        "linear-gradient(to right, rgba(196,35,45,0.20) 0%, rgba(196,35,45,0.09) 22%, rgba(196,35,45,0.02) 58%, transparent 82%)",
                     }}
                     aria-hidden="true"
                   />
@@ -285,11 +284,16 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   isActive={isAdminPath}
                   tooltip="Superadmin"
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 cursor-pointer select-none ${
+                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 cursor-pointer select-none relative z-10 ${
                     isAdminPath
-                      ? "bg-gradient-to-r from-[var(--color-crimson)]/[0.12] via-[var(--color-crimson)]/[0.04] to-transparent !text-crimson"
+                      ? "!bg-transparent !text-crimson"
                       : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
                   }`}
+                  style={
+                    isAdminPath
+                      ? { boxShadow: "inset 2px 0 0 rgba(196,35,45,0.65)" }
+                      : undefined
+                  }
                   onClick={() => {
                     if (sidebarState === "collapsed") {
                       router.push("/admin/overview");
@@ -303,11 +307,6 @@ export function AppSidebar() {
                     size={18}
                     weight={isAdminPath ? "fill" : "light"}
                     className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
-                    style={{
-                      filter: isAdminPath
-                        ? "drop-shadow(0 0 5px var(--color-crimson))"
-                        : undefined,
-                    }}
                   />
                   <span className="font-medium ml-3 truncate flex-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
                     {t("nav.superAdmin")}
@@ -339,9 +338,14 @@ export function AppSidebar() {
                             isActive={isSubActive}
                             className={`h-8 transition-colors duration-150 ${
                               isSubActive
-                                ? "bg-gradient-to-r from-[var(--color-crimson)]/[0.10] to-transparent !text-crimson font-medium"
+                                ? "!bg-transparent !text-crimson font-medium"
                                 : "text-text-secondary hover:!text-text-primary hover:!bg-elevated/60"
                             }`}
+                            style={
+                              isSubActive
+                                ? { boxShadow: "inset 2px 0 0 rgba(196,35,45,0.50)" }
+                                : undefined
+                            }
                           >
                             <Link
                               href={href}
