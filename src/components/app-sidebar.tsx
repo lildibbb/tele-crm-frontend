@@ -164,6 +164,14 @@ export function AppSidebar() {
     return true;
   });
 
+  // True when any nav item or admin path is active — drives the overflow bleed
+  const hasActivePage =
+    visibleItems.some(({ href }) =>
+      href === "/"
+        ? pathname === "/"
+        : pathname === href || pathname.startsWith(href + "/"),
+    ) || isAdminPath;
+
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
@@ -204,13 +212,14 @@ export function AppSidebar() {
 
             return (
               <SidebarMenuItem key={href} className="relative">
-                {/* Water stream: gradient flows right from source, fades to nothing */}
+                {/* Active stream: rounded pill, stays opaque across full width,
+                    barely fades at sidebar edge — creates "bleeding right" feel */}
                 {isActive && (
                   <span
-                    className="pointer-events-none absolute inset-y-0 left-0 right-0 z-0 rounded-[3px]"
+                    className="pointer-events-none absolute inset-y-[3px] left-0 right-0 z-0 rounded-md"
                     style={{
                       background:
-                        "linear-gradient(to right, rgba(196,35,45,0.20) 0%, rgba(196,35,45,0.09) 22%, rgba(196,35,45,0.02) 58%, transparent 82%)",
+                        "linear-gradient(to right, rgba(196,35,45,0.22) 0%, rgba(196,35,45,0.16) 55%, rgba(196,35,45,0.06) 88%, transparent 100%)",
                     }}
                     aria-hidden="true"
                   />
@@ -224,11 +233,6 @@ export function AppSidebar() {
                       ? "!bg-transparent !text-crimson"
                       : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
                   }`}
-                  style={
-                    isActive
-                      ? { boxShadow: "inset 2px 0 0 rgba(196,35,45,0.65)" }
-                      : undefined
-                  }
                   onClick={() => setOpenMobile(false)}
                 >
                   <Link href={href} className="flex items-center">
@@ -273,10 +277,10 @@ export function AppSidebar() {
               <SidebarMenuItem className="relative">
                 {isAdminPath && (
                   <span
-                    className="pointer-events-none absolute inset-y-0 left-0 right-0 z-0 rounded-[3px]"
+                    className="pointer-events-none absolute inset-y-[3px] left-0 right-0 z-0 rounded-md"
                     style={{
                       background:
-                        "linear-gradient(to right, rgba(196,35,45,0.20) 0%, rgba(196,35,45,0.09) 22%, rgba(196,35,45,0.02) 58%, transparent 82%)",
+                        "linear-gradient(to right, rgba(196,35,45,0.22) 0%, rgba(196,35,45,0.16) 55%, rgba(196,35,45,0.06) 88%, transparent 100%)",
                     }}
                     aria-hidden="true"
                   />
@@ -289,11 +293,6 @@ export function AppSidebar() {
                       ? "!bg-transparent !text-crimson"
                       : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
                   }`}
-                  style={
-                    isAdminPath
-                      ? { boxShadow: "inset 2px 0 0 rgba(196,35,45,0.65)" }
-                      : undefined
-                  }
                   onClick={() => {
                     if (sidebarState === "collapsed") {
                       router.push("/admin/overview");
@@ -341,11 +340,6 @@ export function AppSidebar() {
                                 ? "!bg-transparent !text-crimson font-medium"
                                 : "text-text-secondary hover:!text-text-primary hover:!bg-elevated/60"
                             }`}
-                            style={
-                              isSubActive
-                                ? { boxShadow: "inset 2px 0 0 rgba(196,35,45,0.50)" }
-                                : undefined
-                            }
                           >
                             <Link
                               href={href}
@@ -453,6 +447,24 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+
+      {/* ── Right-edge overflow bleed ──────────────────────────
+          This element is a direct child of Sidebar (sidebar-inner),
+          which has no overflow:hidden — so it physically renders
+          OUTSIDE the sidebar boundary, into the content area.
+          Creates the "active state streaming past the sidebar" illusion. */}
+      {hasActivePage && (
+        <div
+          className="pointer-events-none absolute inset-y-0 z-30 group-data-[collapsible=icon]:hidden"
+          style={{
+            right: "-52px",
+            width: "52px",
+            background:
+              "linear-gradient(to right, rgba(196,35,45,0.08) 0%, rgba(196,35,45,0.03) 55%, transparent 100%)",
+          }}
+          aria-hidden="true"
+        />
+      )}
     </Sidebar>
   );
 }
