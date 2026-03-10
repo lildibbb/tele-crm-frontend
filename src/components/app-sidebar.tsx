@@ -54,6 +54,7 @@ import { cn } from "@/lib/utils";
 import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 import { EllipsisVertical } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 const ADMIN_SUB_ITEMS = [
   { href: "/admin/overview", icon: SquaresFour, label: "Overview" },
@@ -170,19 +171,19 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">
-                  {/* Full Logo - Hidden when collapsed */}
-                  <div className="flex items-center text-[13px] gap-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
-                    <span className="text-text-primary">TITAN</span>
-                    <span className="text-text-secondary font-bold">
-                      {" "}
-                      JOURNAL
-                    </span>
-                    <span className="text-crimson font-bold"> CRM</span>
+                <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center h-full relative">
+                  {/* Full: logo image + TITAN JOURNAL CRM text — hidden when collapsed */}
+                  <div className="flex items-center gap-2 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
+                    <TitanLogo variant="full" size="sm" priority />
+                    <div className="flex items-center text-[13px] gap-1">
+                      <span className="text-text-primary">TITAN</span>
+                      <span className="text-text-secondary font-bold">JOURNAL</span>
+                      <span className="text-crimson font-bold">CRM</span>
+                    </div>
                   </div>
-                  {/* Icon Logo - Shown ONLY when collapsed */}
-                  <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full text-crimson text-lg">
-                    T.
+                  {/* Icon: Logo-03 — absolutely centered in button when collapsed */}
+                  <div className="hidden group-data-[collapsible=icon]:flex absolute inset-0 items-center justify-center">
+                    <TitanLogo variant="icon" size="sm" />
                   </div>
                 </div>
               </Link>
@@ -202,12 +203,27 @@ export function AppSidebar() {
                 : pathname === href || pathname.startsWith(href + "/");
 
             return (
-              <SidebarMenuItem key={href}>
+              <SidebarMenuItem key={href} className="relative">
+                {isActive && (
+                  <span
+                    className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 z-10 w-[3px] rounded-r-full bg-[var(--color-crimson)]"
+                    style={{
+                      height: "62%",
+                      boxShadow:
+                        "0 0 8px var(--color-crimson), 0 0 20px rgba(196,35,45,0.40)",
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
                   tooltip={label}
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-300 overflow-hidden ${isActive ? "!bg-crimson/10 !text-crimson active" : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"}`}
+                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 ${
+                    isActive
+                      ? "bg-gradient-to-r from-[var(--color-crimson)]/[0.12] via-[var(--color-crimson)]/[0.04] to-transparent !text-crimson"
+                      : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
+                  }`}
                   onClick={() => setOpenMobile(false)}
                 >
                   <Link href={href} className="flex items-center">
@@ -215,6 +231,11 @@ export function AppSidebar() {
                       size={18}
                       weight={isActive ? "fill" : "light"}
                       className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                      style={{
+                        filter: isActive
+                          ? "drop-shadow(0 0 5px var(--color-crimson))"
+                          : undefined,
+                      }}
                     />
                     <span className="font-medium ml-2">{label}</span>
                     {href === "/settings" && (
@@ -249,13 +270,24 @@ export function AppSidebar() {
                 <div className="mx-1 my-1.5 border-t border-border-subtle/40" />
               </li>
 
-              <SidebarMenuItem>
+              <SidebarMenuItem className="relative">
+                {isAdminPath && (
+                  <span
+                    className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 z-10 w-[3px] rounded-r-full bg-[var(--color-crimson)]"
+                    style={{
+                      height: "62%",
+                      boxShadow:
+                        "0 0 8px var(--color-crimson), 0 0 20px rgba(196,35,45,0.40)",
+                    }}
+                    aria-hidden="true"
+                  />
+                )}
                 <SidebarMenuButton
                   isActive={isAdminPath}
                   tooltip="Superadmin"
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-300 overflow-hidden cursor-pointer select-none ${
+                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 cursor-pointer select-none ${
                     isAdminPath
-                      ? "!bg-crimson/10 !text-crimson active"
+                      ? "bg-gradient-to-r from-[var(--color-crimson)]/[0.12] via-[var(--color-crimson)]/[0.04] to-transparent !text-crimson"
                       : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
                   }`}
                   onClick={() => {
@@ -271,6 +303,11 @@ export function AppSidebar() {
                     size={18}
                     weight={isAdminPath ? "fill" : "light"}
                     className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                    style={{
+                      filter: isAdminPath
+                        ? "drop-shadow(0 0 5px var(--color-crimson))"
+                        : undefined,
+                    }}
                   />
                   <span className="font-medium ml-3 truncate flex-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
                     {t("nav.superAdmin")}
@@ -302,7 +339,7 @@ export function AppSidebar() {
                             isActive={isSubActive}
                             className={`h-8 transition-colors duration-150 ${
                               isSubActive
-                                ? "!text-crimson !bg-crimson/8 font-medium"
+                                ? "bg-gradient-to-r from-[var(--color-crimson)]/[0.10] to-transparent !text-crimson font-medium"
                                 : "text-text-secondary hover:!text-text-primary hover:!bg-elevated/60"
                             }`}
                           >
