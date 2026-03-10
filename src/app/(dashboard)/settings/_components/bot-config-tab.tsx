@@ -11,6 +11,9 @@ import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import { MobileSettings } from "@/components/mobile";
 import { toast } from "sonner";
 import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
+import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
+import { useAuthStore } from "@/store/authStore";
+import { UserRole } from "@/types/enums";
 import { useT, K } from "@/i18n";
 
 export function BotConfigTab() {
@@ -19,6 +22,12 @@ export function BotConfigTab() {
   const isSaving = upsertManyMutation.isPending;
   const isMobile = useIsMobile();
   const t = useT();
+
+  // Auth + visibility — must live before the isMobile early return
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === UserRole.SUPERADMIN;
+  const visibility = useFeatureVisibility();
+  const showFollowUps = isSuperAdmin || visibility.followUps;
 
   // Local draft state (initialised from store once loaded)
   const [draft, setDraft] = useState({
@@ -33,10 +42,9 @@ export function BotConfigTab() {
   });
   const [initialised, setInitialised] = useState(false);
 
-  // Sync store → draft once
+  // Sync store → draft once (runs when query settles, even if entries is empty)
   useEffect(() => {
     if (initialised || isLoading) return;
-    if (Object.keys(entries).length === 0) return;
     setDraft({
       name: entries["persona.name"] ?? "TitanBot",
       systemPrompt: entries["bot.systemPrompt"] ?? "",
@@ -52,16 +60,20 @@ export function BotConfigTab() {
 
   const handleSave = async () => {
     try {
-      await upsertManyMutation.mutateAsync({
-        "persona.name": draft.name,
+      const updates: Record<string, string> = {
+        "persona.name": draft.name || "TitanBot",
         "bot.systemPrompt": draft.systemPrompt,
         "bot.welcomeMessage": draft.greeting,
-        "bot.groupId": draft.groupId,
         "bot.groupThreadEnabled": String(draft.groupThreadEnabled),
         "bot.forwardEnabled": String(draft.forwardEnabled),
         "bot.active": String(draft.active),
-        "followUp.enabled": String(draft.followUpEnabled),
-      });
+      };
+      // Only persist groupId if non-empty (it is optional)
+      if (draft.groupId.trim()) updates["bot.groupId"] = draft.groupId.trim();
+      // Only persist follow-up toggle when the feature is visible for this user
+      if (showFollowUps) updates["followUp.enabled"] = String(draft.followUpEnabled);
+
+      await upsertManyMutation.mutateAsync(updates);
       toast.success("Bot configuration saved.");
     } catch {
       toast.error("Failed to save configuration. Please try again.");
@@ -187,20 +199,22 @@ export function BotConfigTab() {
               </p>
             </div>
 
-            {/* Follow-up toggle */}
-            <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
-              <div>
-                <p className="font-sans text-sm font-medium text-text-primary">{t(K.botConfig.autoFollowUps)}</p>
-                <p className="font-sans text-xs text-text-muted mt-0.5">
-                  {t(K.botConfig.autoFollowUpsHint)}
-                </p>
+            {/* Follow-up toggle — hidden when superadmin has disabled feature visibility */}
+            {showFollowUps && (
+              <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+                <div>
+                  <p className="font-sans text-sm font-medium text-text-primary">{t(K.botConfig.autoFollowUps)}</p>
+                  <p className="font-sans text-xs text-text-muted mt-0.5">
+                    {t(K.botConfig.autoFollowUpsHint)}
+                  </p>
+                </div>
+                <Switch
+                  checked={draft.followUpEnabled}
+                  onCheckedChange={(c) => setDraft({ ...draft, followUpEnabled: c })}
+                  disabled={isLoading}
+                />
               </div>
-              <Switch
-                checked={draft.followUpEnabled}
-                onCheckedChange={(c) => setDraft({ ...draft, followUpEnabled: c })}
-                disabled={isLoading}
-              />
-            </div>
+            )}
 
             {/* Forward to admin toggle */}
             <div className="flex items-center justify-between pt-2 border-t border-border-subtle">

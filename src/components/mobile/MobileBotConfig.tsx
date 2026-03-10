@@ -19,6 +19,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useSystemConfig, useUpsertManySystemConfig } from "@/queries/useSystemConfigQuery";
+import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
+import { useAuthStore } from "@/store/authStore";
+import { UserRole } from "@/types/enums";
 
 // ── Section Card ──────────────────────────────────────────────────────────────
 function SectionHeader({ label }: { label: string }) {
@@ -104,6 +107,12 @@ export default function MobileBotConfig() {
   const upsertMany = useUpsertManySystemConfig();
   const isSaving = upsertMany.isPending;
 
+  // Auth + visibility
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === UserRole.SUPERADMIN;
+  const visibility = useFeatureVisibility();
+  const showFollowUps = isSuperAdmin || visibility.followUps;
+
   const [draft, setDraft] = useState({
     name: "",
     systemPrompt: "",
@@ -118,7 +127,6 @@ export default function MobileBotConfig() {
 
   useEffect(() => {
     if (initialised || isLoading) return;
-    if (Object.keys(entries).length === 0) return;
     setDraft({
       name: entries["persona.name"] ?? "TitanBot",
       systemPrompt: entries["bot.systemPrompt"] ?? "",
@@ -134,16 +142,18 @@ export default function MobileBotConfig() {
 
   const handleSave = async () => {
     try {
-      await upsertMany.mutateAsync({
-        "persona.name": draft.name,
+      const updates: Record<string, string> = {
+        "persona.name": draft.name || "TitanBot",
         "bot.systemPrompt": draft.systemPrompt,
         "bot.welcomeMessage": draft.greeting,
-        "bot.groupId": draft.groupId,
         "bot.groupThreadEnabled": String(draft.groupThreadEnabled),
         "bot.forwardEnabled": String(draft.forwardEnabled),
         "bot.active": String(draft.active),
-        "followUp.enabled": String(draft.followUpEnabled),
-      });
+      };
+      if (draft.groupId.trim()) updates["bot.groupId"] = draft.groupId.trim();
+      if (showFollowUps) updates["followUp.enabled"] = String(draft.followUpEnabled);
+
+      await upsertMany.mutateAsync(updates);
       toast.success("Bot configuration saved");
     } catch {
       toast.error("Failed to save configuration");
@@ -267,14 +277,18 @@ export default function MobileBotConfig() {
               </FieldCard>
 
               <FieldCard>
-                <ToggleRow
-                  icon={<ArrowsClockwise size={15} className="text-text-secondary" />}
-                  label="Auto Follow-ups"
-                  hint="Automatically follow up with leads who haven't responded"
-                  checked={draft.followUpEnabled}
-                  onCheckedChange={(c) => setDraft({ ...draft, followUpEnabled: c })}
-                />
-                <div className="h-px bg-border-subtle mx-4" />
+                {showFollowUps && (
+                  <>
+                    <ToggleRow
+                      icon={<ArrowsClockwise size={15} className="text-text-secondary" />}
+                      label="Auto Follow-ups"
+                      hint="Automatically follow up with leads who haven't responded"
+                      checked={draft.followUpEnabled}
+                      onCheckedChange={(c) => setDraft({ ...draft, followUpEnabled: c })}
+                    />
+                    <div className="h-px bg-border-subtle mx-4" />
+                  </>
+                )}
                 <ToggleRow
                   icon={<FlowArrow size={15} className="text-text-secondary" />}
                   label="Forward to Admin"
