@@ -95,8 +95,13 @@ export function BackupPanel() {
   const { progress: backupProgress, isConnected: isBackupRunning } = useBackupProgress(
     activeJobId,
     () => {
+      // onDone: refresh history and auto-dismiss the progress card after success
       void refetchHistory();
       setTimeout(() => setActiveJobId(null), 3000);
+    },
+    () => {
+      // onFailed: refresh history so failed record is visible; keep card open
+      void refetchHistory();
     },
   );
 
