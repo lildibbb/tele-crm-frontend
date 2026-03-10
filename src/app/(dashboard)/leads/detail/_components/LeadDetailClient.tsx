@@ -304,9 +304,23 @@ export default function LeadDetailClient() {
   >([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
-  // Auto-scroll to latest message
+  // Sticky-scroll: jump to bottom on first load; on poll updates only scroll if
+  // the user is already near the bottom (within 100px) so reading history is uninterrupted.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = chatContainerRef.current;
+    if (!container || messages.length === 0) return;
+
+    if (isInitialMessagesLoad.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+      isInitialMessagesLoad.current = false;
+      return;
+    }
+
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    if (distanceFromBottom <= 100) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -322,6 +336,8 @@ export default function LeadDetailClient() {
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const isInitialMessagesLoad = useRef(true);
 
   // ── Mobile view ──
   if (isMobile) {
@@ -1023,6 +1039,7 @@ export default function LeadDetailClient() {
 
             {/* Messages */}
             <div
+              ref={chatContainerRef}
               className="flex-1 min-h-0 overflow-y-auto"
               style={{ scrollbarWidth: "thin" }}
             >
