@@ -54,7 +54,6 @@ import { cn } from "@/lib/utils";
 import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
 import { EllipsisVertical } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { TitanLogo } from "@/components/ui/titan-logo";
 
 const ADMIN_SUB_ITEMS = [
   { href: "/admin/overview", icon: SquaresFour, label: "Overview" },
@@ -164,14 +163,6 @@ export function AppSidebar() {
     return true;
   });
 
-  // True when any nav item or admin path is active — drives the overflow bleed
-  const hasActivePage =
-    visibleItems.some(({ href }) =>
-      href === "/"
-        ? pathname === "/"
-        : pathname === href || pathname.startsWith(href + "/"),
-    ) || isAdminPath;
-
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader>
@@ -179,19 +170,19 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/">
-                <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center h-full relative">
-                  {/* Full: logo image + TITAN JOURNAL CRM text — hidden when collapsed */}
-                  <div className="flex items-center gap-2 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
-                    <TitanLogo variant="full" size="sm" priority />
-                    <div className="flex items-center text-[13px] gap-1">
-                      <span className="text-text-primary">TITAN</span>
-                      <span className="text-text-secondary font-bold">JOURNAL</span>
-                      <span className="text-crimson font-bold">CRM</span>
-                    </div>
+                <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">
+                  {/* Full Logo - Hidden when collapsed */}
+                  <div className="flex items-center text-[13px] gap-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
+                    <span className="text-text-primary">TITAN</span>
+                    <span className="text-text-secondary font-bold">
+                      {" "}
+                      JOURNAL
+                    </span>
+                    <span className="text-crimson font-bold"> CRM</span>
                   </div>
-                  {/* Icon: Logo-03 — absolutely centered in button when collapsed */}
-                  <div className="hidden group-data-[collapsible=icon]:flex absolute inset-0 items-center justify-center">
-                    <TitanLogo variant="icon" size="sm" />
+                  {/* Icon Logo - Shown ONLY when collapsed */}
+                  <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full text-crimson text-lg">
+                    T.
                   </div>
                 </div>
               </Link>
@@ -211,28 +202,12 @@ export function AppSidebar() {
                 : pathname === href || pathname.startsWith(href + "/");
 
             return (
-              <SidebarMenuItem key={href} className="relative">
-                {/* Active stream: rounded pill, stays opaque across full width,
-                    barely fades at sidebar edge — creates "bleeding right" feel */}
-                {isActive && (
-                  <span
-                    className="pointer-events-none absolute inset-y-[3px] left-0 right-0 z-0 rounded-md"
-                    style={{
-                      background:
-                        "linear-gradient(to right, rgba(196,35,45,0.22) 0%, rgba(196,35,45,0.16) 55%, rgba(196,35,45,0.06) 88%, transparent 100%)",
-                    }}
-                    aria-hidden="true"
-                  />
-                )}
+              <SidebarMenuItem key={href}>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
                   tooltip={label}
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 relative z-10 ${
-                    isActive
-                      ? "!bg-transparent !text-crimson"
-                      : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
-                  }`}
+                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-300 overflow-hidden ${isActive ? "!bg-crimson/10 !text-crimson active" : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"}`}
                   onClick={() => setOpenMobile(false)}
                 >
                   <Link href={href} className="flex items-center">
@@ -274,23 +249,13 @@ export function AppSidebar() {
                 <div className="mx-1 my-1.5 border-t border-border-subtle/40" />
               </li>
 
-              <SidebarMenuItem className="relative">
-                {isAdminPath && (
-                  <span
-                    className="pointer-events-none absolute inset-y-[3px] left-0 right-0 z-0 rounded-md"
-                    style={{
-                      background:
-                        "linear-gradient(to right, rgba(196,35,45,0.22) 0%, rgba(196,35,45,0.16) 55%, rgba(196,35,45,0.06) 88%, transparent 100%)",
-                    }}
-                    aria-hidden="true"
-                  />
-                )}
+              <SidebarMenuItem>
                 <SidebarMenuButton
                   isActive={isAdminPath}
                   tooltip="Superadmin"
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-200 cursor-pointer select-none relative z-10 ${
+                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-300 overflow-hidden cursor-pointer select-none ${
                     isAdminPath
-                      ? "!bg-transparent !text-crimson"
+                      ? "!bg-crimson/10 !text-crimson active"
                       : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
                   }`}
                   onClick={() => {
@@ -337,7 +302,7 @@ export function AppSidebar() {
                             isActive={isSubActive}
                             className={`h-8 transition-colors duration-150 ${
                               isSubActive
-                                ? "!bg-transparent !text-crimson font-medium"
+                                ? "!text-crimson !bg-crimson/8 font-medium"
                                 : "text-text-secondary hover:!text-text-primary hover:!bg-elevated/60"
                             }`}
                           >
@@ -447,24 +412,6 @@ export function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
-
-      {/* ── Right-edge overflow bleed ──────────────────────────
-          This element is a direct child of Sidebar (sidebar-inner),
-          which has no overflow:hidden — so it physically renders
-          OUTSIDE the sidebar boundary, into the content area.
-          Creates the "active state streaming past the sidebar" illusion. */}
-      {hasActivePage && (
-        <div
-          className="pointer-events-none absolute inset-y-0 z-30 group-data-[collapsible=icon]:hidden"
-          style={{
-            right: "-52px",
-            width: "52px",
-            background:
-              "linear-gradient(to right, rgba(196,35,45,0.08) 0%, rgba(196,35,45,0.03) 55%, transparent 100%)",
-          }}
-          aria-hidden="true"
-        />
-      )}
     </Sidebar>
   );
 }
