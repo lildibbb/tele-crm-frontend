@@ -7,7 +7,6 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  LockKeyhole,
   CheckCircle2,
   ShieldCheck,
   ArrowRight,
@@ -28,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { authApi } from "@/lib/api/auth";
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 import { cn } from "@/lib/utils";
 import { z } from "zod/v4";
@@ -707,6 +707,9 @@ function ResetPasswordContent() {
       </div>
 
       <div className="w-full max-w-sm">
+        <div className="flex justify-center mb-6">
+          <TitanLogo variant="full" size="lg" priority />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -715,11 +718,6 @@ function ResetPasswordContent() {
         >
           {/* Top accent line */}
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
-          {/* Logo/Brand */}
-          <div className="text-center mb-6">
-            <LockKeyhole className="h-6 w-6 text-crimson mx-auto mb-4" />
-          </div>
-
           {/* Step Indicator */}
           <StepIndicator currentStep={step} />
 

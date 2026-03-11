@@ -31,6 +31,7 @@ import {
 } from "@/lib/schemas/auth.schema";
 import { authApi } from "@/lib/api/auth";
 import { useAuthStore } from "@/store/authStore";
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 // ── Password strength ──────────────────────────────────────────────────────────
 
@@ -181,10 +182,8 @@ function SetupAccountContent() {
           />
         </div>
         <div className="w-full max-w-sm animate-in-up">
-          <div className="text-center mb-6">
-            <h1 className="font-display font-extrabold text-2xl text-text-primary tracking-tight">
-              TITAN <span className="text-crimson">JOURNAL</span>
-            </h1>
+          <div className="flex justify-center mb-6">
+            <TitanLogo variant="full" size="lg" priority />
           </div>
           <div className="surface-card relative overflow-hidden p-8 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-sm text-center">
             <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-success/40 to-transparent" />
@@ -231,11 +230,11 @@ function SetupAccountContent() {
       </div>
 
       <div className="w-full max-w-sm sm:max-w-md animate-in-up relative">
-        {/* Wordmark */}
+        {/* Logo wordmark */}
         <div className="text-center mb-6">
-          <h1 className="font-display font-extrabold text-2xl text-text-primary tracking-tight">
-            TITAN <span className="text-crimson">JOURNAL</span>
-          </h1>
+          <div className="flex justify-center mb-2">
+            <TitanLogo variant="full" size="lg" priority />
+          </div>
           <p className="text-text-muted text-xs font-sans mt-1 tracking-widest uppercase">Account Setup</p>
         </div>
 

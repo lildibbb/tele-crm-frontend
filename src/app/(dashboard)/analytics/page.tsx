@@ -28,6 +28,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
 import { useT, K } from "@/i18n";
@@ -110,6 +111,14 @@ function xAxisInterval(dataLen: number): number | "preserveStartEnd" {
 const _unused: undefined = undefined;
 void _unused;
 
+// ── Y-axis compact formatter ─────────────────────────────────────
+const fmtTick = (v: number): string =>
+  v >= 1_000_000
+    ? (v / 1_000_000).toFixed(1).replace(".0", "") + "M"
+    : v >= 1_000
+      ? (v / 1_000).toFixed(1).replace(".0", "") + "K"
+      : String(v);
+
 // ── Funnel fill colours ──────────────────────────────────────────
 const FUNNEL_FILLS = {
   new: "var(--color-crimson)",
@@ -118,54 +127,47 @@ const FUNNEL_FILLS = {
 };
 
 // ── Tooltip components ───────────────────────────────────────────
+const tooltipContainerStyle: React.CSSProperties = {
+  background: "var(--elevated)",
+  border: "1px solid var(--border-subtle)",
+  borderRadius: 12,
+  padding: "10px 14px",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
+  backdropFilter: "blur(8px)",
+  WebkitBackdropFilter: "blur(8px)",
+};
+
+const tooltipWrapperProps = {
+  contentStyle: {
+    background: "transparent",
+    border: "none",
+    padding: 0,
+    boxShadow: "none",
+  },
+  wrapperStyle: { pointerEvents: "none" as const, outline: "none" },
+  isAnimationActive: false,
+  offset: 14,
+};
+
 function AreaTip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div
-      style={{
-        background: "var(--elevated)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: 12,
-        padding: "10px 14px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-      }}
-    >
-      <p
-        style={{
-          fontSize: 11,
-          color: "var(--text-muted)",
-          marginBottom: 8,
-          fontFamily: "inherit",
-        }}
-      >
+    <div style={tooltipContainerStyle}>
+      <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8, fontFamily: "inherit" }}>
         {label}
       </p>
       {payload.map((e: ChartTooltipEntry) => (
-        <div
-          key={e.name}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            marginBottom: 3,
-          }}
-        >
+        <div key={e.name} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
           <span
             style={{
               width: 6,
-              height: 6,
-              borderRadius: "50%",
+              height: 12,
+              borderRadius: 3,
               background: e.stroke ?? e.fill,
               flexShrink: 0,
             }}
           />
-          <span
-            style={{
-              fontSize: 12,
-              color: "var(--text-secondary)",
-              fontFamily: "inherit",
-            }}
-          >
+          <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "inherit" }}>
             {e.name}
           </span>
           <span
@@ -175,9 +177,12 @@ function AreaTip({ active, payload, label }: ChartTooltipProps) {
               fontFamily: "var(--font-jetbrains-mono, monospace)",
               marginLeft: "auto",
               paddingLeft: 12,
+              fontWeight: 600,
             }}
           >
-            {e.name === "Amount" ? "$" + e.value.toLocaleString() : e.value}
+            {e.name === "Amount"
+              ? "$" + (typeof e.value === "number" ? e.value.toLocaleString() : e.value)
+              : typeof e.value === "number" ? e.value.toLocaleString() : e.value}
           </span>
         </div>
       ))}
@@ -188,32 +193,11 @@ function AreaTip({ active, payload, label }: ChartTooltipProps) {
 function BarTip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div
-      style={{
-        background: "var(--elevated)",
-        border: "1px solid var(--border-subtle)",
-        borderRadius: 12,
-        padding: "10px 14px",
-      }}
-    >
-      <p
-        style={{
-          fontSize: 11,
-          color: "var(--text-muted)",
-          marginBottom: 4,
-        }}
-      >
-        {label}
-      </p>
-      <p
-        style={{
-          fontSize: 14,
-          color: "var(--color-gold)",
-          fontFamily: "var(--font-jetbrains-mono, monospace)",
-        }}
-      >
-        {payload[0].value}{" "}
-        <span style={{ fontSize: 11, color: "var(--text-muted)" }}>leads</span>
+    <div style={tooltipContainerStyle}>
+      <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>{label}</p>
+      <p style={{ fontSize: 15, color: "var(--color-gold)", fontFamily: "var(--font-jetbrains-mono, monospace)", fontWeight: 700 }}>
+        {typeof payload[0].value === "number" ? payload[0].value.toLocaleString() : payload[0].value}
+        <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 400, marginLeft: 6 }}>leads</span>
       </p>
     </div>
   );
@@ -525,88 +509,117 @@ export default function AnalyticsPage() {
         {/* Row 1: Trend chart + Conversion Funnel */}
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
           {/* Lead trend area chart */}
-          <ChartInView className="xl:col-span-3 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+          <ChartInView className="xl:col-span-3 relative overflow-hidden bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+            {/* Crimson top accent */}
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--color-crimson)]/50 to-transparent" />
+            <div className="absolute -top-10 -left-10 w-36 h-36 rounded-full bg-[var(--color-crimson)]/8 blur-3xl pointer-events-none" />
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                 {t("analytics.charts.depositTrend")}
               </h2>
               <span className="flex items-center gap-1.5 text-xs text-text-muted">
-                <Pulse size={14} weight="regular" />
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+                </span>
                 {timeframeLabel(timeframe)}
               </span>
             </div>
-            <p className="text-xs font-sans mb-5 text-text-muted">
+            <p className="text-xs font-sans mb-4 text-text-muted">
               {t("analytics.deposit.desc")}
             </p>
-            <ResponsiveContainer width="100%" height={168}>
-              <AreaChart
-                data={trendData}
-                margin={{ top: 0, right: 0, left: -22, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="gNew" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.45} />
-                    <stop offset="95%" stopColor="#60a5fa" stopOpacity={0.02} />
-                  </linearGradient>
-                  <linearGradient id="gDep" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-success)"
-                      stopOpacity={0.38}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-success)"
-                      stopOpacity={0.02}
-                    />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="date"
-                  tick={{
-                    fontSize: 11,
-                    fill: "var(--text-muted)",
-                    fontFamily: "inherit",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={xAxisInterval(trendData.length)}
-                />
-                <YAxis hide />
-                <Tooltip
-                  content={<AreaTip />}
-                  offset={12}
-                  isAnimationActive={false}
-                  wrapperStyle={{ pointerEvents: "none" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="New Leads"
-                  stroke="#60a5fa"
-                  strokeWidth={2}
-                  fill="url(#gNew)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="Confirmed"
-                  stroke="var(--color-success)"
-                  strokeWidth={2}
-                  fill="url(#gDep)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {/* Dark chart viewport */}
+            <div className="rounded-xl overflow-hidden bg-[#0c0e12] px-1 pt-3 pb-1">
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart
+                  data={trendData}
+                  margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="gNew" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stopColor="var(--color-crimson)" stopOpacity={0.72} />
+                      <stop offset="45%"  stopColor="var(--color-crimson)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--color-crimson)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gDep" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stopColor="var(--color-success)" stopOpacity={0.65} />
+                      <stop offset="45%"  stopColor="var(--color-success)" stopOpacity={0.20} />
+                      <stop offset="100%" stopColor="var(--color-success)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.06)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 10, fill: "rgba(255,255,255,0.40)", fontFamily: "inherit" }}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={xAxisInterval(trendData.length)}
+                  />
+                  <YAxis
+                    width={32}
+                    tickFormatter={fmtTick}
+                    tick={{ fontSize: 9, fill: "rgba(255,255,255,0.35)", fontFamily: "var(--font-jetbrains-mono,monospace)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={<AreaTip />}
+                    cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1 }}
+                    {...tooltipWrapperProps}
+                  />
+                  <Area
+                    animationDuration={900}
+                    animationEasing="ease-out"
+                    type="monotone"
+                    dataKey="New Leads"
+                    stroke="var(--color-crimson)"
+                    strokeWidth={2}
+                    fill="url(#gNew)"
+                    dot={false}
+                    activeDot={{
+                      r: 5,
+                      strokeWidth: 2,
+                      stroke: "#0c0e12",
+                      fill: "var(--color-crimson)",
+                      style: { filter: "drop-shadow(0 0 5px var(--color-crimson))" },
+                    }}
+                  />
+                  <Area
+                    animationDuration={1050}
+                    animationEasing="ease-out"
+                    type="monotone"
+                    dataKey="Confirmed"
+                    stroke="var(--color-success)"
+                    strokeWidth={2}
+                    fill="url(#gDep)"
+                    dot={false}
+                    activeDot={{
+                      r: 5,
+                      strokeWidth: 2,
+                      stroke: "#0c0e12",
+                      fill: "var(--color-success)",
+                      style: { filter: "drop-shadow(0 0 5px var(--color-success))" },
+                    }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
             <div className="flex items-center gap-5 mt-4 pt-3.5 border-t border-border-subtle">
               {(
                 [
-                  ["#60a5fa", "New Leads"],
+                  ["var(--color-crimson)", "New Leads"],
                   ["var(--color-success)", "Confirmed"],
                 ] as const
               ).map(([color, label]) => (
                 <div key={label} className="flex items-center gap-1.5">
-                  <span
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: color }}
-                  />
+                  <svg width="18" height="8" viewBox="0 0 18 8" fill="none">
+                    <line x1="0" y1="4" x2="18" y2="4" stroke={color} strokeWidth="1.5" />
+                    <circle cx="9" cy="4" r="2.5" fill={color} />
+                  </svg>
                   <span className="text-[11px] text-text-secondary">
                     {label}
                   </span>
@@ -616,7 +629,8 @@ export default function AnalyticsPage() {
           </ChartInView>
 
           {/* Conversion funnel */}
-          <ChartInView className="xl:col-span-2 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+          <ChartInView className="xl:col-span-2 relative overflow-hidden bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--color-crimson)]/35 to-transparent" />
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                 {t("analytics.charts.funnelBreakdown")}
@@ -712,7 +726,10 @@ export default function AnalyticsPage() {
         {/* Row 2: Lead Sources (funnel bar) + Conversion rates chart */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {/* Lead source bar chart */}
-          <ChartInView className="bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+          <ChartInView className="relative overflow-hidden bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+            {/* Crimson top accent */}
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--color-crimson)]/45 to-transparent" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-[var(--color-crimson)]/6 blur-3xl pointer-events-none" />
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                 {t("analytics.charts.leadSources")}
@@ -720,52 +737,53 @@ export default function AnalyticsPage() {
 
               <ChartBar size={22} weight="duotone" />
             </div>
-            <p className="text-xs font-sans mb-5 text-text-muted">
+            <p className="text-xs font-sans mb-4 text-text-muted">
               {t("analytics.source.title")} — {timeframeLabel(timeframe)}
             </p>
-            <ResponsiveContainer width="100%" height={140}>
-              <BarChart
-                data={funnelData}
-                layout="vertical"
-                margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
-                barSize={14}
-              >
-                <defs>
-                  <linearGradient id="gSrc" x1="0" y1="0" x2="1" y2="0">
-                    <stop
-                      offset="0%"
-                      stopColor="var(--color-crimson)"
-                      stopOpacity={0.9}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="var(--color-crimson)"
-                      stopOpacity={0.35}
-                    />
-                  </linearGradient>
-                </defs>
-                <XAxis type="number" hide />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  width={130}
-                  tick={{
-                    fontSize: 11,
-                    fill: "var(--text-secondary)",
-                    fontFamily: "inherit",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  content={<BarTip />}
-                  offset={12}
-                  isAnimationActive={false}
-                  wrapperStyle={{ pointerEvents: "none" }}
-                />
-                <Bar dataKey="value" fill="url(#gSrc)" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="rounded-xl overflow-hidden bg-[#0c0e12] px-1 pt-2 pb-1">
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart
+                  data={funnelData}
+                  layout="vertical"
+                  margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
+                  barSize={14}
+                >
+                  <defs>
+                    <linearGradient id="gSrc" x1="0" y1="0" x2="1" y2="0">
+                      <stop
+                        offset="0%"
+                        stopColor="var(--color-crimson)"
+                        stopOpacity={0.9}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="var(--color-crimson)"
+                        stopOpacity={0.35}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <XAxis type="number" hide />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    width={130}
+                    tick={{
+                      fontSize: 11,
+                      fill: "rgba(255,255,255,0.50)",
+                      fontFamily: "inherit",
+                    }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={<BarTip />}
+                    cursor={{ fill: "rgba(255,255,255,0.05)" }}
+                    {...tooltipWrapperProps}
+                  />
+                  <Bar dataKey="value" fill="url(#gSrc)" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
             <div className="mt-4 pt-3.5 border-t border-border-subtle">
               <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                 {funnelData.map((s) => {
@@ -794,7 +812,8 @@ export default function AnalyticsPage() {
           {/* ── Lead Velocity & Time Distribution ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Panel A — Stage Velocity */}
-            <ChartInView className="bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+            <ChartInView className="relative overflow-hidden bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--color-crimson)]/40 to-transparent" />
               <div className="flex items-center justify-between mb-1">
                 <h2 className="font-sans font-semibold text-[15px] text-text-primary">
                   {t(K.analytics.velocity.title)}
@@ -865,124 +884,127 @@ export default function AnalyticsPage() {
               )}
             </ChartInView>
 
-            {/* Panel B — Time Distribution */}
-            <ChartInView className="bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="font-sans font-semibold text-[15px] text-text-primary">
-                  {t(K.analytics.velocity.distribution)}
-                </h2>
-                <ChartBar
-                  size={20}
-                  weight="duotone"
-                  className="text-text-muted"
-                />
-              </div>
-              <p className="text-xs font-sans mb-5 text-text-muted">
-                {t(K.analytics.velocity.p25)} · {t(K.analytics.velocity.p50)} ·{" "}
-                {t(K.analytics.velocity.p75)}
-              </p>
-              {!velocityData || velocityData.newToSubmitted.count < 5 ? (
-                <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
-                  {t(K.analytics.velocity.noData)}
+              <ChartInView className="relative overflow-hidden bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
+                <div className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-purple-500/5 blur-3xl pointer-events-none" />
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="font-sans font-semibold text-[15px] text-text-primary">
+                    {t(K.analytics.velocity.distribution)}
+                  </h2>
+                  <ChartBar
+                    size={20}
+                    weight="duotone"
+                    className="text-text-muted"
+                  />
                 </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={120}>
-                  <BarChart
-                    data={[
-                      {
-                        name: t(K.analytics.velocity.newToSubmit),
-                        p25: velocityData.newToSubmitted.p25,
-                        p50: velocityData.newToSubmitted.p50,
-                        p75: velocityData.newToSubmitted.p75,
-                      },
-                      {
-                        name: t(K.analytics.velocity.newToConfirm),
-                        p25: velocityData.newToConfirmed.p25,
-                        p50: velocityData.newToConfirmed.p50,
-                        p75: velocityData.newToConfirmed.p75,
-                      },
-                    ]}
-                    margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
-                    barSize={16}
-                    barGap={2}
-                  >
-                    <XAxis
-                      dataKey="name"
-                      tick={{
-                        fontSize: 10,
-                        fill: "var(--text-muted)",
-                        fontFamily: "inherit",
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis hide />
-                    <Tooltip
-                      content={(props) => {
-                        const { active, payload, label } =
-                          props as unknown as ChartTooltipProps;
-                        if (!active || !payload?.length) return null;
-                        return (
-                          <div
-                            style={{
-                              background: "var(--elevated)",
-                              border: "1px solid var(--border-subtle)",
-                              borderRadius: 10,
-                              padding: "8px 12px",
-                            }}
-                          >
-                            <p
-                              style={{
-                                fontSize: 11,
-                                color: "var(--text-muted)",
-                                marginBottom: 4,
-                              }}
-                            >
-                              {label}
-                            </p>
-                            {payload.map((p: ChartTooltipEntry) => (
-                              <p
-                                key={p.name}
-                                style={{
-                                  fontSize: 12,
-                                  color: p.fill,
-                                  fontFamily:
-                                    "var(--font-jetbrains-mono, monospace)",
-                                }}
-                              >
-                                {p.name}: {p.value ?? "—"}{" "}
-                                {t(K.analytics.velocity.days)}
-                              </p>
-                            ))}
-                          </div>
-                        );
-                      }}
-                    />
-                    <Bar
-                      dataKey="p25"
-                      name={t(K.analytics.velocity.p25)}
-                      fill="#a855f7"
-                      fillOpacity={0.4}
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="p50"
-                      name={t(K.analytics.velocity.p50)}
-                      fill="#a855f7"
-                      fillOpacity={0.8}
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="p75"
-                      name={t(K.analytics.velocity.p75)}
-                      fill="#a855f7"
-                      fillOpacity={0.3}
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </ChartInView>
+                <p className="text-xs font-sans mb-4 text-text-muted">
+                  {t(K.analytics.velocity.p25)} · {t(K.analytics.velocity.p50)} ·{" "}
+                  {t(K.analytics.velocity.p75)}
+                </p>
+                {!velocityData || velocityData.newToSubmitted.count < 5 ? (
+                  <div className="flex items-center justify-center h-24 text-text-muted text-xs font-sans">
+                    {t(K.analytics.velocity.noData)}
+                  </div>
+                ) : (
+                  <div className="rounded-xl overflow-hidden bg-[#0c0e12] px-1 pt-2 pb-1">
+                    <ResponsiveContainer width="100%" height={150}>
+                      <BarChart
+                        data={[
+                          {
+                            name: t(K.analytics.velocity.newToSubmit),
+                            p25: velocityData.newToSubmitted.p25,
+                            p50: velocityData.newToSubmitted.p50,
+                            p75: velocityData.newToSubmitted.p75,
+                          },
+                          {
+                            name: t(K.analytics.velocity.newToConfirm),
+                            p25: velocityData.newToConfirmed.p25,
+                            p50: velocityData.newToConfirmed.p50,
+                            p75: velocityData.newToConfirmed.p75,
+                          },
+                        ]}
+                        margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
+                        barSize={16}
+                        barGap={2}
+                      >
+                        <XAxis
+                          dataKey="name"
+                          tick={{
+                            fontSize: 10,
+                            fill: "rgba(255,255,255,0.40)",
+                            fontFamily: "inherit",
+                          }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          hide={false}
+                          width={28}
+                          tick={{ fontSize: 9, fill: "rgba(255,255,255,0.30)", fontFamily: "var(--font-jetbrains-mono,monospace)" }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="rgba(255,255,255,0.06)"
+                          vertical={false}
+                        />
+                        <Tooltip
+                          content={(props) => {
+                            const { active, payload, label } =
+                              props as unknown as ChartTooltipProps;
+                            if (!active || !payload?.length) return null;
+                            return (
+                              <div style={tooltipContainerStyle}>
+                                <p style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>
+                                  {label}
+                                </p>
+                                {payload.map((p: ChartTooltipEntry) => (
+                                  <p
+                                    key={p.name}
+                                    style={{
+                                      fontSize: 12,
+                                      color: p.fill,
+                                      fontFamily: "var(--font-jetbrains-mono, monospace)",
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    {p.name}: {typeof p.value === "number" ? p.value.toLocaleString() : (p.value ?? "—")}{" "}
+                                    {t(K.analytics.velocity.days)}
+                                  </p>
+                                ))}
+                              </div>
+                            );
+                          }}
+                          cursor={{ fill: "rgba(255,255,255,0.05)", rx: 4 }}
+                          {...tooltipWrapperProps}
+                        />
+                        <Bar
+                          dataKey="p25"
+                          name={t(K.analytics.velocity.p25)}
+                          fill="#a855f7"
+                          fillOpacity={0.4}
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="p50"
+                          name={t(K.analytics.velocity.p50)}
+                          fill="#a855f7"
+                          fillOpacity={0.8}
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="p75"
+                          name={t(K.analytics.velocity.p75)}
+                          fill="#a855f7"
+                          fillOpacity={0.3}
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </ChartInView>
           </div>
         </div>
       </div>
@@ -1029,14 +1051,16 @@ export default function AnalyticsPage() {
                   color: "text-text-primary",
                 },
                 {
-                  label: "Prompt Tokens",
-                  value: ragStats.totalPromptTokens.toLocaleString(),
-                  color: "text-text-primary",
+                  label: "AI Reply Failures",
+                  value: String(ragStats.aiFailedCount ?? 0),
+                  color: (ragStats.aiFailedCount ?? 0) > 0 ? "text-danger" : "text-success",
                 },
                 {
-                  label: "Completion Tokens",
-                  value: ragStats.totalCompletionTokens.toLocaleString(),
-                  color: "text-text-primary",
+                  label: "Failure Rate",
+                  value: (ragStats.aiFailureRate ?? 0) === 0
+                    ? "0%"
+                    : `${((ragStats.aiFailureRate ?? 0) * 100).toFixed(1)}%`,
+                  color: (ragStats.aiFailedCount ?? 0) > 0 ? "text-danger" : "text-success",
                 },
                 {
                   label: "RAG Hits",

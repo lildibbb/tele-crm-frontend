@@ -1136,10 +1136,12 @@ export function UsersPanel() {
                     color: "text-danger",
                   },
                   {
-                    label: t(K.superadmin.users.totalAiTokens),
-                    value: `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`,
-                    sub: t(K.superadmin.users.cumulativeUsage),
-                    color: "text-[--gold]",
+                    label: "AI Reply Failures",
+                    value: String(ragStats.aiFailedCount ?? 0),
+                    sub: (ragStats.aiFailureRate ?? 0) === 0
+                      ? "0% failure rate"
+                      : `${((ragStats.aiFailureRate ?? 0) * 100).toFixed(1)}% failure rate`,
+                    color: (ragStats.aiFailedCount ?? 0) > 0 ? "text-danger" : "text-success",
                   },
                 ].map(({ label, value, sub, color }) => (
                   <div

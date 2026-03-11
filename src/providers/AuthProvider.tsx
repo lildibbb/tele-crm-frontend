@@ -14,7 +14,7 @@ const PUBLIC_ROUTES = [
   "/register",
   "/deposit",
   "/status",
-  "/docs-public",
+  "/submit",
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {

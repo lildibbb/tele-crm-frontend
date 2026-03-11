@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { authApi } from "@/lib/api/auth";
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 // Form schema
 const forgotPasswordSchema = z.object({
@@ -108,6 +109,9 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="w-full max-w-sm">
+        <div className="flex justify-center mb-6">
+          <TitanLogo variant="full" size="lg" priority />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

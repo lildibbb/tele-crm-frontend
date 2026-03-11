@@ -37,6 +37,7 @@ import {
   useSuperadminTokenUsage,
   useSuperadminKbHealth,
   useSuperadminSystemHealth,
+  useSuperadminSentimentTrend,
 } from "@/queries/useSuperadminQuery";
 import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
 import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
@@ -99,6 +100,7 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
   const { data: tokenUsage,          isLoading: isLoadingTokens  } = useSuperadminTokenUsage();
   const { data: kbHealth,            isLoading: isLoadingKb      } = useSuperadminKbHealth();
   const { data: systemHealth,        isLoading: isLoadingHealth  } = useSuperadminSystemHealth();
+  const { data: sentimentTrend                                    } = useSuperadminSentimentTrend();
 
   const maintenanceMode  = maintenanceConfig?.maintenanceMode ?? false;
   const featureFlags     = maintenanceConfig?.featureFlags ?? { knowledgeBase: true, broadcast: true, commandMenu: true, followUp: true };
@@ -262,9 +264,23 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
                 <p className="font-sans text-[11px] text-text-muted font-medium">30d Tokens</p>
               </div>
               {isLoadingTokens ? <SkeletonBar className="h-7 w-16" /> : (
-                <p className="font-display text-[22px] font-bold text-gold leading-none">
-                  {tokenUsage?.rolling30dTokens != null ? fmtTokens(tokenUsage.rolling30dTokens) : "—"}
-                </p>
+                <>
+                  <p className="font-display text-[22px] font-bold text-gold leading-none">
+                    {tokenUsage?.rolling30dTokens != null ? fmtTokens(tokenUsage.rolling30dTokens) : "—"}
+                  </p>
+                  {tokenUsage?.rolling30dInputTokens != null && (
+                    <div className="mt-1.5 space-y-0.5">
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-text-muted">↳ Input</span>
+                        <span className="data-mono text-info">{fmtTokens(tokenUsage.rolling30dInputTokens)}</span>
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span className="text-text-muted">↳ Output</span>
+                        <span className="data-mono text-success">{fmtTokens(tokenUsage.rolling30dOutputTokens)}</span>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
             {/* 30d Cost */}
@@ -274,9 +290,16 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
                 <p className="font-sans text-[11px] text-text-muted font-medium">Est. Cost</p>
               </div>
               {isLoadingTokens ? <SkeletonBar className="h-7 w-16" /> : (
-                <p className="font-display text-[22px] font-bold text-success leading-none">
-                  ${tokenUsage?.rolling30dCostUsd?.toFixed(2) ?? "—"}
-                </p>
+                <>
+                  <p className="font-display text-[22px] font-bold text-success leading-none">
+                    ${tokenUsage?.rolling30dCostUsd?.toFixed(4) ?? "—"}
+                  </p>
+                  {tokenUsage?.configuredRates && (
+                    <p className="text-[9px] text-text-muted mt-1">
+                      ${tokenUsage.configuredRates.inputCostPer1MTokens}/1M in · ${tokenUsage.configuredRates.outputCostPer1MTokens}/1M out
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -437,6 +460,58 @@ export default function MobileAdminOverview({}: MobileAdminOverviewProps) {
             </div>
           </div>
         </section>
+
+        {/* ── Sentiment (30d) ──────────────────────────────────────── */}
+        {sentimentTrend && sentimentTrend.length > 0 && (() => {
+          const totals = sentimentTrend.reduce(
+            (acc, d) => ({
+              positive: acc.positive + d.positive,
+              negative: acc.negative + d.negative,
+              neutral: acc.neutral + d.neutral,
+            }),
+            { positive: 0, negative: 0, neutral: 0 },
+          );
+          return (
+            <section className="px-4">
+              <SectionLabel icon={Brain}>Sentiment (30d)</SectionLabel>
+              <div className="flex gap-2">
+                <div className="flex-1 text-center rounded-2xl bg-success/10 border border-success/20 py-3 shadow-[var(--shadow-card)]">
+                  <p className="font-display text-[18px] font-bold text-success">{totals.positive}</p>
+                  <p className="font-sans text-[10px] text-text-muted mt-0.5">😊 Positive</p>
+                </div>
+                <div className="flex-1 text-center rounded-2xl bg-card border border-border-subtle py-3 shadow-[var(--shadow-card)]">
+                  <p className="font-display text-[18px] font-bold text-text-muted">{totals.neutral}</p>
+                  <p className="font-sans text-[10px] text-text-muted mt-0.5">😐 Neutral</p>
+                </div>
+                <div className="flex-1 text-center rounded-2xl bg-danger/10 border border-danger/20 py-3 shadow-[var(--shadow-card)]">
+                  <p className="font-display text-[18px] font-bold text-danger">{totals.negative}</p>
+                  <p className="font-sans text-[10px] text-text-muted mt-0.5">😞 Negative</p>
+                </div>
+              </div>
+            </section>
+          );
+        })()}
+
+        {/* ── Top KB Chunks ─────────────────────────────────────────── */}
+        {ragStats?.topKbChunks && ragStats.topKbChunks.length > 0 && (
+          <section className="px-4">
+            <SectionLabel icon={Brain}>Top KB Chunks</SectionLabel>
+            <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
+              {ragStats.topKbChunks.slice(0, 3).map((chunk, i) => (
+                <div
+                  key={chunk.title}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 min-h-[44px]",
+                    i < 2 && "border-b border-border-subtle",
+                  )}
+                >
+                  <p className="flex-1 font-sans text-[12px] text-text-primary truncate">{chunk.title}</p>
+                  <span className="font-sans text-[11px] data-mono text-info shrink-0">{chunk.usageCount}×</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ── Quick Actions ──────────────────────────────────────────── */}
         <section className="px-4">

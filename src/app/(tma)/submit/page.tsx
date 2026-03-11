@@ -3,7 +3,6 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
-  Shield,
   Upload,
   Send,
   CheckCircle,
@@ -16,6 +15,7 @@ import {
   Clock,
 } from "lucide-react";
 import { submitForm, getLeadStatus } from "@/lib/api/leads.public";
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 type FileItem = {
   file: File;
@@ -155,9 +155,12 @@ function TMASubmitPageContent() {
   if (!token) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center p-6"
+        className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
         style={{ background: bg }}
       >
+        <div className="mb-6">
+          <TitanLogo variant="full" size="lg" priority />
+        </div>
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
           style={{ background: "#FEF2F2" }}
@@ -165,12 +168,12 @@ function TMASubmitPageContent() {
           <XCircle className="h-8 w-8" style={{ color: "#EF4444" }} />
         </div>
         <h2
-          className="font-display font-bold text-2xl text-center mb-2"
+          className="font-display font-bold text-2xl mb-2"
           style={{ color: textMain }}
         >
           Invalid Link
         </h2>
-        <p className="font-sans text-sm text-center" style={{ color: textSub }}>
+        <p className="font-sans text-sm leading-relaxed" style={{ color: textSub }}>
           This link is invalid or missing. Please request a new link from the
           Telegram bot.
         </p>
@@ -182,9 +185,12 @@ function TMASubmitPageContent() {
   if (alreadySubmitted) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center p-6"
+        className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
         style={{ background: bg }}
       >
+        <div className="mb-6">
+          <TitanLogo variant="full" size="lg" priority />
+        </div>
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
           style={{ background: "#EFF6FF" }}
@@ -192,12 +198,12 @@ function TMASubmitPageContent() {
           <Clock className="h-8 w-8" style={{ color: "#3B82F6" }} />
         </div>
         <h2
-          className="font-display font-bold text-2xl text-center mb-2"
+          className="font-display font-bold text-2xl mb-2"
           style={{ color: textMain }}
         >
-          Already Submitted
+          Already Received
         </h2>
-        <p className="font-sans text-sm text-center" style={{ color: textSub }}>
+        <p className="font-sans text-sm leading-relaxed" style={{ color: textSub }}>
           Your registration and deposit proof have already been received. Our
           team is reviewing it and will update you via Telegram shortly.
         </p>
@@ -209,9 +215,12 @@ function TMASubmitPageContent() {
   if (done) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center p-6"
+        className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
         style={{ background: bg }}
       >
+        <div className="mb-6">
+          <TitanLogo variant="full" size="lg" priority />
+        </div>
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
           style={{ background: "#ECFDF5" }}
@@ -219,17 +228,20 @@ function TMASubmitPageContent() {
           <CheckCircle className="h-8 w-8 text-green-500" />
         </div>
         <h2
-          className="font-display font-bold text-2xl text-center mb-2"
+          className="font-display font-bold text-2xl mb-2"
           style={{ color: textMain }}
         >
-          Submitted Successfully!
+          Submission Received!
         </h2>
         <p
-          className="font-sans text-sm text-center mb-6"
+          className="font-sans text-sm leading-relaxed mb-3"
           style={{ color: textSub }}
         >
           Your registration and deposit proof have been received. We will verify
           and notify you via Telegram shortly.
+        </p>
+        <p className="font-sans text-xs" style={{ color: "#9A9AB0" }}>
+          You can close this page.
         </p>
       </div>
     );
@@ -255,24 +267,10 @@ function TMASubmitPageContent() {
       <div className="relative z-10 flex flex-col flex-1">
         {/* Header */}
         <div className="text-center px-6 pt-8 pb-4">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: brand }}
-            >
-              <Shield className="h-4 w-4 text-white" />
-            </div>
-            <span
-              className="font-display font-bold text-lg tracking-tight"
-              style={{ color: textMain }}
-            >
-              TITAN <span style={{ color: brand }}>JOURNAL</span> CRM
-            </span>
+          <div className="flex flex-col items-center mb-3">
+            <TitanLogo variant="full" size="xl" priority />
           </div>
-          <div
-            className="h-px bg-tma-border mx-4"
-            style={{ background: border }}
-          />
+          <div className="h-px mx-4" style={{ background: border }} />
         </div>
 
         {/* Form */}
@@ -294,6 +292,19 @@ function TMASubmitPageContent() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Section 1 header */}
+            <div className="flex items-center gap-2 mb-1">
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: brand }}
+              >
+                <span className="text-white font-bold" style={{ fontSize: "10px" }}>1</span>
+              </div>
+              <span className="font-sans font-semibold text-sm" style={{ color: textMain }}>
+                Upload Receipt
+              </span>
+              <span className="font-sans text-xs" style={{ color: textSub }}>(optional)</span>
+            </div>
             {/* File upload */}
             <InputField label="Receipt / Screenshot (optional)">
               <div
@@ -392,6 +403,19 @@ function TMASubmitPageContent() {
               </p>
             </InputField>
 
+            {/* Section 2 header */}
+            <div className="flex items-center gap-2 mt-2 mb-1">
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: brand }}
+              >
+                <span className="text-white font-bold" style={{ fontSize: "10px" }}>2</span>
+              </div>
+              <span className="font-sans font-semibold text-sm" style={{ color: textMain }}>
+                Your Details
+              </span>
+            </div>
+
             {/* HFM Account ID */}
             <InputField label="HFM Account ID" required>
               <input
@@ -459,9 +483,12 @@ function TMASubmitPageContent() {
             </InputField>
 
             {submitError && (
-              <p className="font-sans text-sm text-red-500 text-center">
+              <div
+                className="rounded-xl px-4 py-3 font-sans text-sm"
+                style={{ background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626" }}
+              >
                 {submitError}
-              </p>
+              </div>
             )}
 
             <div className="pt-1">

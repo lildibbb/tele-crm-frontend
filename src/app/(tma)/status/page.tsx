@@ -11,6 +11,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { getLeadStatus, type LeadStatusData } from "@/lib/api/leads.public";
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED" | "LOADING" | "ERROR";
 
@@ -129,14 +130,17 @@ function TMAStatusPageContent() {
   // ── Error / invalid token ────────────────────────────────────────────────────
   if (uiStatus === "ERROR") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: bg }}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: bg }}>
+        <div className="mb-6">
+          <TitanLogo variant="full" size="md" priority />
+        </div>
         <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: "#FEF2F2" }}>
           <XCircle className="h-8 w-8" style={{ color: "#EF4444" }} />
         </div>
-        <h2 className="font-display font-bold text-2xl text-center mb-2" style={{ color: textMain }}>
+        <h2 className="font-display font-bold text-2xl mb-2" style={{ color: textMain }}>
           Unable to Load Status
         </h2>
-        <p className="font-sans text-sm text-center" style={{ color: textSub }}>{errorMsg}</p>
+        <p className="font-sans text-sm" style={{ color: textSub }}>{errorMsg}</p>
       </div>
     );
   }
@@ -164,11 +168,11 @@ function TMAStatusPageContent() {
       <div className="relative z-10 flex flex-col flex-1">
         {/* Header */}
         <div className="text-center px-6 pt-8 pb-4">
-          <h1 className="font-display font-bold text-xl" style={{ color: textMain }}>
-            TITAN <span style={{ color: brand }}>JOURNAL</span> CRM
-          </h1>
-          <p className="font-sans text-xs mt-1" style={{ color: textSub }}>Account Status</p>
-          <div className="h-px mt-4 mx-4" style={{ background: border }} />
+          <div className="flex flex-col items-center gap-1.5 mb-3">
+            <TitanLogo variant="full" size="md" priority />
+            <p className="font-sans text-xs" style={{ color: textSub }}>Account Status</p>
+          </div>
+          <div className="h-px mt-2 mx-4" style={{ background: border }} />
         </div>
 
         <div className="flex-1 px-6 pb-8 max-w-md mx-auto w-full pt-4 space-y-5">
