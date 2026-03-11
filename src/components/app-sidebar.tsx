@@ -186,8 +186,8 @@ export function AppSidebar() {
           className="flex items-center h-9 w-full overflow-hidden"
           onClick={() => setOpenMobile(false)}
         >
-          {/* Full logo — hidden when collapsed */}
-          <div className="group-data-[collapsible=icon]:hidden flex items-center w-full">
+          {/* Full logo + title — hidden when collapsed */}
+          <div className="group-data-[collapsible=icon]:hidden flex items-center gap-3 w-full">
             <Image
               src="/assets/logo/titan-logo-02.svg"
               alt="Titan CRM"
@@ -197,7 +197,16 @@ export function AppSidebar() {
               priority
               unoptimized
             />
+            <div className="flex flex-col leading-tight">
+              <span className="font-display font-extrabold text-text-primary text-sm tracking-tight">
+                TITAN JOURNAL
+              </span>
+              <span className="text-crimson font-bold text-xs tracking-tight">
+                CRM
+              </span>
+            </div>
           </div>
+
           {/* Icon logo — shown only when collapsed */}
           <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full">
             <Image

@@ -168,14 +168,18 @@ function ForceSyncCard() {
         return "Spreadsheet ID not configured. Add it in Settings → Integrations.";
     }
     if (target === "drive" || target === "all") {
-      if (getVal("integration.googleDrive.enabled") !== "true")
-        return "Google Drive integration is disabled. Enable it in Settings → Integrations.";
-      const driveReady =
-        (getVal("integration.serviceAccount.configured") === "true" &&
-          hasCred("google.driveFolderId")) ||
-        oauthConnected;
-      if (!driveReady)
+      const serviceAccountEnabled =
+        getVal("integration.googleDrive.enabled") === "true";
+      const serviceAccountReady =
+        serviceAccountEnabled &&
+        getVal("integration.serviceAccount.configured") === "true" &&
+        hasCred("google.driveFolderId");
+      // OAuth2 is independent of the Service Account toggle
+      if (!oauthConnected && !serviceAccountReady) {
+        if (!serviceAccountEnabled)
+          return "Google Drive integration is disabled. Enable it in Settings → Integrations, or connect via Google OAuth2.";
         return "Drive not ready — configure a folder ID (service account) or connect via OAuth2 in Settings → Integrations.";
+      }
     }
     return null;
   };
