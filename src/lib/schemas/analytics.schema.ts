@@ -107,6 +107,22 @@ export const RagStatsSchema = z.object({
   avgChunksPerRequest: z.number(),
   totalPromptTokens: z.number(),
   totalCompletionTokens: z.number(),
+  dailyStats: z
+    .array(
+      z.object({
+        date: z.string(),
+        hitRate: z.number(),
+        zeroHits: z.number(),
+        totalRequests: z.number(),
+        avgChunks: z.number(),
+      }),
+    )
+    .optional()
+    .default([]),
+  topKbChunks: z
+    .array(z.object({ title: z.string(), usageCount: z.number() }))
+    .optional()
+    .default([]),
 });
 
 export type RagStats = z.infer<typeof RagStatsSchema>;

@@ -1,6 +1,16 @@
 "use client";
 
-import { AreaChart, Area, ResponsiveContainer } from "recharts";
+import {
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { useT, K } from "@/i18n";
 import {
   useSuperadminUsers,
@@ -9,6 +19,7 @@ import {
   useSuperadminTokenUsage,
   useSuperadminKbHealth,
   useSuperadminSystemHealth,
+  useSuperadminSentimentTrend,
 } from "@/queries/useSuperadminQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -107,6 +118,8 @@ export function OverviewPanel() {
     useSuperadminKbHealth();
   const { data: systemHealth, isLoading: isLoadingSystemHealth } =
     useSuperadminSystemHealth();
+  const { data: sentimentTrend, isLoading: isLoadingSentiment } =
+    useSuperadminSentimentTrend();
   const isLoadingOps =
     isLoadingQueues || isLoadingTokenUsage || isLoadingKbHealth;
 
@@ -274,7 +287,7 @@ export function OverviewPanel() {
             </span>
           </div>
           {isLoadingOps && !tokenUsage ? (
-            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-20 w-full" />
           ) : tokenUsage ? (
             <>
               <div className="text-xs font-sans space-y-0.5 mb-2">
@@ -288,6 +301,18 @@ export function OverviewPanel() {
                   </span>
                 </div>
                 <div className="flex justify-between">
+                  <span className="text-text-muted text-[10px]">↳ Input</span>
+                  <span className="data-mono text-info text-[10px]">
+                    {tokenUsage.rolling30dInputTokens?.toLocaleString() ?? "—"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-muted text-[10px]">↳ Output</span>
+                  <span className="data-mono text-success text-[10px]">
+                    {tokenUsage.rolling30dOutputTokens?.toLocaleString() ?? "—"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-text-muted">
                     {t(K.superadminOps.estimatedCost)}
                   </span>
@@ -295,19 +320,37 @@ export function OverviewPanel() {
                     ${tokenUsage.rolling30dCostUsd.toFixed(4)}
                   </span>
                 </div>
+                {tokenUsage.configuredRates && (
+                  <div className="text-[9px] text-text-muted pt-0.5 border-t border-border-subtle mt-1">
+                    Rates: ${tokenUsage.configuredRates.inputCostPer1MTokens}/1M
+                    in · ${tokenUsage.configuredRates.outputCostPer1MTokens}/1M
+                    out
+                  </div>
+                )}
               </div>
-              <ResponsiveContainer width="100%" height={36}>
+              <ResponsiveContainer width="100%" height={40}>
                 <AreaChart
                   data={tokenUsage.daily}
                   margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                 >
                   <Area
                     type="monotone"
-                    dataKey="tokens"
-                    stroke="var(--color-crimson)"
-                    fill="var(--color-crimson)"
-                    fillOpacity={0.15}
-                    strokeWidth={1.5}
+                    dataKey="inputTokens"
+                    stackId="1"
+                    stroke="var(--color-info)"
+                    fill="var(--color-info)"
+                    fillOpacity={0.2}
+                    strokeWidth={1}
+                    dot={false}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="outputTokens"
+                    stackId="1"
+                    stroke="var(--color-success)"
+                    fill="var(--color-success)"
+                    fillOpacity={0.2}
+                    strokeWidth={1}
                     dot={false}
                   />
                 </AreaChart>
@@ -503,6 +546,141 @@ export function OverviewPanel() {
               ))}
             </div>
           </div>
+        )}
+
+        {/* RAG hit rate trend — daily line chart */}
+        <div className="page-panel bg-elevated rounded-xl p-5 xl:col-span-1">
+          <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-4">
+            <Brain size={16} weight="duotone" className="text-info" />
+            RAG Hit Rate (30d)
+          </h2>
+          {isLoadingRag || !ragStats?.dailyStats ? (
+            <Skeleton className="h-32 w-full" />
+          ) : (
+            <ResponsiveContainer width="100%" height={120}>
+              <LineChart
+                data={ragStats.dailyStats}
+                margin={{ top: 0, right: 4, left: -30, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 9 }}
+                  tickFormatter={(v: string) => v.slice(5)}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tick={{ fontSize: 9 }}
+                  domain={[0, 100]}
+                  tickFormatter={(v: number) => `${v}%`}
+                />
+                <Tooltip
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(v: any) => [`${v}%`, "Hit Rate"]}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  labelFormatter={(l: any) => l}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="hitRate"
+                  stroke="var(--color-success)"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Top KB chunks */}
+        <div className="page-panel bg-elevated rounded-xl p-5 xl:col-span-1">
+          <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-4">
+            <Brain size={16} weight="duotone" className="text-[--gold]" />
+            Top KB Chunks
+          </h2>
+          {isLoadingRag || !ragStats?.topKbChunks ? (
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-5 w-full" />
+              ))}
+            </div>
+          ) : ragStats.topKbChunks.length === 0 ? (
+            <p className="text-xs text-text-muted">
+              No chunk usage data yet.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {ragStats.topKbChunks.slice(0, 7).map((chunk) => (
+                <div
+                  key={chunk.title}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <p className="text-xs text-text-secondary truncate max-w-[160px]">
+                    {chunk.title}
+                  </p>
+                  <span className="text-xs data-mono text-info shrink-0">
+                    {chunk.usageCount}×
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Sentiment Trend ── */}
+      <div className="page-panel bg-elevated rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-text-primary flex items-center gap-2 mb-4">
+          <Lightning size={16} weight="duotone" className="text-success" />
+          Sentiment Trend (30d)
+        </h2>
+        {isLoadingSentiment || !sentimentTrend ? (
+          <Skeleton className="h-40 w-full" />
+        ) : sentimentTrend.length === 0 ? (
+          <p className="text-xs text-text-muted">No sentiment data yet.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={150}>
+            <AreaChart
+              data={sentimentTrend}
+              margin={{ top: 4, right: 4, left: -30, bottom: 0 }}
+            >
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 9 }}
+                tickFormatter={(v: string) => v.slice(5)}
+                interval="preserveStartEnd"
+              />
+              <YAxis tick={{ fontSize: 9 }} />
+              <Tooltip />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <Area
+                type="monotone"
+                dataKey="positive"
+                stackId="1"
+                stroke="#22c55e"
+                fill="#22c55e"
+                fillOpacity={0.6}
+                strokeWidth={1}
+              />
+              <Area
+                type="monotone"
+                dataKey="neutral"
+                stackId="1"
+                stroke="#94a3b8"
+                fill="#94a3b8"
+                fillOpacity={0.4}
+                strokeWidth={1}
+              />
+              <Area
+                type="monotone"
+                dataKey="negative"
+                stackId="1"
+                stroke="#ef4444"
+                fill="#ef4444"
+                fillOpacity={0.6}
+                strokeWidth={1}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         )}
       </div>
     </div>
