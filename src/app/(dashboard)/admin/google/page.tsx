@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import MobileAdminGoogle from "@/components/mobile/MobileAdminGoogle";
 import { Icon } from "@iconify/react";
@@ -8,8 +9,10 @@ import {
   CheckCircle,
   XCircle,
   Clock,
+  SpinnerGap,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -19,7 +22,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useGoogleAnalyticsStats } from "@/queries/useGoogleAnalyticsQuery";
+import { useTriggerGoogleSync } from "@/queries/useSuperadminQuery";
+import type { GoogleSyncTarget } from "@/lib/api/superadmin";
 import type { GoogleOpLog } from "@/lib/api/googleAnalytics";
+import { toast } from "sonner";
 import { useT, K } from "@/i18n";
 
 // ── KPI Tile ──────────────────────────────────────────────────────────────────
@@ -106,6 +112,73 @@ function OpRow({ op }: { op: GoogleOpLog }) {
         {op.errorMessage ?? "—"}
       </TableCell>
     </TableRow>
+  );
+}
+
+// ── Force Sync Card ───────────────────────────────────────────────────────────
+
+const SYNC_BUTTONS: { label: string; target: GoogleSyncTarget; icon: string }[] = [
+  { label: "Sync Sheets", target: "sheets", icon: "logos:google-sheets" },
+  { label: "Sync Drive", target: "drive", icon: "logos:google-drive" },
+  { label: "Sync All", target: "all", icon: "ph:arrows-clockwise-bold" },
+];
+
+function ForceSyncCard() {
+  const { mutate: triggerSync, isPending } = useTriggerGoogleSync();
+  const [activeTarget, setActiveTarget] = useState<GoogleSyncTarget | null>(null);
+
+  const handleSync = (target: GoogleSyncTarget) => {
+    setActiveTarget(target);
+    triggerSync(target, {
+      onSuccess: (result) => {
+        toast.success(
+          target === "all"
+            ? "Full sync enqueued"
+            : target === "sheets"
+              ? "Sheets sync enqueued"
+              : "Drive sync enqueued",
+          { description: `Job ID${result.jobIds.length > 1 ? "s" : ""}: ${result.jobIds.join(", ")}` },
+        );
+        setActiveTarget(null);
+      },
+      onError: (err) => {
+        toast.error("Sync failed", { description: err.message });
+        setActiveTarget(null);
+      },
+    });
+  };
+
+  return (
+    <div className="page-panel bg-elevated rounded-xl p-5 border border-border-subtle">
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-text-primary">Force Sync</h3>
+        <p className="mt-0.5 text-xs text-text-muted">
+          Immediately enqueue a sync job. Rate-limited to once per 60 seconds per target.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {SYNC_BUTTONS.map(({ label, target, icon }) => {
+          const loading = isPending && activeTarget === target;
+          return (
+            <Button
+              key={target}
+              variant="outline"
+              size="sm"
+              onClick={() => handleSync(target)}
+              disabled={isPending}
+              className="gap-1.5"
+            >
+              {loading ? (
+                <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Icon icon={icon} className="h-3.5 w-3.5" />
+              )}
+              {label}
+            </Button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -203,6 +276,9 @@ function GoogleDesktop() {
           />
         </div>
       )}
+
+      {/* Force Sync — superadmin emergency controls */}
+      <ForceSyncCard />
 
       {/* Recent Operations Table */}
       <div className="page-panel bg-elevated rounded-xl overflow-hidden border border-border-subtle">

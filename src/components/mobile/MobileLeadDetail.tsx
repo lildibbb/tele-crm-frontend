@@ -275,6 +275,11 @@ export default function MobileLeadDetail({
   const handoverMutation = useSetHandover();
   const [menuOpen, setMenuOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [handover, setHandover] = useState(lead?.handoverMode ?? false);
+
+  useEffect(() => {
+    if (lead) setHandover(lead.handoverMode ?? false);
+  }, [lead?.handoverMode]);
 
   const { data: attachmentsData } = useQuery({
     queryKey: ["lead-attachments", lead?.id],
@@ -311,7 +316,6 @@ export default function MobileLeadDetail({
     }
     router.back();
   }, [onBack, router]);
-
 
   if (isLoading || !lead) return <LoadingSkeleton />;
 
@@ -564,7 +568,7 @@ export default function MobileLeadDetail({
                 {status.replace(/_/g, " ")}
               </Badge>
 
-              {lead.handoverMode ? (
+              {handover ? (
                 <Badge
                   variant="secondary"
                   className="text-[11px] font-semibold gap-1"
@@ -835,11 +839,21 @@ export default function MobileLeadDetail({
                     <div className="w-4 h-4 rounded-full border-2 border-crimson border-t-transparent animate-spin" />
                   )}
                   <Switch
-                    checked={lead.handoverMode ?? false}
-                    onCheckedChange={(checked) =>
-                      handoverMutation.mutate({ id: lead.id!, mode: checked })
-                    }
+                    checked={handover}
+                    onCheckedChange={(checked) => {
+                      setHandover(checked);
+                      if (lead)
+                        handoverMutation.mutate({
+                          id: lead.id!,
+                          mode: checked,
+                        });
+                    }}
                     disabled={handoverMutation.isPending}
+                    className={
+                      handover
+                        ? "data-[state=checked]:bg-crimson"
+                        : "data-[state=checked]:bg-success"
+                    }
                   />
                 </div>
               </div>

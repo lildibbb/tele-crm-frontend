@@ -7,6 +7,17 @@ import type {
 import type { ChangePasswordInput } from "@/lib/schemas/auth.schema";
 import type { ApiResponse } from "@/lib/schemas/common";
 
+// ── Google Sync ───────────────────────────────────────────────────────────────
+
+export type GoogleSyncTarget = "sheets" | "drive" | "all";
+
+export interface TriggerSyncResult {
+  target: GoogleSyncTarget;
+  jobIds: string[];
+  queuedAt: string;
+  message: string;
+}
+
 // ── Backup ────────────────────────────────────────────────────────────────────
 
 export type BackupStatus = "success" | "partial" | "failed";
@@ -189,4 +200,18 @@ export const superadminApi = {
 
   deleteSecret: (key: string) =>
     apiClient.delete<void>(`/superadmin/secrets/${key}`),
+
+  // ── Google Sync ──────────────────────────────────────────────────────────
+
+  /**
+   * Enqueues an immediate Google Sheets/Drive sync job (SUPERADMIN only).
+   * Rate-limited to once per 60 seconds per target.
+   */
+  triggerGoogleSync: async (target: GoogleSyncTarget): Promise<TriggerSyncResult> => {
+    const res = await apiClient.post<ApiResponse<TriggerSyncResult>>(
+      "/superadmin/google/sync",
+      { target },
+    );
+    return res.data.data;
+  },
 };
