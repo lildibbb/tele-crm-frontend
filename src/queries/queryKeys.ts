@@ -60,6 +60,7 @@ export const queryKeys = {
     tokenUsage: () => ["superadmin", "tokenUsage"] as const,
     kbHealth: () => ["superadmin", "kbHealth"] as const,
     systemHealth: () => ["superadmin", "system-health"] as const,
+    sentimentTrend: () => ["superadmin", "sentimentTrend"] as const,
   },
   systemConfig: {
     all: ["systemConfig"] as const,

@@ -81,6 +81,13 @@ export function useSuperadminSystemHealth() {
   });
 }
 
+export function useSuperadminSentimentTrend() {
+  return useQuery({
+    queryKey: queryKeys.superadmin.sentimentTrend(),
+    queryFn: () => superadminApi.getSentimentTrend(),
+  });
+}
+
 export function useCreateSuperadminUser() {
   const queryClient = useQueryClient();
   return useMutation({
