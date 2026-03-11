@@ -98,7 +98,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-svh bg-void relative overflow-hidden">
-
       {/* SVG clip-path definition — wavy right edge (objectBoundingBox = 0–1 relative to element) */}
       <svg width="0" height="0" className="absolute" aria-hidden="true">
         <defs>
@@ -273,8 +272,9 @@ export default function LoginPage() {
                               className="h-11 pr-10 text-sm bg-white dark:bg-base/60 border-border-default/80 focus-visible:ring-crimson/40 focus-visible:border-crimson transition-colors shadow-none"
                               {...field}
                             />
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
                               onClick={() => setShowPass(!showPass)}
                               className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
                               aria-label={
@@ -286,7 +286,7 @@ export default function LoginPage() {
                               ) : (
                                 <Eye className="h-4 w-4" />
                               )}
-                            </button>
+                            </Button>
                           </div>
                         </FormControl>
                         <FormMessage className="text-xs" />
