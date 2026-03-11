@@ -105,8 +105,8 @@ export const RagStatsSchema = z.object({
   ragHitRate: z.number(),
   zeroHitCount: z.number(),
   avgChunksPerRequest: z.number(),
-  totalPromptTokens: z.number(),
-  totalCompletionTokens: z.number(),
+  aiFailedCount: z.number().optional().default(0),
+  aiFailureRate: z.number().optional().default(0),
   dailyStats: z
     .array(
       z.object({

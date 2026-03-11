@@ -1051,14 +1051,16 @@ export default function AnalyticsPage() {
                   color: "text-text-primary",
                 },
                 {
-                  label: "Prompt Tokens",
-                  value: ragStats.totalPromptTokens.toLocaleString(),
-                  color: "text-text-primary",
+                  label: "AI Reply Failures",
+                  value: String(ragStats.aiFailedCount ?? 0),
+                  color: (ragStats.aiFailedCount ?? 0) > 0 ? "text-danger" : "text-success",
                 },
                 {
-                  label: "Completion Tokens",
-                  value: ragStats.totalCompletionTokens.toLocaleString(),
-                  color: "text-text-primary",
+                  label: "Failure Rate",
+                  value: (ragStats.aiFailureRate ?? 0) === 0
+                    ? "0%"
+                    : `${((ragStats.aiFailureRate ?? 0) * 100).toFixed(1)}%`,
+                  color: (ragStats.aiFailedCount ?? 0) > 0 ? "text-danger" : "text-success",
                 },
                 {
                   label: "RAG Hits",

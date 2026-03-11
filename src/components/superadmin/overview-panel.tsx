@@ -127,8 +127,8 @@ export function OverviewPanel() {
   const ragHitRate = ragStats
     ? `${(ragStats.ragHitRate ?? 0).toFixed(1)}%`
     : "—";
-  const ragTokens = ragStats
-    ? `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`
+  const ragTokens = tokenUsage
+    ? `${(tokenUsage.rolling30dTokens / 1000).toFixed(1)}k`
     : "—";
 
   return (
@@ -201,36 +201,49 @@ export function OverviewPanel() {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Bot Health */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-sm text-text-primary">
-              {t(K.superadminOps.botHealth)}
-            </span>
-            <div
-              className={`w-2 h-2 rounded-full ${ragStats ? "bg-emerald-400" : "bg-text-muted"}`}
-            />
-          </div>
-          <div className="space-y-1.5 text-xs font-sans">
-            {isLoadingRag ? (
-              <Skeleton className="h-[2px] w-full" />
-            ) : (
+          {(() => {
+            const botCheck = systemHealth?.checks?.find(
+              (c: { name: string; status: string; detail?: string }) =>
+                c.name === "bot_activity",
+            );
+            const isOk = botCheck?.status === "ok";
+            const detail = (botCheck as { detail?: string } | undefined)
+              ?.detail;
+            return (
               <>
-                <div className="flex justify-between">
-                  <span className="text-text-muted text-xs">
-                    {t(K.superadminOps.pendingUpdates)}
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-sans font-semibold text-sm text-text-primary">
+                    {t(K.superadminOps.botHealth)}
                   </span>
-                  <span className="data-mono text-text-primary">—</span>
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      !botCheck
+                        ? "bg-text-muted"
+                        : isOk
+                          ? "bg-emerald-400"
+                          : "bg-amber-400"
+                    }`}
+                  />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-text-muted text-xs">
-                    {t(K.superadminOps.lastError)}
-                  </span>
-                  <span className="text-emerald-400">
-                    {t(K.superadminOps.noError)}
-                  </span>
+                <div className="space-y-1.5 text-xs font-sans">
+                  {!botCheck ? (
+                    <Skeleton className="h-[2px] w-full" />
+                  ) : (
+                    <div className="flex justify-between gap-2">
+                      <span className="text-text-muted text-xs shrink-0">
+                        Activity
+                      </span>
+                      <span
+                        className={`data-mono text-right text-[10px] leading-tight ${isOk ? "text-emerald-400" : "text-amber-400"}`}
+                      >
+                        {detail ?? "—"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </>
-            )}
-          </div>
+            );
+          })()}
         </div>
 
         {/* Queue Monitor */}
@@ -512,10 +525,12 @@ export function OverviewPanel() {
                   color: "text-danger",
                 },
                 {
-                  label: t(K.superadmin.overview.totalAiTokens),
-                  value: `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`,
-                  sub: t(K.superadmin.overview.cumulativeUsage),
-                  color: "text-[--gold]",
+                  label: "AI Reply Failures",
+                  value: String(ragStats.aiFailedCount ?? 0),
+                  sub: (ragStats.aiFailureRate ?? 0) === 0
+                    ? "0% failure rate"
+                    : `${((ragStats.aiFailureRate ?? 0) * 100).toFixed(1)}% failure rate`,
+                  color: (ragStats.aiFailedCount ?? 0) > 0 ? "text-danger" : "text-success",
                 },
               ].map(({ label, value, sub, color }) => (
                 <div
