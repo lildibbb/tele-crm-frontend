@@ -279,8 +279,8 @@ export function OverviewPanel() {
                       </span>
                     </span>
                     {q.failed > 0 && (
-                      <span className="text-red-400 data-mono font-bold">
-                        {q.failed}F
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-red-400/15 text-red-400">
+                        {q.failed} failed
                       </span>
                     )}
                   </div>

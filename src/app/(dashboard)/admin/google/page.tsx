@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import MobileAdminGoogle from "@/components/mobile/MobileAdminGoogle";
 import { Icon } from "@iconify/react";
@@ -10,9 +10,20 @@ import {
   XCircle,
   Clock,
   SpinnerGap,
+  Play,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -23,7 +34,11 @@ import {
 } from "@/components/ui/table";
 import { useGoogleAnalyticsStats } from "@/queries/useGoogleAnalyticsQuery";
 import { useTriggerGoogleSync } from "@/queries/useSuperadminQuery";
-import type { GoogleSyncTarget } from "@/lib/api/superadmin";
+import { useSystemConfig } from "@/queries/useSystemConfigQuery";
+import { useGoogleOAuth2Status } from "@/queries/useGoogleOAuth2Query";
+import { integrationsApi } from "@/lib/api/integrations";
+import { parseApiData } from "@/lib/api/parseResponse";
+import type { GoogleSyncTarget, SecretMeta } from "@/lib/api/superadmin";
 import type { GoogleOpLog } from "@/lib/api/googleAnalytics";
 import { toast } from "sonner";
 import { useT, K } from "@/i18n";
@@ -126,8 +141,57 @@ const SYNC_BUTTONS: { label: string; target: GoogleSyncTarget; icon: string }[] 
 function ForceSyncCard() {
   const { mutate: triggerSync, isPending } = useTriggerGoogleSync();
   const [activeTarget, setActiveTarget] = useState<GoogleSyncTarget | null>(null);
+  const [pendingTarget, setPendingTarget] = useState<GoogleSyncTarget | null>(null);
+  const [credentials, setCredentials] = useState<SecretMeta[]>([]);
 
-  const handleSync = (target: GoogleSyncTarget) => {
+  const { data: entries = {} } = useSystemConfig();
+  const { data: oauthStatus } = useGoogleOAuth2Status();
+
+  useEffect(() => {
+    integrationsApi
+      .listCredentials()
+      .then((res) => setCredentials(parseApiData<SecretMeta[]>(res.data) ?? []))
+      .catch(() => {});
+  }, []);
+
+  const getVal = (key: string) => entries[key] ?? "false";
+  const hasCred = (key: string) => credentials.some((c) => c.key === key);
+  const oauthConnected = oauthStatus?.connected === true;
+
+  const getValidationError = (target: GoogleSyncTarget): string | null => {
+    if (target === "sheets" || target === "all") {
+      if (getVal("integration.googleSheets.enabled") !== "true")
+        return "Google Sheets integration is disabled. Enable it in Settings → Integrations.";
+      if (getVal("integration.serviceAccount.configured") !== "true")
+        return "Service account not configured. Complete setup in Settings → Integrations.";
+      if (!hasCred("google.sheetId"))
+        return "Spreadsheet ID not configured. Add it in Settings → Integrations.";
+    }
+    if (target === "drive" || target === "all") {
+      if (getVal("integration.googleDrive.enabled") !== "true")
+        return "Google Drive integration is disabled. Enable it in Settings → Integrations.";
+      const driveReady =
+        (getVal("integration.serviceAccount.configured") === "true" &&
+          hasCred("google.driveFolderId")) ||
+        oauthConnected;
+      if (!driveReady)
+        return "Drive not ready — configure a folder ID (service account) or connect via OAuth2 in Settings → Integrations.";
+    }
+    return null;
+  };
+
+  const handleClickSync = (target: GoogleSyncTarget) => {
+    const err = getValidationError(target);
+    if (err) {
+      toast.warning("Cannot sync", { description: err });
+      return;
+    }
+    setPendingTarget(target);
+  };
+
+  const handleConfirmSync = () => {
+    if (!pendingTarget) return;
+    const target = pendingTarget;
     setActiveTarget(target);
     triggerSync(target, {
       onSuccess: (result) => {
@@ -137,48 +201,89 @@ function ForceSyncCard() {
             : target === "sheets"
               ? "Sheets sync enqueued"
               : "Drive sync enqueued",
-          { description: `Job ID${result.jobIds.length > 1 ? "s" : ""}: ${result.jobIds.join(", ")}` },
+          {
+            description: `Job ID${result.jobIds.length > 1 ? "s" : ""}: ${result.jobIds.join(", ")}`,
+          },
         );
         setActiveTarget(null);
+        setPendingTarget(null);
       },
       onError: (err) => {
         toast.error("Sync failed", { description: err.message });
         setActiveTarget(null);
+        setPendingTarget(null);
       },
     });
   };
 
+  const targetLabel = (t: GoogleSyncTarget) =>
+    t === "sheets"
+      ? "Google Sheets"
+      : t === "drive"
+        ? "Google Drive"
+        : "All (Sheets + Drive)";
+
   return (
-    <div className="page-panel bg-elevated rounded-xl p-5 border border-border-subtle">
-      <div className="mb-4">
-        <h3 className="text-sm font-semibold text-text-primary">Force Sync</h3>
-        <p className="mt-0.5 text-xs text-text-muted">
-          Immediately enqueue a sync job. Rate-limited to once per 60 seconds per target.
-        </p>
+    <>
+      <div className="page-panel bg-elevated rounded-xl p-5 border border-border-subtle">
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold text-text-primary">Force Sync</h3>
+          <p className="mt-0.5 text-xs text-text-muted">
+            Immediately enqueue a sync job. Rate-limited to once per 60 seconds
+            per target.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {SYNC_BUTTONS.map(({ label, target }) => {
+            const loading = isPending && activeTarget === target;
+            return (
+              <Button
+                key={target}
+                size="sm"
+                onClick={() => handleClickSync(target)}
+                disabled={isPending}
+                className="h-8 gap-1.5 text-xs"
+              >
+                {loading ? (
+                  <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Play size={13} weight="fill" />
+                )}
+                {loading ? "Queuing…" : label}
+              </Button>
+            );
+          })}
+        </div>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {SYNC_BUTTONS.map(({ label, target, icon }) => {
-          const loading = isPending && activeTarget === target;
-          return (
-            <Button
-              key={target}
-              variant="outline"
-              size="sm"
-              onClick={() => handleSync(target)}
-              disabled={isPending}
-              className="gap-1.5"
-            >
-              {loading ? (
-                <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Icon icon={icon} className="h-3.5 w-3.5" />
-              )}
-              {label}
-            </Button>
-          );
-        })}
-      </div>
-    </div>
+
+      <AlertDialog
+        open={pendingTarget !== null}
+        onOpenChange={(open) => !open && setPendingTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Sync {pendingTarget ? targetLabel(pendingTarget) : ""} Now?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will immediately queue a{" "}
+              {pendingTarget === "all"
+                ? "full (Sheets + Drive)"
+                : pendingTarget === "sheets"
+                  ? "Google Sheets"
+                  : "Google Drive"}{" "}
+              sync job. The job runs in the background.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSync}>
+              Run Sync
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
