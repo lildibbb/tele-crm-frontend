@@ -818,7 +818,7 @@ export default function MobileIntegrations(_props: MobileIntegrationsProps) {
         ) : (
           <div className="space-y-4">
             {/* Google Sheets */}
-            {(isSuperAdmin || visGoogleSheets) && (
+            {visGoogleSheets && (
               <IntegrationCard
                 icon={
                   <Icon
@@ -847,7 +847,7 @@ export default function MobileIntegrations(_props: MobileIntegrationsProps) {
             )}
 
             {/* Google Drive (Service Account) */}
-            {(isSuperAdmin || visGoogleDriveSA) && (
+            {visGoogleDriveSA && (
               <IntegrationCard
                 icon={<Icon icon="logos:google-drive" className="w-5 h-5" />}
                 name={t(K.integrations.drive.name)}
@@ -871,7 +871,7 @@ export default function MobileIntegrations(_props: MobileIntegrationsProps) {
             )}
 
             {/* Google Drive OAuth2 */}
-            {(isSuperAdmin || visGoogleDriveOAuth2) && (
+            {visGoogleDriveOAuth2 && (
               <GoogleDriveConnectionCard />
             )}
           </div>
