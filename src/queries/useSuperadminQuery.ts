@@ -142,3 +142,11 @@ export function useTriggerGoogleSync() {
       superadminApi.triggerGoogleSync(target),
   });
 }
+
+export function useLeadScoreStats() {
+  return useQuery({
+    queryKey: queryKeys.superadmin.leadScoreStats(),
+    queryFn: () => superadminApi.getLeadScoreStats(),
+    staleTime: 60 * 1000,
+  });
+}

@@ -61,6 +61,7 @@ export const queryKeys = {
     kbHealth: () => ["superadmin", "kbHealth"] as const,
     systemHealth: () => ["superadmin", "system-health"] as const,
     sentimentTrend: () => ["superadmin", "sentimentTrend"] as const,
+    leadScoreStats: () => ["superadmin", "leadScoreStats"] as const,
   },
   systemConfig: {
     all: ["systemConfig"] as const,

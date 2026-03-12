@@ -105,12 +105,6 @@ export const CONFIG_SECTIONS: {
         type: "text",
       },
       {
-        key: "bot.depositFormUrl",
-        label: "Deposit Form URL",
-        description: "URL linked in deposit prompts",
-        type: "text",
-      },
-      {
         key: "bot.groupId",
         label: "Group Forum ID",
         description:

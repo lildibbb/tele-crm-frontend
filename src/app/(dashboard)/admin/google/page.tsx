@@ -325,15 +325,17 @@ function GoogleDesktop() {
             {t(K.superadmin.google.subtitle)}
           </p>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => void refetch()}
-          className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors"
+          className="h-7 w-7 text-text-muted hover:text-text-primary"
         >
           <ArrowClockwise
             size={15}
             className={isLoading ? "animate-spin" : ""}
           />
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -355,13 +357,13 @@ function GoogleDesktop() {
             label="Sheets Syncs"
             value={(stats?.sheetsSyncOk ?? 0).toLocaleString()}
             icon={<Icon icon="logos:google-sheets" className="w-5 h-5" />}
-            accent="bg-emerald-500/10"
+            accent="bg-success/10"
           />
           <KpiTile
             label="Drive Uploads"
             value={(stats?.driveUploadOk ?? 0).toLocaleString()}
             icon={<Icon icon="logos:google-drive" className="w-5 h-5" />}
-            accent="bg-blue-500/10"
+            accent="bg-info/10"
           />
           <KpiTile
             label="Total Operations"

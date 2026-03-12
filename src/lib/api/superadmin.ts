@@ -54,6 +54,7 @@ export interface QueueStats { queues: QueueJobCount[] }
 export interface AdminSession {
   id: string;
   userId: string;
+  user: { email: string; role: string };
   deviceId: string | null;
   userAgent: string | null;
   ipAddress: string | null;
@@ -133,6 +134,14 @@ export interface SystemHealthData {
  * Superadmin-only API endpoints for system administration.
  * These endpoints require SUPERADMIN role.
  */
+export interface LeadScoreStats {
+  averageScore: number;
+  hot: number;
+  warm: number;
+  cold: number;
+  unscored: number;
+}
+
 export const superadminApi = {
   /**
    * Returns all CRM system users. Requires SUPERADMIN role.
@@ -210,6 +219,11 @@ export const superadminApi = {
   },
   getSentimentTrend: async (): Promise<SentimentDay[]> => {
     const res = await apiClient.get<ApiResponse<SentimentDay[]>>('/superadmin/sentiment-trend');
+    return res.data.data;
+  },
+
+  getLeadScoreStats: async (): Promise<LeadScoreStats> => {
+    const res = await apiClient.get<ApiResponse<LeadScoreStats>>('/superadmin/lead-score-stats');
     return res.data.data;
   },
 
