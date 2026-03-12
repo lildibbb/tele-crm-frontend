@@ -187,3 +187,5 @@ export function AiFeedbackTab() {
     </div>
   );
 }
+
+export { AiFeedbackTab as AiFeedbackPanel };

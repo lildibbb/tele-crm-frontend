@@ -20,6 +20,7 @@ import {
   useSuperadminKbHealth,
   useSuperadminSystemHealth,
   useSuperadminSentimentTrend,
+  useLeadScoreStats,
 } from "@/queries/useSuperadminQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -120,6 +121,7 @@ export function OverviewPanel() {
     useSuperadminSystemHealth();
   const { data: sentimentTrend, isLoading: isLoadingSentiment } =
     useSuperadminSentimentTrend();
+  const { data: scoreStats, isLoading: isLoadingScoreStats } = useLeadScoreStats();
   const isLoadingOps =
     isLoadingQueues || isLoadingTokenUsage || isLoadingKbHealth;
 
@@ -195,6 +197,51 @@ export function OverviewPanel() {
           accent="crimson"
           loading={isLoadingRag}
         />
+      </div>
+
+      {/* ── AI Lead Score Distribution ── */}
+      <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-sans font-semibold text-sm text-text-primary">
+            AI Lead Score Distribution
+          </span>
+          {isLoadingScoreStats ? (
+            <Skeleton className="h-6 w-12 rounded" />
+          ) : (
+            <span className="text-2xl font-bold text-text-primary">
+              {scoreStats?.averageScore ?? 0}
+              <span className="text-xs font-normal text-text-secondary ml-1">avg</span>
+            </span>
+          )}
+        </div>
+        {isLoadingScoreStats ? (
+          <Skeleton className="h-3 w-full rounded-full" />
+        ) : (
+          (() => {
+            const hot = scoreStats?.hot ?? 0;
+            const warm = scoreStats?.warm ?? 0;
+            const cold = scoreStats?.cold ?? 0;
+            const unscored = scoreStats?.unscored ?? 0;
+            const total = hot + warm + cold + unscored || 1;
+            const pct = (n: number) => `${((n / total) * 100).toFixed(1)}%`;
+            return (
+              <>
+                <div className="flex h-3 rounded-full overflow-hidden gap-px">
+                  {hot > 0 && <div className="bg-[--crimson] transition-all" style={{ width: pct(hot) }} />}
+                  {warm > 0 && <div className="bg-[--gold] transition-all" style={{ width: pct(warm) }} />}
+                  {cold > 0 && <div className="bg-info transition-all" style={{ width: pct(cold) }} />}
+                  {unscored > 0 && <div className="bg-elevated border border-border-subtle transition-all" style={{ width: pct(unscored) }} />}
+                </div>
+                <div className="flex justify-between mt-2 text-[10px] font-sans text-text-secondary">
+                  <span className="text-[--crimson]">Hot {hot}</span>
+                  <span className="text-[--gold]">Warm {warm}</span>
+                  <span className="text-info">Cold {cold}</span>
+                  <span className="text-text-muted">Unscored {unscored}</span>
+                </div>
+              </>
+            );
+          })()
+        )}
       </div>
 
       {/* ── Ops Dashboard — Bot Health + Queue Monitor + Token Budget + KB Health ── */}

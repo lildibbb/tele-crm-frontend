@@ -25,6 +25,7 @@ import {
   Desktop,
   Eye,
   Robot,
+  ThumbsUp,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
@@ -68,6 +69,7 @@ const ADMIN_SUB_ITEMS = [
   { href: "/admin/queues", icon: ListBullets, label: "Queue Manager" },
   { href: "/admin/sessions", icon: Desktop, label: "Sessions" },
   { href: "/admin/features", icon: Eye, label: "Feature Visibility" },
+  { href: "/admin/ai-feedback", icon: ThumbsUp, label: "AI Feedback" },
 ];
 
 const ALL_NAV_ITEMS = [

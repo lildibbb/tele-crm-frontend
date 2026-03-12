@@ -23,35 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { authApi } from "@/lib/api/auth";
 import type { Session } from "@/lib/schemas/auth.schema";
 import { toast } from "sonner";
-
-function getDeviceType(userAgent: string | null): "mobile" | "desktop" {
-  if (!userAgent) return "desktop";
-  return /mobile|android|iphone|ipad/i.test(userAgent) ? "mobile" : "desktop";
-}
-
-/** Parse raw UA into a human-readable label like "Chrome 134 · macOS" */
-function parseUserAgent(ua: string | null): string {
-  if (!ua) return "Unknown device";
-
-  let browser = "Unknown browser";
-  const chromeMatch = ua.match(/Chrome\/([\d]+)/);
-  const firefoxMatch = ua.match(/Firefox\/([\d]+)/);
-  const safariMatch = ua.match(/Version\/([\d]+).*Safari/);
-  const edgeMatch = ua.match(/Edg\/([\d]+)/);
-  if (edgeMatch) browser = `Edge ${edgeMatch[1]}`;
-  else if (chromeMatch) browser = `Chrome ${chromeMatch[1]}`;
-  else if (firefoxMatch) browser = `Firefox ${firefoxMatch[1]}`;
-  else if (safariMatch) browser = `Safari ${safariMatch[1]}`;
-
-  let os = "Unknown OS";
-  if (/Windows NT/.test(ua)) os = "Windows";
-  else if (/Mac OS X/.test(ua)) os = "macOS";
-  else if (/Linux/.test(ua)) os = "Linux";
-  else if (/Android/.test(ua)) os = "Android";
-  else if (/iPhone|iPad/.test(ua)) os = "iOS";
-
-  return `${browser} · ${os}`;
-}
+import { parseUserAgent, formatUA } from "@/lib/utils/parseUserAgent";
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -165,9 +137,10 @@ export function SessionsTab() {
           </div>
         ) : (
           sessions.map((session, i) => {
-            const deviceType = getDeviceType(session.userAgent);
+            const parsed = parseUserAgent(session.userAgent);
+            const deviceType = parsed.deviceType;
             const isCurrent = session.id === mostRecentId;
-            const deviceLabel = parseUserAgent(session.userAgent);
+            const deviceLabel = formatUA(parsed);
             return (
               <div
                 key={session.id}
