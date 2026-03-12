@@ -202,7 +202,7 @@ export function OverviewPanel() {
       {/* ── AI Lead Score Distribution ── */}
       <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
         <div className="flex items-center justify-between mb-3">
-          <span className="font-sans font-semibold text-sm text-text-primary">
+          <span className="font-semibold text-sm text-text-primary">
             AI Lead Score Distribution
           </span>
           {isLoadingScoreStats ? (
@@ -232,7 +232,7 @@ export function OverviewPanel() {
                   {cold > 0 && <div className="bg-info transition-all" style={{ width: pct(cold) }} />}
                   {unscored > 0 && <div className="bg-elevated border border-border-subtle transition-all" style={{ width: pct(unscored) }} />}
                 </div>
-                <div className="flex justify-between mt-2 text-[10px] font-sans text-text-secondary">
+                <div className="flex justify-between mt-2 text-[10px] text-text-secondary">
                   <span className="text-[--crimson]">Hot {hot}</span>
                   <span className="text-[--gold]">Warm {warm}</span>
                   <span className="text-info">Cold {cold}</span>
@@ -259,7 +259,7 @@ export function OverviewPanel() {
             return (
               <>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-sans font-semibold text-sm text-text-primary">
+                  <span className="font-semibold text-sm text-text-primary">
                     {t(K.superadminOps.botHealth)}
                   </span>
                   <div
@@ -267,12 +267,12 @@ export function OverviewPanel() {
                       !botCheck
                         ? "bg-text-muted"
                         : isOk
-                          ? "bg-emerald-400"
-                          : "bg-amber-400"
+                          ? "bg-success"
+                          : "bg-warning"
                     }`}
                   />
                 </div>
-                <div className="space-y-1.5 text-xs font-sans">
+                <div className="space-y-1.5 text-xs">
                   {!botCheck ? (
                     <Skeleton className="h-[2px] w-full" />
                   ) : (
@@ -281,7 +281,7 @@ export function OverviewPanel() {
                         Activity
                       </span>
                       <span
-                        className={`data-mono text-right text-[10px] leading-tight ${isOk ? "text-emerald-400" : "text-amber-400"}`}
+                        className={`data-mono text-right text-[10px] leading-tight ${isOk ? "text-success" : "text-warning"}`}
                       >
                         {detail ?? "—"}
                       </span>
@@ -296,11 +296,11 @@ export function OverviewPanel() {
         {/* Queue Monitor */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-sm text-text-primary">
+            <span className="font-semibold text-sm text-text-primary">
               {t(K.superadminOps.queues)}
             </span>
             {isLoadingOps && (
-              <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-warning animate-pulse" />
             )}
           </div>
           {isLoadingOps && !queues ? (
@@ -313,7 +313,7 @@ export function OverviewPanel() {
               {queues.queues.map((q) => (
                 <div
                   key={q.name}
-                  className="flex items-center justify-between text-xs font-sans"
+                  className="flex items-center justify-between text-xs"
                 >
                   <span className="text-text-muted truncate max-w-[80px]">
                     {q.name}
@@ -326,7 +326,7 @@ export function OverviewPanel() {
                       </span>
                     </span>
                     {q.failed > 0 && (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-red-400/15 text-red-400">
+                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-danger/15 text-danger">
                         {q.failed} failed
                       </span>
                     )}
@@ -335,14 +335,14 @@ export function OverviewPanel() {
               ))}
             </div>
           ) : (
-            <span className="text-xs text-text-muted font-sans">—</span>
+            <span className="text-xs text-text-muted">—</span>
           )}
         </div>
 
         {/* Token Budget */}
         <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-sm text-text-primary">
+            <span className="font-semibold text-sm text-text-primary">
               {t(K.superadminOps.tokenBudget)}
             </span>
           </div>
@@ -350,7 +350,7 @@ export function OverviewPanel() {
             <Skeleton className="h-20 w-full" />
           ) : tokenUsage ? (
             <>
-              <div className="text-xs font-sans space-y-0.5 mb-2">
+              <div className="text-xs space-y-0.5 mb-2">
                 <div className="flex justify-between">
                   <span className="text-text-muted">
                     {t(K.superadminOps.rolling30d)}
@@ -417,75 +417,25 @@ export function OverviewPanel() {
               </ResponsiveContainer>
             </>
           ) : (
-            <span className="text-xs text-text-muted font-sans">—</span>
-          )}
-        </div>
-
-        {/* KB Health */}
-        <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
-          <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-sm text-text-primary">
-              {t(K.superadminOps.kbHealth)}
-            </span>
-          </div>
-          {isLoadingOps && !kbHealth ? (
-            <Skeleton className="h-12 w-full" />
-          ) : kbHealth ? (
-            <div className="space-y-2">
-              <div className="text-xs font-sans">
-                <div className="flex justify-between mb-1">
-                  <span className="text-text-muted">
-                    {t(K.superadminOps.embeddingCoverage)}
-                  </span>
-                  <span className="data-mono text-text-primary">
-                    {kbHealth.embeddingCoverage.embedded}/
-                    {kbHealth.embeddingCoverage.total}{" "}
-                    {t(K.superadminOps.chunksEmbedded)}
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-void/40">
-                  <div
-                    className="h-1.5 rounded-full bg-crimson"
-                    style={{
-                      width:
-                        kbHealth.embeddingCoverage.total > 0
-                          ? `${(kbHealth.embeddingCoverage.embedded / kbHealth.embeddingCoverage.total) * 100}%`
-                          : "0%",
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {Object.entries(kbHealth.byStatus).map(([status, count]) => (
-                  <span
-                    key={status}
-                    className="text-[9px] font-sans px-1.5 py-0.5 rounded bg-accent/10 text-text-muted"
-                  >
-                    {status}: {count}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <span className="text-xs text-text-muted font-sans">—</span>
+            <span className="text-xs text-text-muted">—</span>
           )}
         </div>
 
         {/* System Health */}
-        <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+        <div className="bg-elevated rounded-xl p-4 border border-border-subtle xl:col-span-2">
           <div className="flex items-center justify-between mb-3">
-            <span className="font-sans font-semibold text-sm text-text-primary flex items-center gap-1.5">
+            <span className="font-semibold text-sm text-text-primary flex items-center gap-1.5">
               <Pulse size={14} weight="duotone" className="text-info" />
               {t(K.superadmin.overview.systemHealth)}
             </span>
             {systemHealth && (
               <span
-                className={`text-[10px] font-sans font-semibold px-1.5 py-0.5 rounded-full ${
+                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                   systemHealth.status === "ok"
-                    ? "bg-emerald-400/15 text-emerald-400"
+                    ? "bg-success/15 text-success"
                     : systemHealth.status === "degraded"
-                      ? "bg-amber-400/15 text-amber-400"
-                      : "bg-red-400/15 text-red-400"
+                      ? "bg-warning/15 text-warning"
+                      : "bg-danger/15 text-danger"
                 }`}
               >
                 {systemHealth.status === "ok"
@@ -507,16 +457,16 @@ export function OverviewPanel() {
               {systemHealth.checks.map((check) => (
                 <div
                   key={check.name}
-                  className="flex items-center justify-between text-xs font-sans"
+                  className="flex items-center justify-between text-xs"
                 >
                   <div className="flex items-center gap-1.5">
                     <div
                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                         check.status === "ok"
-                          ? "bg-emerald-400"
+                          ? "bg-success"
                           : check.status === "degraded"
-                            ? "bg-amber-400"
-                            : "bg-red-400"
+                            ? "bg-warning"
+                            : "bg-danger"
                       }`}
                     />
                     <span className="text-text-secondary capitalize">
@@ -532,13 +482,13 @@ export function OverviewPanel() {
               ))}
             </div>
           ) : (
-            <span className="text-xs text-text-muted font-sans">—</span>
+            <span className="text-xs text-text-muted">—</span>
           )}
         </div>
       </div>
 
       {/* ── RAG AI Performance ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         {ragStats ? (
           <div
             className="page-panel bg-elevated rounded-xl p-5 xl:col-span-1"
@@ -687,6 +637,56 @@ export function OverviewPanel() {
             </div>
           )}
         </div>
+
+        {/* KB Health */}
+        <div className="bg-elevated rounded-xl p-4 border border-border-subtle">
+          <div className="flex items-center justify-between mb-3">
+            <span className="font-semibold text-sm text-text-primary">
+              {t(K.superadminOps.kbHealth)}
+            </span>
+          </div>
+          {isLoadingOps && !kbHealth ? (
+            <Skeleton className="h-12 w-full" />
+          ) : kbHealth ? (
+            <div className="space-y-2">
+              <div className="text-xs">
+                <div className="flex justify-between mb-1">
+                  <span className="text-text-muted">
+                    {t(K.superadminOps.embeddingCoverage)}
+                  </span>
+                  <span className="data-mono text-text-primary">
+                    {kbHealth.embeddingCoverage.embedded}/
+                    {kbHealth.embeddingCoverage.total}{" "}
+                    {t(K.superadminOps.chunksEmbedded)}
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-void/40">
+                  <div
+                    className="h-1.5 rounded-full bg-crimson"
+                    style={{
+                      width:
+                        kbHealth.embeddingCoverage.total > 0
+                          ? `${(kbHealth.embeddingCoverage.embedded / kbHealth.embeddingCoverage.total) * 100}%`
+                          : "0%",
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {Object.entries(kbHealth.byStatus).map(([status, count]) => (
+                  <span
+                    key={status}
+                    className="text-[9px] px-1.5 py-0.5 rounded bg-accent/10 text-text-muted"
+                  >
+                    {status}: {count}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <span className="text-xs text-text-muted">—</span>
+          )}
+        </div>
       </div>
 
       {/* ── Sentiment Trend ── */}
@@ -718,8 +718,8 @@ export function OverviewPanel() {
                 type="monotone"
                 dataKey="positive"
                 stackId="1"
-                stroke="#22c55e"
-                fill="#22c55e"
+                stroke="var(--color-success)"
+                fill="var(--color-success)"
                 fillOpacity={0.6}
                 strokeWidth={1}
               />
@@ -727,8 +727,8 @@ export function OverviewPanel() {
                 type="monotone"
                 dataKey="neutral"
                 stackId="1"
-                stroke="#94a3b8"
-                fill="#94a3b8"
+                stroke="var(--color-text-muted)"
+                fill="var(--color-text-muted)"
                 fillOpacity={0.4}
                 strokeWidth={1}
               />
@@ -736,8 +736,8 @@ export function OverviewPanel() {
                 type="monotone"
                 dataKey="negative"
                 stackId="1"
-                stroke="#ef4444"
-                fill="#ef4444"
+                stroke="var(--color-crimson)"
+                fill="var(--color-crimson)"
                 fillOpacity={0.6}
                 strokeWidth={1}
               />
