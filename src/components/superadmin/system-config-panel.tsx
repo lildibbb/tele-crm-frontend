@@ -41,6 +41,7 @@ type FieldDef = {
 export const FIELD_DEFAULTS: Record<string, string> = {
   "bot.active": "true",
   "bot.hydeEnabled": "true",
+  "bot.hydeMinWords": "6",
 };
 
 export const CONFIG_SECTIONS: {
@@ -147,6 +148,114 @@ export const CONFIG_SECTIONS: {
         description: "Shown when an error occurs",
         type: "textarea",
       },
+      {
+        key: "bot.errorMessageBm",
+        label: "Error Message — BM",
+        description: "Error message in Bahasa Malaysia",
+        type: "textarea",
+      },
+      {
+        key: "bot.errorMessageManglish",
+        label: "Error Message — Manglish",
+        description: "Error message in Manglish",
+        type: "textarea",
+      },
+      {
+        key: "bot.errorMessageEn",
+        label: "Error Message — EN",
+        description: "Error message in English",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageRegisterBm",
+        label: "Follow-Up Register — BM",
+        description: "Registration follow-up message in Bahasa Malaysia",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageRegisterManglish",
+        label: "Follow-Up Register — Manglish",
+        description: "Registration follow-up message in Manglish",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageRegisterEn",
+        label: "Follow-Up Register — EN",
+        description: "Registration follow-up message in English",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageDepositBm",
+        label: "Follow-Up Deposit — BM",
+        description: "Deposit follow-up message in Bahasa Malaysia",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageDepositManglish",
+        label: "Follow-Up Deposit — Manglish",
+        description: "Deposit follow-up message in Manglish",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageDepositEn",
+        label: "Follow-Up Deposit — EN",
+        description: "Deposit follow-up message in English",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageVerificationBm",
+        label: "Follow-Up Verification — BM",
+        description: "Verification follow-up message in Bahasa Malaysia",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageVerificationManglish",
+        label: "Follow-Up Verification — Manglish",
+        description: "Verification follow-up message in Manglish",
+        type: "textarea",
+      },
+      {
+        key: "bot.followUpMessageVerificationEn",
+        label: "Follow-Up Verification — EN",
+        description: "Verification follow-up message in English",
+        type: "textarea",
+      },
+      {
+        key: "bot.reply.fileReceivedBm",
+        label: "File Received Reply — BM",
+        description: "Sent on file receipt in Bahasa Malaysia",
+        type: "textarea",
+      },
+      {
+        key: "bot.reply.fileReceivedManglish",
+        label: "File Received Reply — Manglish",
+        description: "Sent on file receipt in Manglish",
+        type: "textarea",
+      },
+      {
+        key: "bot.reply.fileReceivedEn",
+        label: "File Received Reply — EN",
+        description: "Sent on file receipt in English",
+        type: "textarea",
+      },
+      {
+        key: "bot.reply.fileProcessingBm",
+        label: "File Processing Reply — BM",
+        description: "Sent while processing file in Bahasa Malaysia",
+        type: "textarea",
+      },
+      {
+        key: "bot.reply.fileProcessingManglish",
+        label: "File Processing Reply — Manglish",
+        description: "Sent while processing file in Manglish",
+        type: "textarea",
+      },
+      {
+        key: "bot.reply.fileProcessingEn",
+        label: "File Processing Reply — EN",
+        description: "Sent while processing file in English",
+        type: "textarea",
+      },
     ],
   },
   {
@@ -221,6 +330,12 @@ export const CONFIG_SECTIONS: {
         label: "HyDE Enabled",
         description: "Hypothetical Document Embedding for better retrieval",
         type: "toggle",
+      },
+      {
+        key: "bot.hydeMinWords",
+        label: "HyDE Min Words",
+        description: "Minimum word count to trigger HyDE expansion (default: 6)",
+        type: "number",
       },
       {
         key: "ai.maxTokens",

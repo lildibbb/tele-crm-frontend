@@ -33,8 +33,6 @@ import { useT } from "@/i18n";
 import K from "@/i18n/keys";
 import { GoogleDriveConnectionCard } from "@/components/google/GoogleDriveConnectionCard";
 import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
-import { useAuthStore } from "@/store/authStore";
-import { UserRole } from "@/types/enums";
 
 // ── Google Product Icons ────────────────────────────────────────────────────────
 
@@ -689,8 +687,6 @@ export function IntegrationsTab() {
   const [saveErr, setSaveErr] = useState<string | null>(null);
 
   const visibility = useFeatureVisibility();
-  const { user } = useAuthStore();
-  const isSuperAdmin = user?.role === UserRole.SUPERADMIN;
 
   const loadCredentials = async () => {
     setLoadingCreds(true);
@@ -807,7 +803,7 @@ export function IntegrationsTab() {
       )}
 
       {/* ── Google Sheets card */}
-      {(isSuperAdmin || visibility.googleSheets) && (
+      {visibility.googleSheets && (
       <IntegrationCard
         icon={<GoogleSheetsIcon className="w-[22px] h-[22px]" />}
         title={t(K.integrations.sheets.name)}
@@ -838,7 +834,7 @@ export function IntegrationsTab() {
       )}
 
       {/* ── Google Drive card */}
-      {(isSuperAdmin || visibility.googleDriveServiceAccount) && (
+      {visibility.googleDriveServiceAccount && (
       <IntegrationCard
         icon={<GoogleDriveIcon className="w-[22px] h-[22px]" />}
         title={t(K.integrations.drive.name)}
@@ -869,7 +865,7 @@ export function IntegrationsTab() {
       )}
 
       {/* ── Google Drive OAuth2 Connection (Owner-only) */}
-      {(isSuperAdmin || visibility.googleDriveOAuth2) && (
+      {visibility.googleDriveOAuth2 && (
         <GoogleDriveConnectionCard />
       )}
 
