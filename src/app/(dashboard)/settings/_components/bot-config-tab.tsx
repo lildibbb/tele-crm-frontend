@@ -72,9 +72,8 @@ export function BotConfigTab() {
       };
       // Only persist groupId if non-empty (it is optional)
       if (draft.groupId.trim()) updates["bot.groupId"] = draft.groupId.trim();
-      // Only persist registrationUrl if non-empty (it is optional)
-      if (draft.registrationUrl.trim())
-        updates["bot.registrationUrl"] = draft.registrationUrl.trim();
+      // Always persist registrationUrl — empty string clears the key (lets admin remove the URL)
+      updates["bot.registrationUrl"] = draft.registrationUrl.trim();
       // Only persist follow-up toggle when the feature is visible for this user
       if (showFollowUps) updates["followUp.enabled"] = String(draft.followUpEnabled);
 

@@ -154,7 +154,8 @@ export default function MobileBotConfig() {
         "bot.active": String(draft.active),
       };
       if (draft.groupId.trim()) updates["bot.groupId"] = draft.groupId.trim();
-      if (draft.registrationUrl.trim()) updates["bot.registrationUrl"] = draft.registrationUrl.trim();
+      // Always persist registrationUrl — empty string clears the key (lets admin remove the URL)
+      updates["bot.registrationUrl"] = draft.registrationUrl.trim();
       if (showFollowUps) updates["followUp.enabled"] = String(draft.followUpEnabled);
 
       await upsertMany.mutateAsync(updates);
