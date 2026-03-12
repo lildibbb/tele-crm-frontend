@@ -12,6 +12,7 @@ import {
   FlowArrow,
   FloppyDisk,
   ToggleLeft,
+  Link,
 } from "@phosphor-icons/react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -122,6 +123,7 @@ export default function MobileBotConfig() {
     forwardEnabled: true,
     active: true,
     followUpEnabled: true,
+    registrationUrl: "",
   });
   const [initialised, setInitialised] = useState(false);
 
@@ -136,6 +138,7 @@ export default function MobileBotConfig() {
       forwardEnabled: entries["bot.forwardEnabled"] !== "false",
       active: entries["bot.active"] !== "false",
       followUpEnabled: entries["followUp.enabled"] !== "false",
+      registrationUrl: entries["bot.registrationUrl"] ?? "",
     });
     setInitialised(true);
   }, [entries, isLoading, initialised]);
@@ -151,6 +154,8 @@ export default function MobileBotConfig() {
         "bot.active": String(draft.active),
       };
       if (draft.groupId.trim()) updates["bot.groupId"] = draft.groupId.trim();
+      // Always persist registrationUrl — empty string clears the key (lets admin remove the URL)
+      updates["bot.registrationUrl"] = draft.registrationUrl.trim();
       if (showFollowUps) updates["followUp.enabled"] = String(draft.followUpEnabled);
 
       await upsertMany.mutateAsync(updates);
@@ -232,6 +237,19 @@ export default function MobileBotConfig() {
                     value={draft.groupId}
                     onChange={(e) => setDraft({ ...draft, groupId: e.target.value })}
                     placeholder="-100123456789"
+                    className="h-10 text-[14px] font-mono"
+                  />
+                </FieldRow>
+                <div className="h-px bg-border-subtle mx-4" />
+                <FieldRow
+                  icon={<Link size={15} className="text-text-secondary" />}
+                  label="Broker Registration URL"
+                  hint="External link for leads to register at the broker (Step 1 of onboarding)"
+                >
+                  <Input
+                    value={draft.registrationUrl}
+                    onChange={(e) => setDraft({ ...draft, registrationUrl: e.target.value })}
+                    placeholder="https://broker.com/register?ref=..."
                     className="h-10 text-[14px] font-mono"
                   />
                 </FieldRow>

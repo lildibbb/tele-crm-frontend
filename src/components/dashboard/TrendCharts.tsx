@@ -292,7 +292,7 @@ export const TrendCharts = React.memo(function TrendCharts({
                     fill: "rgba(255,255,255,0.55)",
                     fontFamily: "var(--font-jetbrains-mono,monospace)",
                   }}
-                  formatter={(v: number) => (v > 0 ? fmtTick(v) : "")}
+                  formatter={(v: unknown) => (typeof v === 'number' && v > 0 ? fmtTick(v) : "")}
                 />
               </Bar>
             </BarChart>

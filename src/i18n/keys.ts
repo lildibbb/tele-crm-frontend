@@ -480,6 +480,9 @@ export const K = {
     autoFollowUpsHint: "botConfig.autoFollowUpsHint",
     forwardMessages: "botConfig.forwardMessages",
     forwardMessagesHint: "botConfig.forwardMessagesHint",
+    registrationUrl: "botConfig.registrationUrl",
+    registrationUrlPlaceholder: "botConfig.registrationUrlPlaceholder",
+    registrationUrlHint: "botConfig.registrationUrlHint",
   },
 
   /* ── Broadcasts ──────────────────────────────────── */

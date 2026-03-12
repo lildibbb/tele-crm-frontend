@@ -439,6 +439,10 @@ const ms: Record<string, string> = {
   "botConfig.forwardMessages": "Majukan Mesej kepada Admin",
   "botConfig.forwardMessagesHint":
     "Majukan setiap mesej lead kepada ID Telegram admin untuk pemantauan",
+  "botConfig.registrationUrl": "URL Pendaftaran Broker",
+  "botConfig.registrationUrlPlaceholder": "https://broker.com/register?ref=...",
+  "botConfig.registrationUrlHint":
+    "Pautan luaran untuk lead mendaftar akaun broker (Langkah 1 onboarding). Ditetapkan oleh admin, dibaca oleh bot AI.",
 
   /* ── Status badges ────────────────────────────────── */
   "status.new": "Baru",
