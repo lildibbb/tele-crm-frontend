@@ -81,7 +81,7 @@ export function SessionsTab() {
   return (
     <div className="space-y-5 animate-in-up">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <div>
           <h2 className="text-xl font-bold text-text-primary">
             Active Sessions
@@ -97,7 +97,7 @@ export function SessionsTab() {
             size="sm"
             onClick={revokeAll}
             disabled={revoking}
-            className="gap-1.5 text-danger border-danger/20 bg-danger/10 hover:bg-danger/20 hover:text-danger"
+            className="gap-1.5 text-danger border-danger/20 bg-danger/10 hover:bg-danger/20 hover:text-danger w-full sm:w-auto"
           >
             <LogOut className="h-3.5 w-3.5" /> Revoke All Sessions
           </Button>
@@ -137,43 +137,53 @@ export function SessionsTab() {
             return (
               <div
                 key={session.id}
-                className="bg-elevated rounded-xl p-5 transition-all animate-in-up"
+                className="bg-elevated rounded-xl p-4 transition-all animate-in-up"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-overlay">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-overlay mt-0.5">
                     {deviceType === "mobile" ? (
-                      <Smartphone className="h-5 w-5 text-text-secondary" />
+                      <Smartphone className="h-4 w-4 text-text-secondary" />
                     ) : (
-                      <Monitor className="h-5 w-5 text-text-secondary" />
+                      <Monitor className="h-4 w-4 text-text-secondary" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-sans font-medium text-[13px] text-text-primary mb-1 truncate">
+                    <p className="font-sans font-medium text-[13px] text-text-primary mb-1.5 truncate leading-snug">
                       {session.userAgent ?? "Unknown device"}
                     </p>
-                    <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                       {session.ipAddress && (
                         <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
-                          <Shield className="h-3 w-3 text-text-muted" />
+                          <Shield className="h-3 w-3 text-text-muted flex-shrink-0" />
                           <span className="data-mono">{session.ipAddress}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
-                        <Globe className="h-3 w-3 text-text-muted" />
+                        <Globe className="h-3 w-3 text-text-muted flex-shrink-0" />
                         {new Date(session.createdAt).toLocaleDateString()}
                       </div>
                       <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
-                        <Clock className="h-3 w-3 text-text-muted" />
+                        <Clock className="h-3 w-3 text-text-muted flex-shrink-0" />
                         {formatRelativeTime(session.lastActiveAt)}
                       </div>
                     </div>
+                    {/* Revoke button — full width on mobile, stays below metadata */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRevokeId(session.id)}
+                      className="gap-1.5 text-danger border-danger/20 bg-danger/10 hover:bg-danger/20 hover:text-danger mt-3 w-full sm:hidden"
+                    >
+                      <LogOut className="h-3.5 w-3.5" /> Revoke
+                    </Button>
                   </div>
+                  {/* Revoke button — inline on desktop */}
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setRevokeId(session.id)}
-                    className="gap-1.5 text-danger border-danger/20 bg-danger/10 hover:bg-danger/20 hover:text-danger flex-shrink-0"
+                    className="gap-1.5 text-danger border-danger/20 bg-danger/10 hover:bg-danger/20 hover:text-danger flex-shrink-0 hidden sm:flex"
                   >
                     <LogOut className="h-3.5 w-3.5" /> Revoke
                   </Button>

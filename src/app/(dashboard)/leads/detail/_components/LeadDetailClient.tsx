@@ -315,12 +315,14 @@ export default function LeadDetailClient() {
 
   // Sticky-scroll: jump to bottom on first load; on poll updates only scroll if
   // the user is already near the bottom (within 100px) so reading history is uninterrupted.
+  // Uses scrollTop on the container directly — scrollIntoView() would bubble up
+  // the scroll chain and scroll the entire page, not just the chat card.
   useEffect(() => {
     const container = chatContainerRef.current;
     if (!container || messages.length === 0) return;
 
     if (isInitialMessagesLoad.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+      container.scrollTop = container.scrollHeight;
       isInitialMessagesLoad.current = false;
       return;
     }
@@ -328,7 +330,7 @@ export default function LeadDetailClient() {
     const distanceFromBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight;
     if (distanceFromBottom <= 100) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
     }
   }, [messages]);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
