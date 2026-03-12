@@ -430,6 +430,10 @@
   "botConfig.forwardMessages": "Forward Messages to Admin",
   "botConfig.forwardMessagesHint":
     "Forward every lead message to the admin Telegram ID for monitoring",
+  "botConfig.registrationUrl": "Broker Registration URL",
+  "botConfig.registrationUrlPlaceholder": "https://broker.com/register?ref=...",
+  "botConfig.registrationUrlHint":
+    "The external link leads use to register at the broker (Step 1 of onboarding). Set by admin, read by the AI bot.",
 
   /* ── Broadcasts ──────────────────────────────────── */
   "broadcast.title": "Broadcasts",

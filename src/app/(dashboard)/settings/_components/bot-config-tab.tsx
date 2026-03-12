@@ -39,6 +39,7 @@ export function BotConfigTab() {
     forwardEnabled: true,
     active: true,
     followUpEnabled: true,
+    registrationUrl: "",
   });
   const [initialised, setInitialised] = useState(false);
 
@@ -54,6 +55,7 @@ export function BotConfigTab() {
       forwardEnabled: entries["bot.forwardEnabled"] !== "false",
       active: entries["bot.active"] !== "false",
       followUpEnabled: entries["followUp.enabled"] !== "false",
+      registrationUrl: entries["bot.registrationUrl"] ?? "",
     });
     setInitialised(true);
   }, [entries, isLoading, initialised]);
@@ -70,6 +72,9 @@ export function BotConfigTab() {
       };
       // Only persist groupId if non-empty (it is optional)
       if (draft.groupId.trim()) updates["bot.groupId"] = draft.groupId.trim();
+      // Only persist registrationUrl if non-empty (it is optional)
+      if (draft.registrationUrl.trim())
+        updates["bot.registrationUrl"] = draft.registrationUrl.trim();
       // Only persist follow-up toggle when the feature is visible for this user
       if (showFollowUps) updates["followUp.enabled"] = String(draft.followUpEnabled);
 
@@ -151,6 +156,22 @@ export function BotConfigTab() {
               />
               <p className="text-xs text-text-muted mt-1 font-sans">
                 {t(K.botConfig.groupIdHint)}
+              </p>
+            </div>
+
+            {/* Broker Registration URL */}
+            <div className="space-y-1.5">
+              <Label htmlFor="registration-url">{t(K.botConfig.registrationUrl)}</Label>
+              <Input
+                id="registration-url"
+                value={draft.registrationUrl}
+                onChange={(e) => setDraft({ ...draft, registrationUrl: e.target.value })}
+                placeholder={t(K.botConfig.registrationUrlPlaceholder)}
+                className="text-sm font-mono"
+                disabled={isLoading}
+              />
+              <p className="text-xs text-text-muted mt-1 font-sans">
+                {t(K.botConfig.registrationUrlHint)}
               </p>
             </div>
 
