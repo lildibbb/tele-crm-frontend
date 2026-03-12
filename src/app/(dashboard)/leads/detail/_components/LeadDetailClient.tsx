@@ -295,6 +295,15 @@ export default function LeadDetailClient() {
   const isMobile = useIsMobile();
 
   const [handover, setHandover] = useState(lead?.handoverMode ?? false);
+
+  // Sync local handover state whenever server data changes (e.g. toggled from
+  // the Intelligence page, or after query invalidation). Without this, the
+  // useState initializer only runs once and the detail page shows stale state.
+  useEffect(() => {
+    if (lead?.handoverMode !== undefined) {
+      setHandover(lead.handoverMode);
+    }
+  }, [lead?.handoverMode]);
   const [replyText, setReplyText] = useState("");
   const [messages, setMessages] = useState<ReturnType<typeof mapToMessage>[]>(
     [],
