@@ -1,9 +1,15 @@
 "use client";
 import { FeatureVisibilityPanel } from "@/components/superadmin/feature-visibility-panel";
 import { useT, K } from "@/i18n";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import MobileAdminFeatures from "@/components/mobile/MobileAdminFeatures";
 
 export default function AdminFeaturesPage() {
   const t = useT();
+  const isMobile = useIsMobile();
+
+  if (isMobile) return <MobileAdminFeatures />;
+
   return (
     <div className="space-y-6">
       <div>
