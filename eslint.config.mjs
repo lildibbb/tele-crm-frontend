@@ -15,6 +15,14 @@ const eslintConfig = defineConfig([
     // Agent skill files — not source code, not linted:
     ".agents/**",
   ]),
+  // E2E test files — disable React-specific rules (these are not React components)
+  {
+    files: ["tests/e2e/**/*.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
   // eslint-plugin-react-hooks v7 added React Compiler constraint rules to its
   // recommended config (refs, purity, set-state-in-effect, static-components, etc.).
   // These are set to "error" by default, but React Compiler is NOT enabled in

@@ -318,7 +318,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6 animate-in-up">
+    <div data-testid="profile-page" className="space-y-6 animate-in-up">
       {/* Page header */}
       <div>
         <h1 className="font-display font-bold text-xl text-text-primary">
@@ -728,7 +728,9 @@ export default function ProfilePage() {
 
           {/* Sessions tab */}
           <TabsContent value="sessions">
-            <SessionsTab />
+            <div data-testid="profile-sessions-card">
+              <SessionsTab />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

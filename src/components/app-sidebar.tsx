@@ -426,6 +426,7 @@ export function AppSidebar() {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
+                  data-testid="sidebar-user-menu-trigger"
                   className="h-auto py-2 px-2.5 rounded-xl cursor-pointer transition-colors duration-150 hover:!bg-elevated data-[state=open]:!bg-elevated group/user"
                 >
                   {/* Avatar */}
@@ -494,6 +495,7 @@ export function AppSidebar() {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
+                  data-testid="sidebar-user-menu-logout"
                   className="gap-2 cursor-pointer rounded-lg mx-1 mb-1 text-danger focus:text-danger focus:bg-danger/10"
                   onClick={() => logout()}
                 >
