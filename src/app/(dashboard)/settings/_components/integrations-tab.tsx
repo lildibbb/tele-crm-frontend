@@ -751,7 +751,7 @@ export function IntegrationsTab() {
   };
 
   return (
-    <div className="space-y-6 animate-in-up">
+    <div data-testid="integrations-tab" className="space-y-6 animate-in-up">
       {/* ── Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>

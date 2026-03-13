@@ -507,13 +507,14 @@ export default function LeadDetailClient() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-5 animate-in-up">
+      <div data-testid="lead-detail-page" className="space-y-5 animate-in-up">
         {/* ── Breadcrumb ── */}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
             asChild
+            data-testid="lead-detail-back-btn"
             className="gap-1.5 text-text-secondary hover:text-text-primary h-8 px-2"
           >
             <Link href="/leads">
@@ -1034,6 +1035,7 @@ export default function LeadDetailClient() {
                   </div>
                 </div>
                 <Switch
+                  data-testid="lead-detail-handover-toggle"
                   checked={handover}
                   onCheckedChange={(next) => {
                     setHandover(next);
@@ -1051,6 +1053,7 @@ export default function LeadDetailClient() {
             {/* Messages */}
             <div
               ref={chatContainerRef}
+              data-testid="lead-detail-interaction-history"
               className="flex-1 min-h-0 overflow-y-auto"
               style={{ scrollbarWidth: "thin" }}
             >

@@ -294,7 +294,7 @@ export default function LeadsPage() {
   return (
     <TooltipProvider>
       <>
-        <div className="space-y-4 animate-in-up">
+        <div className="space-y-4 animate-in-up" data-testid="leads-page">
           {/* ── Page Header ── */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
@@ -311,6 +311,7 @@ export default function LeadsPage() {
                 <TooltipTrigger asChild>
                   <div
                     role="button"
+                    data-testid="leads-global-handover-toggle"
                     tabIndex={0}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -378,6 +379,7 @@ export default function LeadsPage() {
               <Button
                 variant="outline"
                 size="sm"
+                data-testid="leads-import-button"
                 onClick={() => setShowImportModal(true)}
                 className="h-8 gap-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-elevated border-border-default"
               >
@@ -386,6 +388,7 @@ export default function LeadsPage() {
               <Button
                 variant="outline"
                 size="sm"
+                data-testid="leads-export-button"
                 onClick={() => void handleExport()}
                 disabled={exportStatus === "loading"}
                 className="h-8 gap-1.5 text-xs text-text-secondary hover:text-text-primary hover:bg-elevated border-border-default"
@@ -417,6 +420,7 @@ export default function LeadsPage() {
                 <button
                   key={f.key}
                   type="button"
+                  data-testid={`leads-status-${f.key}`}
                   role="tab"
                   aria-selected={statusFilter === f.key}
                   onClick={() => handleStatusChange(f.key)}
@@ -440,6 +444,7 @@ export default function LeadsPage() {
                   value={searchRaw}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder={t("leads.search")}
+                  data-testid="leads-search"
                   className="pl-8 pr-10 h-8 w-full bg-background hover:bg-elevated border-border-default text-[11.5px] shadow-sm transition-all placeholder:text-text-muted rounded-[10px] focus-visible:bg-background focus-visible:border-crimson/40 focus-visible:ring-[2px] focus-visible:ring-crimson/10 font-sans"
                 />
                 <div className="absolute inset-y-0 right-1.5 flex items-center justify-center">
@@ -449,6 +454,7 @@ export default function LeadsPage() {
                       variant="ghost"
                       size="icon"
                       onClick={clearSearch}
+                      data-testid="leads-search-clear"
                       className="h-5 w-5 text-text-muted hover:text-text-primary hover:bg-border-subtle rounded flex items-center justify-center transition-colors"
                     >
                       <X className="h-3 w-3" />
@@ -477,14 +483,14 @@ export default function LeadsPage() {
           </div>
         </div>
 
-        <Dialog
-          open={showImportModal}
-          onOpenChange={(open) => {
-            setShowImportModal(open);
-            if (!open) resetImportModal();
-          }}
-        >
-          <DialogContent className="max-w-lg">
+          <Dialog
+            open={showImportModal}
+            onOpenChange={(open) => {
+              setShowImportModal(open);
+              if (!open) resetImportModal();
+            }}
+          >
+            <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="font-bold text-xl text-text-primary">
                 {t("leads.import.title")}

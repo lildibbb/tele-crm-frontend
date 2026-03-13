@@ -236,6 +236,7 @@ export default function LoginPage() {
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-3"
+                  data-testid="login-form"
                 >
                   {/* Email */}
                   <FormField
@@ -248,6 +249,7 @@ export default function LoginPage() {
                             type="email"
                             autoComplete="email"
                             placeholder="Work email"
+                            data-testid="login-email"
                             {...field}
                             className="h-11 text-sm bg-white dark:bg-base/60 border-border-default/80 focus-visible:ring-crimson/40 focus-visible:border-crimson transition-colors shadow-none"
                           />
@@ -269,6 +271,7 @@ export default function LoginPage() {
                               type={showPass ? "text" : "password"}
                               autoComplete="current-password"
                               placeholder="Password"
+                              data-testid="login-password"
                               className="h-11 pr-10 text-sm bg-white dark:bg-base/60 border-border-default/80 focus-visible:ring-crimson/40 focus-visible:border-crimson transition-colors shadow-none"
                               {...field}
                             />
@@ -299,6 +302,7 @@ export default function LoginPage() {
                     <a
                       href="/forgot-password"
                       className="text-[12px] text-crimson hover:text-crimson-hover font-medium transition-colors"
+                      data-testid="login-forgot-password"
                     >
                       Forgot password?
                     </a>
@@ -308,6 +312,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
+                    data-testid="login-submit"
                     className="w-full h-11 mt-1 font-semibold tracking-wide transition-all hover:shadow-[0_0_24px_rgba(196,35,45,0.25)] hover:-translate-y-px active:translate-y-0 relative overflow-hidden group"
                     size="lg"
                   >

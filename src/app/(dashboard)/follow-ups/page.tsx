@@ -210,7 +210,7 @@ export default function FollowUpsPage() {
   const countFailed = failedJobs.length;
 
   return (
-    <div className="space-y-6 animate-in-up">
+    <div className="space-y-6 animate-in-up" data-testid="followups-page">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
@@ -224,6 +224,7 @@ export default function FollowUpsPage() {
         <Button
           variant="outline"
           size="sm"
+          data-testid="followups-refresh"
           onClick={() =>
             tab === "scheduled"
               ? void load(page * PAGE_SIZE)
@@ -291,6 +292,7 @@ export default function FollowUpsPage() {
           <button
             key={tabKey}
             onClick={() => setTab(tabKey)}
+            data-testid={`followups-tab-${tabKey}`}
             className={`relative px-5 py-1.5 rounded-lg text-xs font-sans font-medium transition-all ${
               tab === tabKey
                 ? "bg-card text-text-primary shadow-sm border border-border-subtle"
@@ -319,7 +321,10 @@ export default function FollowUpsPage() {
 
       {/* ── Scheduled tab ── */}
       {tab === "scheduled" && (
-        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]">
+        <div
+          className="bg-card rounded-xl border border-border-subtle overflow-hidden shadow-[var(--shadow-card)]"
+          data-testid="followups-scheduled-panel"
+        >
           {/* Table header */}
           <div className="hidden sm:grid grid-cols-[minmax(0,1.5fr)_minmax(0,1.5fr)_100px_minmax(0,1fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle shadow-sm">
             {[
@@ -454,7 +459,10 @@ export default function FollowUpsPage() {
 
       {/* ── Failed tab ── */}
       {tab === "failed" && (
-        <div className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden">
+        <div
+          className="bg-elevated rounded-2xl border border-border-subtle overflow-hidden"
+          data-testid="followups-failed-panel"
+        >
           {/* Table header */}
           <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)_72px] gap-4 px-5 py-2.5 bg-card border-b border-border-subtle shadow-sm">
             {[t(K.followUp.failedJob), t(K.followUp.failedError), ""].map(

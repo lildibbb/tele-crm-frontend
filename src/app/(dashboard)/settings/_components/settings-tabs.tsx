@@ -127,6 +127,7 @@ function SettingsTabsInner() {
       >
         {/* Pill segment tab bar */}
         <TabsList
+          data-testid="settings-tabs-list"
           className="bg-elevated rounded-xl p-1 w-full sm:w-auto overflow-x-auto scrollbar-none flex-nowrap"
           activeClassName="bg-card rounded-lg shadow-sm"
         >
@@ -134,6 +135,7 @@ function SettingsTabsInner() {
             <TabsTrigger
               key={tab.value}
               value={tab.value}
+              data-testid={`settings-tab-${tab.value}`}
               className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-text-secondary data-[state=active]:text-crimson whitespace-nowrap rounded-lg transition-colors"
             >
               <tab.icon size={15} strokeWidth={1.8} />

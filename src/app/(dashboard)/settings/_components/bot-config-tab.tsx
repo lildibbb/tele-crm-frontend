@@ -89,7 +89,7 @@ export function BotConfigTab() {
   }
 
   return (
-    <div className="space-y-5 animate-in-up">
+    <div data-testid="bot-config-tab" className="space-y-5 animate-in-up">
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
@@ -100,7 +100,7 @@ export function BotConfigTab() {
             {t(K.botConfig.subtitle)}
           </p>
         </div>
-        <Button onClick={() => void handleSave()} disabled={isSaving || isLoading} className="gap-2">
+        <Button data-testid="bot-config-save-btn" onClick={() => void handleSave()} disabled={isSaving || isLoading} className="gap-2">
           <Save className="h-4 w-4" />
           {isSaving ? t(K.botConfig.saving) : t(K.botConfig.saveChanges)}
         </Button>
@@ -118,6 +118,7 @@ export function BotConfigTab() {
             <div className="space-y-1.5">
               <Label htmlFor="bot-name">{t(K.botConfig.botName)}</Label>
               <Input
+                data-testid="bot-config-bot-name-input"
                 id="bot-name"
                 value={draft.name}
                 onChange={(e) => setDraft({ ...draft, name: e.target.value })}
@@ -129,6 +130,7 @@ export function BotConfigTab() {
             <div className="space-y-1.5">
               <Label htmlFor="bot-greeting">{t(K.botConfig.greeting)}</Label>
               <Textarea
+                data-testid="bot-config-greeting-input"
                 id="bot-greeting"
                 value={draft.greeting}
                 onChange={(e) => setDraft({ ...draft, greeting: e.target.value })}
@@ -162,6 +164,7 @@ export function BotConfigTab() {
             <div className="space-y-1.5">
               <Label htmlFor="registration-url">{t(K.botConfig.registrationUrl)}</Label>
               <Input
+                data-testid="bot-config-registration-url-input"
                 id="registration-url"
                 value={draft.registrationUrl}
                 onChange={(e) => setDraft({ ...draft, registrationUrl: e.target.value })}
@@ -198,6 +201,7 @@ export function BotConfigTab() {
               {t(K.botConfig.aiBehavior)}
             </h3>
             <Switch
+              data-testid="bot-config-active-toggle"
               checked={draft.active}
               onCheckedChange={(c) => setDraft({ ...draft, active: c })}
               disabled={isLoading}
@@ -207,6 +211,7 @@ export function BotConfigTab() {
             <div className="space-y-1.5">
               <Label>{t(K.botConfig.systemPrompt)}</Label>
               <Textarea
+                data-testid="bot-config-system-prompt-input"
                 value={draft.systemPrompt}
                 onChange={(e) => setDraft({ ...draft, systemPrompt: e.target.value })}
                 placeholder={t(K.botConfig.systemPromptPlaceholder)}

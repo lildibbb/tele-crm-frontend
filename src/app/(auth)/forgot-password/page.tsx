@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-svh bg-void flex items-center justify-center p-6">
+    <div data-testid="forgot-password-page" className="min-h-svh bg-void flex items-center justify-center p-6">
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
@@ -123,6 +123,7 @@ export default function ForgotPasswordPage() {
           {/* Back link */}
           <Link
             href="/login"
+            data-testid="forgot-password-back"
             className="inline-flex items-center gap-1.5 text-text-secondary hover:text-text-primary text-sm font-sans transition-colors mb-6"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
@@ -174,6 +175,7 @@ export default function ForgotPasswordPage() {
                 <AnimatePresence>
                   {error && (
                     <motion.div
+                      data-testid="forgot-password-error"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -187,6 +189,7 @@ export default function ForgotPasswordPage() {
                 {/* Actions */}
                 <div className="space-y-3">
                   <Button
+                    data-testid="forgot-password-continue"
                     onClick={handleContinue}
                     className="w-full h-12 relative overflow-hidden group"
                     size="lg"
@@ -197,6 +200,7 @@ export default function ForgotPasswordPage() {
                   </Button>
                   
                   <Button
+                    data-testid="forgot-password-resend"
                     variant="ghost"
                     onClick={handleResend}
                     disabled={isLoading}
@@ -282,6 +286,7 @@ export default function ForgotPasswordPage() {
                           </FormLabel>
                           <FormControl>
                             <Input
+                              data-testid="forgot-password-email"
                               type="email"
                               placeholder="owner@titanjournal.com"
                               className="h-11 focus-visible:ring-crimson/50 focus-visible:border-crimson"
@@ -294,6 +299,7 @@ export default function ForgotPasswordPage() {
                     />
 
                     <Button
+                      data-testid="forgot-password-submit"
                       type="submit"
                       disabled={isLoading}
                       className="w-full h-12 mt-2 relative overflow-hidden group"

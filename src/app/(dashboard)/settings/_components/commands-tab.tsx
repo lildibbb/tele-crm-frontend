@@ -167,6 +167,7 @@ function SortableCommandRow({
 
   return (
     <motion.div
+      data-testid={`command-row-${cmd.id}`}
       ref={setNodeRef}
       style={style}
       layout
@@ -515,7 +516,7 @@ export function CommandsTab() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-5 animate-in-up relative">
+    <div data-testid="commands-tab" className="space-y-5 animate-in-up relative">
       {!commandMenuEnabled && (
         <FeatureDisabledBanner feature="Command Menus" />
       )}
@@ -527,13 +528,13 @@ export function CommandsTab() {
             Manage bot commands, reorder by dragging, and configure visibility
           </p>
         </div>
-        <Button onClick={openAdd} size="sm" className="gap-1.5 flex-shrink-0">
+        <Button data-testid="commands-add-btn" onClick={openAdd} size="sm" className="gap-1.5 flex-shrink-0">
           <Plus className="h-4 w-4" /> Add Command
         </Button>
       </div>
 
       {/* Column header */}
-      <div className="rounded-xl overflow-hidden">
+      <div data-testid="commands-list" className="rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <div className="grid grid-cols-[40px_32px_140px_1fr_80px_80px_80px_60px] xl:grid-cols-[40px_32px_140px_1fr_200px_80px_80px_80px_60px] gap-4 px-5 py-3 bg-elevated border-b border-border-subtle min-w-[800px]">
             <span className="text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider text-center" />

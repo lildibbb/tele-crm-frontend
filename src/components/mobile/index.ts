@@ -94,3 +94,6 @@ export { default as MobileIntegrations } from "./MobileIntegrations";
 export type { MobileIntegrationsProps } from "./MobileIntegrations";
 
 export { default as MobileBotConfig } from "./MobileBotConfig";
+
+export { default as MobileAdminAiFeedback } from "./MobileAdminAiFeedback";
+export { default as MobileAdminFeatures } from "./MobileAdminFeatures";

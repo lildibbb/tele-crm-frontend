@@ -118,17 +118,19 @@ function SetSecretModal({
                 required
                 autoComplete="new-password"
               />
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShow((s) => !s)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-7 w-7 text-text-muted hover:text-text-primary"
               >
                 {show ? <EyeSlash size={14} /> : <Eye size={14} />}
-              </button>
+              </Button>
             </div>
           </div>
           {err && <p className="text-xs text-danger">{err}</p>}
-          <div className="p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-xs text-amber-300">
+          <div className="p-3 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning">
             {t(K.superadmin.secrets.warningText)}
           </div>
           <DialogFooter>
@@ -206,15 +208,15 @@ export function SecretsPanel() {
               <p className="text-xs text-text-secondary mt-0.5">{t(K.superadmin.secrets.headerDesc)}</p>
             </div>
           </div>
-          <button onClick={() => void refetchSecrets()} className="p-1.5 rounded-md text-text-muted hover:text-text-primary transition-colors">
+          <Button variant="ghost" size="icon" onClick={() => void refetchSecrets()} className="h-7 w-7 text-text-muted hover:text-text-primary">
             <ArrowClockwise size={14} className={isLoading ? "animate-spin" : ""} />
-          </button>
+          </Button>
         </div>
 
         <div className="px-5 py-5 space-y-4">
           {/* Warning banner */}
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-950/20 border border-amber-500/20 text-xs text-amber-200/80">
-            <Warning size={13} weight="fill" className="text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20 text-xs text-warning/80">
+            <Warning size={13} weight="fill" className="text-warning shrink-0 mt-0.5" />
             {t(K.superadmin.secrets.bannerWarning)}
           </div>
 

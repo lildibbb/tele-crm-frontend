@@ -389,7 +389,7 @@ export default function AnalyticsPage() {
   if (isMobile) return <MobileAnalytics />;
 
   return (
-    <div ref={containerRef} className="space-y-5 animate-in-up">
+    <div ref={containerRef} data-testid="analytics-page" className="space-y-5 animate-in-up">
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start gap-4 justify-between">
         <div>
@@ -431,6 +431,7 @@ export default function AnalyticsPage() {
             <button
               key={tf}
               role="tab"
+              data-testid={`analytics-timeframe-${tf}`}
               aria-selected={timeframe === tf}
               onClick={() => handleTimeframeChange(tf)}
               className={

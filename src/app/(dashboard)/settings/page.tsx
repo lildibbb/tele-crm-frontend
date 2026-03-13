@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function SettingsPage() {
   return (
     <SettingsMobileGate>
-      <div className="space-y-6">
+      <div className="space-y-6" data-testid="settings-page">
         {/* Header */}
         <div className="animate-in-up">
           <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
