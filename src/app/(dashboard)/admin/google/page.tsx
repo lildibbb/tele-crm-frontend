@@ -314,7 +314,7 @@ function GoogleDesktop() {
     (stats?.driveUploadFail ?? 0);
 
   return (
-    <div className="space-y-6 animate-in-up">
+    <div className="space-y-6 animate-in-up" data-testid="admin-google-page">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

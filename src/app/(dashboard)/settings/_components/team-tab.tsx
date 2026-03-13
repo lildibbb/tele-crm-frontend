@@ -133,17 +133,17 @@ export function TeamTab() {
   };
 
   return (
-    <div className="space-y-5 animate-in-up">
+    <div data-testid="team-tab" className="space-y-5 animate-in-up">
       {/* Page header */}
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-bold text-text-primary">Team Members</h2>
-        <Button onClick={() => setShowModal(true)} className="gap-1.5">
+        <Button data-testid="team-invite-btn" onClick={() => setShowModal(true)} className="gap-1.5">
           <UserPlus className="h-4 w-4" /> Invite Member
         </Button>
       </div>
 
       {/* Members table */}
-      <div className="bg-elevated rounded-xl overflow-hidden">
+      <div data-testid="team-members-table" className="bg-elevated rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="p-4 space-y-3">
@@ -323,6 +323,7 @@ export function TeamTab() {
                       </FormLabel>
                       <FormControl>
                         <Input
+                          data-testid="team-invite-email-input"
                           type="email"
                           placeholder="colleague@company.com"
                           {...field}
@@ -374,6 +375,7 @@ export function TeamTab() {
                     Cancel
                   </Button>
                   <Button
+                    data-testid="team-invite-submit-btn"
                     type="submit"
                     className="flex-1"
                     disabled={form.formState.isSubmitting}
@@ -404,6 +406,7 @@ export function TeamTab() {
                     className="text-xs font-mono flex-1"
                   />
                   <Button
+                    data-testid="team-invite-copy-btn"
                     variant="outline"
                     size="sm"
                     onClick={handleCopy}

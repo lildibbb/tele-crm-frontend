@@ -11,7 +11,7 @@ export default function AdminFeaturesPage() {
   if (isMobile) return <MobileAdminFeatures />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="admin-features-page">
       <div>
         <h1 className="text-2xl font-bold text-text-primary">
           {t(K.superadmin.featureVisibility.title)}

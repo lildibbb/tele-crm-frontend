@@ -514,6 +514,7 @@ export default function LeadDetailClient() {
             variant="ghost"
             size="sm"
             asChild
+            data-testid="lead-detail-back-btn"
             className="gap-1.5 text-text-secondary hover:text-text-primary h-8 px-2"
           >
             <Link href="/leads">

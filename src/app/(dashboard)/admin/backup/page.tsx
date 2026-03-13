@@ -13,7 +13,7 @@ export default function AdminBackupPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="admin-backup-page">
       <div>
         <h1 className="text-2xl font-bold text-text-primary">{t(K.superadmin.backup.title)}</h1>
         <p className="text-sm text-text-secondary mt-1">{t(K.superadmin.backup.subtitle)}</p>

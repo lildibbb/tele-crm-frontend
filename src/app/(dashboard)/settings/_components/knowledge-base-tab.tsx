@@ -252,7 +252,7 @@ export function KnowledgeBaseTab() {
   });
 
   return (
-    <div className="space-y-5 animate-in-up">
+    <div data-testid="knowledge-base-tab" className="space-y-5 animate-in-up">
       {!kbEnabled && (
         <FeatureDisabledBanner feature="Knowledge Base Processing" />
       )}
@@ -266,7 +266,7 @@ export function KnowledgeBaseTab() {
             Templates, guides, and links the bot uses to answer questions
           </p>
         </div>
-        <Button onClick={openAdd} className="gap-1.5">
+        <Button data-testid="kb-add-btn" onClick={openAdd} className="gap-1.5">
           <Plus className="h-4 w-4" /> Add Content
         </Button>
       </div>
@@ -296,7 +296,7 @@ export function KnowledgeBaseTab() {
       </div>
 
       {/* Entry cards */}
-      <div className="space-y-3">
+      <div data-testid="kb-entries-list" className="space-y-3">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-[100px] rounded-xl" />

@@ -30,4 +30,16 @@ export class LeadDetailPage extends BasePage {
     const overflowY = await container.evaluate((el) => getComputedStyle(el).overflowY);
     expect(["auto", "scroll"]).toContain(overflowY);
   }
+
+  async clickTab(tabValue: string): Promise<void> {
+    await this.clickTestId(`lead-detail-tab-${tabValue}`);
+  }
+
+  async expectTabsListVisible(): Promise<void> {
+    await this.expectVisible("lead-detail-tabs-list");
+  }
+
+  async clickBackButton(): Promise<void> {
+    await this.clickTestId("lead-detail-back-btn");
+  }
 }

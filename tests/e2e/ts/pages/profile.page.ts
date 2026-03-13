@@ -18,4 +18,22 @@ export class ProfilePage extends BasePage {
   async revokeSession(sessionId: string): Promise<void> {
     await this.clickTestId(`session-revoke-${sessionId}`);
   }
+
+  async clickTab(tabValue: string): Promise<void> {
+    await this.clickTestId(`profile-tab-${tabValue}`);
+  }
+
+  async expectTabsListVisible(): Promise<void> {
+    await this.expectVisible("profile-tabs-list");
+  }
+
+  async fillChangePassword(current: string, newPwd: string, confirm: string): Promise<void> {
+    await this.fillTestId("profile-current-password", current);
+    await this.fillTestId("profile-new-password", newPwd);
+    await this.fillTestId("profile-confirm-password", confirm);
+  }
+
+  async submitChangePassword(): Promise<void> {
+    await this.clickTestId("profile-change-password-btn");
+  }
 }

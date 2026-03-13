@@ -10,7 +10,7 @@ export default function AdminAiFeedbackPage() {
   if (isMobile) return <MobileAdminAiFeedback />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="admin-ai-feedback-page">
       <div>
         <h1 className="text-2xl font-bold text-text-primary">AI Feedback</h1>
         <p className="text-sm text-text-secondary mt-1">

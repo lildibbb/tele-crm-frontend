@@ -157,7 +157,7 @@ function SetupAccountContent() {
   // ── Invalid invitation ─────────────────────────────────────────────────────
   if (infoError) {
     return (
-      <div className="min-h-svh bg-void flex items-center justify-center p-4 sm:p-6">
+      <div data-testid="setup-error-state" className="min-h-svh bg-void flex items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-sm surface-card relative p-8 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 text-center space-y-4">
           <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-danger/30 to-transparent" />
           <Shield className="h-10 w-10 text-danger mx-auto" />
@@ -205,6 +205,7 @@ function SetupAccountContent() {
               </div>
             )}
             <Button
+              data-testid="setup-success-dashboard"
               onClick={() => router.push("/")}
               className="w-full relative overflow-hidden group"
               size="lg"
@@ -220,8 +221,7 @@ function SetupAccountContent() {
 
   // ── Form ───────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-svh bg-void flex items-center justify-center p-4 sm:p-6">
-      {/* Ambient glow */}
+    <div data-testid="setup-account-page" className="min-h-svh bg-void flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full opacity-[0.06]"
@@ -303,6 +303,7 @@ function SetupAccountContent() {
                     <FormControl>
                       <div className="relative">
                         <Input
+                          data-testid="setup-password-input"
                           type={showPass ? "text" : "password"}
                           placeholder="Min. 8 characters"
                           className="pr-10 focus-visible:ring-crimson/50 focus-visible:border-crimson"
@@ -383,6 +384,7 @@ function SetupAccountContent() {
                     <FormControl>
                       <div className="relative">
                         <Input
+                          data-testid="setup-confirm-password-input"
                           type={showConfirm ? "text" : "password"}
                           placeholder="Re-enter your password"
                           className={cn(
@@ -412,6 +414,7 @@ function SetupAccountContent() {
               />
 
               <Button
+                data-testid="setup-submit"
                 type="submit"
                 disabled={form.formState.isSubmitting || password.length < 8}
                 className="w-full mt-2 relative overflow-hidden group"

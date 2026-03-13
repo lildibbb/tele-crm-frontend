@@ -321,7 +321,7 @@ export default function AuditLogsPage() {
 
   return (
     <>
-      <div className="space-y-6 animate-in-up">
+      <div className="space-y-6 animate-in-up" data-testid="audit-logs-page">
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -429,6 +429,7 @@ export default function AuditLogsPage() {
                 setPage(0);
               }}
               className="w-full pl-8 pr-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+              data-testid="audit-logs-search"
             />
           </div>
 
@@ -518,7 +519,7 @@ export default function AuditLogsPage() {
         )}
 
         {/* ── Table ── */}
-        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden">
+        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden" data-testid="audit-logs-table">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-16">
               <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />

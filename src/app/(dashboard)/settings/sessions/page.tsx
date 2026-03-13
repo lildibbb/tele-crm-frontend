@@ -124,7 +124,7 @@ export default function SessionsPage() {
     : null;
 
   return (
-    <div className="space-y-5 animate-in-up">
+    <div data-testid="settings-sessions-page" className="space-y-5 animate-in-up">
       {/* Page heading */}
       <div>
         <h1 className="font-display font-extrabold text-3xl text-text-primary">
@@ -161,6 +161,7 @@ export default function SessionsPage() {
         </div>
         {sessions.length > 0 && (
           <Button
+            data-testid="sessions-revoke-all-btn"
             variant="outline"
             size="sm"
             onClick={revokeAll}
@@ -182,7 +183,7 @@ export default function SessionsPage() {
       </div>
 
       {/* Session cards */}
-      <div className="space-y-3">
+      <div data-testid="sessions-list" className="space-y-3">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-[76px] rounded-xl" />
@@ -208,6 +209,7 @@ export default function SessionsPage() {
             return (
               <div
                 key={session.id}
+                data-testid={`session-card-${session.id}`}
                 className={`surface-card p-5 transition-all animate-in-up shadow-sm ${isCurrent ? "border border-brand/30" : ""}`}
                 style={{ animationDelay: `${i * 50}ms` }}
               >
@@ -228,7 +230,7 @@ export default function SessionsPage() {
                         {deviceLabel}
                       </p>
                       {isCurrent && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-brand/30 text-brand bg-brand/10 gap-1 flex-shrink-0">
+                        <Badge data-testid="session-current-badge" variant="outline" className="text-[10px] px-1.5 py-0 border-brand/30 text-brand bg-brand/10 gap-1 flex-shrink-0">
                           <CheckCircle className="h-2.5 w-2.5" /> Current
                         </Badge>
                       )}
@@ -254,6 +256,7 @@ export default function SessionsPage() {
                   {/* Revoke button — only for non-current sessions */}
                   {!isCurrent ? (
                     <Button
+                      data-testid={`session-revoke-btn-${session.id}`}
                       variant="outline"
                       size="sm"
                       onClick={() => setRevokeId(session.id)}
@@ -286,8 +289,9 @@ export default function SessionsPage() {
             This device will be signed out immediately and will need to log in again.
           </p>
           <div className="flex gap-3 pt-1">
-            <Button variant="outline" className="flex-1" onClick={() => setRevokeId(null)}>Cancel</Button>
+            <Button data-testid="session-revoke-cancel-btn" variant="outline" className="flex-1" onClick={() => setRevokeId(null)}>Cancel</Button>
             <Button
+              data-testid="session-revoke-confirm-btn"
               variant="destructive"
               className="flex-1 gap-2"
               disabled={revoking}

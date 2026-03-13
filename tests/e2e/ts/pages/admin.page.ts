@@ -31,4 +31,32 @@ export class AdminPage extends BasePage {
   async navigateToAiFeedback(): Promise<void> {
     await this.navigateTo("/ai-feedback");
   }
+
+  async navigateToSystem(): Promise<void> {
+    await this.navigateTo("system");
+  }
+
+  async navigateToBackup(): Promise<void> {
+    await this.navigateTo("backup");
+  }
+
+  async navigateToMaintenance(): Promise<void> {
+    await this.navigateTo("maintenance");
+  }
+
+  async navigateToGoogle(): Promise<void> {
+    await this.navigateTo("google");
+  }
+
+  async navigateToSecrets(): Promise<void> {
+    await this.navigateTo("secrets");
+  }
+
+  async navigateToQueues(): Promise<void> {
+    await this.navigateTo("queues");
+  }
+
+  async navigateToAuditLogs(): Promise<void> {
+    await this.goto("/audit-logs");
+  }
 }
