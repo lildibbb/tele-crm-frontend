@@ -1,10 +1,6 @@
 name: E2E Tests (TypeScript Playwright)
 
 on:
-  push:
-    branches: [main, staging, develop]
-  pull_request:
-    branches: [main, staging]
   workflow_dispatch:
     inputs:
       base_url:
@@ -22,6 +18,7 @@ env:
 
 jobs:
   smoke:
+    if: false # Temporarily disabled to save GitHub Actions runner minutes
     name: Smoke Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -58,6 +55,7 @@ jobs:
           retention-days: 14
 
   rbac:
+    if: false # Temporarily disabled to save GitHub Actions runner minutes
     name: RBAC Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
