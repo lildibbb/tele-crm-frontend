@@ -30,6 +30,7 @@ export const KbFileType = {
   PDF: "PDF",
   DOCX: "DOCX",
   IMAGE: "IMAGE",
+  VIDEO: "VIDEO",
   VIDEO_LINK: "VIDEO_LINK",
   EXTERNAL_LINK: "EXTERNAL_LINK",
 } as const;
@@ -51,6 +52,15 @@ export const FollowUpStatus = {
 } as const;
 export type FollowUpStatus =
   (typeof FollowUpStatus)[keyof typeof FollowUpStatus];
+
+// ── Pending Task Status ───────────────────────────────────────────────────────
+export const PendingTaskStatus = {
+  PENDING: "PENDING",
+  RESOLVED: "RESOLVED",
+  DISMISSED: "DISMISSED",
+} as const;
+export type PendingTaskStatus =
+  (typeof PendingTaskStatus)[keyof typeof PendingTaskStatus];
 
 // ── Audit Log Action ──────────────────────────────────────────────────────────
 export const AuditAction = {

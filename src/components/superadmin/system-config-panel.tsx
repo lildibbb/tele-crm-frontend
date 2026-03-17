@@ -105,6 +105,13 @@ export const CONFIG_SECTIONS: {
         type: "text",
       },
       {
+        key: "telegram.adminChatId",
+        label: "Telegram Admin Chat ID",
+        description:
+          "Owner/admin Telegram chat ID used for command scope and internal notifications. SystemConfig value overrides env TELEGRAM_ADMIN_CHAT_ID.",
+        type: "number",
+      },
+      {
         key: "bot.groupId",
         label: "Group Forum ID",
         description:

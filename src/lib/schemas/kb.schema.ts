@@ -9,6 +9,7 @@ export const KbFileTypeSchema = z.enum([
   KbFileType.PDF,
   KbFileType.DOCX,
   KbFileType.IMAGE,
+  KbFileType.VIDEO,
   KbFileType.VIDEO_LINK,
   KbFileType.EXTERNAL_LINK,
 ]);
@@ -30,6 +31,11 @@ export const KbResponseSchema = z.object({
   url: z.string().nullable(),
   status: KbStatusSchema,
   isActive: z.boolean(),
+  mismatchFlag: z.preprocess(
+    (value) => (value == null ? false : value),
+    z.boolean().optional(),
+  ),
+  mismatchScore: z.number().nullable().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -49,7 +55,10 @@ export type CreateKbInput = z.infer<typeof CreateKbSchema>;
 
 export const UpdateKbSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").optional(),
-  content: z.string().min(10, "Content must be at least 10 characters").optional(),
+  content: z
+    .string()
+    .min(10, "Content must be at least 10 characters")
+    .optional(),
   type: KbTypeSchema.optional(),
   url: z.string().url("Please enter a valid URL").optional(),
   isActive: z.boolean().optional(),

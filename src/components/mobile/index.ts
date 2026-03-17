@@ -51,6 +51,9 @@ export type { MobileAuditLogsProps } from "./MobileAuditLogs";
 export { default as MobileFollowUps } from "./MobileFollowUps";
 export type { MobileFollowUpsProps } from "./MobileFollowUps";
 
+export { default as MobilePendingTasks } from "./MobilePendingTasks";
+export type { MobilePendingTasksProps } from "./MobilePendingTasks";
+
 export { default as MobileBroadcasts } from "./MobileBroadcasts";
 export type { MobileBroadcastsProps } from "./MobileBroadcasts";
 

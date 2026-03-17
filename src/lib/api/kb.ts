@@ -35,7 +35,7 @@ export const kbApi = {
    * Upload file to KB (PDF, DOCX, image). File is processed asynchronously.
    */
   uploadFile: (formData: FormData) =>
-    apiClient.post<ApiResponse<void>>("/knowledge-base/upload", formData, {
+    apiClient.post<ApiResponse<KbEntry>>("/knowledge-base/upload", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     }),
 
@@ -50,6 +50,12 @@ export const kbApi = {
    */
   remove: (id: string) =>
     apiClient.delete<ApiResponse<void>>(`/knowledge-base/${id}`),
+
+  /**
+   * Retry processing for a failed KB entry.
+   */
+  retryFailed: (id: string) =>
+    apiClient.post<ApiResponse<KbEntry>>(`/knowledge-base/${id}/retry`),
 
   /**
    * Subscribe to real-time processing status updates via SSE.

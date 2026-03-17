@@ -8,7 +8,10 @@ import {
   X,
   FunnelSimple,
   DownloadSimple,
+  UploadSimple,
   UserSwitch,
+  Clock,
+  CaretRight,
 } from "@phosphor-icons/react";
 import { ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
@@ -34,7 +37,7 @@ import { Switch } from "@/components/ui/switch";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface MobileLeadsListProps {
-  readonly onAddLead?: () => void;
+  readonly onImportClick?: () => void;
 }
 
 type FilterTab = LeadStatus | "ALL";
@@ -45,10 +48,19 @@ function formatDeposit(val: string): string {
   return `$${num.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
+// ── Status accent helper ───────────────────────────────────────────────────────
+const STATUS_ACCENT: Record<string, string> = {
+  NEW: "bg-blue-500",
+  CONTACTED: "bg-amber-500",
+  DEPOSIT_REPORTED: "bg-orange-500",
+  DEPOSIT_CONFIRMED: "bg-emerald-500",
+  REJECTED: "bg-rose-500",
+};
+
 // ── Skeleton Card ──────────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
-    <div className="flex items-center gap-3 p-3.5 rounded-xl bg-card border border-border-subtle">
+    <div className="flex items-center gap-3 p-4 rounded-3xl bg-card/60 backdrop-blur-xl border border-white/10 overflow-hidden">
       <Skeleton className="shrink-0 w-11 h-11 rounded-full" />
       <div className="flex-1 min-w-0 space-y-2.5">
         <div className="flex items-center justify-between gap-2">
@@ -71,7 +83,7 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
       <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-elevated mb-1">
         <FunnelSimple size={32} className="text-text-muted" weight="duotone" />
       </div>
-      <span className="font-sans font-semibold text-[17px] text-text-secondary">
+      <span className="font-sans font-bold text-[17px] text-text-secondary">
         No leads found
       </span>
       <span className="font-sans text-[14px] text-text-muted leading-relaxed max-w-[260px]">
@@ -88,68 +100,92 @@ function LeadCard({ lead }: { lead: Lead }) {
   const status = lead.status ?? "NEW";
   const cfg = LEAD_STATUS_BADGE[status] ?? LEAD_STATUS_BADGE.NEW;
   const initials = getInitials(lead.displayName);
+  const accentColor = STATUS_ACCENT[status] ?? "bg-gray-500";
 
   return (
-    <Link href={`/leads/detail?id=${lead.id}`} className="block">
-      <div
-        className={cn(
-          "flex items-start gap-3 p-3.5 rounded-xl bg-card border border-border-subtle",
-          "active:scale-[0.98] active:bg-elevated transition-all duration-150",
-          "shadow-[0_1px_3px_rgba(0,0,0,0.2)]",
-        )}
-      >
-        {/* Avatar */}
-        <Avatar className="w-11 h-11 shrink-0">
-          <AvatarFallback className="bg-elevated text-text-primary text-sm font-semibold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+    <div
+      onClick={lead.id ? undefined : undefined} // Keep it a div block but wrap in Link logically or just use Link
+      className="block"
+    >
+      <Link href={`/leads/detail?id=${lead.id}`} className="block">
+        <div
+          className={cn(
+            "relative flex items-start gap-4 p-4 rounded-3xl bg-card/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden group",
+            "active:scale-[0.98] transition-all duration-150",
+          )}
+        >
+          {/* Subtle glass reflection */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-        {/* Content */}
-        <div className="flex-1 min-w-0 space-y-1.5">
-          {/* Row 1: Name + Status badge */}
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-sans font-semibold text-[15px] text-text-primary truncate">
-              {lead.displayName ?? "Unknown Lead"}
-            </span>
-            <Badge
-              variant="secondary"
-              className={cn("shrink-0 text-[10px] font-medium", cfg.cls)}
-            >
-              {status.replace(/_/g, " ")}
-            </Badge>
+          {/* Status accent indicator (subtle glowing dot instead of strip) */}
+          <div
+            className={cn(
+              "absolute top-4 right-4 w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]",
+              accentColor,
+            )}
+          />
+
+          {/* Avatar with subtle status ring */}
+          <div className="relative ml-1">
+            <Avatar className="w-11 h-11 shrink-0">
+              <AvatarFallback className="bg-elevated text-text-primary text-sm font-bold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
           </div>
 
-          {/* Row 2: Phone / Broker ID + Time */}
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-mono text-[12px] text-text-secondary truncate">
-              {lead.phoneNumber
-                ? lead.phoneNumber
-                : lead.hfmBrokerId
-                  ? `HFM ${lead.hfmBrokerId}`
-                  : lead.username
-                    ? `@${lead.username}`
-                    : "—"}
-            </span>
-            <span className="shrink-0 font-sans text-[11px] text-text-muted">
-              {lead.createdAt ? timeAgo(lead.createdAt) : "—"}
-            </span>
-          </div>
-
-          {/* Row 3: Deposit amount (if exists) */}
-          {lead.depositBalance && (
-            <div className="flex items-center gap-1.5 pt-0.5">
-              <span className="font-mono font-semibold text-[13px] text-text-secondary">
-                {formatDeposit(lead.depositBalance)}
+          {/* Content */}
+          <div className="flex-1 min-w-0 space-y-1.5">
+            {/* Row 1: Name + Status badge */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-sans font-semibold text-[15px] text-text-primary truncate">
+                {lead.displayName ?? "Unknown Lead"}
               </span>
-              <span className="font-sans text-[10px] font-medium uppercase tracking-widest text-text-muted">
-                deposit
+              <Badge
+                variant="secondary"
+                className={cn(
+                  "shrink-0 text-[9px] font-bold uppercase tracking-wider",
+                  cfg.cls,
+                )}
+              >
+                {status.replace(/_/g, " ")}
+              </Badge>
+            </div>
+
+            {/* Row 2: Phone / Broker ID + Time */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-[12px] text-text-secondary truncate">
+                {lead.phoneNumber
+                  ? lead.phoneNumber
+                  : lead.hfmBrokerId
+                    ? `HFM ${lead.hfmBrokerId}`
+                    : lead.username
+                      ? `@${lead.username}`
+                      : "—"}
+              </span>
+              <span className="shrink-0 font-sans text-[10px] text-text-muted flex items-center gap-0.5">
+                <Clock size={9} />
+                {lead.createdAt ? timeAgo(lead.createdAt) : "—"}
               </span>
             </div>
-          )}
+
+            {/* Row 3: Deposit amount */}
+            {lead.depositBalance && (
+              <div className="flex items-center gap-1.5 pt-0.5">
+                <span className="font-mono font-bold text-[14px] text-emerald-500">
+                  {formatDeposit(lead.depositBalance)}
+                </span>
+                <span className="font-sans text-[9px] font-bold uppercase tracking-widest text-text-muted">
+                  deposit
+                </span>
+              </div>
+            )}
+          </div>
+
+          <CaretRight size={14} className="text-text-muted/30 shrink-0 mt-1" />
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
@@ -193,7 +229,9 @@ function PullIndicator({ visible }: { visible: boolean }) {
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
-export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
+export default function MobileLeadsList({
+  onImportClick,
+}: MobileLeadsListProps) {
   const { user } = useAuthStore();
   const role = user?.role ?? "STAFF";
   const canHandover = role === "OWNER" || role === "ADMIN";
@@ -311,7 +349,7 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
 
         {/* Search bar */}
         <div className="mx-4 mt-3">
-          <div className="flex items-center gap-2.5 px-3.5 h-12 rounded-xl border border-border-subtle bg-elevated transition-colors focus-within:border-border-default">
+          <div className="flex items-center gap-2.5 px-4 h-12 rounded-2xl border border-border-subtle bg-elevated/60 backdrop-blur-sm transition-colors focus-within:border-crimson/30 focus-within:bg-elevated">
             <MagnifyingGlass
               size={18}
               className="shrink-0 text-text-muted"
@@ -350,7 +388,6 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
             className={cn(
               "flex gap-2 overflow-x-auto px-4 pb-1",
               "scrollbar-hide snap-x snap-mandatory",
-              /* fade-out gradient on right edge */
               "[mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]",
             )}
           >
@@ -361,10 +398,10 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
                 className={cn(
                   "shrink-0 snap-start rounded-full h-8 px-4",
                   "font-sans text-[12px] font-semibold tracking-wide",
-                  "transition-all duration-150 min-w-[44px]",
+                  "transition-all duration-200 min-w-[44px] border",
                   filter === tab.id
-                    ? "bg-elevated text-text-primary"
-                    : "text-text-muted active:text-text-secondary",
+                    ? "bg-crimson/10 text-crimson border-crimson/20 shadow-sm"
+                    : "text-text-muted border-border-subtle active:text-text-secondary bg-card",
                 )}
               >
                 {tab.label}
@@ -385,7 +422,7 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
               </span>
             ) : (
               <span>
-                <span className="font-mono font-semibold text-text-primary">
+                <span className="font-mono font-bold text-text-primary text-[15px]">
                   {total}
                 </span>{" "}
                 leads
@@ -394,9 +431,9 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
           </span>
           <div className="flex items-center gap-2">
             {canHandover && (
-              <div className="flex items-center gap-1.5 border border-border-subtle rounded-lg px-2.5 h-9 bg-elevated">
+              <div className="flex items-center gap-1.5 border border-border-subtle rounded-xl px-2.5 h-9 bg-elevated/60">
                 <UserSwitch size={14} className="text-text-secondary" />
-                <span className="font-sans text-[12px] text-text-secondary">
+                <span className="font-sans text-[11px] text-text-secondary font-medium">
                   Handover
                 </span>
                 <Switch
@@ -410,7 +447,7 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
             <button
               onClick={() => setShowSortSheet(true)}
               className={cn(
-                "flex items-center gap-1 font-sans text-[12px] transition-colors",
+                "flex items-center gap-1 font-sans text-[12px] transition-colors h-9 px-2.5 rounded-xl bg-elevated/60 border border-border-subtle",
                 sortOption !== "newest"
                   ? "text-crimson font-semibold"
                   : "text-text-muted",
@@ -418,12 +455,12 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
               aria-label="Sort leads"
             >
               <ArrowUpDown size={14} />
-              {sortOption !== "newest" ? activeSort.label : "Newest"}
+              {sortOption !== "newest" ? activeSort.label : "Sort"}
             </button>
             <button
               onClick={handleExport}
               disabled={exporting}
-              className="w-9 h-9 rounded-xl bg-elevated flex items-center justify-center active:scale-[0.93] transition-transform disabled:opacity-50"
+              className="w-9 h-9 rounded-xl bg-elevated/60 border border-border-subtle flex items-center justify-center active:scale-[0.93] transition-transform disabled:opacity-50"
               aria-label="Export XLSX"
             >
               {exporting ? (
@@ -458,7 +495,7 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
             <button
               onClick={loadMore}
               className={cn(
-                "w-full h-11 rounded-xl font-sans text-[13px] font-medium",
+                "w-full h-11 rounded-2xl font-sans text-[13px] font-semibold",
                 "bg-card border border-border-subtle text-text-secondary",
                 "active:bg-elevated transition-colors",
               )}
@@ -472,19 +509,22 @@ export default function MobileLeadsList({ onAddLead }: MobileLeadsListProps) {
         )}
       </div>
 
-      {/* FAB */}
+      {/* FAB - Import Leads */}
       <button
-        onClick={onAddLead}
+        onClick={onImportClick}
         className={cn(
-          "fixed right-5 flex items-center justify-center",
-          "w-14 h-14 rounded-full bg-crimson z-30",
-          "shadow-[0_4px_20px_rgba(196,35,45,0.4)]",
-          "active:scale-90 transition-transform duration-150",
+          "fixed right-5 flex items-center justify-center gap-2 px-4",
+          "h-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 z-30",
+          "shadow-[0_4px_20px_rgba(16,185,129,0.35)]",
+          "active:scale-95 transition-transform duration-150",
         )}
         style={{ bottom: "calc(60px + env(safe-area-inset-bottom) + 20px)" }}
-        aria-label="Add Lead"
+        aria-label="Import Leads"
       >
-        <Plus size={24} className="text-white" weight="bold" />
+        <UploadSimple size={20} className="text-white" weight="bold" />
+        <span className="text-white font-sans font-semibold text-[14px]">
+          Import
+        </span>
       </button>
 
       {/* Sort sheet */}

@@ -40,6 +40,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Titan Journal CRM",
   description: "Internal CRM for Titan Journal",
+  icons: {
+    icon: "/assets/logo/titan-logo-03.svg",
+  },
 };
 
 export default function RootLayout({

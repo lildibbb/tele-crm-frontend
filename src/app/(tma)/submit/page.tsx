@@ -173,7 +173,10 @@ function TMASubmitPageContent() {
         >
           Invalid Link
         </h2>
-        <p className="font-sans text-sm leading-relaxed" style={{ color: textSub }}>
+        <p
+          className="font-sans text-sm leading-relaxed"
+          style={{ color: textSub }}
+        >
           This link is invalid or missing. Please request a new link from the
           Telegram bot.
         </p>
@@ -203,7 +206,10 @@ function TMASubmitPageContent() {
         >
           Already Received
         </h2>
-        <p className="font-sans text-sm leading-relaxed" style={{ color: textSub }}>
+        <p
+          className="font-sans text-sm leading-relaxed"
+          style={{ color: textSub }}
+        >
           Your registration and deposit proof have already been received. Our
           team is reviewing it and will update you via Telegram shortly.
         </p>
@@ -292,18 +298,65 @@ function TMASubmitPageContent() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Section 1 header */}
+            {/* Section 1 header: Where to find MyHF ID */}
             <div className="flex items-center gap-2 mb-1">
               <div
                 className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: brand }}
               >
-                <span className="text-white font-bold" style={{ fontSize: "10px" }}>1</span>
+                <span
+                  className="text-white font-bold"
+                  style={{ fontSize: "10px" }}
+                >
+                  1
+                </span>
               </div>
-              <span className="font-sans font-semibold text-sm" style={{ color: textMain }}>
+              <span
+                className="font-sans font-semibold text-sm"
+                style={{ color: textMain }}
+              >
+                Where to find MyHF ID
+              </span>
+            </div>
+            <div className="mb-4">
+              <p className="text-[11px] mb-2" style={{ color: textSub }}>
+                Follow these steps in your HFM portal to locate your ID.
+              </p>
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <img
+                  src="/assets/find-myhf-id.jpg"
+                  alt="How to find HFM ID"
+                  className="w-full h-auto object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Section 2 header */}
+            <div className="flex items-center gap-2 mb-1">
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: brand }}
+              >
+                <span
+                  className="text-white font-bold"
+                  style={{ fontSize: "10px" }}
+                >
+                  2
+                </span>
+              </div>
+              <span
+                className="font-sans font-semibold text-sm"
+                style={{ color: textMain }}
+              >
                 Upload Receipt
               </span>
-              <span className="font-sans text-xs" style={{ color: textSub }}>(optional)</span>
+              <span className="font-sans text-xs" style={{ color: textSub }}>
+                (optional)
+              </span>
             </div>
             {/* File upload */}
             <InputField label="Receipt / Screenshot (optional)">
@@ -403,15 +456,23 @@ function TMASubmitPageContent() {
               </p>
             </InputField>
 
-            {/* Section 2 header */}
+            {/* Section 3 header */}
             <div className="flex items-center gap-2 mt-2 mb-1">
               <div
                 className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ background: brand }}
               >
-                <span className="text-white font-bold" style={{ fontSize: "10px" }}>2</span>
+                <span
+                  className="text-white font-bold"
+                  style={{ fontSize: "10px" }}
+                >
+                  3
+                </span>
               </div>
-              <span className="font-sans font-semibold text-sm" style={{ color: textMain }}>
+              <span
+                className="font-sans font-semibold text-sm"
+                style={{ color: textMain }}
+              >
                 Your Details
               </span>
             </div>
@@ -420,7 +481,7 @@ function TMASubmitPageContent() {
             <InputField label="HFM Account ID" required>
               <input
                 type="text"
-                placeholder="e.g. HFM-12345"
+                placeholder="e.g. 12345"
                 value={hfmId}
                 onChange={(e) => setHfmId(e.target.value)}
                 required
@@ -485,7 +546,11 @@ function TMASubmitPageContent() {
             {submitError && (
               <div
                 className="rounded-xl px-4 py-3 font-sans text-sm"
-                style={{ background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626" }}
+                style={{
+                  background: "#FEF2F2",
+                  border: "1px solid #FECACA",
+                  color: "#DC2626",
+                }}
               >
                 {submitError}
               </div>

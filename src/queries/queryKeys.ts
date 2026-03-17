@@ -37,6 +37,15 @@ export const queryKeys = {
   verification: {
     all: ["verification"] as const,
   },
+  pendingTasks: {
+    all: ["pendingTasks"] as const,
+    lists: () => ["pendingTasks", "list"] as const,
+    list: (params: Record<string, unknown>) =>
+      ["pendingTasks", "list", params] as const,
+    groupedAll: () => ["pendingTasks", "grouped"] as const,
+    grouped: (params?: Record<string, unknown>) =>
+      ["pendingTasks", "grouped", params] as const,
+  },
   kb: {
     all: ["kb"] as const,
     list: () => ["kb", "list"] as const,
