@@ -10,3 +10,19 @@ export const BotStatusSchema = z.object({
 });
 
 export type BotStatus = z.infer<typeof BotStatusSchema>;
+
+const BotReplyPartSchema = z.string().trim().min(1);
+
+export const BotReplyPayloadSchema = z.object({
+  text: z.string().trim(),
+  parts: z.array(BotReplyPartSchema),
+});
+
+export const OnboardingBotReplyPayloadSchema = BotReplyPayloadSchema.extend({
+  parts: z.array(BotReplyPartSchema).max(2),
+});
+
+export type BotReplyPayload = z.infer<typeof BotReplyPayloadSchema>;
+export type OnboardingBotReplyPayload = z.infer<
+  typeof OnboardingBotReplyPayloadSchema
+>;

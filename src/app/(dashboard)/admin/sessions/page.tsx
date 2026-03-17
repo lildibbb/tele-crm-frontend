@@ -15,6 +15,7 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
@@ -28,13 +29,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { superadminApi, type AdminSession } from "@/lib/api/superadmin";
 import { queryKeys } from "@/queries/queryKeys";
-import { ProhibitInset } from "@phosphor-icons/react";
+import { ProhibitInset, Monitor, DeviceMobile } from "@phosphor-icons/react";
 import { useT, K } from "@/i18n";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import MobileAdminSessions from "@/components/mobile/MobileAdminSessions";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { parseUserAgent, formatUA } from "@/lib/utils/parseUserAgent";
 
 function truncate(str: string, len = 12) {
   return str.length <= len ? str : `${str.slice(0, len)}…`;
@@ -50,6 +52,22 @@ function formatDate(iso: string) {
   });
 }
 
+function formatRelative(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+const ROLE_BADGE_VARIANT: Record<string, "destructive" | "secondary" | "outline"> = {
+  SUPERADMIN: "destructive",
+  OWNER: "destructive",
+  ADMIN: "secondary",
+};
+
 function getSessionColumns({
   onRevoke,
   t,
@@ -59,62 +77,80 @@ function getSessionColumns({
 }): ColumnDef<AdminSession>[] {
   return [
     {
-      accessorKey: "id",
+      id: "user",
+      accessorFn: (row) => row.user?.email ?? row.userId,
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          label={t(K.superadmin.sessions.sessionId)}
-        />
+        <DataTableColumnHeader column={column} label="User" />
       ),
+      cell: ({ row }) => {
+        const user = row.original.user;
+        return (
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="text-sm font-medium text-text-primary truncate">
+              {user?.email ?? truncate(row.original.userId, 20)}
+            </span>
+            {user?.role && (
+              <Badge
+                variant={ROLE_BADGE_VARIANT[user.role] ?? "outline"}
+                className="w-fit text-[10px] px-1.5 py-0 mt-0.5 uppercase tracking-wide"
+              >
+                {user.role}
+              </Badge>
+            )}
+          </div>
+        );
+      },
+      enableSorting: true,
+      meta: {
+        label: "User",
+        variant: "text",
+        placeholder: "Search by email…",
+      },
+    },
+    {
+      id: "device",
+      accessorFn: (row) => row.userAgent ?? "",
+      header: "Device",
+      cell: ({ row }) => {
+        const parsed = parseUserAgent(row.original.userAgent);
+        const Icon = parsed.deviceType === "mobile" ? DeviceMobile : Monitor;
+        return (
+          <div className="flex items-center gap-2">
+            <Icon size={15} className="text-text-secondary flex-shrink-0" />
+            <span className="text-xs text-text-secondary whitespace-nowrap">
+              {formatUA(parsed)}
+            </span>
+          </div>
+        );
+      },
+      enableSorting: false,
+    },
+    {
+      accessorKey: "ipAddress",
+      header: "IP Address",
       cell: ({ row }) => (
-        <span
-          className="font-mono text-xs text-text-secondary"
-          title={row.original.id}
-        >
-          {truncate(row.original.id, 16)}
+        <span className="font-mono text-xs text-text-secondary">
+          {row.original.ipAddress ?? "—"}
         </span>
       ),
       enableSorting: false,
       meta: {
-        label: t(K.superadmin.sessions.sessionId),
+        label: "IP Address",
         variant: "text",
-        placeholder: "Search session ID…",
+        placeholder: "Filter by IP…",
       },
     },
     {
-      accessorKey: "userId",
+      accessorKey: "lastActiveAt",
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          label={t(K.superadmin.sessions.userId)}
-        />
+        <DataTableColumnHeader column={column} label="Last Active" />
       ),
       cell: ({ row }) => (
         <span
-          className="font-mono text-xs text-text-secondary"
-          title={row.original.userId}
+          className="text-sm text-text-secondary whitespace-nowrap"
+          title={formatDate(row.original.lastActiveAt)}
         >
-          {truncate(row.original.userId, 16)}
-        </span>
-      ),
-      enableSorting: false,
-      meta: {
-        label: t(K.superadmin.sessions.userId),
-        variant: "text",
-        placeholder: "Search user ID…",
-      },
-    },
-    {
-      accessorKey: "createdAt",
-      header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          label={t(K.superadmin.sessions.createdAt)}
-        />
-      ),
-      cell: ({ row }) => (
-        <span className="text-sm text-text-secondary whitespace-nowrap">
-          {formatDate(row.original.createdAt)}
+          {formatRelative(row.original.lastActiveAt)}
         </span>
       ),
       enableSorting: true,
@@ -135,24 +171,6 @@ function getSessionColumns({
       ),
       enableSorting: true,
       enableColumnFilter: false,
-    },
-    {
-      accessorKey: "userAgent",
-      header: t(K.superadmin.sessions.userAgent),
-      cell: ({ row }) => (
-        <span
-          className="text-xs text-text-secondary max-w-[220px] truncate block"
-          title={row.original.userAgent ?? undefined}
-        >
-          {row.original.userAgent ?? "—"}
-        </span>
-      ),
-      enableSorting: false,
-      meta: {
-        label: t(K.superadmin.sessions.userAgent),
-        variant: "text",
-        placeholder: "Filter user agent…",
-      },
     },
     {
       id: "actions",
@@ -184,7 +202,7 @@ function SessionsDesktop() {
   const queryClient = useQueryClient();
   const [revokeId, setRevokeId] = useState<string | null>(null);
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "createdAt", desc: true },
+    { id: "lastActiveAt", desc: true },
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -288,3 +306,4 @@ export default function AdminSessionsPage() {
   if (isMobile) return <MobileAdminSessions />;
   return <SessionsDesktop />;
 }
+

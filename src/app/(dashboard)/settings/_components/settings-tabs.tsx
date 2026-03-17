@@ -1,8 +1,8 @@
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { Bot, BookOpen, Terminal, Users, Brain, Link2 } from "lucide-react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { Bot, BookOpen, Terminal, Users, Link2 } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -14,11 +14,11 @@ import { BotConfigTab } from "./bot-config-tab";
 import { KnowledgeBaseTab } from "./knowledge-base-tab";
 import { CommandsTab } from "./commands-tab";
 import { TeamTab } from "./team-tab";
-import { AiFeedbackTab } from "./ai-feedback-tab";
 import { IntegrationsTab } from "./integrations-tab";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types/enums";
 import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
+import { useT, K } from "@/i18n";
 
 const ALL_SETTINGS_TABS = [
   {
@@ -56,16 +56,10 @@ const ALL_SETTINGS_TABS = [
     content: <IntegrationsTab />,
     roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
   },
-  {
-    name: "AI Feedback",
-    value: "ai-feedback",
-    icon: Brain,
-    content: <AiFeedbackTab />,
-    roles: [UserRole.SUPERADMIN],
-  },
 ];
 
-export function SettingsTabs() {
+function SettingsTabsInner() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -90,10 +84,18 @@ export function SettingsTabs() {
     !isSuperAdmin && !googleSheets && !googleDriveServiceAccount && !googleDriveOAuth2;
 
   const SETTINGS_TABS = useMemo(() => {
-    const byRole = ALL_SETTINGS_TABS.filter((t) => role && t.roles.includes(role));
-    if (allGoogleHidden) return byRole.filter((t) => t.value !== "integrations");
+    const byRole = ALL_SETTINGS_TABS.filter((tab) => role && tab.roles.includes(role));
+    if (allGoogleHidden) return byRole.filter((tab) => tab.value !== "integrations");
     return byRole;
   }, [role, allGoogleHidden]);
+
+  const tabLabelMap: Record<string, string> = {
+    "bot-config": t(K.settings.botConfig),
+    "knowledge-base": t(K.settings.knowledgeBase),
+    commands: t(K.settings.commands),
+    team: t(K.settings.team),
+    integrations: t(K.settings.integrations),
+  };
 
   const tabQuery = searchParams.get("tab");
   const defaultTab = SETTINGS_TABS.some((t) => t.value === tabQuery)
@@ -135,6 +137,7 @@ export function SettingsTabs() {
       >
         {/* Pill segment tab bar */}
         <TabsList
+          data-testid="settings-tabs-list"
           className="bg-elevated rounded-xl p-1 w-full sm:w-auto overflow-x-auto scrollbar-none flex-nowrap"
           activeClassName="bg-card rounded-lg shadow-sm"
         >
@@ -142,12 +145,13 @@ export function SettingsTabs() {
             <TabsTrigger
               key={tab.value}
               value={tab.value}
+              data-testid={`settings-tab-${tab.value}`}
               className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-text-secondary data-[state=active]:text-crimson whitespace-nowrap rounded-lg transition-colors"
             >
               <tab.icon size={15} strokeWidth={1.8} />
-              {tab.name}
-            </TabsTrigger>
-          ))}
+               {tabLabelMap[tab.value] ?? tab.name}
+             </TabsTrigger>
+           ))}
         </TabsList>
 
         <div className="flex flex-col pb-2 relative overflow-hidden">
@@ -165,6 +169,14 @@ export function SettingsTabs() {
         </div>
       </Tabs>
     </div>
+  );
+}
+
+export function SettingsTabs() {
+  return (
+    <Suspense>
+      <SettingsTabsInner />
+    </Suspense>
   );
 }
 

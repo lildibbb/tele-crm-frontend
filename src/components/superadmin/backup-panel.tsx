@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useBackupHistory, useTriggerBackup } from "@/queries/useBackupQuery";
+import { useBackupHistory, useTriggerBackup, useBackupProgress } from "@/queries/useBackupQuery";
 import {
   useSystemConfig,
   useUpsertManySystemConfig,
@@ -20,6 +20,24 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Database,
   CheckCircle,
   ArrowClockwise,
@@ -28,6 +46,7 @@ import {
   Clock,
   HardDrives,
 } from "@phosphor-icons/react";
+import { BackupProgressCard } from "./backup-progress-card";
 import { useT, K } from "@/i18n";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -62,32 +81,39 @@ const STATUS_CONFIG: Record<
 
 export function BackupPanel() {
   const t = useT();
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const [historyLimit, setHistoryLimit] = useState(10);
   const {
     data: history = [],
     isLoading: isLoadingHistory,
     refetch: refetchHistory,
-  } = useBackupHistory(10);
+  } = useBackupHistory(historyLimit);
   const triggerBackupMutation = useTriggerBackup();
   const { data: entries = {} } = useSystemConfig();
   const upsertMany = useUpsertManySystemConfig();
+
+  const { progress: backupProgress, isConnected: isBackupRunning } = useBackupProgress(
+    activeJobId,
+    () => {
+      // onDone: refresh history and auto-dismiss the progress card after success
+      void refetchHistory();
+      setTimeout(() => setActiveJobId(null), 3000);
+    },
+    () => {
+      // onFailed: refresh history so failed record is visible; keep card open
+      void refetchHistory();
+    },
+  );
 
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const [retentionDraft, setRetentionDraft] = useState("");
   const [configErr, setConfigErr] = useState<string | null>(null);
-  const [triggerResult, setTriggerResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (Object.keys(entries).length === 0) return;
     setRetentionDraft(entries["backup.retentionDays"] ?? "30");
   }, [entries]);
-
-  useEffect(() => {
-    if (triggerResult) {
-      const t = setTimeout(() => setTriggerResult(null), 4000);
-      return () => clearTimeout(t);
-    }
-  }, [triggerResult]);
 
   const getVal = (key: string, def = "false") => entries[key] ?? def;
 
@@ -112,8 +138,10 @@ export function BackupPanel() {
 
   const handleTrigger = async () => {
     try {
-      await triggerBackupMutation.mutateAsync();
-      setTriggerResult(t(K.superadmin.backup.queuedSuccess));
+      const result = await triggerBackupMutation.mutateAsync();
+      if (result?.jobId) {
+        setActiveJobId(result.jobId);
+      }
     } catch {
       /* error in triggerBackupMutation.error */
     }
@@ -180,21 +208,23 @@ export function BackupPanel() {
             <Label className="text-xs font-medium text-text-secondary flex items-center gap-1">
               <Clock size={11} weight="duotone" /> {t(K.superadmin.backup.schedule)}
             </Label>
-            <div className="flex gap-2">
-              <select
+            <div className="flex gap-2 items-center">
+              <Select
                 value={schedule}
-                onChange={(e) =>
-                  void saveConfig({ "backup.schedule": e.target.value })
-                }
+                onValueChange={(v) => void saveConfig({ "backup.schedule": v })}
                 disabled={isSavingConfig}
-                className="flex-1 h-8 rounded-md border border-input bg-transparent px-2 text-xs text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40 disabled:opacity-50"
               >
-                <option value="daily">{t(K.superadmin.backup.dailySchedule)}</option>
-                <option value="weekly">{t(K.superadmin.backup.weeklySchedule)}</option>
-                <option value="monthly">{t(K.superadmin.backup.monthlySchedule)}</option>
-              </select>
+                <SelectTrigger className="h-8 text-xs flex-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily" className="text-xs">{t(K.superadmin.backup.dailySchedule)}</SelectItem>
+                  <SelectItem value="weekly" className="text-xs">{t(K.superadmin.backup.weeklySchedule)}</SelectItem>
+                  <SelectItem value="monthly" className="text-xs">{t(K.superadmin.backup.monthlySchedule)}</SelectItem>
+                </SelectContent>
+              </Select>
               {savedKey === "backup.schedule" && (
-                <CheckCircle size={13} className="text-success self-center" />
+                <CheckCircle size={13} className="text-success shrink-0" />
               )}
             </div>
           </div>
@@ -235,30 +265,54 @@ export function BackupPanel() {
         )}
 
         {/* ② Manual trigger */}
-        <div className="flex items-center gap-3">
-          <Button
-            size="sm"
-            onClick={handleTrigger}
-            disabled={triggerBackupMutation.isPending}
-            className="h-8 gap-1.5 text-xs"
-          >
-            <Play size={13} weight="fill" />
-            {triggerBackupMutation.isPending ? t(K.superadmin.backup.queuing) : t(K.superadmin.backup.runNow)}
-          </Button>
-          {triggerResult && (
-            <span className="text-xs text-success flex items-center gap-1">
-              <CheckCircle size={13} /> {triggerResult}
-            </span>
-          )}
+        <div className="flex items-center gap-3 flex-wrap">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                disabled={triggerBackupMutation.isPending || isBackupRunning}
+                className="h-8 gap-1.5 text-xs"
+              >
+                <Play size={13} weight="fill" />
+                {triggerBackupMutation.isPending
+                  ? t(K.superadmin.backup.queuing)
+                  : t(K.superadmin.backup.runNow)}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Run Backup Now?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will queue an immediate database backup. The process runs
+                  in the background and may take a few minutes.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => void handleTrigger()}>
+                  Run Backup
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           {triggerBackupMutation.error && (
             <span className="text-xs text-danger flex items-center gap-1">
-              <Warning size={13} />{" "}
+              <Warning size={13} />
               {(triggerBackupMutation.error as Error).message}
             </span>
           )}
         </div>
 
-        {/* ③ History table */}
+        {/* ③ Progress card */}
+        {activeJobId && backupProgress && (
+          <BackupProgressCard
+            progress={backupProgress}
+            onRetry={() => setActiveJobId(null)}
+            onDismiss={() => setActiveJobId(null)}
+          />
+        )}
+
+        {/* ④ History table */}
         <div className="space-y-2">
           <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted flex items-center gap-1.5">
             <Database size={11} weight="duotone" /> {t(K.superadmin.backup.recentBackups)}
@@ -276,58 +330,75 @@ export function BackupPanel() {
             </p>
           ) : (
             <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-card hover:bg-card">
-                      <TableHead className="text-xs font-medium text-text-muted">
-                        {t(K.superadmin.backup.filename)}
-                      </TableHead>
-                      <TableHead className="text-xs font-medium text-text-muted">
-                        {t(K.superadmin.backup.size)}
-                      </TableHead>
-                      <TableHead className="text-xs font-medium text-text-muted">
-                        {t(K.superadmin.backup.status)}
-                      </TableHead>
-                      <TableHead className="text-xs font-medium text-text-muted">
-                        {t(K.superadmin.backup.created)}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {history.map((log) => {
-                      const sc =
-                        STATUS_CONFIG[log.status] ?? STATUS_CONFIG.failed;
-                      return (
-                        <TableRow key={log.id} className="hover:bg-elevated/50">
-                          <TableCell className="font-mono text-xs text-text-secondary max-w-[200px] truncate">
-                            {log.filename}
-                          </TableCell>
-                          <TableCell className="text-sm text-text-secondary">
-                            {formatBytes(log.sizeBytes)}
-                          </TableCell>
-                          <TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-card hover:bg-card">
+                    <TableHead className="text-xs font-medium text-text-muted">
+                      {t(K.superadmin.backup.filename)}
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-text-muted">
+                      {t(K.superadmin.backup.size)}
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-text-muted">
+                      {t(K.superadmin.backup.status)}
+                    </TableHead>
+                    <TableHead className="text-xs font-medium text-text-muted">
+                      {t(K.superadmin.backup.created)}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {history.map((log) => {
+                    const sc =
+                      STATUS_CONFIG[log.status] ?? STATUS_CONFIG.failed;
+                    return (
+                      <TableRow key={log.id} className="hover:bg-elevated/50">
+                        <TableCell
+                          className="font-mono text-xs text-text-secondary max-w-[200px] truncate cursor-pointer hover:text-text-primary transition-colors"
+                          title={`${log.filename} — click to copy`}
+                          onClick={() => void navigator.clipboard.writeText(log.filename)}
+                        >
+                          {log.filename}
+                        </TableCell>
+                        <TableCell className="text-sm text-text-secondary">
+                          {formatBytes(log.sizeBytes)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center gap-1.5 text-xs font-medium ${sc.cls}`}
+                          >
                             <span
-                              className={`inline-flex items-center gap-1.5 text-xs font-medium ${sc.cls}`}
-                            >
-                              <span
-                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${sc.dot}`}
-                              />
-                              {log.status === "success"
-                                ? t(K.superadmin.backup.statusSuccess)
-                                : log.status === "partial"
-                                  ? t(K.superadmin.backup.statusPartial)
-                                  : t(K.superadmin.backup.statusFailed)}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-sm text-text-secondary whitespace-nowrap">
-                            {formatDate(log.createdAt)}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                              className={`w-1.5 h-1.5 rounded-full shrink-0 ${sc.dot}`}
+                            />
+                            {log.status === "success"
+                              ? t(K.superadmin.backup.statusSuccess)
+                              : log.status === "partial"
+                                ? t(K.superadmin.backup.statusPartial)
+                                : t(K.superadmin.backup.statusFailed)}
+                          </span>
+                        </TableCell>
+                        <TableCell
+                          className="text-xs text-text-secondary whitespace-nowrap"
+                          title={new Date(log.createdAt).toLocaleString()}
+                        >
+                          {formatDate(log.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
+          )}
+          {history.length >= historyLimit && historyLimit < 50 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="w-full text-xs text-text-muted hover:text-text-primary"
+              onClick={() => setHistoryLimit((l) => Math.min(l + 15, 50))}
+            >
+              Load more
+            </Button>
           )}
         </div>
       </div>

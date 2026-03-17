@@ -8,6 +8,7 @@ export type WidgetId =
   | "kpi-cards"
   | "funnel-activity"
   | "action-strip"
+  | "pending-tasks"
   | "trend-charts";
 
 export interface DashboardWidget {
@@ -19,9 +20,15 @@ export interface DashboardWidget {
 
 const DEFAULT_WIDGETS: DashboardWidget[] = [
   { id: "kpi-cards", label: "KPI Stats", visible: true, order: 0 },
-  { id: "funnel-activity", label: "Funnel & Activity", visible: true, order: 1 },
+  {
+    id: "funnel-activity",
+    label: "Funnel & Activity",
+    visible: true,
+    order: 1,
+  },
   { id: "action-strip", label: "Quick Actions", visible: true, order: 2 },
-  { id: "trend-charts", label: "Trend Charts", visible: true, order: 3 },
+  { id: "pending-tasks", label: "Pending Tasks", visible: true, order: 3 },
+  { id: "trend-charts", label: "Trend Charts", visible: true, order: 4 },
 ];
 
 interface DashboardLayoutState {
@@ -55,7 +62,7 @@ export const useDashboardLayoutStore = create<DashboardLayoutState>()(
     }),
     {
       name: "titan-crm-dashboard-layout",
-      version: 1,
+      version: 2,
     },
   ),
 );

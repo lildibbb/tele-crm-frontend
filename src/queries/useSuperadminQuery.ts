@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./queryKeys";
 import { superadminApi } from "@/lib/api/superadmin";
+import type { GoogleSyncTarget, TriggerSyncResult } from "@/lib/api/superadmin";
 import { analyticsApi } from "@/lib/api/analytics";
 import { auditLogsApi } from "@/lib/api/auditLogs";
 import type { CreateUserInput, ChangeRoleInput } from "@/lib/schemas/user.schema";
@@ -80,6 +81,13 @@ export function useSuperadminSystemHealth() {
   });
 }
 
+export function useSuperadminSentimentTrend() {
+  return useQuery({
+    queryKey: queryKeys.superadmin.sentimentTrend(),
+    queryFn: () => superadminApi.getSentimentTrend(),
+  });
+}
+
 export function useCreateSuperadminUser() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -125,5 +133,20 @@ export function useForceSuperadminPasswordChange() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: ChangePasswordInput }) =>
       superadminApi.forcePasswordChange(id, data),
+  });
+}
+
+export function useTriggerGoogleSync() {
+  return useMutation<TriggerSyncResult, Error, GoogleSyncTarget>({
+    mutationFn: (target: GoogleSyncTarget) =>
+      superadminApi.triggerGoogleSync(target),
+  });
+}
+
+export function useLeadScoreStats() {
+  return useQuery({
+    queryKey: queryKeys.superadmin.leadScoreStats(),
+    queryFn: () => superadminApi.getLeadScoreStats(),
+    staleTime: 60 * 1000,
   });
 }

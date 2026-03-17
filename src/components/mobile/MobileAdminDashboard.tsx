@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAdminDashboardProps {}
+export type MobileAdminDashboardProps = Record<never, never>
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

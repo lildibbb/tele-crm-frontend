@@ -37,6 +37,15 @@ export const queryKeys = {
   verification: {
     all: ["verification"] as const,
   },
+  pendingTasks: {
+    all: ["pendingTasks"] as const,
+    lists: () => ["pendingTasks", "list"] as const,
+    list: (params: Record<string, unknown>) =>
+      ["pendingTasks", "list", params] as const,
+    groupedAll: () => ["pendingTasks", "grouped"] as const,
+    grouped: (params?: Record<string, unknown>) =>
+      ["pendingTasks", "grouped", params] as const,
+  },
   kb: {
     all: ["kb"] as const,
     list: () => ["kb", "list"] as const,
@@ -60,6 +69,8 @@ export const queryKeys = {
     tokenUsage: () => ["superadmin", "tokenUsage"] as const,
     kbHealth: () => ["superadmin", "kbHealth"] as const,
     systemHealth: () => ["superadmin", "system-health"] as const,
+    sentimentTrend: () => ["superadmin", "sentimentTrend"] as const,
+    leadScoreStats: () => ["superadmin", "leadScoreStats"] as const,
   },
   systemConfig: {
     all: ["systemConfig"] as const,

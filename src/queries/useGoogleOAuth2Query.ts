@@ -13,8 +13,8 @@ export function useGoogleOAuth2Status() {
     queryKey: queryKeys.googleOAuth2.status(),
     queryFn: async () => {
       const res = await googleOAuth2Api.getStatus();
-      // Backend returns data directly (not wrapped in ApiResponse)
-      return res.data as GoogleOAuth2Status;
+      // Backend returns data wrapped in SuccessResponseInterceptor
+      return res.data.data as GoogleOAuth2Status;
     },
     staleTime: 30_000,
     retry: false,
@@ -30,7 +30,7 @@ export function useGoogleConnect() {
     mutationFn: async () => {
       // 1. Get the auth URL from the backend
       const res = await googleOAuth2Api.getConnectUrl();
-      const authUrl = (res.data as unknown as { authUrl: string }).authUrl;
+      const authUrl = res.data.data.authUrl;
 
       // 2. Open a popup window with the Google consent screen
       const popup = window.open(

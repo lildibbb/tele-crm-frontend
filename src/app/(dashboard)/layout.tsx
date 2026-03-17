@@ -17,12 +17,12 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { AppSidebar, NAV_ITEMS } from "@/components/app-sidebar";
-import { Button } from "@/components/ui/button";
 
 const PAGE_TITLE_KEYS: Record<string, string> = {
   "/": "nav.commandCenter",
   "/leads": "nav.leadIntelligence",
   "/verification": "nav.verificationQueue",
+  "/pending-tasks": "nav.pendingTasks",
   "/analytics": "nav.analytics",
   "/settings": "settings.botConfig",
   "/settings/knowledge-base": "settings.knowledgeBase",

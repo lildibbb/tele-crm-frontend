@@ -4,9 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import {
   ChartBar,
-  Sliders,
   User,
-  Crown,
   SignOut,
   CaretRight,
   GearSix,
@@ -14,7 +12,7 @@ import {
   Timer,
   ClipboardText,
 } from "@phosphor-icons/react";
-import { Sheet, SheetContent, SheetHeader } from "@/components/ui/sheet";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
@@ -62,7 +60,7 @@ const ROLE_CHIP_CONFIG: Record<
   },
 };
 
-function getQuickLinks(role: UserRole, notifCount: number): QuickLink[] {
+function getQuickLinks(role: UserRole): QuickLink[] {
   const analytics: QuickLink = {
     Icon: ChartBar,
     label: "Analytics",
@@ -83,6 +81,13 @@ function getQuickLinks(role: UserRole, notifCount: number): QuickLink[] {
     href: "/follow-ups",
     iconColor: "text-gold",
     iconBg: "bg-gold-subtle",
+  };
+  const pendingTasks: QuickLink = {
+    Icon: ClipboardText,
+    label: "Pending Tasks",
+    href: "/pending-tasks",
+    iconColor: "text-info",
+    iconBg: "bg-[color-mix(in_srgb,var(--info)_12%,transparent)]",
   };
   const broadcasts: QuickLink = {
     Icon: Megaphone,
@@ -107,12 +112,36 @@ function getQuickLinks(role: UserRole, notifCount: number): QuickLink[] {
   };
 
   if (role === "SUPERADMIN") {
-    return [analytics, auditLogs, followUps, broadcasts, settings, profile];
+    return [
+      analytics,
+      auditLogs,
+      pendingTasks,
+      followUps,
+      broadcasts,
+      settings,
+      profile,
+    ];
   }
   if (role === "OWNER" || role === "ADMIN") {
-    return [analytics, auditLogs, followUps, broadcasts, settings, profile];
+    return [
+      analytics,
+      auditLogs,
+      pendingTasks,
+      followUps,
+      broadcasts,
+      settings,
+      profile,
+    ];
   }
-  return [followUps, broadcasts, settings, profile, auditLogs, analytics];
+  return [
+    pendingTasks,
+    followUps,
+    broadcasts,
+    settings,
+    profile,
+    auditLogs,
+    analytics,
+  ];
 }
 
 // ── Quick Link Cell ────────────────────────────────────────────────────────────
@@ -162,7 +191,7 @@ export default function MobileMoreDrawer({
   const userInitials = userName[0]?.toUpperCase() ?? "U";
 
   const chip = ROLE_CHIP_CONFIG[role];
-  const quickLinks = getQuickLinks(role, 0);
+  const quickLinks = getQuickLinks(role);
 
   const handleNavigate = (href: string) => {
     onClose();

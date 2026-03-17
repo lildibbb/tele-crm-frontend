@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock,
@@ -10,7 +10,6 @@ import {
   Clock,
   Globe,
   SlidersHorizontal,
-  MagnifyingGlass,
   CaretUpDown,
   Check,
   Crosshair,
@@ -319,7 +318,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="space-y-6 animate-in-up">
+    <div data-testid="profile-page" className="space-y-6 animate-in-up">
       {/* Page header */}
       <div>
         <h1 className="font-display font-bold text-xl text-text-primary">
@@ -432,8 +431,9 @@ export default function ProfilePage() {
 
         {/* ── Right: Tabs ─────────────────────────────────── */}
         <Tabs defaultValue="security" className="space-y-4">
-          <TabsList className="bg-elevated border border-border-subtle">
+          <TabsList data-testid="profile-tabs-list" className="bg-elevated border border-border-subtle">
             <TabsTrigger
+              data-testid="profile-tab-security"
               value="security"
               className="flex items-center gap-1.5 text-[13px]"
             >
@@ -441,6 +441,7 @@ export default function ProfilePage() {
               {t(K.profile.tab.account)}
             </TabsTrigger>
             <TabsTrigger
+              data-testid="profile-tab-preferences"
               value="preferences"
               className="flex items-center gap-1.5 text-[13px]"
             >
@@ -448,6 +449,7 @@ export default function ProfilePage() {
               Preferences
             </TabsTrigger>
             <TabsTrigger
+              data-testid="profile-tab-sessions"
               value="sessions"
               className="flex items-center gap-1.5 text-[13px]"
             >
@@ -484,12 +486,13 @@ export default function ProfilePage() {
                     </AlertDescription>
                   </Alert>
                 ) : (
-                  <div className="space-y-3">
+                  <div data-testid="profile-security-form" className="space-y-3">
                     <div className="space-y-1.5">
                       <Label className="text-xs text-text-secondary">
                         {t(K.profile.currentPassword)}
                       </Label>
                       <Input
+                        data-testid="profile-current-password"
                         type="password"
                         value={form.currentPassword}
                         onChange={(e) =>
@@ -508,6 +511,7 @@ export default function ProfilePage() {
                           {t(K.profile.newPassword)}
                         </Label>
                         <Input
+                          data-testid="profile-new-password"
                           type="password"
                           value={form.newPassword}
                           onChange={(e) =>
@@ -525,6 +529,7 @@ export default function ProfilePage() {
                           {t(K.profile.confirmPassword)}
                         </Label>
                         <Input
+                          data-testid="profile-confirm-password"
                           type="password"
                           value={form.confirmPassword}
                           onChange={(e) =>
@@ -549,6 +554,7 @@ export default function ProfilePage() {
 
                     <div className="flex justify-end pt-1">
                       <Button
+                        data-testid="profile-change-password-btn"
                         variant="default"
                         size="sm"
                         onClick={() => void handleChangePassword()}
@@ -640,6 +646,7 @@ export default function ProfilePage() {
                   <Popover open={tzOpen} onOpenChange={setTzOpen}>
                     <PopoverTrigger asChild>
                       <Button
+                        data-testid="profile-timezone-select"
                         variant="outline"
                         role="combobox"
                         aria-expanded={tzOpen}
@@ -729,7 +736,9 @@ export default function ProfilePage() {
 
           {/* Sessions tab */}
           <TabsContent value="sessions">
-            <SessionsTab />
+            <div data-testid="profile-sessions-card">
+              <SessionsTab />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

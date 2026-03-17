@@ -57,7 +57,7 @@ export const LiveActivityFeed = React.memo(function LiveActivityFeed({
             return (
               <Link
                 key={row.id}
-                href={`/leads/${row.id}`}
+                href={`/leads/detail?id=${row.id}`}
                 className="activity-row flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-void/40 transition-colors group"
               >
                 <div

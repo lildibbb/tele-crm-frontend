@@ -2,7 +2,6 @@
 
 import React, { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   SquaresFour,
   Users,
@@ -11,13 +10,14 @@ import {
   Crown,
   DiamondsFour,
   Circle,
+  ClipboardText,
 } from "@phosphor-icons/react";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export type MobileTab = "home" | "leads" | "verify" | "more";
+export type MobileTab = "home" | "leads" | "tasks" | "verify" | "more";
 
 export interface MobileShellProps {
   readonly role?: UserRole;
@@ -96,6 +96,12 @@ function getTabsForRole(role: UserRole): TabItem[] {
       href: "/",
     },
     { id: "leads", label: "Leads", Icon: Users, href: "/leads" },
+    {
+      id: "tasks",
+      label: "Tasks",
+      Icon: ClipboardText,
+      href: "/pending-tasks",
+    },
     { id: "verify", label: "Verify", Icon: ShieldCheck, href: "/verification" },
     { id: "more", label: "More", Icon: DotsThreeOutline, href: "#more" },
   ];
@@ -137,7 +143,6 @@ export default function MobileShell({
   showLiveDot = false,
   onBack,
 }: MobileShellProps) {
-  const pathname = usePathname();
   const { user } = useAuthStore();
 
   const role = roleProp ?? (user?.role as UserRole) ?? "STAFF";

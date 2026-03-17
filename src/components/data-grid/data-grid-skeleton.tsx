@@ -2,7 +2,7 @@ import type * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-interface DivProps extends React.ComponentProps<"div"> {}
+type DivProps = React.ComponentProps<"div">
 
 function DataGridSkeleton({ className, ...props }: DivProps) {
   return (

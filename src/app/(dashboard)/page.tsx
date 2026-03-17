@@ -19,7 +19,6 @@ import { useT, K } from "@/i18n";
 // ── Extracted components ────────────────────────────────────────
 import {
   HeroBanner,
-  PERIODS,
   type PeriodValue,
 } from "@/components/dashboard/HeroBanner";
 import { KpiCards } from "@/components/dashboard/KpiCards";
@@ -44,6 +43,11 @@ const TrendCharts = lazy(() =>
     default: m.TrendCharts,
   })),
 );
+const PendingTasksStrip = lazy(() =>
+  import("@/components/dashboard/PendingTasksStrip").then((m) => ({
+    default: m.PendingTasksStrip,
+  })),
+);
 
 // ── Lazy fallback ──────────────────────────────────────────────
 function ChartSkeleton() {
@@ -66,7 +70,9 @@ export default function DashboardPage() {
   const isMobile = useIsMobile();
   const queryClient = useQueryClient();
 
-  const { data: summary, isLoading, error } = useAnalyticsSummary({ timeframe: period });
+  const { data: summary, isLoading } = useAnalyticsSummary({
+    timeframe: period,
+  });
   const { data: leadsResult } = useLeadsList({ skip: 0, take: 20 });
   const leads = leadsResult?.data ?? [];
   const widgets = useDashboardLayoutStore((s) => s.widgets);
@@ -253,7 +259,10 @@ export default function DashboardPage() {
 
             if (widget.id === "funnel-activity")
               return (
-                <WidgetErrorBoundary key="funnel-activity" widgetName="Funnel & Activity">
+                <WidgetErrorBoundary
+                  key="funnel-activity"
+                  widgetName="Funnel & Activity"
+                >
                   <Suspense fallback={<ChartSkeleton />}>
                     <div className="page-section grid grid-cols-1 xl:grid-cols-7 gap-3 md:gap-4">
                       <FunnelOverview
@@ -282,7 +291,10 @@ export default function DashboardPage() {
 
             if (widget.id === "action-strip")
               return (
-                <WidgetErrorBoundary key="action-strip" widgetName="Action Strip">
+                <WidgetErrorBoundary
+                  key="action-strip"
+                  widgetName="Action Strip"
+                >
                   <ActionStrip
                     pendingVerifications={pendingVerifications}
                     handoverLeadsCount={handoverLeadsCount}
@@ -298,9 +310,32 @@ export default function DashboardPage() {
                 </WidgetErrorBoundary>
               );
 
+            if (widget.id === "pending-tasks")
+              return (
+                <WidgetErrorBoundary
+                  key="pending-tasks"
+                  widgetName="Pending Tasks"
+                >
+                  <Suspense
+                    fallback={
+                      <div className="flex gap-3 overflow-hidden">
+                        <Skeleton className="w-[230px] h-[240px] rounded-xl flex-shrink-0" />
+                        <Skeleton className="w-[230px] h-[240px] rounded-xl flex-shrink-0" />
+                        <Skeleton className="w-[230px] h-[240px] rounded-xl flex-shrink-0" />
+                      </div>
+                    }
+                  >
+                    <PendingTasksStrip />
+                  </Suspense>
+                </WidgetErrorBoundary>
+              );
+
             if (widget.id === "trend-charts")
               return (
-                <WidgetErrorBoundary key="trend-charts" widgetName="Trend Charts">
+                <WidgetErrorBoundary
+                  key="trend-charts"
+                  widgetName="Trend Charts"
+                >
                   <Suspense
                     fallback={
                       <div className="grid grid-cols-1 xl:grid-cols-5 gap-3 md:gap-4">

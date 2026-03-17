@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 import {
   useReactTable,
   getCoreRowModel,
@@ -399,7 +399,8 @@ function RoleDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           className="w-full flex items-center justify-between h-9 px-3 rounded-md border border-input bg-transparent text-sm text-text-primary hover:bg-elevated/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-crimson/40"
         >
@@ -410,7 +411,7 @@ function RoleDropdown({
             {current.label}
           </span>
           <CaretDown size={13} className="opacity-50 flex-shrink-0" />
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
@@ -684,14 +685,14 @@ function ChangeEmailModal({
         { email },
       ),
     onSuccess: () => {
-      toast.success(t(K.superadmin.users.emailUpdated));
+      showToast.success(t(K.superadmin.users.emailUpdated));
       queryClient.invalidateQueries({ queryKey: queryKeys.superadmin.users() });
       setNewEmail("");
       setErr("");
       onClose();
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      showToast.error(error.message);
     },
   });
 
@@ -1136,10 +1137,12 @@ export function UsersPanel() {
                     color: "text-danger",
                   },
                   {
-                    label: t(K.superadmin.users.totalAiTokens),
-                    value: `${(((ragStats.totalPromptTokens ?? 0) + (ragStats.totalCompletionTokens ?? 0)) / 1000).toFixed(1)}k`,
-                    sub: t(K.superadmin.users.cumulativeUsage),
-                    color: "text-[--gold]",
+                    label: "AI Reply Failures",
+                    value: String(ragStats.aiFailedCount ?? 0),
+                    sub: (ragStats.aiFailureRate ?? 0) === 0
+                      ? "0% failure rate"
+                      : `${((ragStats.aiFailureRate ?? 0) * 100).toFixed(1)}% failure rate`,
+                    color: (ragStats.aiFailedCount ?? 0) > 0 ? "text-danger" : "text-success",
                   },
                 ].map(({ label, value, sub, color }) => (
                   <div

@@ -18,6 +18,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Guard test env files
+        run: |
+          set -euo pipefail
+          BLOCKED="$(git ls-files 'tests/**/.env*' ':!:tests/**/.env.example')"
+          if [ -n "$BLOCKED" ]; then
+            echo "Blocked committed env files under tests/:"
+            echo "$BLOCKED"
+            exit 1
+          fi
       - uses: pnpm/action-setup@v4
         with:
           version: 9
@@ -28,11 +37,43 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint
 
-  # ── 2. Build static export ────────────────────────────────
+  # ── 2. Type-check ─────────────────────────────────────────
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run type-check
+
+  # ── 3. Tests ──────────────────────────────────────────────
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+  # ── 4. Build static export ────────────────────────────────
   build:
     name: Build Static Export
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, test, type-check]
 
     steps:
       - uses: actions/checkout@v4
@@ -49,33 +90,36 @@ jobs:
       - name: Build for Staging
         if: github.ref == 'refs/heads/develop'
         env:
-          NEXT_PUBLIC_API_URL: https://crm-api-staging.adibasyraaf.com/api/v1
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL_STAGING || 'https://crm-api-staging.adibasyraaf.com/api/v1' }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_STAGING || 'https://titanjournal-staging.adibasyraaf.com' }}
         run: pnpm build
 
-      # Production build — update NEXT_PUBLIC_API_URL when production domain is ready
+      # Production build
       - name: Build for Production
         if: github.ref == 'refs/heads/main'
         env:
-          NEXT_PUBLIC_API_URL: https://PRODUCTION_DOMAIN_PLACEHOLDER/api/v1
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://api.titanjournal.vip/api/v1' }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://titanjournal.vip' }}
         run: pnpm build
 
       - name: Upload build artifact
+        if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: static-export
           path: out/
           retention-days: 1
 
-  # ── 3. Deploy to Staging Pages ────────────────────────────
+  # ── 5. Deploy to Staging Pages ────────────────────────────
   deploy-staging:
     name: Deploy → titanjournal-crm-staging
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/develop' && github.event_name != 'pull_request'
-    environment: staging
+    environment:
+      name: staging
 
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: static-export
@@ -88,16 +132,16 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy out --project-name titanjournal-crm-staging
 
-  # ── 4. Deploy to Production Pages ────────────────────────
+  # ── 6. Deploy to Production Pages ────────────────────────
   deploy-production:
     name: Deploy → titanjournal
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    environment: production
+    environment:
+      name: production
 
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: static-export

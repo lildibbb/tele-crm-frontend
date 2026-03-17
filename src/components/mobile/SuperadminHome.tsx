@@ -24,9 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { timeAgo } from "@/lib/format";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface SuperadminHomeProps {
-  readonly onOrgClick?: (orgId: string) => void;
-}
+export type SuperadminHomeProps = Record<never, never>;
 
 // ── Skeleton components ────────────────────────────────────────────────────────
 function SkeletonKpiCard() {
@@ -52,7 +50,7 @@ const HEALTH_CHECKS = [
 ];
 
 // ── Main ───────────────────────────────────────────────────────────────────────
-export default function SuperadminHome({ onOrgClick }: SuperadminHomeProps) {
+export default function SuperadminHome(_props: SuperadminHomeProps) {
   const router = useRouter();
   const { data: summary, isLoading } = useAnalyticsSummary();
   const { data: auditLogs = [], isLoading: auditLoading } = useAuditLogs({

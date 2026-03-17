@@ -145,7 +145,7 @@ function StatsHeader({
 }
 
 // ── Props ────────────────────────────────────────────────────────────────────
-export interface MobileAuditLogsProps {}
+export type MobileAuditLogsProps = Record<never, never>
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function MobileAuditLogs({}: MobileAuditLogsProps) {

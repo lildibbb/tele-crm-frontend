@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { ArrowLeft, Mail, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod/v4";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { authApi } from "@/lib/api/auth";
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 // Form schema
 const forgotPasswordSchema = z.object({
@@ -35,7 +36,7 @@ const pageVariants = {
   exit: { opacity: 0, y: -20 },
 };
 
-const iconVariants = {
+const iconVariants: Variants = {
   initial: { scale: 0.5, opacity: 0 },
   animate: {
     scale: 1,
@@ -52,7 +53,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: standardSchemaResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
 
@@ -98,7 +99,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-svh bg-void flex items-center justify-center p-6">
+    <div data-testid="forgot-password-page" className="min-h-svh bg-void flex items-center justify-center p-6">
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
@@ -108,6 +109,9 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="w-full max-w-sm">
+        <div className="flex justify-center mb-6">
+          <TitanLogo variant="full" size="lg" priority />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -119,6 +123,7 @@ export default function ForgotPasswordPage() {
           {/* Back link */}
           <Link
             href="/login"
+            data-testid="forgot-password-back"
             className="inline-flex items-center gap-1.5 text-text-secondary hover:text-text-primary text-sm font-sans transition-colors mb-6"
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
@@ -170,6 +175,7 @@ export default function ForgotPasswordPage() {
                 <AnimatePresence>
                   {error && (
                     <motion.div
+                      data-testid="forgot-password-error"
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -183,6 +189,7 @@ export default function ForgotPasswordPage() {
                 {/* Actions */}
                 <div className="space-y-3">
                   <Button
+                    data-testid="forgot-password-continue"
                     onClick={handleContinue}
                     className="w-full h-12 relative overflow-hidden group"
                     size="lg"
@@ -193,6 +200,7 @@ export default function ForgotPasswordPage() {
                   </Button>
                   
                   <Button
+                    data-testid="forgot-password-resend"
                     variant="ghost"
                     onClick={handleResend}
                     disabled={isLoading}
@@ -212,7 +220,7 @@ export default function ForgotPasswordPage() {
 
                 {/* Help text */}
                 <p className="text-center text-xs text-text-muted mt-6">
-                  Didn't receive the email? Check your spam folder or{" "}
+                  Didn&apos;t receive the email? Check your spam folder or{" "}
                   <button
                     onClick={handleResend}
                     disabled={isLoading}
@@ -247,7 +255,7 @@ export default function ForgotPasswordPage() {
                     Forgot password?
                   </h2>
                   <p className="font-sans text-sm text-text-secondary">
-                    Enter your email and we'll send a 4-digit reset code.
+                    Enter your email and we&apos;ll send a 4-digit reset code.
                   </p>
                 </div>
 
@@ -278,6 +286,7 @@ export default function ForgotPasswordPage() {
                           </FormLabel>
                           <FormControl>
                             <Input
+                              data-testid="forgot-password-email"
                               type="email"
                               placeholder="owner@titanjournal.com"
                               className="h-11 focus-visible:ring-crimson/50 focus-visible:border-crimson"
@@ -290,6 +299,7 @@ export default function ForgotPasswordPage() {
                     />
 
                     <Button
+                      data-testid="forgot-password-submit"
                       type="submit"
                       disabled={isLoading}
                       className="w-full h-12 mt-2 relative overflow-hidden group"

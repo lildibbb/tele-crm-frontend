@@ -1,20 +1,18 @@
 > ⚠️ **This file is auto-generated.** Do not edit manually.
 > Run `pnpm swagger:docs` to regenerate after code changes.
 >
-> Last generated: 2026-02-25T18:56:13.816Z
+> Last generated: 2026-03-14T22:42:51.237Z
 
 ---
-
 title: Titan Journal CRM API v1.0
 language_tabs:
-
-- http: HTTP
-- javascript: JavaScript
-  toc_footers: []
-  includes: []
-  search: false
-  highlight_theme: darkula
-  headingLevel: 2
+  - http: HTTP
+  - javascript: JavaScript
+toc_footers: []
+includes: []
+search: false
+highlight_theme: darkula
+headingLevel: 2
 
 ---
 
@@ -28,14 +26,14 @@ language_tabs:
 
 Base URLs:
 
-- <a href="http://localhost:3001">http://localhost:3001</a>
+* <a href="http://localhost:3001">http://localhost:3001</a>
 
 # Authentication
 
-- HTTP Authentication, scheme: bearer
+- HTTP Authentication, scheme: bearer 
 
 * API Key (cookie)
-  - Parameter Name: **refresh_token**, in: cookie.
+    - Parameter Name: **refresh_token**, in: cookie. 
 
 <h1 id="titan-journal-crm-api-auth">auth</h1>
 
@@ -45,7 +43,7 @@ Base URLs:
 
 `POST /auth/login`
 
-_Unified login (web + Telegram Mini App)_
+*Unified login (web + Telegram Mini App)*
 
 Context-aware login endpoint that handles all three scenarios:
 
@@ -81,26 +79,30 @@ Context-aware login endpoint that handles all three scenarios:
     },
     "deviceId": {
       "type": "string",
-      "example": "device-uuid-v4"
+      "example": "device-uuid-v4",
+      "description": "Unique device identifier (UUID). Must be consistent across logins on the same device."
     },
     "userAgent": {
       "type": "string",
       "example": "Mozilla/5.0 ..."
     }
-  }
+  },
+  "required": [
+    "deviceId"
+  ]
 }
 ```
 
 <h3 id="authcontroller_login-parameters">Parameters</h3>
 
-| Name        | In   | Type                        | Required | Description                                                                                                                                                            |
-| ----------- | ---- | --------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| body        | body | [LoginDto](#schemalogindto) | true     | none                                                                                                                                                                   |
-| » initData  | body | string                      | false    | Telegram WebApp initData from window.Telegram.WebApp.initData. Present when running inside a Telegram Mini App. Send even if empty — backend auto-detects the context. |
-| » email     | body | string                      | false    | User email address. Required when initData is absent.                                                                                                                  |
-| » password  | body | string                      | false    | User password. Required when initData is absent.                                                                                                                       |
-| » deviceId  | body | string                      | false    | none                                                                                                                                                                   |
-| » userAgent | body | string                      | false    | none                                                                                                                                                                   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[LoginDto](#schemalogindto)|true|none|
+|» initData|body|string|false|Telegram WebApp initData from window.Telegram.WebApp.initData. Present when running inside a Telegram Mini App. Send even if empty — backend auto-detects the context.|
+|» email|body|string|false|User email address. Required when initData is absent.|
+|» password|body|string|false|User password. Required when initData is absent.|
+|» deviceId|body|string|true|Unique device identifier (UUID). Must be consistent across logins on the same device.|
+|» userAgent|body|string|false|none|
 
 > Example responses
 
@@ -141,7 +143,12 @@ Context-aware login endpoint that handles all three scenarios:
             "role": {
               "type": "string",
               "example": "ADMIN",
-              "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+              "enum": [
+                "SUPERADMIN",
+                "OWNER",
+                "ADMIN",
+                "STAFF"
+              ],
               "description": "RBAC role"
             },
             "isActive": {
@@ -167,6 +174,11 @@ Context-aware login endpoint that handles all three scenarios:
               "nullable": true,
               "description": "IP address from the last login"
             },
+            "timezone": {
+              "type": "string",
+              "example": "Asia/Kuala_Lumpur",
+              "description": "User preferred IANA timezone for analytics date boundaries"
+            },
             "createdAt": {
               "format": "date-time",
               "type": "string",
@@ -188,12 +200,16 @@ Context-aware login endpoint that handles all three scenarios:
             "telegramId",
             "lastLoginAt",
             "lastIpAddress",
+            "timezone",
             "createdAt",
             "updatedAt"
           ]
         }
       },
-      "required": ["accessToken", "user"]
+      "required": [
+        "accessToken",
+        "user"
+      ]
     }
   }
 }
@@ -201,50 +217,51 @@ Context-aware login endpoint that handles all three scenarios:
 
 <h3 id="authcontroller_login-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                                                                                           | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | Login successful                                                                                      | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)          | Unauthorized — invalid credentials, invalid initData, or TELEGRAM_NOT_LINKED (account not yet linked) | Inline |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                                                                                     | None   |
-| 429    | [Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)       | Too many requests – rate limit exceeded                                                               | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Login successful|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized — invalid credentials, invalid initData, or TELEGRAM_NOT_LINKED (account not yet linked)|Inline|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+|429|[Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)|Too many requests – rate limit exceeded|None|
 
 <h3 id="authcontroller_login-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                      | Required | Restrictions | Description                                                                  |
-| ----------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------------- |
-| » statusCode      | number                                    | false    | none         | none                                                                         |
-| » message         | string                                    | false    | none         | none                                                                         |
-| » data            | [AuthResponseDto](#schemaauthresponsedto) | false    | none         | none                                                                         |
-| »» accessToken    | string                                    | true     | none         | Short-lived JWT access token (15 min). Send as Authorization: Bearer <token> |
-| »» user           | [UserResponseDto](#schemauserresponsedto) | true     | none         | none                                                                         |
-| »»» id            | string                                    | true     | none         | User UUID                                                                    |
-| »»» email         | string                                    | true     | none         | User email address                                                           |
-| »»» role          | string                                    | true     | none         | RBAC role                                                                    |
-| »»» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in                                |
-| »»» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked.                   |
-| »»» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                                           |
-| »»» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                                               |
-| »»» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                                   |
-| »»» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                                                |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[AuthResponseDto](#schemaauthresponsedto)|false|none|none|
+|»» accessToken|string|true|none|Short-lived JWT access token (15 min). Send as Authorization: Bearer <token>|
+|»» user|[UserResponseDto](#schemauserresponsedto)|true|none|none|
+|»»» id|string|true|none|User UUID|
+|»»» email|string|true|none|User email address|
+|»»» role|string|true|none|RBAC role|
+|»»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 Status Code **401**
 
-| Name         | Type   | Required | Restrictions | Description                                                   |
-| ------------ | ------ | -------- | ------------ | ------------------------------------------------------------- |
-| » statusCode | number | false    | none         | none                                                          |
-| » message    | string | false    | none         | none                                                          |
-| » code       | string | false    | none         | Present only when initData is valid but account is not linked |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» code|string|false|none|Present only when initData is valid but account is not linked|
 
 <aside class="success">
 This operation does not require authentication
@@ -256,9 +273,9 @@ This operation does not require authentication
 
 `POST /auth/refresh`
 
-_Refresh access token_
+*Refresh access token*
 
-Reads the refresh_token HTTP-Only cookie and issues a new short-lived access token.
+Reads the refresh_token HTTP-Only cookie and issues a new short-lived access token. The refresh token is rotated on each call for security.
 
 > Example responses
 
@@ -277,6 +294,9 @@ Reads the refresh_token HTTP-Only cookie and issues a new short-lived access tok
       "properties": {
         "accessToken": {
           "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
         }
       }
     }
@@ -286,22 +306,23 @@ Reads the refresh_token HTTP-Only cookie and issues a new short-lived access tok
 
 <h3 id="authcontroller_refresh-responses">Responses</h3>
 
-| Status | Meaning                                                            | Description                             | Schema |
-| ------ | ------------------------------------------------------------------ | --------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)            | Token refreshed                         | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)    | Unauthorized – invalid or missing JWT   | None   |
-| 429    | [Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4) | Too many requests – rate limit exceeded | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Token refreshed - returns new accessToken and refreshToken|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|429|[Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)|Too many requests – rate limit exceeded|None|
 
 <h3 id="authcontroller_refresh-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name           | Type   | Required | Restrictions | Description |
-| -------------- | ------ | -------- | ------------ | ----------- |
-| » statusCode   | number | false    | none         | none        |
-| » message      | string | false    | none         | none        |
-| » data         | object | false    | none         | none        |
-| »» accessToken | string | false    | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|object|false|none|none|
+|»» accessToken|string|false|none|none|
+|»» refreshToken|string|false|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -314,20 +335,79 @@ cookie
 
 `POST /auth/logout`
 
-_Logout current session_
+*Logout current session*
 
 Revokes current session and clears the refresh cookie.
 
 <h3 id="authcontroller_logout-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | Logged out successfully               | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Logged out successfully|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
 bearer
+</aside>
+
+## AuthController_getInvitationInfo
+
+<a id="opIdAuthController_getInvitationInfo"></a>
+
+`GET /auth/invitation-info`
+
+*Get invitation info*
+
+Returns public metadata (email, role) for a valid pending invitation. Used by the setup-account page to determine whether to show the email field. Does NOT consume the token.
+
+<h3 id="authcontroller_getinvitationinfo-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|token|query|string|true|Invitation token (inv_<32 hex chars>)|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": false
+  }
+}
+```
+
+<h3 id="authcontroller_getinvitationinfo-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Invitation info retrieved|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|Bad request – invalid input or business rule violation|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+|429|[Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)|Too many requests – rate limit exceeded|None|
+
+<h3 id="authcontroller_getinvitationinfo-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|any|false|none|none|
+
+<aside class="success">
+This operation does not require authentication
 </aside>
 
 ## AuthController_setupAccount
@@ -336,7 +416,7 @@ bearer
 
 `POST /auth/setup-account`
 
-_Setup invited account_
+*Setup invited account*
 
 Completes onboarding for an invited user: validates invitation token + Telegram initData, creates user, sets session.
 
@@ -356,11 +436,6 @@ Completes onboarding for an invited user: validates invitation token + Telegram 
       "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram).",
       "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
     },
-    "email": {
-      "type": "string",
-      "example": "newuser@crm.com",
-      "description": "Email to set for this new account"
-    },
     "password": {
       "type": "string",
       "example": "P@ssw0rd!",
@@ -370,7 +445,7 @@ Completes onboarding for an invited user: validates invitation token + Telegram 
     "deviceId": {
       "type": "string",
       "example": "device-uuid-v4",
-      "description": "Unique device identifier for session tracking"
+      "description": "Unique device identifier (UUID). Must be consistent across sessions on the same device."
     },
     "userAgent": {
       "type": "string",
@@ -378,21 +453,24 @@ Completes onboarding for an invited user: validates invitation token + Telegram 
       "description": "Device user agent string"
     }
   },
-  "required": ["invitationToken", "email", "password"]
+  "required": [
+    "invitationToken",
+    "password",
+    "deviceId"
+  ]
 }
 ```
 
 <h3 id="authcontroller_setupaccount-parameters">Parameters</h3>
 
-| Name              | In   | Type                                      | Required | Description                                                                                                                                                                                                                                                                                                                              |
-| ----------------- | ---- | ----------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| body              | body | [SetupAccountDto](#schemasetupaccountdto) | true     | none                                                                                                                                                                                                                                                                                                                                     |
-| » invitationToken | body | string                                    | true     | Invitation token starting with inv\_ received via Telegram deep link                                                                                                                                                                                                                                                                     |
-| » initData        | body | string                                    | false    | Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram). |
-| » email           | body | string                                    | true     | Email to set for this new account                                                                                                                                                                                                                                                                                                        |
-| » password        | body | string                                    | true     | Password to set (min 8 characters)                                                                                                                                                                                                                                                                                                       |
-| » deviceId        | body | string                                    | false    | Unique device identifier for session tracking                                                                                                                                                                                                                                                                                            |
-| » userAgent       | body | string                                    | false    | Device user agent string                                                                                                                                                                                                                                                                                                                 |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[SetupAccountDto](#schemasetupaccountdto)|true|none|
+|» invitationToken|body|string|true|Invitation token starting with inv_ received via Telegram deep link|
+|» initData|body|string|false|Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram).|
+|» password|body|string|true|Password to set (min 8 characters)|
+|» deviceId|body|string|true|Unique device identifier (UUID). Must be consistent across sessions on the same device.|
+|» userAgent|body|string|false|Device user agent string|
 
 > Example responses
 
@@ -433,7 +511,12 @@ Completes onboarding for an invited user: validates invitation token + Telegram 
             "role": {
               "type": "string",
               "example": "ADMIN",
-              "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+              "enum": [
+                "SUPERADMIN",
+                "OWNER",
+                "ADMIN",
+                "STAFF"
+              ],
               "description": "RBAC role"
             },
             "isActive": {
@@ -459,6 +542,11 @@ Completes onboarding for an invited user: validates invitation token + Telegram 
               "nullable": true,
               "description": "IP address from the last login"
             },
+            "timezone": {
+              "type": "string",
+              "example": "Asia/Kuala_Lumpur",
+              "description": "User preferred IANA timezone for analytics date boundaries"
+            },
             "createdAt": {
               "format": "date-time",
               "type": "string",
@@ -480,12 +568,16 @@ Completes onboarding for an invited user: validates invitation token + Telegram 
             "telegramId",
             "lastLoginAt",
             "lastIpAddress",
+            "timezone",
             "createdAt",
             "updatedAt"
           ]
         }
       },
-      "required": ["accessToken", "user"]
+      "required": [
+        "accessToken",
+        "user"
+      ]
     }
   }
 }
@@ -493,42 +585,43 @@ Completes onboarding for an invited user: validates invitation token + Telegram 
 
 <h3 id="authcontroller_setupaccount-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                             | Schema |
-| ------ | ------------------------------------------------------------------------ | --------------------------------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)             | Account created and logged in           | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)          | Unauthorized – invalid or missing JWT   | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                       | None   |
-| 429    | [Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)       | Too many requests – rate limit exceeded | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Account created and logged in|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+|429|[Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)|Too many requests – rate limit exceeded|None|
 
 <h3 id="authcontroller_setupaccount-responseschema">Response Schema</h3>
 
 Status Code **201**
 
-| Name              | Type                                      | Required | Restrictions | Description                                                                  |
-| ----------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------------- |
-| » statusCode      | number                                    | false    | none         | none                                                                         |
-| » message         | string                                    | false    | none         | none                                                                         |
-| » data            | [AuthResponseDto](#schemaauthresponsedto) | false    | none         | none                                                                         |
-| »» accessToken    | string                                    | true     | none         | Short-lived JWT access token (15 min). Send as Authorization: Bearer <token> |
-| »» user           | [UserResponseDto](#schemauserresponsedto) | true     | none         | none                                                                         |
-| »»» id            | string                                    | true     | none         | User UUID                                                                    |
-| »»» email         | string                                    | true     | none         | User email address                                                           |
-| »»» role          | string                                    | true     | none         | RBAC role                                                                    |
-| »»» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in                                |
-| »»» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked.                   |
-| »»» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                                           |
-| »»» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                                               |
-| »»» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                                   |
-| »»» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                                                |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[AuthResponseDto](#schemaauthresponsedto)|false|none|none|
+|»» accessToken|string|true|none|Short-lived JWT access token (15 min). Send as Authorization: Bearer <token>|
+|»» user|[UserResponseDto](#schemauserresponsedto)|true|none|none|
+|»»» id|string|true|none|User UUID|
+|»»» email|string|true|none|User email address|
+|»»» role|string|true|none|RBAC role|
+|»»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="success">
 This operation does not require authentication
@@ -540,7 +633,7 @@ This operation does not require authentication
 
 `GET /auth/sessions`
 
-_List active sessions_
+*List active sessions*
 
 Returns all non-revoked, non-expired sessions for the authenticated user.
 
@@ -629,28 +722,28 @@ Returns all non-revoked, non-expired sessions for the authenticated user.
 
 <h3 id="authcontroller_getsessions-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Sessions retrieved                    | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Sessions retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
 
 <h3 id="authcontroller_getsessions-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name            | Type                                              | Required | Restrictions | Description                                           |
-| --------------- | ------------------------------------------------- | -------- | ------------ | ----------------------------------------------------- |
-| » statusCode    | number                                            | false    | none         | none                                                  |
-| » message       | string                                            | false    | none         | none                                                  |
-| » data          | [[SessionResponseDto](#schemasessionresponsedto)] | false    | none         | none                                                  |
-| »» id           | string                                            | true     | none         | Session UUID                                          |
-| »» deviceId     | object¦null                                       | true     | none         | Unique device identifier                              |
-| »» userAgent    | object¦null                                       | true     | none         | Browser/app user agent string                         |
-| »» ipAddress    | object¦null                                       | true     | none         | Last known IP address for this session                |
-| »» lastActiveAt | string(date-time)                                 | true     | none         | Timestamp of last API activity                        |
-| »» createdAt    | string(date-time)                                 | true     | none         | When this session was created                         |
-| »» expiresAt    | string(date-time)                                 | true     | none         | When the refresh token expires (7 days from creation) |
-| »» isRevoked    | boolean                                           | true     | none         | True if this session has been manually revoked        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[SessionResponseDto](#schemasessionresponsedto)]|false|none|none|
+|»» id|string|true|none|Session UUID|
+|»» deviceId|object¦null|true|none|Unique device identifier|
+|»» userAgent|object¦null|true|none|Browser/app user agent string|
+|»» ipAddress|object¦null|true|none|Last known IP address for this session|
+|»» lastActiveAt|string(date-time)|true|none|Timestamp of last API activity|
+|»» createdAt|string(date-time)|true|none|When this session was created|
+|»» expiresAt|string(date-time)|true|none|When the refresh token expires (7 days from creation)|
+|»» isRevoked|boolean|true|none|True if this session has been manually revoked|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -663,16 +756,16 @@ bearer
 
 `DELETE /auth/sessions`
 
-_Logout everywhere_
+*Logout everywhere*
 
 Revokes ALL sessions for the current user and clears the refresh cookie.
 
 <h3 id="authcontroller_revokeallsessions-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | All sessions revoked                  | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|All sessions revoked|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -685,23 +778,23 @@ bearer
 
 `DELETE /auth/sessions/{sessionId}`
 
-_Revoke a session_
+*Revoke a session*
 
 Remote-wipe a specific session by UUID (sign out a device).
 
 <h3 id="authcontroller_revokesession-parameters">Parameters</h3>
 
-| Name      | In   | Type         | Required | Description          |
-| --------- | ---- | ------------ | -------- | -------------------- |
-| sessionId | path | string(uuid) | true     | Session ID to revoke |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|sessionId|path|string(uuid)|true|Session ID to revoke|
 
 <h3 id="authcontroller_revokesession-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | Session revoked                       | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Session revoked|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -714,7 +807,7 @@ bearer
 
 `POST /auth/forgot-password`
 
-_Request password reset_
+*Request password reset*
 
 Sends a 4-digit OTP to the provided email. Always returns 200 to prevent email enumeration. Rate-limited to 3 requests per 15 minutes.
 
@@ -730,16 +823,18 @@ Sends a 4-digit OTP to the provided email. Always returns 200 to prevent email e
       "description": "Account email address"
     }
   },
-  "required": ["email"]
+  "required": [
+    "email"
+  ]
 }
 ```
 
 <h3 id="authcontroller_forgotpassword-parameters">Parameters</h3>
 
-| Name    | In   | Type                                          | Required | Description           |
-| ------- | ---- | --------------------------------------------- | -------- | --------------------- |
-| body    | body | [ForgotPasswordDto](#schemaforgotpassworddto) | true     | none                  |
-| » email | body | string                                        | true     | Account email address |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[ForgotPasswordDto](#schemaforgotpassworddto)|true|none|
+|» email|body|string|true|Account email address|
 
 > Example responses
 
@@ -762,20 +857,20 @@ Sends a 4-digit OTP to the provided email. Always returns 200 to prevent email e
 
 <h3 id="authcontroller_forgotpassword-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                                       | Schema |
-| ------ | ------------------------------------------------------------------------ | ------------------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | OTP sent (or silently ignored if email not found) | Inline |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                                 | None   |
-| 429    | [Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)       | Too many requests – rate limit exceeded           | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|OTP sent (or silently ignored if email not found)|Inline|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+|429|[Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)|Too many requests – rate limit exceeded|None|
 
 <h3 id="authcontroller_forgotpassword-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type   | Required | Restrictions | Description |
-| ------------ | ------ | -------- | ------------ | ----------- |
-| » statusCode | number | false    | none         | none        |
-| » message    | string | false    | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
 
 <aside class="success">
 This operation does not require authentication
@@ -787,7 +882,7 @@ This operation does not require authentication
 
 `POST /auth/reset-password`
 
-_Reset password with OTP_
+*Reset password with OTP*
 
 Validates the 4-digit OTP and sets a new password. Max 3 failed attempts — the code is invalidated after 3 failures or on success.
 
@@ -816,18 +911,22 @@ Validates the 4-digit OTP and sets a new password. Max 3 failed attempts — the
       "description": "New password (min 8 characters)"
     }
   },
-  "required": ["email", "code", "newPassword"]
+  "required": [
+    "email",
+    "code",
+    "newPassword"
+  ]
 }
 ```
 
 <h3 id="authcontroller_resetpassword-parameters">Parameters</h3>
 
-| Name          | In   | Type                                        | Required | Description                     |
-| ------------- | ---- | ------------------------------------------- | -------- | ------------------------------- |
-| body          | body | [ResetPasswordDto](#schemaresetpassworddto) | true     | none                            |
-| » email       | body | string                                      | true     | Account email address           |
-| » code        | body | string                                      | true     | 4-digit OTP sent to your email  |
-| » newPassword | body | string                                      | true     | New password (min 8 characters) |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[ResetPasswordDto](#schemaresetpassworddto)|true|none|
+|» email|body|string|true|Account email address|
+|» code|body|string|true|4-digit OTP sent to your email|
+|» newPassword|body|string|true|New password (min 8 characters)|
 
 > Example responses
 
@@ -850,21 +949,21 @@ Validates the 4-digit OTP and sets a new password. Max 3 failed attempts — the
 
 <h3 id="authcontroller_resetpassword-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                                            | Schema |
-| ------ | ------------------------------------------------------------------------ | ------------------------------------------------------ | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | Password reset successfully                            | Inline |
-| 400    | [Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)         | Bad request – invalid input or business rule violation | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                                      | None   |
-| 429    | [Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)       | Too many requests – rate limit exceeded                | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Password reset successfully|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|Bad request – invalid input or business rule violation|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+|429|[Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)|Too many requests – rate limit exceeded|None|
 
 <h3 id="authcontroller_resetpassword-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type   | Required | Restrictions | Description |
-| ------------ | ------ | -------- | ------------ | ----------- |
-| » statusCode | number | false    | none         | none        |
-| » message    | string | false    | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
 
 <aside class="success">
 This operation does not require authentication
@@ -876,7 +975,7 @@ This operation does not require authentication
 
 `PATCH /auth/change-own-password`
 
-_Change own password_
+*Change own password*
 
 Authenticated users can change their own password by providing their current password. All sessions are revoked on success.
 
@@ -903,27 +1002,31 @@ Authenticated users can change their own password by providing their current pas
       "example": "N3wP@ssword!"
     }
   },
-  "required": ["currentPassword", "newPassword", "confirmPassword"]
+  "required": [
+    "currentPassword",
+    "newPassword",
+    "confirmPassword"
+  ]
 }
 ```
 
 <h3 id="authcontroller_changeownpassword-parameters">Parameters</h3>
 
-| Name              | In   | Type                                                | Required | Description                                  |
-| ----------------- | ---- | --------------------------------------------------- | -------- | -------------------------------------------- |
-| body              | body | [ChangeOwnPasswordDto](#schemachangeownpassworddto) | true     | none                                         |
-| » currentPassword | body | string                                              | true     | Your current password                        |
-| » newPassword     | body | string                                              | true     | New password (min 8 characters)              |
-| » confirmPassword | body | string                                              | true     | Repeat new password — must match newPassword |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[ChangeOwnPasswordDto](#schemachangeownpassworddto)|true|none|
+|» currentPassword|body|string|true|Your current password|
+|» newPassword|body|string|true|New password (min 8 characters)|
+|» confirmPassword|body|string|true|Repeat new password — must match newPassword|
 
 <h3 id="authcontroller_changeownpassword-responses">Responses</h3>
 
-| Status | Meaning                                                            | Description                                            | Schema |
-| ------ | ------------------------------------------------------------------ | ------------------------------------------------------ | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)    | Password changed — all sessions revoked                | None   |
-| 400    | [Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)   | Bad request – invalid input or business rule violation | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)    | Unauthorized – invalid or missing JWT                  | None   |
-| 429    | [Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4) | Too many requests – rate limit exceeded                | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Password changed — all sessions revoked|None|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|Bad request – invalid input or business rule violation|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|429|[Too Many Requests](https://tools.ietf.org/html/rfc6585#section-4)|Too many requests – rate limit exceeded|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -938,7 +1041,7 @@ bearer
 
 `GET /users`
 
-_List all users_
+*List all users*
 
 Returns all CRM system users. Requires ADMIN role or higher.
 
@@ -975,7 +1078,12 @@ Returns all CRM system users. Requires ADMIN role or higher.
           "role": {
             "type": "string",
             "example": "ADMIN",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "description": "RBAC role"
           },
           "isActive": {
@@ -1001,6 +1109,11 @@ Returns all CRM system users. Requires ADMIN role or higher.
             "nullable": true,
             "description": "IP address from the last login"
           },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kuala_Lumpur",
+            "description": "User preferred IANA timezone for analytics date boundaries"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string",
@@ -1022,6 +1135,7 @@ Returns all CRM system users. Requires ADMIN role or higher.
           "telegramId",
           "lastLoginAt",
           "lastIpAddress",
+          "timezone",
           "createdAt",
           "updatedAt"
         ]
@@ -1033,39 +1147,214 @@ Returns all CRM system users. Requires ADMIN role or higher.
 
 <h3 id="userscontroller_findall-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Users retrieved                       | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Users retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="userscontroller_findall-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                        | Required | Restrictions | Description                                                |
-| ---------------- | ------------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                      | false    | none         | none                                                       |
-| » message        | string                                      | false    | none         | none                                                       |
-| » data           | [[UserResponseDto](#schemauserresponsedto)] | false    | none         | none                                                       |
-| »» id            | string                                      | true     | none         | User UUID                                                  |
-| »» email         | string                                      | true     | none         | User email address                                         |
-| »» role          | string                                      | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                     | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                                 | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                                 | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                                 | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                           | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                           | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[UserResponseDto](#schemauserresponsedto)]|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## UsersController_updateTimezone
+
+<a id="opIdUsersController_updateTimezone"></a>
+
+`PATCH /users/me/timezone`
+
+*Update own timezone*
+
+Saves the authenticated user's preferred IANA timezone. Used by analytics to compute correct date boundaries.
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "timezone": {
+      "type": "string",
+      "description": "IANA timezone name",
+      "example": "Asia/Kuala_Lumpur"
+    }
+  },
+  "required": [
+    "timezone"
+  ]
+}
+```
+
+<h3 id="userscontroller_updatetimezone-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[UpdateTimezoneDto](#schemaupdatetimezonedto)|true|none|
+|» timezone|body|string|true|IANA timezone name|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "description": "User UUID"
+        },
+        "email": {
+          "type": "string",
+          "example": "superadmin@yopmail.com",
+          "description": "User email address"
+        },
+        "role": {
+          "type": "string",
+          "example": "ADMIN",
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
+          "description": "RBAC role"
+        },
+        "isActive": {
+          "type": "boolean",
+          "example": true,
+          "description": "Whether this account is active and can log in"
+        },
+        "telegramId": {
+          "type": "object",
+          "example": "987654321",
+          "nullable": true,
+          "description": "Telegram user ID linked for TMA login. Null if not linked."
+        },
+        "lastLoginAt": {
+          "type": "object",
+          "example": "2026-02-24T08:30:00.000Z",
+          "nullable": true,
+          "description": "Timestamp of last successful login"
+        },
+        "lastIpAddress": {
+          "type": "object",
+          "example": "103.10.20.5",
+          "nullable": true,
+          "description": "IP address from the last login"
+        },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-01-15T10:00:00.000Z",
+          "description": "Account creation timestamp"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-24T08:30:00.000Z",
+          "description": "Last profile update timestamp"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "role",
+        "isActive",
+        "telegramId",
+        "lastLoginAt",
+        "lastIpAddress",
+        "timezone",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  }
+}
+```
+
+<h3 id="userscontroller_updatetimezone-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Timezone updated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<h3 id="userscontroller_updatetimezone-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1078,7 +1367,7 @@ bearer
 
 `GET /users/me`
 
-_Get own profile_
+*Get own profile*
 
 Returns the authenticated user's profile.
 
@@ -1113,7 +1402,12 @@ Returns the authenticated user's profile.
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -1139,6 +1433,11 @@ Returns the authenticated user's profile.
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -1160,6 +1459,7 @@ Returns the authenticated user's profile.
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -1170,38 +1470,39 @@ Returns the authenticated user's profile.
 
 <h3 id="userscontroller_getme-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Profile retrieved                     | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Profile retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
 
 <h3 id="userscontroller_getme-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1214,9 +1515,9 @@ bearer
 
 `GET /users/invitations`
 
-_List invitations_
+*List invitations*
 
-Returns all pending and accepted invitations.
+Returns active pending invitations (not yet accepted, not expired).
 
 > Example responses
 
@@ -1246,7 +1547,12 @@ Returns all pending and accepted invitations.
           "role": {
             "type": "string",
             "example": "STAFF",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "description": "Role that will be assigned upon account setup"
           },
           "email": {
@@ -1288,36 +1594,36 @@ Returns all pending and accepted invitations.
 
 <h3 id="userscontroller_listinvitations-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Invitations retrieved                 | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Invitations retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="userscontroller_listinvitations-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name                | Type                                                    | Required | Restrictions | Description                                                                 |
-| ------------------- | ------------------------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode        | number                                                  | false    | none         | none                                                                        |
-| » message           | string                                                  | false    | none         | none                                                                        |
-| » data              | [[InvitationResponseDto](#schemainvitationresponsedto)] | false    | none         | none                                                                        |
-| »» id               | string                                                  | true     | none         | Invitation UUID                                                             |
-| »» role             | string                                                  | true     | none         | Role that will be assigned upon account setup                               |
-| »» email            | object¦null                                             | true     | none         | Pre-filled email (if provided during invite creation)                       |
-| »» telegramDeepLink | string                                                  | true     | none         | Telegram deep link the invited user must open. Embeds the invitation token. |
-| »» expiresAt        | string(date-time)                                       | true     | none         | Invitation expires 7 days after creation. Invalid after this timestamp.     |
-| »» createdAt        | string(date-time)                                       | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[InvitationResponseDto](#schemainvitationresponsedto)]|false|none|none|
+|»» id|string|true|none|Invitation UUID|
+|»» role|string|true|none|Role that will be assigned upon account setup|
+|»» email|object¦null|true|none|Pre-filled email (if provided during invite creation)|
+|»» telegramDeepLink|string|true|none|Telegram deep link the invited user must open. Embeds the invitation token.|
+|»» expiresAt|string(date-time)|true|none|Invitation expires 7 days after creation. Invalid after this timestamp.|
+|»» createdAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1330,13 +1636,13 @@ bearer
 
 `GET /users/{id}`
 
-_Get user by ID_
+*Get user by ID*
 
 <h3 id="userscontroller_findbyid-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | User UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
 
 > Example responses
 
@@ -1369,7 +1675,12 @@ _Get user by ID_
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -1395,6 +1706,11 @@ _Get user by ID_
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -1416,6 +1732,7 @@ _Get user by ID_
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -1426,40 +1743,41 @@ _Get user by ID_
 
 <h3 id="userscontroller_findbyid-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | User retrieved                        | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|User retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="userscontroller_findbyid-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1472,24 +1790,24 @@ bearer
 
 `PATCH /users/{id}/deactivate`
 
-_Deactivate user_
+*Deactivate user*
 
 Deactivates the user and instantly revokes all their sessions (SUPERADMIN only).
 
 <h3 id="userscontroller_deactivate-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | User UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
 
 <h3 id="userscontroller_deactivate-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                               | Schema |
-| ------ | --------------------------------------------------------------- | ----------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | User deactivated and all sessions revoked | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT     | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role             | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                        | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|User deactivated and all sessions revoked|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1502,7 +1820,7 @@ bearer
 
 `PATCH /users/{id}/change-password`
 
-_Force password change_
+*Force password change*
 
 Resets a user's password and revokes all their sessions (SUPERADMIN only).
 
@@ -1516,27 +1834,29 @@ Resets a user's password and revokes all their sessions (SUPERADMIN only).
       "type": "string"
     }
   },
-  "required": ["newPassword"]
+  "required": [
+    "newPassword"
+  ]
 }
 ```
 
 <h3 id="userscontroller_changepassword-parameters">Parameters</h3>
 
-| Name          | In   | Type                                          | Required | Description |
-| ------------- | ---- | --------------------------------------------- | -------- | ----------- |
-| id            | path | string(uuid)                                  | true     | User UUID   |
-| body          | body | [ChangePasswordDto](#schemachangepassworddto) | true     | none        |
-| » newPassword | body | string                                        | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
+|body|body|[ChangePasswordDto](#schemachangepassworddto)|true|none|
+|» newPassword|body|string|true|none|
 
 <h3 id="userscontroller_changepassword-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                               | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)          | Password changed and all sessions revoked | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)          | Unauthorized – invalid or missing JWT     | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)           | Forbidden – insufficient role             | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)           | Resource not found                        | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Password changed and all sessions revoked|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1549,7 +1869,7 @@ bearer
 
 `POST /users/invite`
 
-_Invite a team member_
+*Invite a team member*
 
 Creates an invitation with a Telegram deep link for onboarding a new CRM user.
 
@@ -1561,36 +1881,44 @@ Creates an invitation with a Telegram deep link for onboarding a new CRM user.
   "properties": {
     "role": {
       "type": "string",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "example": "STAFF",
       "description": "Role to assign to the invited user"
     },
     "email": {
       "type": "string",
       "example": "newstaff@crm.com",
-      "description": "Pre-fill email for the invited user (optional). They can set it during setup."
+      "description": "Email address for the invited user. This is used as their CRM login — the invitee will not be prompted to enter an email during setup."
     }
   },
-  "required": ["role"]
+  "required": [
+    "role",
+    "email"
+  ]
 }
 ```
 
 <h3 id="userscontroller_invite-parameters">Parameters</h3>
 
-| Name    | In   | Type                                  | Required | Description                                                                   |
-| ------- | ---- | ------------------------------------- | -------- | ----------------------------------------------------------------------------- |
-| body    | body | [InviteUserDto](#schemainviteuserdto) | true     | none                                                                          |
-| » role  | body | string                                | true     | Role to assign to the invited user                                            |
-| » email | body | string                                | false    | Pre-fill email for the invited user (optional). They can set it during setup. |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[InviteUserDto](#schemainviteuserdto)|true|none|
+|» role|body|string|true|Role to assign to the invited user|
+|» email|body|string|true|Email address for the invited user. This is used as their CRM login — the invitee will not be prompted to enter an email during setup.|
 
 #### Enumerated Values
 
-| Parameter | Value      |
-| --------- | ---------- |
-| » role    | SUPERADMIN |
-| » role    | OWNER      |
-| » role    | ADMIN      |
-| » role    | STAFF      |
+|Parameter|Value|
+|---|---|
+|» role|SUPERADMIN|
+|» role|OWNER|
+|» role|ADMIN|
+|» role|STAFF|
 
 > Example responses
 
@@ -1618,7 +1946,12 @@ Creates an invitation with a Telegram deep link for onboarding a new CRM user.
         "role": {
           "type": "string",
           "example": "STAFF",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "Role that will be assigned upon account setup"
         },
         "email": {
@@ -1659,37 +1992,37 @@ Creates an invitation with a Telegram deep link for onboarding a new CRM user.
 
 <h3 id="userscontroller_invite-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                           | Schema |
-| ------ | ------------------------------------------------------------------------ | ------------------------------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)             | Invitation created                    | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)          | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)           | Forbidden – insufficient role         | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                     | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Invitation created|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <h3 id="userscontroller_invite-responseschema">Response Schema</h3>
 
 Status Code **201**
 
-| Name                | Type                                                  | Required | Restrictions | Description                                                                 |
-| ------------------- | ----------------------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode        | number                                                | false    | none         | none                                                                        |
-| » message           | string                                                | false    | none         | none                                                                        |
-| » data              | [InvitationResponseDto](#schemainvitationresponsedto) | false    | none         | none                                                                        |
-| »» id               | string                                                | true     | none         | Invitation UUID                                                             |
-| »» role             | string                                                | true     | none         | Role that will be assigned upon account setup                               |
-| »» email            | object¦null                                           | true     | none         | Pre-filled email (if provided during invite creation)                       |
-| »» telegramDeepLink | string                                                | true     | none         | Telegram deep link the invited user must open. Embeds the invitation token. |
-| »» expiresAt        | string(date-time)                                     | true     | none         | Invitation expires 7 days after creation. Invalid after this timestamp.     |
-| »» createdAt        | string(date-time)                                     | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[InvitationResponseDto](#schemainvitationresponsedto)|false|none|none|
+|»» id|string|true|none|Invitation UUID|
+|»» role|string|true|none|Role that will be assigned upon account setup|
+|»» email|object¦null|true|none|Pre-filled email (if provided during invite creation)|
+|»» telegramDeepLink|string|true|none|Telegram deep link the invited user must open. Embeds the invitation token.|
+|»» expiresAt|string(date-time)|true|none|Invitation expires 7 days after creation. Invalid after this timestamp.|
+|»» createdAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1702,24 +2035,24 @@ bearer
 
 `DELETE /users/invitations/{id}`
 
-_Delete invitation_
+*Delete invitation*
 
 Permanently deletes an unused invitation.
 
 <h3 id="userscontroller_deleteinvitation-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description     |
-| ---- | ---- | ------------ | -------- | --------------- |
-| id   | path | string(uuid) | true     | Invitation UUID |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|Invitation UUID|
 
 <h3 id="userscontroller_deleteinvitation-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | Invitation deleted                    | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Invitation deleted|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1732,15 +2065,15 @@ bearer
 
 `PATCH /users/{id}/reactivate`
 
-_Reactivate user_
+*Reactivate user*
 
 Re-enables a deactivated user and clears their Redis block, restoring access (SUPERADMIN only).
 
 <h3 id="userscontroller_reactivate-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | User UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
 
 > Example responses
 
@@ -1773,7 +2106,12 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -1799,6 +2137,11 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -1820,6 +2163,7 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -1830,40 +2174,41 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
 
 <h3 id="userscontroller_reactivate-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | User reactivated                      | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|User reactivated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="userscontroller_reactivate-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -1876,7 +2221,7 @@ bearer
 
 `PATCH /users/{id}/role`
 
-_Change user role_
+*Change user role*
 
 Updates a user's role. Cannot change own role (SUPERADMIN only).
 
@@ -1888,31 +2233,38 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
   "properties": {
     "role": {
       "type": "string",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "example": "ADMIN",
       "description": "New role to assign to the user"
     }
   },
-  "required": ["role"]
+  "required": [
+    "role"
+  ]
 }
 ```
 
 <h3 id="userscontroller_changerole-parameters">Parameters</h3>
 
-| Name   | In   | Type                                  | Required | Description                    |
-| ------ | ---- | ------------------------------------- | -------- | ------------------------------ |
-| id     | path | string(uuid)                          | true     | User UUID                      |
-| body   | body | [ChangeRoleDto](#schemachangeroledto) | true     | none                           |
-| » role | body | string                                | true     | New role to assign to the user |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
+|body|body|[ChangeRoleDto](#schemachangeroledto)|true|none|
+|» role|body|string|true|New role to assign to the user|
 
 #### Enumerated Values
 
-| Parameter | Value      |
-| --------- | ---------- |
-| » role    | SUPERADMIN |
-| » role    | OWNER      |
-| » role    | ADMIN      |
-| » role    | STAFF      |
+|Parameter|Value|
+|---|---|
+|» role|SUPERADMIN|
+|» role|OWNER|
+|» role|ADMIN|
+|» role|STAFF|
 
 > Example responses
 
@@ -1945,7 +2297,12 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -1971,6 +2328,11 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -1992,6 +2354,7 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -2002,41 +2365,42 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
 
 <h3 id="userscontroller_changerole-responses">Responses</h3>
 
-| Status | Meaning                                                          | Description                                            | Schema |
-| ------ | ---------------------------------------------------------------- | ------------------------------------------------------ | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)          | Role updated                                           | Inline |
-| 400    | [Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1) | Bad request – invalid input or business rule violation | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)  | Unauthorized – invalid or missing JWT                  | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)   | Forbidden – insufficient role                          | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)   | Resource not found                                     | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Role updated|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|Bad request – invalid input or business rule violation|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="userscontroller_changerole-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2051,7 +2415,7 @@ bearer
 
 `POST /superadmin/users`
 
-_Create system user_
+*Create system user*
 
 Directly creates a CRM user without an invitation (SUPERADMIN only).
 
@@ -2074,32 +2438,41 @@ Directly creates a CRM user without an invitation (SUPERADMIN only).
     },
     "role": {
       "type": "string",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "example": "STAFF",
       "description": "RBAC role to assign to this user"
     }
   },
-  "required": ["email", "password", "role"]
+  "required": [
+    "email",
+    "password",
+    "role"
+  ]
 }
 ```
 
 <h3 id="superadminuserscontroller_createuser-parameters">Parameters</h3>
 
-| Name       | In   | Type                                  | Required | Description                         |
-| ---------- | ---- | ------------------------------------- | -------- | ----------------------------------- |
-| body       | body | [CreateUserDto](#schemacreateuserdto) | true     | none                                |
-| » email    | body | string                                | true     | Email address for login             |
-| » password | body | string                                | true     | Initial password (min 8 characters) |
-| » role     | body | string                                | true     | RBAC role to assign to this user    |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[CreateUserDto](#schemacreateuserdto)|true|none|
+|» email|body|string|true|Email address for login|
+|» password|body|string|true|Initial password (min 8 characters)|
+|» role|body|string|true|RBAC role to assign to this user|
 
 #### Enumerated Values
 
-| Parameter | Value      |
-| --------- | ---------- |
-| » role    | SUPERADMIN |
-| » role    | OWNER      |
-| » role    | ADMIN      |
-| » role    | STAFF      |
+|Parameter|Value|
+|---|---|
+|» role|SUPERADMIN|
+|» role|OWNER|
+|» role|ADMIN|
+|» role|STAFF|
 
 > Example responses
 
@@ -2132,7 +2505,12 @@ Directly creates a CRM user without an invitation (SUPERADMIN only).
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -2158,6 +2536,11 @@ Directly creates a CRM user without an invitation (SUPERADMIN only).
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -2179,6 +2562,7 @@ Directly creates a CRM user without an invitation (SUPERADMIN only).
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -2189,39 +2573,40 @@ Directly creates a CRM user without an invitation (SUPERADMIN only).
 
 <h3 id="superadminuserscontroller_createuser-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)    | User created successfully             | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|User created successfully|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="superadminuserscontroller_createuser-responseschema">Response Schema</h3>
 
 Status Code **201**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2234,7 +2619,7 @@ bearer
 
 `GET /superadmin/users`
 
-_List all users_
+*List all users*
 
 Returns all CRM system users. Requires SUPERADMIN role.
 
@@ -2271,7 +2656,12 @@ Returns all CRM system users. Requires SUPERADMIN role.
           "role": {
             "type": "string",
             "example": "ADMIN",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "description": "RBAC role"
           },
           "isActive": {
@@ -2297,6 +2687,11 @@ Returns all CRM system users. Requires SUPERADMIN role.
             "nullable": true,
             "description": "IP address from the last login"
           },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kuala_Lumpur",
+            "description": "User preferred IANA timezone for analytics date boundaries"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string",
@@ -2318,6 +2713,7 @@ Returns all CRM system users. Requires SUPERADMIN role.
           "telegramId",
           "lastLoginAt",
           "lastIpAddress",
+          "timezone",
           "createdAt",
           "updatedAt"
         ]
@@ -2329,39 +2725,40 @@ Returns all CRM system users. Requires SUPERADMIN role.
 
 <h3 id="superadminuserscontroller_findallusers-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Users retrieved                       | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Users retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="superadminuserscontroller_findallusers-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                        | Required | Restrictions | Description                                                |
-| ---------------- | ------------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                      | false    | none         | none                                                       |
-| » message        | string                                      | false    | none         | none                                                       |
-| » data           | [[UserResponseDto](#schemauserresponsedto)] | false    | none         | none                                                       |
-| »» id            | string                                      | true     | none         | User UUID                                                  |
-| »» email         | string                                      | true     | none         | User email address                                         |
-| »» role          | string                                      | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                     | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                                 | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                                 | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                                 | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                           | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                           | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[UserResponseDto](#schemauserresponsedto)]|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2374,15 +2771,15 @@ bearer
 
 `GET /superadmin/users/{id}`
 
-_Get user by ID_
+*Get user by ID*
 
 Returns a specific user by UUID (SUPERADMIN only).
 
 <h3 id="superadminuserscontroller_finduserbyid-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | User UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
 
 > Example responses
 
@@ -2415,7 +2812,12 @@ Returns a specific user by UUID (SUPERADMIN only).
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -2441,6 +2843,11 @@ Returns a specific user by UUID (SUPERADMIN only).
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -2462,6 +2869,7 @@ Returns a specific user by UUID (SUPERADMIN only).
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -2472,39 +2880,40 @@ Returns a specific user by UUID (SUPERADMIN only).
 
 <h3 id="superadminuserscontroller_finduserbyid-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | User retrieved                        | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|User retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="superadminuserscontroller_finduserbyid-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2517,23 +2926,23 @@ bearer
 
 `DELETE /superadmin/users/{id}`
 
-_Deactivate user_
+*Deactivate user*
 
 Deactivates the user and instantly revokes all their sessions (SUPERADMIN only).
 
 <h3 id="superadminuserscontroller_deactivateuser-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | User UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
 
 <h3 id="superadminuserscontroller_deactivateuser-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | User deactivated successfully         | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|User deactivated successfully|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2546,7 +2955,7 @@ bearer
 
 `PATCH /superadmin/users/{id}/change-password`
 
-_Force password change_
+*Force password change*
 
 Resets a user's password and revokes all their sessions (SUPERADMIN only).
 
@@ -2560,25 +2969,27 @@ Resets a user's password and revokes all their sessions (SUPERADMIN only).
       "type": "string"
     }
   },
-  "required": ["newPassword"]
+  "required": [
+    "newPassword"
+  ]
 }
 ```
 
 <h3 id="superadminuserscontroller_forcepasswordchange-parameters">Parameters</h3>
 
-| Name          | In   | Type                                          | Required | Description |
-| ------------- | ---- | --------------------------------------------- | -------- | ----------- |
-| id            | path | string(uuid)                                  | true     | User UUID   |
-| body          | body | [ChangePasswordDto](#schemachangepassworddto) | true     | none        |
-| » newPassword | body | string                                        | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
+|body|body|[ChangePasswordDto](#schemachangepassworddto)|true|none|
+|» newPassword|body|string|true|none|
 
 <h3 id="superadminuserscontroller_forcepasswordchange-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | Password changed successfully         | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Password changed successfully|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2591,15 +3002,15 @@ bearer
 
 `PATCH /superadmin/users/{id}/reactivate`
 
-_Reactivate user_
+*Reactivate user*
 
 Re-enables a deactivated user and clears their Redis block, restoring access (SUPERADMIN only).
 
 <h3 id="superadminuserscontroller_reactivateuser-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | User UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
 
 > Example responses
 
@@ -2632,7 +3043,12 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -2658,6 +3074,11 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -2679,6 +3100,7 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -2689,39 +3111,40 @@ Re-enables a deactivated user and clears their Redis block, restoring access (SU
 
 <h3 id="superadminuserscontroller_reactivateuser-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | User reactivated                      | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|User reactivated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="superadminuserscontroller_reactivateuser-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2734,7 +3157,7 @@ bearer
 
 `PATCH /superadmin/users/{id}/role`
 
-_Change user role_
+*Change user role*
 
 Updates a user's role. Cannot change own role (SUPERADMIN only).
 
@@ -2746,31 +3169,38 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
   "properties": {
     "role": {
       "type": "string",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "example": "ADMIN",
       "description": "New role to assign to the user"
     }
   },
-  "required": ["role"]
+  "required": [
+    "role"
+  ]
 }
 ```
 
 <h3 id="superadminuserscontroller_changeuserrole-parameters">Parameters</h3>
 
-| Name   | In   | Type                                  | Required | Description                    |
-| ------ | ---- | ------------------------------------- | -------- | ------------------------------ |
-| id     | path | string(uuid)                          | true     | User UUID                      |
-| body   | body | [ChangeRoleDto](#schemachangeroledto) | true     | none                           |
-| » role | body | string                                | true     | New role to assign to the user |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
+|body|body|[ChangeRoleDto](#schemachangeroledto)|true|none|
+|» role|body|string|true|New role to assign to the user|
 
 #### Enumerated Values
 
-| Parameter | Value      |
-| --------- | ---------- |
-| » role    | SUPERADMIN |
-| » role    | OWNER      |
-| » role    | ADMIN      |
-| » role    | STAFF      |
+|Parameter|Value|
+|---|---|
+|» role|SUPERADMIN|
+|» role|OWNER|
+|» role|ADMIN|
+|» role|STAFF|
 
 > Example responses
 
@@ -2803,7 +3233,12 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -2829,6 +3264,11 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -2850,6 +3290,7 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
@@ -2860,39 +3301,580 @@ Updates a user's role. Cannot change own role (SUPERADMIN only).
 
 <h3 id="superadminuserscontroller_changeuserrole-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Role updated                          | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Role updated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="superadminuserscontroller_changeuserrole-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name             | Type                                      | Required | Restrictions | Description                                                |
-| ---------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------- |
-| » statusCode     | number                                    | false    | none         | none                                                       |
-| » message        | string                                    | false    | none         | none                                                       |
-| » data           | [UserResponseDto](#schemauserresponsedto) | false    | none         | none                                                       |
-| »» id            | string                                    | true     | none         | User UUID                                                  |
-| »» email         | string                                    | true     | none         | User email address                                         |
-| »» role          | string                                    | true     | none         | RBAC role                                                  |
-| »» isActive      | boolean                                   | true     | none         | Whether this account is active and can log in              |
-| »» telegramId    | object¦null                               | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| »» lastLoginAt   | object¦null                               | true     | none         | Timestamp of last successful login                         |
-| »» lastIpAddress | object¦null                               | true     | none         | IP address from the last login                             |
-| »» createdAt     | string(date-time)                         | true     | none         | Account creation timestamp                                 |
-| »» updatedAt     | string(date-time)                         | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminUsersController_changeEmail
+
+<a id="opIdSuperadminUsersController_changeEmail"></a>
+
+`PATCH /superadmin/users/{id}/email`
+
+*Change user email address*
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}
+```
+
+<h3 id="superadminuserscontroller_changeemail-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
+|body|body|[ChangeEmailDto](#schemachangeemaildto)|true|none|
+|» email|body|string|true|none|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "description": "User UUID"
+        },
+        "email": {
+          "type": "string",
+          "example": "superadmin@yopmail.com",
+          "description": "User email address"
+        },
+        "role": {
+          "type": "string",
+          "example": "ADMIN",
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
+          "description": "RBAC role"
+        },
+        "isActive": {
+          "type": "boolean",
+          "example": true,
+          "description": "Whether this account is active and can log in"
+        },
+        "telegramId": {
+          "type": "object",
+          "example": "987654321",
+          "nullable": true,
+          "description": "Telegram user ID linked for TMA login. Null if not linked."
+        },
+        "lastLoginAt": {
+          "type": "object",
+          "example": "2026-02-24T08:30:00.000Z",
+          "nullable": true,
+          "description": "Timestamp of last successful login"
+        },
+        "lastIpAddress": {
+          "type": "object",
+          "example": "103.10.20.5",
+          "nullable": true,
+          "description": "IP address from the last login"
+        },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-01-15T10:00:00.000Z",
+          "description": "Account creation timestamp"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-24T08:30:00.000Z",
+          "description": "Last profile update timestamp"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "role",
+        "isActive",
+        "telegramId",
+        "lastLoginAt",
+        "lastIpAddress",
+        "timezone",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  }
+}
+```
+
+<h3 id="superadminuserscontroller_changeemail-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Email updated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<h3 id="superadminuserscontroller_changeemail-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[UserResponseDto](#schemauserresponsedto)|false|none|none|
+|»» id|string|true|none|User UUID|
+|»» email|string|true|none|User email address|
+|»» role|string|true|none|RBAC role|
+|»» isActive|boolean|true|none|Whether this account is active and can log in|
+|»» telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|»» lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|»» lastIpAddress|object¦null|true|none|IP address from the last login|
+|»» timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|»» createdAt|string(date-time)|true|none|Account creation timestamp|
+|»» updatedAt|string(date-time)|true|none|Last profile update timestamp|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminUsersController_getUserLeads
+
+<a id="opIdSuperadminUsersController_getUserLeads"></a>
+
+`GET /superadmin/users/{id}/leads`
+
+*Get leads assigned to user*
+
+<h3 id="superadminuserscontroller_getuserleads-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|User UUID|
+
+<h3 id="superadminuserscontroller_getuserleads-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|User leads retrieved|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_getQueues
+
+<a id="opIdSuperadminOpsController_getQueues"></a>
+
+`GET /superadmin/queues`
+
+*BullMQ queue job counts*
+
+Returns waiting/active/completed/failed/delayed counts per queue. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_getqueues-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Queue stats retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_getTokenUsage
+
+<a id="opIdSuperadminOpsController_getTokenUsage"></a>
+
+`GET /superadmin/token-usage`
+
+*AI token usage (30 days)*
+
+Returns daily AI token usage for the last 30 days with estimated cost. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_gettokenusage-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Token usage retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_getKbHealth
+
+<a id="opIdSuperadminOpsController_getKbHealth"></a>
+
+`GET /superadmin/kb-health`
+
+*Knowledge base health stats*
+
+Returns KB embedding coverage, status breakdown, and type counts. No content exposed. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_getkbhealth-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|KB health retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_getSentimentTrend
+
+<a id="opIdSuperadminOpsController_getSentimentTrend"></a>
+
+`GET /superadmin/sentiment-trend`
+
+*Daily sentiment trend (30 days)*
+
+Returns daily positive/negative/neutral sentiment counts for the last 30 days from interaction metadata. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_getsentimenttrend-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Sentiment trend retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_retryFailedJobs
+
+<a id="opIdSuperadminOpsController_retryFailedJobs"></a>
+
+`POST /superadmin/queues/{q}/retry-failed`
+
+*Retry all failed jobs in a queue*
+
+Retries every failed job in the named BullMQ queue. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_retryfailedjobs-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|q|path|string|true|none|
+
+<h3 id="superadminopscontroller_retryfailedjobs-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Failed jobs retried|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_purgeFailedJobs
+
+<a id="opIdSuperadminOpsController_purgeFailedJobs"></a>
+
+`DELETE /superadmin/queues/{q}/failed`
+
+*Purge all failed jobs in a queue*
+
+Removes all failed jobs from the named BullMQ queue. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_purgefailedjobs-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|q|path|string|true|none|
+
+<h3 id="superadminopscontroller_purgefailedjobs-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Failed jobs purged|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_getLeadScoreStats
+
+<a id="opIdSuperadminOpsController_getLeadScoreStats"></a>
+
+`GET /superadmin/lead-score-stats`
+
+*AI lead score distribution*
+
+Returns average AI score and hot/warm/cold/unscored tier counts. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_getleadscorestats-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Lead score stats retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_getSessions
+
+<a id="opIdSuperadminOpsController_getSessions"></a>
+
+`GET /superadmin/sessions`
+
+*List all active user sessions*
+
+Returns all non-revoked, non-expired sessions. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_getsessions-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Sessions retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_revokeSession
+
+<a id="opIdSuperadminOpsController_revokeSession"></a>
+
+`DELETE /superadmin/sessions/{id}`
+
+*Revoke a specific session by ID*
+
+Marks the given session as revoked, invalidating its refresh token. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_revokesession-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string|true|none|
+
+<h3 id="superadminopscontroller_revokesession-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Session revoked|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SuperadminOpsController_getSystemHealth
+
+<a id="opIdSuperadminOpsController_getSystemHealth"></a>
+
+`GET /superadmin/system-health`
+
+*System health check*
+
+Returns health status of database, Redis, and BullMQ queues. SUPERADMIN only.
+
+<h3 id="superadminopscontroller_getsystemhealth-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|System health retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## GoogleSyncController_triggerSync
+
+<a id="opIdGoogleSyncController_triggerSync"></a>
+
+`POST /superadmin/google/sync`
+
+*Trigger an immediate Google Sheets / Drive sync*
+
+Enqueues a BullMQ sync job for the requested target. "sheets" runs a full lead export to Google Sheets, "drive" runs the batch attachment mirror to Google Drive, "all" runs both. Rate-limited to once per 60 seconds per target. Returns job IDs immediately — track progress at GET /superadmin/queues.
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "target": {
+      "type": "string",
+      "enum": [
+        "sheets",
+        "drive",
+        "all"
+      ],
+      "description": "\"sheets\" → full lead sync to Google Sheets, \"drive\" → batch attachment upload to Google Drive, \"all\" → both.",
+      "example": "all"
+    }
+  },
+  "required": [
+    "target"
+  ]
+}
+```
+
+<h3 id="googlesynccontroller_triggersync-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[TriggerSyncDto](#schematriggersyncdto)|true|none|
+|» target|body|string|true|"sheets" → full lead sync to Google Sheets, "drive" → batch attachment upload to Google Drive, "all" → both.|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|» target|sheets|
+|» target|drive|
+|» target|all|
+
+> Example responses
+
+> 201 Response
+
+```json
+{
+  "data": {
+    "target": "all",
+    "jobIds": [
+      "1",
+      "2"
+    ],
+    "queuedAt": "2026-03-12T10:00:00.000Z",
+    "message": "Sync enqueued for: Google Sheets, Google Drive. Track progress via GET /superadmin/queues."
+  },
+  "message": "Sync enqueued"
+}
+```
+
+<h3 id="googlesynccontroller_triggersync-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Sync job(s) enqueued successfully|Inline|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<h3 id="googlesynccontroller_triggersync-responseschema">Response Schema</h3>
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-bot">bot</h1>
+
+## BotStatusController_getStatus
+
+<a id="opIdBotStatusController_getStatus"></a>
+
+`GET /bot/status`
+
+*Telegram bot health & webhook info (OWNER / ADMIN / SUPERADMIN)*
+
+<h3 id="botstatuscontroller_getstatus-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Bot status|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -2907,7 +3889,7 @@ bearer
 
 `POST /leads/submit-info`
 
-_Submit lead info (public)_
+*Submit lead info (public)*
 
 Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bot.
 
@@ -2920,7 +3902,12 @@ Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bo
     "telegramUserId": {
       "type": "number",
       "example": 123456789,
-      "description": "Telegram user ID of the lead"
+      "description": "Telegram user ID of the lead (required if registrationToken is not provided)"
+    },
+    "registrationToken": {
+      "type": "string",
+      "example": "a1b2c3d4-...",
+      "description": "One-time registration token from the bot link (required if telegramUserId is not provided)"
     },
     "email": {
       "type": "string",
@@ -2947,22 +3934,22 @@ Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bo
       "example": "2026-02-22T10:00:00Z",
       "description": "When the lead submitted their registration"
     }
-  },
-  "required": ["telegramUserId"]
+  }
 }
 ```
 
 <h3 id="leadscontroller_submitinfo-parameters">Parameters</h3>
 
-| Name             | In   | Type                                          | Required | Description                                |
-| ---------------- | ---- | --------------------------------------------- | -------- | ------------------------------------------ |
-| body             | body | [SubmitLeadInfoDto](#schemasubmitleadinfodto) | true     | none                                       |
-| » telegramUserId | body | number                                        | true     | Telegram user ID of the lead               |
-| » email          | body | string                                        | false    | none                                       |
-| » hfmBrokerId    | body | string                                        | false    | HFM broker account ID                      |
-| » phoneNumber    | body | string                                        | false    | Lead's phone number (No. Fon)              |
-| » depositBalance | body | string                                        | false    | Deposit or balance amount (decimal string) |
-| » registeredAt   | body | string(date-time)                             | false    | When the lead submitted their registration |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[SubmitLeadInfoDto](#schemasubmitleadinfodto)|true|none|
+|» telegramUserId|body|number|false|Telegram user ID of the lead (required if registrationToken is not provided)|
+|» registrationToken|body|string|false|One-time registration token from the bot link (required if telegramUserId is not provided)|
+|» email|body|string|false|none|
+|» hfmBrokerId|body|string|false|HFM broker account ID|
+|» phoneNumber|body|string|false|Lead's phone number (No. Fon)|
+|» depositBalance|body|string|false|Deposit or balance amount (decimal string)|
+|» registeredAt|body|string(date-time)|false|When the lead submitted their registration|
 
 > Example responses
 
@@ -3010,7 +3997,6 @@ Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bo
           "enum": [
             "NEW",
             "CONTACTED",
-            "REGISTERED",
             "DEPOSIT_REPORTED",
             "DEPOSIT_CONFIRMED",
             "REJECTED"
@@ -3041,6 +4027,12 @@ Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bo
           "nullable": true,
           "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
         },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
         "registeredAt": {
           "type": "object",
           "example": "2026-02-20T10:00:00.000Z",
@@ -3052,6 +4044,12 @@ Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bo
           "example": "2026-02-21T12:00:00.000Z",
           "nullable": true,
           "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
         },
         "handoverMode": {
           "type": "boolean",
@@ -3081,8 +4079,10 @@ Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bo
         "email",
         "phoneNumber",
         "depositBalance",
+        "contactedAt",
         "registeredAt",
         "verifiedAt",
+        "depositReportedAt",
         "handoverMode",
         "createdAt",
         "updatedAt"
@@ -3094,46 +4094,653 @@ Public endpoint: a lead submits their email and/or HFM Broker ID via Telegram bo
 
 <h3 id="leadscontroller_submitinfo-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description        | Schema |
-| ------ | ------------------------------------------------------------------------ | ------------------ | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | Lead info updated  | Inline |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)           | Resource not found | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed  | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Lead info updated|Inline|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <h3 id="leadscontroller_submitinfo-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                      | Required | Restrictions | Description                                                            |
-| ----------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------- |
-| » statusCode      | number                                    | false    | none         | none                                                                   |
-| » message         | string                                    | false    | none         | none                                                                   |
-| » data            | [LeadResponseDto](#schemaleadresponsedto) | false    | none         | none                                                                   |
-| »» id             | string                                    | true     | none         | Lead UUID                                                              |
-| »» telegramUserId | string                                    | true     | none         | Telegram user ID (serialised as string due to BigInt)                  |
-| »» username       | object¦null                               | true     | none         | Telegram @username without @                                           |
-| »» displayName    | object¦null                               | true     | none         | Telegram display name                                                  |
-| »» status         | string                                    | true     | none         | Current CRM lead status                                                |
-| »» hfmBrokerId    | object¦null                               | true     | none         | HFM broker account ID submitted by the lead                            |
-| »» email          | object¦null                               | true     | none         | Email address submitted by the lead                                    |
-| »» phoneNumber    | object¦null                               | true     | none         | Phone number submitted by the lead                                     |
-| »» depositBalance | object¦null                               | true     | none         | Lifetime deposit balance as decimal string (Prisma Decimal serialised) |
-| »» registeredAt   | object¦null                               | true     | none         | When the lead submitted registration proof                             |
-| »» verifiedAt     | object¦null                               | true     | none         | When an Owner/Admin verified the lead                                  |
-| »» handoverMode   | boolean                                   | true     | none         | When true the bot hands off to a human agent; bot stops auto-replying  |
-| »» createdAt      | string(date-time)                         | true     | none         | When the lead first messaged the bot                                   |
-| »» updatedAt      | string(date-time)                         | true     | none         | Last time any lead field was updated                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
-| status   | REJECTED          |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+
+<aside class="success">
+This operation does not require authentication
+</aside>
+
+## LeadsController_submitDeposit
+
+<a id="opIdLeadsController_submitDeposit"></a>
+
+`POST /leads/submit-deposit`
+
+*Submit deposit proof (public)*
+
+Public endpoint: a lead submits their deposit amount and optional receipt files via tokenized form link.
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "required": [
+    "depositToken",
+    "depositBalance"
+  ],
+  "properties": {
+    "depositToken": {
+      "type": "string",
+      "description": "One-time deposit token from the bot link"
+    },
+    "depositBalance": {
+      "type": "string",
+      "description": "Deposit amount (e.g. \"500.00\")"
+    },
+    "hfmBrokerId": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "receipts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "binary"
+      },
+      "description": "Up to 3 receipt files"
+    }
+  }
+}
+```
+
+```yaml
+type: object
+required:
+  - depositToken
+  - depositBalance
+properties:
+  depositToken:
+    type: string
+    description: One-time deposit token from the bot link
+  depositBalance:
+    type: string
+    description: Deposit amount (e.g. "500.00")
+  hfmBrokerId:
+    type: string
+  notes:
+    type: string
+  receipts:
+    type: array
+    items:
+      type: string
+      format: binary
+    description: Up to 3 receipt files
+
+```
+
+<h3 id="leadscontroller_submitdeposit-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|object|true|none|
+|» depositToken|body|string|true|One-time deposit token from the bot link|
+|» depositBalance|body|string|true|Deposit amount (e.g. "500.00")|
+|» hfmBrokerId|body|string|false|none|
+|» notes|body|string|false|none|
+|» receipts|body|[string]|false|Up to 3 receipt files|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "description": "Lead UUID"
+        },
+        "telegramUserId": {
+          "type": "string",
+          "example": "123456789",
+          "description": "Telegram user ID (serialised as string due to BigInt)"
+        },
+        "username": {
+          "type": "object",
+          "example": "john_doe",
+          "nullable": true,
+          "description": "Telegram @username without @"
+        },
+        "displayName": {
+          "type": "object",
+          "example": "John Doe",
+          "nullable": true,
+          "description": "Telegram display name"
+        },
+        "status": {
+          "type": "string",
+          "example": "NEW",
+          "enum": [
+            "NEW",
+            "CONTACTED",
+            "DEPOSIT_REPORTED",
+            "DEPOSIT_CONFIRMED",
+            "REJECTED"
+          ],
+          "description": "Current CRM lead status"
+        },
+        "hfmBrokerId": {
+          "type": "object",
+          "example": "HFM-123456",
+          "nullable": true,
+          "description": "HFM broker account ID submitted by the lead"
+        },
+        "email": {
+          "type": "object",
+          "example": "lead@example.com",
+          "nullable": true,
+          "description": "Email address submitted by the lead"
+        },
+        "phoneNumber": {
+          "type": "object",
+          "example": "+60123456789",
+          "nullable": true,
+          "description": "Phone number submitted by the lead"
+        },
+        "depositBalance": {
+          "type": "object",
+          "example": "500.00",
+          "nullable": true,
+          "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
+        },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
+        "registeredAt": {
+          "type": "object",
+          "example": "2026-02-20T10:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted registration proof"
+        },
+        "verifiedAt": {
+          "type": "object",
+          "example": "2026-02-21T12:00:00.000Z",
+          "nullable": true,
+          "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
+        },
+        "handoverMode": {
+          "type": "boolean",
+          "example": false,
+          "description": "When true the bot hands off to a human agent; bot stops auto-replying"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-18T08:00:00.000Z",
+          "description": "When the lead first messaged the bot"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-24T09:00:00.000Z",
+          "description": "Last time any lead field was updated"
+        }
+      },
+      "required": [
+        "id",
+        "telegramUserId",
+        "username",
+        "displayName",
+        "status",
+        "hfmBrokerId",
+        "email",
+        "phoneNumber",
+        "depositBalance",
+        "contactedAt",
+        "registeredAt",
+        "verifiedAt",
+        "depositReportedAt",
+        "handoverMode",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  }
+}
+```
+
+<h3 id="leadscontroller_submitdeposit-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Deposit info recorded|Inline|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<h3 id="leadscontroller_submitdeposit-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+
+<aside class="success">
+This operation does not require authentication
+</aside>
+
+## LeadsController_getTokenInfo
+
+<a id="opIdLeadsController_getTokenInfo"></a>
+
+`GET /leads/token-info`
+
+*Resolve a bot token (public)*
+
+Returns the token type (register/deposit) and lead name. Used by the combined form to determine which fields to show.
+
+<h3 id="leadscontroller_gettokeninfo-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|token|query|string|true|none|
+
+<h3 id="leadscontroller_gettokeninfo-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Token resolved|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<aside class="success">
+This operation does not require authentication
+</aside>
+
+## LeadsController_submitForm
+
+<a id="opIdLeadsController_submitForm"></a>
+
+`POST /leads/submit`
+
+*Combined form submit (public)*
+
+Single endpoint for both registration and deposit forms. Pass the token from the bot link — the server auto-detects the token type.
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "required": [
+    "token"
+  ],
+  "properties": {
+    "token": {
+      "type": "string",
+      "description": "Register or deposit token from bot link"
+    },
+    "hfmBrokerId": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phoneNumber": {
+      "type": "string"
+    },
+    "depositBalance": {
+      "type": "string",
+      "description": "Required for deposit tokens"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "receipts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "binary"
+      },
+      "description": "Up to 3 receipt files (deposit only)"
+    }
+  }
+}
+```
+
+```yaml
+type: object
+required:
+  - token
+properties:
+  token:
+    type: string
+    description: Register or deposit token from bot link
+  hfmBrokerId:
+    type: string
+  email:
+    type: string
+  phoneNumber:
+    type: string
+  depositBalance:
+    type: string
+    description: Required for deposit tokens
+  notes:
+    type: string
+  receipts:
+    type: array
+    items:
+      type: string
+      format: binary
+    description: Up to 3 receipt files (deposit only)
+
+```
+
+<h3 id="leadscontroller_submitform-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|object|true|none|
+|» token|body|string|true|Register or deposit token from bot link|
+|» hfmBrokerId|body|string|false|none|
+|» email|body|string|false|none|
+|» phoneNumber|body|string|false|none|
+|» depositBalance|body|string|false|Required for deposit tokens|
+|» notes|body|string|false|none|
+|» receipts|body|[string]|false|Up to 3 receipt files (deposit only)|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "description": "Lead UUID"
+        },
+        "telegramUserId": {
+          "type": "string",
+          "example": "123456789",
+          "description": "Telegram user ID (serialised as string due to BigInt)"
+        },
+        "username": {
+          "type": "object",
+          "example": "john_doe",
+          "nullable": true,
+          "description": "Telegram @username without @"
+        },
+        "displayName": {
+          "type": "object",
+          "example": "John Doe",
+          "nullable": true,
+          "description": "Telegram display name"
+        },
+        "status": {
+          "type": "string",
+          "example": "NEW",
+          "enum": [
+            "NEW",
+            "CONTACTED",
+            "DEPOSIT_REPORTED",
+            "DEPOSIT_CONFIRMED",
+            "REJECTED"
+          ],
+          "description": "Current CRM lead status"
+        },
+        "hfmBrokerId": {
+          "type": "object",
+          "example": "HFM-123456",
+          "nullable": true,
+          "description": "HFM broker account ID submitted by the lead"
+        },
+        "email": {
+          "type": "object",
+          "example": "lead@example.com",
+          "nullable": true,
+          "description": "Email address submitted by the lead"
+        },
+        "phoneNumber": {
+          "type": "object",
+          "example": "+60123456789",
+          "nullable": true,
+          "description": "Phone number submitted by the lead"
+        },
+        "depositBalance": {
+          "type": "object",
+          "example": "500.00",
+          "nullable": true,
+          "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
+        },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
+        "registeredAt": {
+          "type": "object",
+          "example": "2026-02-20T10:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted registration proof"
+        },
+        "verifiedAt": {
+          "type": "object",
+          "example": "2026-02-21T12:00:00.000Z",
+          "nullable": true,
+          "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
+        },
+        "handoverMode": {
+          "type": "boolean",
+          "example": false,
+          "description": "When true the bot hands off to a human agent; bot stops auto-replying"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-18T08:00:00.000Z",
+          "description": "When the lead first messaged the bot"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-24T09:00:00.000Z",
+          "description": "Last time any lead field was updated"
+        }
+      },
+      "required": [
+        "id",
+        "telegramUserId",
+        "username",
+        "displayName",
+        "status",
+        "hfmBrokerId",
+        "email",
+        "phoneNumber",
+        "depositBalance",
+        "contactedAt",
+        "registeredAt",
+        "verifiedAt",
+        "depositReportedAt",
+        "handoverMode",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  }
+}
+```
+
+<h3 id="leadscontroller_submitform-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Form submitted|Inline|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<h3 id="leadscontroller_submitform-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+
+<aside class="success">
+This operation does not require authentication
+</aside>
+
+## LeadsController_getLeadStatus
+
+<a id="opIdLeadsController_getLeadStatus"></a>
+
+`GET /leads/status`
+
+*Get lead status by token (public)*
+
+Returns the lead status and key timeline timestamps for the status page.
+
+<h3 id="leadscontroller_getleadstatus-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|token|query|string|true|none|
+
+<h3 id="leadscontroller_getleadstatus-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Status returned|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <aside class="success">
 This operation does not require authentication
@@ -3145,41 +4752,43 @@ This operation does not require authentication
 
 `GET /leads`
 
-_List leads_
+*List leads*
 
 Paginated list of all leads with filtering, search and sort. All roles can view.
 
 <h3 id="leadscontroller_findall-parameters">Parameters</h3>
 
-| Name       | In    | Type    | Required | Description                                                                |
-| ---------- | ----- | ------- | -------- | -------------------------------------------------------------------------- |
-| status     | query | string  | false    | Filter by lead status                                                      |
-| contactId  | query | string  | false    | Filter by Telegram user ID (exact)                                         |
-| registered | query | boolean | false    | true = has registeredAt, false = no registeredAt                           |
-| balanceMin | query | number  | false    | Min deposit balance (inclusive)                                            |
-| balanceMax | query | number  | false    | Max deposit balance (inclusive)                                            |
-| search     | query | string  | false    | Full-text search on username, displayName, email, phoneNumber, hfmBrokerId |
-| orderBy    | query | string  | false    | Field to sort by (default: createdAt)                                      |
-| order      | query | string  | false    | Sort direction (default: desc)                                             |
-| skip       | query | number  | false    | Pagination offset                                                          |
-| take       | query | number  | false    | Page size (default 20, max 200)                                            |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|status|query|string|false|Filter by lead status|
+|statuses|query|string|false|Comma-separated list of statuses (e.g. DEPOSIT_REPORTED,DEPOSIT_CONFIRMED). Overrides single status param.|
+|contactId|query|string|false|Filter by Telegram user ID (exact)|
+|registered|query|boolean|false|true = has registeredAt, false = no registeredAt|
+|balanceMin|query|number|false|Min deposit balance (inclusive)|
+|balanceMax|query|number|false|Max deposit balance (inclusive)|
+|search|query|string|false|Full-text search on username, displayName, email, phoneNumber, hfmBrokerId|
+|orderBy|query|string|false|Field to sort by (default: createdAt)|
+|order|query|string|false|Sort direction (default: desc)|
+|skip|query|number|false|Pagination offset (alternative to page)|
+|take|query|number|false|Page size (default 20, max 100)|
+|page|query|number|false|Page number (1-indexed). Overrides skip when provided.|
 
 #### Enumerated Values
 
-| Parameter | Value             |
-| --------- | ----------------- |
-| status    | NEW               |
-| status    | CONTACTED         |
-| status    | REGISTERED        |
-| status    | DEPOSIT_REPORTED  |
-| status    | DEPOSIT_CONFIRMED |
-| orderBy   | createdAt         |
-| orderBy   | updatedAt         |
-| orderBy   | depositBalance    |
-| orderBy   | registeredAt      |
-| orderBy   | aiScore           |
-| order     | asc               |
-| order     | desc              |
+|Parameter|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+|orderBy|createdAt|
+|orderBy|updatedAt|
+|orderBy|depositBalance|
+|orderBy|registeredAt|
+|orderBy|aiScore|
+|order|asc|
+|order|desc|
 
 > Example responses
 
@@ -3229,7 +4838,6 @@ Paginated list of all leads with filtering, search and sort. All roles can view.
             "enum": [
               "NEW",
               "CONTACTED",
-              "REGISTERED",
               "DEPOSIT_REPORTED",
               "DEPOSIT_CONFIRMED",
               "REJECTED"
@@ -3260,6 +4868,12 @@ Paginated list of all leads with filtering, search and sort. All roles can view.
             "nullable": true,
             "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
           },
+          "contactedAt": {
+            "type": "object",
+            "example": "2026-02-19T08:30:00.000Z",
+            "nullable": true,
+            "description": "When the lead was first moved to CONTACTED status"
+          },
           "registeredAt": {
             "type": "object",
             "example": "2026-02-20T10:00:00.000Z",
@@ -3271,6 +4885,12 @@ Paginated list of all leads with filtering, search and sort. All roles can view.
             "example": "2026-02-21T12:00:00.000Z",
             "nullable": true,
             "description": "When an Owner/Admin verified the lead"
+          },
+          "depositReportedAt": {
+            "type": "object",
+            "example": "2026-02-21T09:00:00.000Z",
+            "nullable": true,
+            "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
           },
           "handoverMode": {
             "type": "boolean",
@@ -3300,8 +4920,10 @@ Paginated list of all leads with filtering, search and sort. All roles can view.
           "email",
           "phoneNumber",
           "depositBalance",
+          "contactedAt",
           "registeredAt",
           "verifiedAt",
+          "depositReportedAt",
           "handoverMode",
           "createdAt",
           "updatedAt"
@@ -3314,46 +4936,47 @@ Paginated list of all leads with filtering, search and sort. All roles can view.
 
 <h3 id="leadscontroller_findall-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Leads retrieved                       | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Leads retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="leadscontroller_findall-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                        | Required | Restrictions | Description                                                            |
-| ----------------- | ------------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------- |
-| » statusCode      | number                                      | false    | none         | none                                                                   |
-| » message         | string                                      | false    | none         | none                                                                   |
-| » data            | [[LeadResponseDto](#schemaleadresponsedto)] | false    | none         | none                                                                   |
-| »» id             | string                                      | true     | none         | Lead UUID                                                              |
-| »» telegramUserId | string                                      | true     | none         | Telegram user ID (serialised as string due to BigInt)                  |
-| »» username       | object¦null                                 | true     | none         | Telegram @username without @                                           |
-| »» displayName    | object¦null                                 | true     | none         | Telegram display name                                                  |
-| »» status         | string                                      | true     | none         | Current CRM lead status                                                |
-| »» hfmBrokerId    | object¦null                                 | true     | none         | HFM broker account ID submitted by the lead                            |
-| »» email          | object¦null                                 | true     | none         | Email address submitted by the lead                                    |
-| »» phoneNumber    | object¦null                                 | true     | none         | Phone number submitted by the lead                                     |
-| »» depositBalance | object¦null                                 | true     | none         | Lifetime deposit balance as decimal string (Prisma Decimal serialised) |
-| »» registeredAt   | object¦null                                 | true     | none         | When the lead submitted registration proof                             |
-| »» verifiedAt     | object¦null                                 | true     | none         | When an Owner/Admin verified the lead                                  |
-| »» handoverMode   | boolean                                     | true     | none         | When true the bot hands off to a human agent; bot stops auto-replying  |
-| »» createdAt      | string(date-time)                           | true     | none         | When the lead first messaged the bot                                   |
-| »» updatedAt      | string(date-time)                           | true     | none         | Last time any lead field was updated                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[LeadResponseDto](#schemaleadresponsedto)]|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
-| status   | REJECTED          |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -3366,77 +4989,201 @@ bearer
 
 `GET /leads/leaderboard`
 
-_AI score leaderboard_
+*AI score leaderboard*
 
 Leads ordered by aiScore DESC. Tier: hot≥70, warm≥40, cold<40.
 
 <h3 id="leadscontroller_leaderboard-parameters">Parameters</h3>
 
-| Name  | In    | Type   | Required | Description |
-| ----- | ----- | ------ | -------- | ----------- |
-| limit | query | number | false    | none        |
-| tier  | query | string | false    | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|limit|query|number|false|none|
+|tier|query|string|false|none|
 
 #### Enumerated Values
 
-| Parameter | Value |
-| --------- | ----- |
-| tier      | hot   |
-| tier      | warm  |
-| tier      | cold  |
+|Parameter|Value|
+|---|---|
+|tier|hot|
+|tier|warm|
+|tier|cold|
 
 <h3 id="leadscontroller_leaderboard-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Leaderboard retrieved                 | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Leaderboard retrieved|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
 bearer
 </aside>
 
-## LeadsController_exportCsv
+## LeadsController_exportLeads
 
-<a id="opIdLeadsController_exportCsv"></a>
+<a id="opIdLeadsController_exportLeads"></a>
 
 `GET /leads/export`
 
-_Export leads as CSV_
+*Export leads (CSV or multi-sheet Excel)*
 
-Streams a CSV file of all leads matching optional filters.
+Downloads a leads export file. Pass `format=xlsx` for a multi-sheet Excel workbook (one sheet per status). Omit `format` or pass `format=csv` for the original CSV stream (backwards-compatible). If `status` is supplied with `format=xlsx`, only that status tab is generated.
 
-<h3 id="leadscontroller_exportcsv-parameters">Parameters</h3>
+<h3 id="leadscontroller_exportleads-parameters">Parameters</h3>
 
-| Name   | In    | Type   | Required | Description        |
-| ------ | ----- | ------ | -------- | ------------------ |
-| status | query | string | false    | none               |
-| from   | query | string | false    | ISO8601 start date |
-| to     | query | string | false    | ISO8601 end date   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|format|query|string|false|Response format (default: csv)|
+|status|query|string|false|none|
+|from|query|string|false|ISO8601 start date (createdAt ≥)|
+|to|query|string|false|ISO8601 end date (createdAt ≤)|
 
 #### Enumerated Values
 
-| Parameter | Value             |
-| --------- | ----------------- |
-| status    | NEW               |
-| status    | CONTACTED         |
-| status    | REGISTERED        |
-| status    | DEPOSIT_REPORTED  |
-| status    | DEPOSIT_CONFIRMED |
+|Parameter|Value|
+|---|---|
+|format|csv|
+|format|xlsx|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
 
 > Example responses
 
-<h3 id="leadscontroller_exportcsv-responses">Responses</h3>
+<h3 id="leadscontroller_exportleads-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | CSV file stream                       | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|File stream|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
-<h3 id="leadscontroller_exportcsv-responseschema">Response Schema</h3>
+<h3 id="leadscontroller_exportleads-responseschema">Response Schema</h3>
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## LeadsController_downloadImportTemplate
+
+<a id="opIdLeadsController_downloadImportTemplate"></a>
+
+`GET /leads/import/template`
+
+*Download CSV import template*
+
+Returns a ready-to-fill CSV file with all supported column headers. Only `telegram_id` is required; all other columns are optional.
+
+> Example responses
+
+<h3 id="leadscontroller_downloadimporttemplate-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|CSV template|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<h3 id="leadscontroller_downloadimporttemplate-responseschema">Response Schema</h3>
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## LeadsController_importLeads
+
+<a id="opIdLeadsController_importLeads"></a>
+
+`POST /leads/import`
+
+*Import leads from CSV*
+
+Uploads a CSV file and upserts leads. `telegram_id` is **required** and acts as the upsert key — existing leads are updated, new ones are created. Max file size: 5 MB. Download a template from `GET /leads/import/template`.
+
+> Body parameter
+
+```yaml
+type: object
+required:
+  - file
+properties:
+  file:
+    type: string
+    format: binary
+    description: CSV file (max 5 MB)
+
+```
+
+<h3 id="leadscontroller_importleads-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|object|true|none|
+|» file|body|string(binary)|true|CSV file (max 5 MB)|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "data": {
+      "properties": {
+        "imported": {
+          "type": "number",
+          "example": 10
+        },
+        "updated": {
+          "type": "number",
+          "example": 3
+        },
+        "skipped": {
+          "type": "number",
+          "example": 1
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "message": {
+      "type": "string"
+    }
+  }
+}
+```
+
+<h3 id="leadscontroller_importleads-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Import result|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<h3 id="leadscontroller_importleads-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» data|object|false|none|none|
+|»» imported|number|false|none|none|
+|»» updated|number|false|none|none|
+|»» skipped|number|false|none|none|
+|»» errors|[string]|false|none|none|
+|» message|string|false|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -3449,7 +5196,7 @@ bearer
 
 `PATCH /leads/bulk/handover`
 
-_Bulk toggle handover mode for all leads_
+*Bulk toggle handover mode for all leads*
 
 Enables/disables human handover mode for ALL leads at once. Syncs each to Redis.
 
@@ -3465,25 +5212,106 @@ Enables/disables human handover mode for ALL leads at once. Syncs each to Redis.
       "description": "Enable (true) or disable (false) handover mode for all leads"
     }
   },
-  "required": ["handoverMode"]
+  "required": [
+    "handoverMode"
+  ]
 }
 ```
 
 <h3 id="leadscontroller_bulksethandover-parameters">Parameters</h3>
 
-| Name           | In   | Type                                      | Required | Description                                                  |
-| -------------- | ---- | ----------------------------------------- | -------- | ------------------------------------------------------------ |
-| body           | body | [BulkHandoverDto](#schemabulkhandoverdto) | true     | none                                                         |
-| » handoverMode | body | boolean                                   | true     | Enable (true) or disable (false) handover mode for all leads |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[BulkHandoverDto](#schemabulkhandoverdto)|true|none|
+|» handoverMode|body|boolean|true|Enable (true) or disable (false) handover mode for all leads|
 
 <h3 id="leadscontroller_bulksethandover-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                           | Schema |
-| ------ | ------------------------------------------------------------------------ | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | Handover mode updated for all leads   | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)          | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)           | Forbidden – insufficient role         | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                     | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Handover mode updated for all leads|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## LeadsController_bulkUpdateStatus
+
+<a id="opIdLeadsController_bulkUpdateStatus"></a>
+
+`PATCH /leads/bulk/status`
+
+*Bulk update lead status*
+
+Updates the status for a list of lead IDs in a single operation.
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "ids": {
+      "description": "Array of lead UUIDs to update",
+      "example": [
+        "uuid1",
+        "uuid2"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "NEW",
+        "CONTACTED",
+        "DEPOSIT_REPORTED",
+        "DEPOSIT_CONFIRMED",
+        "REJECTED"
+      ],
+      "example": "CONTACTED",
+      "description": "New status to apply to all listed leads"
+    }
+  },
+  "required": [
+    "ids",
+    "status"
+  ]
+}
+```
+
+<h3 id="leadscontroller_bulkupdatestatus-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[BulkUpdateStatusDto](#schemabulkupdatestatusdto)|true|none|
+|» ids|body|[string]|true|Array of lead UUIDs to update|
+|» status|body|string|true|New status to apply to all listed leads|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|» status|NEW|
+|» status|CONTACTED|
+|» status|DEPOSIT_REPORTED|
+|» status|DEPOSIT_CONFIRMED|
+|» status|REJECTED|
+
+<h3 id="leadscontroller_bulkupdatestatus-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Statuses updated|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -3496,15 +5324,15 @@ bearer
 
 `GET /leads/{id}`
 
-_Get lead by ID_
+*Get lead by ID*
 
 Returns a lead and its full interaction history.
 
 <h3 id="leadscontroller_findone-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | Lead UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|Lead UUID|
 
 > Example responses
 
@@ -3552,7 +5380,6 @@ Returns a lead and its full interaction history.
           "enum": [
             "NEW",
             "CONTACTED",
-            "REGISTERED",
             "DEPOSIT_REPORTED",
             "DEPOSIT_CONFIRMED",
             "REJECTED"
@@ -3583,6 +5410,12 @@ Returns a lead and its full interaction history.
           "nullable": true,
           "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
         },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
         "registeredAt": {
           "type": "object",
           "example": "2026-02-20T10:00:00.000Z",
@@ -3594,6 +5427,12 @@ Returns a lead and its full interaction history.
           "example": "2026-02-21T12:00:00.000Z",
           "nullable": true,
           "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
         },
         "handoverMode": {
           "type": "boolean",
@@ -3623,8 +5462,10 @@ Returns a lead and its full interaction history.
         "email",
         "phoneNumber",
         "depositBalance",
+        "contactedAt",
         "registeredAt",
         "verifiedAt",
+        "depositReportedAt",
         "handoverMode",
         "createdAt",
         "updatedAt"
@@ -3636,47 +5477,281 @@ Returns a lead and its full interaction history.
 
 <h3 id="leadscontroller_findone-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Lead retrieved                        | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Lead retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="leadscontroller_findone-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                      | Required | Restrictions | Description                                                            |
-| ----------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------- |
-| » statusCode      | number                                    | false    | none         | none                                                                   |
-| » message         | string                                    | false    | none         | none                                                                   |
-| » data            | [LeadResponseDto](#schemaleadresponsedto) | false    | none         | none                                                                   |
-| »» id             | string                                    | true     | none         | Lead UUID                                                              |
-| »» telegramUserId | string                                    | true     | none         | Telegram user ID (serialised as string due to BigInt)                  |
-| »» username       | object¦null                               | true     | none         | Telegram @username without @                                           |
-| »» displayName    | object¦null                               | true     | none         | Telegram display name                                                  |
-| »» status         | string                                    | true     | none         | Current CRM lead status                                                |
-| »» hfmBrokerId    | object¦null                               | true     | none         | HFM broker account ID submitted by the lead                            |
-| »» email          | object¦null                               | true     | none         | Email address submitted by the lead                                    |
-| »» phoneNumber    | object¦null                               | true     | none         | Phone number submitted by the lead                                     |
-| »» depositBalance | object¦null                               | true     | none         | Lifetime deposit balance as decimal string (Prisma Decimal serialised) |
-| »» registeredAt   | object¦null                               | true     | none         | When the lead submitted registration proof                             |
-| »» verifiedAt     | object¦null                               | true     | none         | When an Owner/Admin verified the lead                                  |
-| »» handoverMode   | boolean                                   | true     | none         | When true the bot hands off to a human agent; bot stops auto-replying  |
-| »» createdAt      | string(date-time)                         | true     | none         | When the lead first messaged the bot                                   |
-| »» updatedAt      | string(date-time)                         | true     | none         | Last time any lead field was updated                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
-| status   | REJECTED          |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## LeadsController_updateLeadInfo
+
+<a id="opIdLeadsController_updateLeadInfo"></a>
+
+`PATCH /leads/{id}/info`
+
+*Update lead info (hfmBrokerId, email, phoneNumber)*
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "hfmBrokerId": {
+      "type": "string",
+      "description": "HFM Broker ID",
+      "example": "HFM-123456"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address",
+      "example": "lead@email.com"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "Phone number",
+      "example": "+601234567890"
+    }
+  }
+}
+```
+
+<h3 id="leadscontroller_updateleadinfo-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|Lead UUID|
+|body|body|[UpdateLeadInfoDto](#schemaupdateleadinfodto)|true|none|
+|» hfmBrokerId|body|string|false|HFM Broker ID|
+|» email|body|string|false|Email address|
+|» phoneNumber|body|string|false|Phone number|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "description": "Lead UUID"
+        },
+        "telegramUserId": {
+          "type": "string",
+          "example": "123456789",
+          "description": "Telegram user ID (serialised as string due to BigInt)"
+        },
+        "username": {
+          "type": "object",
+          "example": "john_doe",
+          "nullable": true,
+          "description": "Telegram @username without @"
+        },
+        "displayName": {
+          "type": "object",
+          "example": "John Doe",
+          "nullable": true,
+          "description": "Telegram display name"
+        },
+        "status": {
+          "type": "string",
+          "example": "NEW",
+          "enum": [
+            "NEW",
+            "CONTACTED",
+            "DEPOSIT_REPORTED",
+            "DEPOSIT_CONFIRMED",
+            "REJECTED"
+          ],
+          "description": "Current CRM lead status"
+        },
+        "hfmBrokerId": {
+          "type": "object",
+          "example": "HFM-123456",
+          "nullable": true,
+          "description": "HFM broker account ID submitted by the lead"
+        },
+        "email": {
+          "type": "object",
+          "example": "lead@example.com",
+          "nullable": true,
+          "description": "Email address submitted by the lead"
+        },
+        "phoneNumber": {
+          "type": "object",
+          "example": "+60123456789",
+          "nullable": true,
+          "description": "Phone number submitted by the lead"
+        },
+        "depositBalance": {
+          "type": "object",
+          "example": "500.00",
+          "nullable": true,
+          "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
+        },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
+        "registeredAt": {
+          "type": "object",
+          "example": "2026-02-20T10:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted registration proof"
+        },
+        "verifiedAt": {
+          "type": "object",
+          "example": "2026-02-21T12:00:00.000Z",
+          "nullable": true,
+          "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
+        },
+        "handoverMode": {
+          "type": "boolean",
+          "example": false,
+          "description": "When true the bot hands off to a human agent; bot stops auto-replying"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-18T08:00:00.000Z",
+          "description": "When the lead first messaged the bot"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string",
+          "example": "2026-02-24T09:00:00.000Z",
+          "description": "Last time any lead field was updated"
+        }
+      },
+      "required": [
+        "id",
+        "telegramUserId",
+        "username",
+        "displayName",
+        "status",
+        "hfmBrokerId",
+        "email",
+        "phoneNumber",
+        "depositBalance",
+        "contactedAt",
+        "registeredAt",
+        "verifiedAt",
+        "depositReportedAt",
+        "handoverMode",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  }
+}
+```
+
+<h3 id="leadscontroller_updateleadinfo-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Lead info updated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<h3 id="leadscontroller_updateleadinfo-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -3689,7 +5764,7 @@ bearer
 
 `PATCH /leads/{id}/status`
 
-_Update lead status_
+*Update lead status*
 
 > Body parameter
 
@@ -3702,35 +5777,43 @@ _Update lead status_
       "enum": [
         "NEW",
         "CONTACTED",
-        "REGISTERED",
         "DEPOSIT_REPORTED",
-        "DEPOSIT_CONFIRMED"
+        "DEPOSIT_CONFIRMED",
+        "REJECTED"
       ],
       "example": "CONTACTED",
       "description": "New lead status"
+    },
+    "rejectReason": {
+      "type": "string",
+      "description": "Rejection reason — required when status is REJECTED. This message is sent directly to the lead via Telegram.",
+      "example": "Receipt image is blurry and amount does not match."
     }
   },
-  "required": ["status"]
+  "required": [
+    "status"
+  ]
 }
 ```
 
 <h3 id="leadscontroller_updatestatus-parameters">Parameters</h3>
 
-| Name     | In   | Type                                              | Required | Description     |
-| -------- | ---- | ------------------------------------------------- | -------- | --------------- |
-| id       | path | string(uuid)                                      | true     | Lead UUID       |
-| body     | body | [UpdateLeadStatusDto](#schemaupdateleadstatusdto) | true     | none            |
-| » status | body | string                                            | true     | New lead status |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|Lead UUID|
+|body|body|[UpdateLeadStatusDto](#schemaupdateleadstatusdto)|true|none|
+|» status|body|string|true|New lead status|
+|» rejectReason|body|string|false|Rejection reason — required when status is REJECTED. This message is sent directly to the lead via Telegram.|
 
 #### Enumerated Values
 
-| Parameter | Value             |
-| --------- | ----------------- |
-| » status  | NEW               |
-| » status  | CONTACTED         |
-| » status  | REGISTERED        |
-| » status  | DEPOSIT_REPORTED  |
-| » status  | DEPOSIT_CONFIRMED |
+|Parameter|Value|
+|---|---|
+|» status|NEW|
+|» status|CONTACTED|
+|» status|DEPOSIT_REPORTED|
+|» status|DEPOSIT_CONFIRMED|
+|» status|REJECTED|
 
 > Example responses
 
@@ -3778,7 +5861,6 @@ _Update lead status_
           "enum": [
             "NEW",
             "CONTACTED",
-            "REGISTERED",
             "DEPOSIT_REPORTED",
             "DEPOSIT_CONFIRMED",
             "REJECTED"
@@ -3809,6 +5891,12 @@ _Update lead status_
           "nullable": true,
           "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
         },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
         "registeredAt": {
           "type": "object",
           "example": "2026-02-20T10:00:00.000Z",
@@ -3820,6 +5908,12 @@ _Update lead status_
           "example": "2026-02-21T12:00:00.000Z",
           "nullable": true,
           "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
         },
         "handoverMode": {
           "type": "boolean",
@@ -3849,8 +5943,10 @@ _Update lead status_
         "email",
         "phoneNumber",
         "depositBalance",
+        "contactedAt",
         "registeredAt",
         "verifiedAt",
+        "depositReportedAt",
         "handoverMode",
         "createdAt",
         "updatedAt"
@@ -3862,48 +5958,49 @@ _Update lead status_
 
 <h3 id="leadscontroller_updatestatus-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                           | Schema |
-| ------ | ------------------------------------------------------------------------ | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | Lead status updated                   | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)          | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)           | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)           | Resource not found                    | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                     | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Lead status updated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <h3 id="leadscontroller_updatestatus-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                      | Required | Restrictions | Description                                                            |
-| ----------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------- |
-| » statusCode      | number                                    | false    | none         | none                                                                   |
-| » message         | string                                    | false    | none         | none                                                                   |
-| » data            | [LeadResponseDto](#schemaleadresponsedto) | false    | none         | none                                                                   |
-| »» id             | string                                    | true     | none         | Lead UUID                                                              |
-| »» telegramUserId | string                                    | true     | none         | Telegram user ID (serialised as string due to BigInt)                  |
-| »» username       | object¦null                               | true     | none         | Telegram @username without @                                           |
-| »» displayName    | object¦null                               | true     | none         | Telegram display name                                                  |
-| »» status         | string                                    | true     | none         | Current CRM lead status                                                |
-| »» hfmBrokerId    | object¦null                               | true     | none         | HFM broker account ID submitted by the lead                            |
-| »» email          | object¦null                               | true     | none         | Email address submitted by the lead                                    |
-| »» phoneNumber    | object¦null                               | true     | none         | Phone number submitted by the lead                                     |
-| »» depositBalance | object¦null                               | true     | none         | Lifetime deposit balance as decimal string (Prisma Decimal serialised) |
-| »» registeredAt   | object¦null                               | true     | none         | When the lead submitted registration proof                             |
-| »» verifiedAt     | object¦null                               | true     | none         | When an Owner/Admin verified the lead                                  |
-| »» handoverMode   | boolean                                   | true     | none         | When true the bot hands off to a human agent; bot stops auto-replying  |
-| »» createdAt      | string(date-time)                         | true     | none         | When the lead first messaged the bot                                   |
-| »» updatedAt      | string(date-time)                         | true     | none         | Last time any lead field was updated                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
-| status   | REJECTED          |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -3916,7 +6013,7 @@ bearer
 
 `PATCH /leads/{id}/handover`
 
-_Toggle handover mode_
+*Toggle handover mode*
 
 Enables/disables human handover mode for a lead. Instantly synced to Redis for bot awareness.
 
@@ -3932,17 +6029,19 @@ Enables/disables human handover mode for a lead. Instantly synced to Redis for b
       "description": "Enable (true) or disable (false) handover mode"
     }
   },
-  "required": ["handoverMode"]
+  "required": [
+    "handoverMode"
+  ]
 }
 ```
 
 <h3 id="leadscontroller_sethandover-parameters">Parameters</h3>
 
-| Name           | In   | Type                                          | Required | Description                                    |
-| -------------- | ---- | --------------------------------------------- | -------- | ---------------------------------------------- |
-| id             | path | string(uuid)                                  | true     | Lead UUID                                      |
-| body           | body | [UpdateHandoverDto](#schemaupdatehandoverdto) | true     | none                                           |
-| » handoverMode | body | boolean                                       | true     | Enable (true) or disable (false) handover mode |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|Lead UUID|
+|body|body|[UpdateHandoverDto](#schemaupdatehandoverdto)|true|none|
+|» handoverMode|body|boolean|true|Enable (true) or disable (false) handover mode|
 
 > Example responses
 
@@ -3990,7 +6089,6 @@ Enables/disables human handover mode for a lead. Instantly synced to Redis for b
           "enum": [
             "NEW",
             "CONTACTED",
-            "REGISTERED",
             "DEPOSIT_REPORTED",
             "DEPOSIT_CONFIRMED",
             "REJECTED"
@@ -4021,6 +6119,12 @@ Enables/disables human handover mode for a lead. Instantly synced to Redis for b
           "nullable": true,
           "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
         },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
         "registeredAt": {
           "type": "object",
           "example": "2026-02-20T10:00:00.000Z",
@@ -4032,6 +6136,12 @@ Enables/disables human handover mode for a lead. Instantly synced to Redis for b
           "example": "2026-02-21T12:00:00.000Z",
           "nullable": true,
           "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
         },
         "handoverMode": {
           "type": "boolean",
@@ -4061,8 +6171,10 @@ Enables/disables human handover mode for a lead. Instantly synced to Redis for b
         "email",
         "phoneNumber",
         "depositBalance",
+        "contactedAt",
         "registeredAt",
         "verifiedAt",
+        "depositReportedAt",
         "handoverMode",
         "createdAt",
         "updatedAt"
@@ -4074,47 +6186,48 @@ Enables/disables human handover mode for a lead. Instantly synced to Redis for b
 
 <h3 id="leadscontroller_sethandover-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Handover mode updated                 | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Handover mode updated|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="leadscontroller_sethandover-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                      | Required | Restrictions | Description                                                            |
-| ----------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------- |
-| » statusCode      | number                                    | false    | none         | none                                                                   |
-| » message         | string                                    | false    | none         | none                                                                   |
-| » data            | [LeadResponseDto](#schemaleadresponsedto) | false    | none         | none                                                                   |
-| »» id             | string                                    | true     | none         | Lead UUID                                                              |
-| »» telegramUserId | string                                    | true     | none         | Telegram user ID (serialised as string due to BigInt)                  |
-| »» username       | object¦null                               | true     | none         | Telegram @username without @                                           |
-| »» displayName    | object¦null                               | true     | none         | Telegram display name                                                  |
-| »» status         | string                                    | true     | none         | Current CRM lead status                                                |
-| »» hfmBrokerId    | object¦null                               | true     | none         | HFM broker account ID submitted by the lead                            |
-| »» email          | object¦null                               | true     | none         | Email address submitted by the lead                                    |
-| »» phoneNumber    | object¦null                               | true     | none         | Phone number submitted by the lead                                     |
-| »» depositBalance | object¦null                               | true     | none         | Lifetime deposit balance as decimal string (Prisma Decimal serialised) |
-| »» registeredAt   | object¦null                               | true     | none         | When the lead submitted registration proof                             |
-| »» verifiedAt     | object¦null                               | true     | none         | When an Owner/Admin verified the lead                                  |
-| »» handoverMode   | boolean                                   | true     | none         | When true the bot hands off to a human agent; bot stops auto-replying  |
-| »» createdAt      | string(date-time)                         | true     | none         | When the lead first messaged the bot                                   |
-| »» updatedAt      | string(date-time)                         | true     | none         | Last time any lead field was updated                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
-| status   | REJECTED          |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -4127,15 +6240,15 @@ bearer
 
 `PATCH /leads/{id}/verify`
 
-_Verify lead_
+*Verify lead*
 
 Owner manually verifies the registration/deposit proof. Sets verifiedAt timestamp.
 
 <h3 id="leadscontroller_verifylead-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | Lead UUID   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|Lead UUID|
 
 > Example responses
 
@@ -4183,7 +6296,6 @@ Owner manually verifies the registration/deposit proof. Sets verifiedAt timestam
           "enum": [
             "NEW",
             "CONTACTED",
-            "REGISTERED",
             "DEPOSIT_REPORTED",
             "DEPOSIT_CONFIRMED",
             "REJECTED"
@@ -4214,6 +6326,12 @@ Owner manually verifies the registration/deposit proof. Sets verifiedAt timestam
           "nullable": true,
           "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
         },
+        "contactedAt": {
+          "type": "object",
+          "example": "2026-02-19T08:30:00.000Z",
+          "nullable": true,
+          "description": "When the lead was first moved to CONTACTED status"
+        },
         "registeredAt": {
           "type": "object",
           "example": "2026-02-20T10:00:00.000Z",
@@ -4225,6 +6343,12 @@ Owner manually verifies the registration/deposit proof. Sets verifiedAt timestam
           "example": "2026-02-21T12:00:00.000Z",
           "nullable": true,
           "description": "When an Owner/Admin verified the lead"
+        },
+        "depositReportedAt": {
+          "type": "object",
+          "example": "2026-02-21T09:00:00.000Z",
+          "nullable": true,
+          "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
         },
         "handoverMode": {
           "type": "boolean",
@@ -4254,8 +6378,10 @@ Owner manually verifies the registration/deposit proof. Sets verifiedAt timestam
         "email",
         "phoneNumber",
         "depositBalance",
+        "contactedAt",
         "registeredAt",
         "verifiedAt",
+        "depositReportedAt",
         "handoverMode",
         "createdAt",
         "updatedAt"
@@ -4267,47 +6393,122 @@ Owner manually verifies the registration/deposit proof. Sets verifiedAt timestam
 
 <h3 id="leadscontroller_verifylead-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Lead verified                         | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Lead verified|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="leadscontroller_verifylead-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                      | Required | Restrictions | Description                                                            |
-| ----------------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------- |
-| » statusCode      | number                                    | false    | none         | none                                                                   |
-| » message         | string                                    | false    | none         | none                                                                   |
-| » data            | [LeadResponseDto](#schemaleadresponsedto) | false    | none         | none                                                                   |
-| »» id             | string                                    | true     | none         | Lead UUID                                                              |
-| »» telegramUserId | string                                    | true     | none         | Telegram user ID (serialised as string due to BigInt)                  |
-| »» username       | object¦null                               | true     | none         | Telegram @username without @                                           |
-| »» displayName    | object¦null                               | true     | none         | Telegram display name                                                  |
-| »» status         | string                                    | true     | none         | Current CRM lead status                                                |
-| »» hfmBrokerId    | object¦null                               | true     | none         | HFM broker account ID submitted by the lead                            |
-| »» email          | object¦null                               | true     | none         | Email address submitted by the lead                                    |
-| »» phoneNumber    | object¦null                               | true     | none         | Phone number submitted by the lead                                     |
-| »» depositBalance | object¦null                               | true     | none         | Lifetime deposit balance as decimal string (Prisma Decimal serialised) |
-| »» registeredAt   | object¦null                               | true     | none         | When the lead submitted registration proof                             |
-| »» verifiedAt     | object¦null                               | true     | none         | When an Owner/Admin verified the lead                                  |
-| »» handoverMode   | boolean                                   | true     | none         | When true the bot hands off to a human agent; bot stops auto-replying  |
-| »» createdAt      | string(date-time)                         | true     | none         | When the lead first messaged the bot                                   |
-| »» updatedAt      | string(date-time)                         | true     | none         | Last time any lead field was updated                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[LeadResponseDto](#schemaleadresponsedto)|false|none|none|
+|»» id|string|true|none|Lead UUID|
+|»» telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|»» username|object¦null|true|none|Telegram @username without @|
+|»» displayName|object¦null|true|none|Telegram display name|
+|»» status|string|true|none|Current CRM lead status|
+|»» hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|»» email|object¦null|true|none|Email address submitted by the lead|
+|»» phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|»» depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|»» contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|»» registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|»» verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|»» depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|»» handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|»» createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|»» updatedAt|string(date-time)|true|none|Last time any lead field was updated|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
-| status   | REJECTED          |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## LeadsController_replyToLead
+
+<a id="opIdLeadsController_replyToLead"></a>
+
+`POST /leads/{id}/reply`
+
+*Send manual reply to a lead*
+
+Sends a Telegram message to the lead and logs it as MANUAL_REPLY_SENT. Text-only replies send one text message. Attachment replies (handover mode only) send one single Telegram media message with caption (no split text + media sends).
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "required": [
+    "message"
+  ],
+  "properties": {
+    "message": {
+      "type": "string",
+      "maxLength": 4096,
+      "description": "Message to send to the lead via Telegram"
+    },
+    "attachment": {
+      "type": "string",
+      "format": "binary",
+      "description": "Optional single attachment file. When provided, the reply is delivered as one media message with caption = message."
+    }
+  }
+}
+```
+
+```yaml
+type: object
+required:
+  - message
+properties:
+  message:
+    type: string
+    maxLength: 4096
+    description: Message to send to the lead via Telegram
+  attachment:
+    type: string
+    format: binary
+    description: Optional single attachment file. When provided, the reply is
+      delivered as one media message with caption = message.
+
+```
+
+<h3 id="leadscontroller_replytolead-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|none|
+|body|body|object|true|none|
+|» message|body|string|true|Message to send to the lead via Telegram|
+|» attachment|body|string(binary)|false|Optional single attachment file. When provided, the reply is delivered as one media message with caption = message.|
+
+<h3 id="leadscontroller_replytolead-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Message sent|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -4320,33 +6521,509 @@ bearer
 
 `GET /leads/{id}/interactions`
 
-_Paginated interaction timeline for a lead_
+*Paginated interaction timeline for a lead*
 
 <h3 id="leadscontroller_getinteractions-parameters">Parameters</h3>
 
-| Name | In    | Type         | Required | Description |
-| ---- | ----- | ------------ | -------- | ----------- |
-| id   | path  | string(uuid) | true     | none        |
-| skip | query | number       | false    | none        |
-| take | query | number       | false    | none        |
-| type | query | string       | false    | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|none|
+|skip|query|number|false|none|
+|take|query|number|false|none|
+|type|query|string|false|none|
 
 #### Enumerated Values
 
-| Parameter | Value                |
-| --------- | -------------------- |
-| type      | MESSAGE_RECEIVED     |
-| type      | AUTO_REPLY_SENT      |
-| type      | MANUAL_REPLY_SENT    |
-| type      | SYSTEM_STATUS_CHANGE |
+|Parameter|Value|
+|---|---|
+|type|MESSAGE_RECEIVED|
+|type|AUTO_REPLY_SENT|
+|type|MANUAL_REPLY_SENT|
+|type|SYSTEM_STATUS_CHANGE|
 
 <h3 id="leadscontroller_getinteractions-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Interactions retrieved                | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Interactions retrieved|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-audit-logs">audit-logs</h1>
+
+## AuditLogController_exportCsv
+
+<a id="opIdAuditLogController_exportCsv"></a>
+
+`GET /audit-logs/export`
+
+*Export audit logs as CSV (max 10 000 rows)*
+
+<h3 id="auditlogcontroller_exportcsv-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|userId|query|string|false|none|
+|userEmail|query|string|false|none|
+|action|query|string|false|none|
+|resourceType|query|string|false|none|
+|from|query|string|false|ISO8601 date|
+|to|query|string|false|ISO8601 date|
+
+<h3 id="auditlogcontroller_exportcsv-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|CSV file|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## AuditLogController_findMany
+
+<a id="opIdAuditLogController_findMany"></a>
+
+`GET /audit-logs`
+
+*Query audit log entries (OWNER / ADMIN / SUPERADMIN)*
+
+<h3 id="auditlogcontroller_findmany-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|userId|query|string|false|none|
+|userEmail|query|string|false|Partial email match|
+|action|query|string|false|none|
+|resourceType|query|string|false|none|
+|from|query|string|false|ISO8601 date|
+|to|query|string|false|ISO8601 date|
+|skip|query|number|false|none|
+|take|query|number|false|none|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|action|USER_CREATED|
+|action|USER_DEACTIVATED|
+|action|USER_REACTIVATED|
+|action|USER_ROLE_CHANGED|
+|action|PASSWORD_CHANGED|
+|action|LEAD_STATUS_CHANGED|
+|action|LEAD_VERIFIED|
+|action|KB_CREATED|
+|action|KB_UPDATED|
+|action|KB_DELETED|
+|action|COMMAND_MENU_CREATED|
+|action|COMMAND_MENU_UPDATED|
+|action|COMMAND_MENU_DELETED|
+|action|SYSTEM_CONFIG_CHANGED|
+
+<h3 id="auditlogcontroller_findmany-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Audit log entries|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-follow-ups">follow-ups</h1>
+
+## FollowUpController_findAll
+
+<a id="opIdFollowUpController_findAll"></a>
+
+`GET /follow-ups`
+
+*List scheduled follow-up messages*
+
+<h3 id="followupcontroller_findall-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|leadId|query|string|false|none|
+|status|query|string|false|none|
+|skip|query|number|false|none|
+|take|query|number|false|none|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|status|pending|
+|status|sent|
+|status|cancelled|
+
+<h3 id="followupcontroller_findall-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Follow-ups retrieved|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## FollowUpController_cancel
+
+<a id="opIdFollowUpController_cancel"></a>
+
+`DELETE /follow-ups/{id}`
+
+*Cancel a scheduled follow-up by ID*
+
+<h3 id="followupcontroller_cancel-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|none|
+
+<h3 id="followupcontroller_cancel-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Follow-up cancelled|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## FollowUpController_listFailed
+
+<a id="opIdFollowUpController_listFailed"></a>
+
+`GET /follow-ups/failed`
+
+*List failed follow-up jobs (OWNER / ADMIN / SUPERADMIN)*
+
+<h3 id="followupcontroller_listfailed-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|start|query|number|false|Start index for pagination|
+|end|query|number|false|End index for pagination|
+
+<h3 id="followupcontroller_listfailed-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Failed jobs retrieved|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## FollowUpController_retryFailed
+
+<a id="opIdFollowUpController_retryFailed"></a>
+
+`POST /follow-ups/retry/{jobId}`
+
+*Retry a failed follow-up job (OWNER / ADMIN / SUPERADMIN)*
+
+<h3 id="followupcontroller_retryfailed-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|jobId|path|string|true|none|
+
+<h3 id="followupcontroller_retryfailed-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Job re-queued|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-system-config">system-config</h1>
+
+## SystemConfigController_getAllowlist
+
+<a id="opIdSystemConfigController_getAllowlist"></a>
+
+`GET /system-config/allowlist`
+
+*List allowed config keys*
+
+<h3 id="systemconfigcontroller_getallowlist-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Allowlist returned|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SystemConfigController_getPublicConfig
+
+<a id="opIdSystemConfigController_getPublicConfig"></a>
+
+`GET /system-config/public`
+
+*Public config — returns system.* and feature.* keys (no auth required)*
+
+<h3 id="systemconfigcontroller_getpublicconfig-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Public config returned|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SystemConfigController_findAll
+
+<a id="opIdSystemConfigController_findAll"></a>
+
+`GET /system-config`
+
+*List all system config entries*
+
+<h3 id="systemconfigcontroller_findall-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Config entries retrieved|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SystemConfigController_findOne
+
+<a id="opIdSystemConfigController_findOne"></a>
+
+`GET /system-config/{key}`
+
+*Get a single config entry by key*
+
+<h3 id="systemconfigcontroller_findone-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|key|path|string|true|none|
+
+<h3 id="systemconfigcontroller_findone-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Config entry retrieved|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SystemConfigController_upsert
+
+<a id="opIdSystemConfigController_upsert"></a>
+
+`PATCH /system-config/{key}`
+
+*Upsert a config value (validated against allowlist)*
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Config value (raw string)",
+      "example": "0.7"
+    }
+  },
+  "required": [
+    "value"
+  ]
+}
+```
+
+<h3 id="systemconfigcontroller_upsert-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|key|path|string|true|none|
+|body|body|[UpsertSystemConfigDto](#schemaupsertsystemconfigdto)|true|none|
+|» value|body|string|true|Config value (raw string)|
+
+<h3 id="systemconfigcontroller_upsert-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Config updated|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SystemConfigController_remove
+
+<a id="opIdSystemConfigController_remove"></a>
+
+`DELETE /system-config/{key}`
+
+*Reset config key to env default — SUPERADMIN only*
+
+<h3 id="systemconfigcontroller_remove-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|key|path|string|true|none|
+
+<h3 id="systemconfigcontroller_remove-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Config reset to default|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-attachments">attachments</h1>
+
+## AttachmentsController_findByLead
+
+<a id="opIdAttachmentsController_findByLead"></a>
+
+`GET /attachments`
+
+*List attachments for a lead*
+
+Returns all uploaded receipts/screenshots for the given lead UUID.
+
+<h3 id="attachmentscontroller_findbylead-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|leadId|query|string(uuid)|true|Lead UUID|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "leadId": {
+            "type": "string"
+          },
+          "telegramFileId": {
+            "type": "object",
+            "nullable": true
+          },
+          "fileKey": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "object",
+            "nullable": true
+          },
+          "size": {
+            "type": "object",
+            "nullable": true
+          },
+          "uploadedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "leadId",
+          "telegramFileId",
+          "fileKey",
+          "fileUrl",
+          "mimeType",
+          "size",
+          "uploadedAt"
+        ]
+      }
+    }
+  }
+}
+```
+
+<h3 id="attachmentscontroller_findbylead-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Attachments retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<h3 id="attachmentscontroller_findbylead-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[AttachmentResponseDto](#schemaattachmentresponsedto)]|false|none|none|
+|»» id|string|true|none|none|
+|»» leadId|string|true|none|none|
+|»» telegramFileId|object¦null|true|none|none|
+|»» fileKey|string|true|none|none|
+|»» fileUrl|string|true|none|none|
+|»» mimeType|object¦null|true|none|none|
+|»» size|object¦null|true|none|none|
+|»» uploadedAt|string(date-time)|true|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -4361,7 +7038,7 @@ bearer
 
 `GET /knowledge-base`
 
-_List all KB entries_
+*List all KB entries*
 
 > Example responses
 
@@ -4400,7 +7077,11 @@ _List all KB entries_
           },
           "type": {
             "type": "string",
-            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "enum": [
+              "TEXT",
+              "LINK",
+              "TEMPLATE"
+            ],
             "example": "TEXT",
             "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
           },
@@ -4425,7 +7106,12 @@ _List all KB entries_
           },
           "status": {
             "type": "string",
-            "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "READY",
+              "FAILED"
+            ],
             "example": "READY",
             "description": "Processing status — only READY entries are used by the RAG pipeline"
           },
@@ -4464,49 +7150,49 @@ _List all KB entries_
 
 <h3 id="knowledgebasecontroller_findall-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Entries retrieved                     | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Entries retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="knowledgebasecontroller_findall-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type                                    | Required | Restrictions | Description                                                                 |
-| ------------ | --------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode | number                                  | false    | none         | none                                                                        |
-| » message    | string                                  | false    | none         | none                                                                        |
-| » data       | [[KbResponseDto](#schemakbresponsedto)] | false    | none         | none                                                                        |
-| »» id        | string                                  | true     | none         | Knowledge base entry UUID                                                   |
-| »» title     | string                                  | true     | none         | Entry title shown in the CRM and used as RAG context heading                |
-| »» content   | string                                  | true     | none         | Full text content (used for vector embedding)                               |
-| »» type      | string                                  | true     | none         | TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template |
-| »» fileType  | string                                  | true     | none         | How the content was ingested                                                |
-| »» url       | object¦null                             | false    | none         | External URL for LINK or TEMPLATE entries                                   |
-| »» status    | string                                  | true     | none         | Processing status — only READY entries are used by the RAG pipeline         |
-| »» isActive  | boolean                                 | true     | none         | Inactive entries are excluded from vector search                            |
-| »» createdAt | string(date-time)                       | true     | none         | none                                                                        |
-| »» updatedAt | string(date-time)                       | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[KbResponseDto](#schemakbresponsedto)]|false|none|none|
+|»» id|string|true|none|Knowledge base entry UUID|
+|»» title|string|true|none|Entry title shown in the CRM and used as RAG context heading|
+|»» content|string|true|none|Full text content (used for vector embedding)|
+|»» type|string|true|none|TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template|
+|»» fileType|string|true|none|How the content was ingested|
+|»» url|object¦null|false|none|External URL for LINK or TEMPLATE entries|
+|»» status|string|true|none|Processing status — only READY entries are used by the RAG pipeline|
+|»» isActive|boolean|true|none|Inactive entries are excluded from vector search|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value         |
-| -------- | ------------- |
-| type     | TEXT          |
-| type     | LINK          |
-| type     | TEMPLATE      |
-| fileType | TEXT_MANUAL   |
-| fileType | PDF           |
-| fileType | DOCX          |
-| fileType | IMAGE         |
-| fileType | VIDEO_LINK    |
-| fileType | EXTERNAL_LINK |
-| status   | PENDING       |
-| status   | PROCESSING    |
-| status   | READY         |
-| status   | FAILED        |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
+|fileType|TEXT_MANUAL|
+|fileType|PDF|
+|fileType|DOCX|
+|fileType|IMAGE|
+|fileType|VIDEO_LINK|
+|fileType|EXTERNAL_LINK|
+|status|PENDING|
+|status|PROCESSING|
+|status|READY|
+|status|FAILED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -4519,7 +7205,7 @@ bearer
 
 `POST /knowledge-base`
 
-_Create KB entry (legacy)_
+*Create KB entry (legacy)*
 
 Use POST /text or POST /upload instead.
 
@@ -4541,7 +7227,11 @@ Use POST /text or POST /upload instead.
     },
     "type": {
       "type": "string",
-      "enum": ["TEXT", "LINK", "TEMPLATE"],
+      "enum": [
+        "TEXT",
+        "LINK",
+        "TEMPLATE"
+      ],
       "default": "TEXT",
       "description": "Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)"
     },
@@ -4551,27 +7241,30 @@ Use POST /text or POST /upload instead.
       "description": "External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)"
     }
   },
-  "required": ["title", "content"]
+  "required": [
+    "title",
+    "content"
+  ]
 }
 ```
 
 <h3 id="knowledgebasecontroller_create-parameters">Parameters</h3>
 
-| Name      | In   | Type                              | Required | Description                                                                           |
-| --------- | ---- | --------------------------------- | -------- | ------------------------------------------------------------------------------------- |
-| body      | body | [CreateKbDto](#schemacreatekbdto) | true     | none                                                                                  |
-| » title   | body | string                            | true     | none                                                                                  |
-| » content | body | string                            | true     | none                                                                                  |
-| » type    | body | string                            | false    | Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply) |
-| » url     | body | string                            | false    | External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)                    |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[CreateKbDto](#schemacreatekbdto)|true|none|
+|» title|body|string|true|none|
+|» content|body|string|true|none|
+|» type|body|string|false|Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)|
+|» url|body|string|false|External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)|
 
 #### Enumerated Values
 
-| Parameter | Value    |
-| --------- | -------- |
-| » type    | TEXT     |
-| » type    | LINK     |
-| » type    | TEMPLATE |
+|Parameter|Value|
+|---|---|
+|» type|TEXT|
+|» type|LINK|
+|» type|TEMPLATE|
 
 > Example responses
 
@@ -4608,7 +7301,11 @@ Use POST /text or POST /upload instead.
         },
         "type": {
           "type": "string",
-          "enum": ["TEXT", "LINK", "TEMPLATE"],
+          "enum": [
+            "TEXT",
+            "LINK",
+            "TEMPLATE"
+          ],
           "example": "TEXT",
           "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
         },
@@ -4633,7 +7330,12 @@ Use POST /text or POST /upload instead.
         },
         "status": {
           "type": "string",
-          "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+          "enum": [
+            "PENDING",
+            "PROCESSING",
+            "READY",
+            "FAILED"
+          ],
           "example": "READY",
           "description": "Processing status — only READY entries are used by the RAG pipeline"
         },
@@ -4671,47 +7373,47 @@ Use POST /text or POST /upload instead.
 
 <h3 id="knowledgebasecontroller_create-responses">Responses</h3>
 
-| Status | Meaning                                                      | Description   | Schema |
-| ------ | ------------------------------------------------------------ | ------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2) | Entry created | Inline |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Entry created|Inline|
 
 <h3 id="knowledgebasecontroller_create-responseschema">Response Schema</h3>
 
 Status Code **201**
 
-| Name         | Type                                  | Required | Restrictions | Description                                                                 |
-| ------------ | ------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode | number                                | false    | none         | none                                                                        |
-| » message    | string                                | false    | none         | none                                                                        |
-| » data       | [KbResponseDto](#schemakbresponsedto) | false    | none         | none                                                                        |
-| »» id        | string                                | true     | none         | Knowledge base entry UUID                                                   |
-| »» title     | string                                | true     | none         | Entry title shown in the CRM and used as RAG context heading                |
-| »» content   | string                                | true     | none         | Full text content (used for vector embedding)                               |
-| »» type      | string                                | true     | none         | TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template |
-| »» fileType  | string                                | true     | none         | How the content was ingested                                                |
-| »» url       | object¦null                           | false    | none         | External URL for LINK or TEMPLATE entries                                   |
-| »» status    | string                                | true     | none         | Processing status — only READY entries are used by the RAG pipeline         |
-| »» isActive  | boolean                               | true     | none         | Inactive entries are excluded from vector search                            |
-| »» createdAt | string(date-time)                     | true     | none         | none                                                                        |
-| »» updatedAt | string(date-time)                     | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[KbResponseDto](#schemakbresponsedto)|false|none|none|
+|»» id|string|true|none|Knowledge base entry UUID|
+|»» title|string|true|none|Entry title shown in the CRM and used as RAG context heading|
+|»» content|string|true|none|Full text content (used for vector embedding)|
+|»» type|string|true|none|TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template|
+|»» fileType|string|true|none|How the content was ingested|
+|»» url|object¦null|false|none|External URL for LINK or TEMPLATE entries|
+|»» status|string|true|none|Processing status — only READY entries are used by the RAG pipeline|
+|»» isActive|boolean|true|none|Inactive entries are excluded from vector search|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value         |
-| -------- | ------------- |
-| type     | TEXT          |
-| type     | LINK          |
-| type     | TEMPLATE      |
-| fileType | TEXT_MANUAL   |
-| fileType | PDF           |
-| fileType | DOCX          |
-| fileType | IMAGE         |
-| fileType | VIDEO_LINK    |
-| fileType | EXTERNAL_LINK |
-| status   | PENDING       |
-| status   | PROCESSING    |
-| status   | READY         |
-| status   | FAILED        |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
+|fileType|TEXT_MANUAL|
+|fileType|PDF|
+|fileType|DOCX|
+|fileType|IMAGE|
+|fileType|VIDEO_LINK|
+|fileType|EXTERNAL_LINK|
+|status|PENDING|
+|status|PROCESSING|
+|status|READY|
+|status|FAILED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -4724,7 +7426,7 @@ bearer
 
 `GET /knowledge-base/active`
 
-_List active KB entries (RAG-ready)_
+*List active KB entries (RAG-ready)*
 
 > Example responses
 
@@ -4763,7 +7465,11 @@ _List active KB entries (RAG-ready)_
           },
           "type": {
             "type": "string",
-            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "enum": [
+              "TEXT",
+              "LINK",
+              "TEMPLATE"
+            ],
             "example": "TEXT",
             "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
           },
@@ -4788,7 +7494,12 @@ _List active KB entries (RAG-ready)_
           },
           "status": {
             "type": "string",
-            "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "READY",
+              "FAILED"
+            ],
             "example": "READY",
             "description": "Processing status — only READY entries are used by the RAG pipeline"
           },
@@ -4827,49 +7538,49 @@ _List active KB entries (RAG-ready)_
 
 <h3 id="knowledgebasecontroller_findactive-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Active entries retrieved              | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Active entries retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="knowledgebasecontroller_findactive-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type                                    | Required | Restrictions | Description                                                                 |
-| ------------ | --------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode | number                                  | false    | none         | none                                                                        |
-| » message    | string                                  | false    | none         | none                                                                        |
-| » data       | [[KbResponseDto](#schemakbresponsedto)] | false    | none         | none                                                                        |
-| »» id        | string                                  | true     | none         | Knowledge base entry UUID                                                   |
-| »» title     | string                                  | true     | none         | Entry title shown in the CRM and used as RAG context heading                |
-| »» content   | string                                  | true     | none         | Full text content (used for vector embedding)                               |
-| »» type      | string                                  | true     | none         | TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template |
-| »» fileType  | string                                  | true     | none         | How the content was ingested                                                |
-| »» url       | object¦null                             | false    | none         | External URL for LINK or TEMPLATE entries                                   |
-| »» status    | string                                  | true     | none         | Processing status — only READY entries are used by the RAG pipeline         |
-| »» isActive  | boolean                                 | true     | none         | Inactive entries are excluded from vector search                            |
-| »» createdAt | string(date-time)                       | true     | none         | none                                                                        |
-| »» updatedAt | string(date-time)                       | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[KbResponseDto](#schemakbresponsedto)]|false|none|none|
+|»» id|string|true|none|Knowledge base entry UUID|
+|»» title|string|true|none|Entry title shown in the CRM and used as RAG context heading|
+|»» content|string|true|none|Full text content (used for vector embedding)|
+|»» type|string|true|none|TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template|
+|»» fileType|string|true|none|How the content was ingested|
+|»» url|object¦null|false|none|External URL for LINK or TEMPLATE entries|
+|»» status|string|true|none|Processing status — only READY entries are used by the RAG pipeline|
+|»» isActive|boolean|true|none|Inactive entries are excluded from vector search|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value         |
-| -------- | ------------- |
-| type     | TEXT          |
-| type     | LINK          |
-| type     | TEMPLATE      |
-| fileType | TEXT_MANUAL   |
-| fileType | PDF           |
-| fileType | DOCX          |
-| fileType | IMAGE         |
-| fileType | VIDEO_LINK    |
-| fileType | EXTERNAL_LINK |
-| status   | PENDING       |
-| status   | PROCESSING    |
-| status   | READY         |
-| status   | FAILED        |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
+|fileType|TEXT_MANUAL|
+|fileType|PDF|
+|fileType|DOCX|
+|fileType|IMAGE|
+|fileType|VIDEO_LINK|
+|fileType|EXTERNAL_LINK|
+|status|PENDING|
+|status|PROCESSING|
+|status|READY|
+|status|FAILED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -4882,21 +7593,21 @@ bearer
 
 `GET /knowledge-base/status`
 
-_SSE stream for KB file processing status_
+*SSE stream for KB file processing status*
 
 Subscribe with ?kbId=<id> to receive real-time processing updates.
 
 <h3 id="knowledgebasecontroller_getprocessingstatus-parameters">Parameters</h3>
 
-| Name | In    | Type   | Required | Description |
-| ---- | ----- | ------ | -------- | ----------- |
-| kbId | query | string | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|kbId|query|string|true|none|
 
 <h3 id="knowledgebasecontroller_getprocessingstatus-responses">Responses</h3>
 
-| Status | Meaning                                                 | Description                                       | Schema |
-| ------ | ------------------------------------------------------- | ------------------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | SSE stream of { status, progress, kbId?, error? } | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|SSE stream of { status, progress, kbId?, error? }|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -4909,13 +7620,13 @@ bearer
 
 `GET /knowledge-base/{id}`
 
-_Get KB entry by ID_
+*Get KB entry by ID*
 
 <h3 id="knowledgebasecontroller_findone-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|none|
 
 > Example responses
 
@@ -4952,7 +7663,11 @@ _Get KB entry by ID_
         },
         "type": {
           "type": "string",
-          "enum": ["TEXT", "LINK", "TEMPLATE"],
+          "enum": [
+            "TEXT",
+            "LINK",
+            "TEMPLATE"
+          ],
           "example": "TEXT",
           "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
         },
@@ -4977,7 +7692,12 @@ _Get KB entry by ID_
         },
         "status": {
           "type": "string",
-          "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+          "enum": [
+            "PENDING",
+            "PROCESSING",
+            "READY",
+            "FAILED"
+          ],
           "example": "READY",
           "description": "Processing status — only READY entries are used by the RAG pipeline"
         },
@@ -5015,48 +7735,48 @@ _Get KB entry by ID_
 
 <h3 id="knowledgebasecontroller_findone-responses">Responses</h3>
 
-| Status | Meaning                                                        | Description        | Schema |
-| ------ | -------------------------------------------------------------- | ------------------ | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)        | Entry retrieved    | Inline |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4) | Resource not found | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Entry retrieved|Inline|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="knowledgebasecontroller_findone-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type                                  | Required | Restrictions | Description                                                                 |
-| ------------ | ------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode | number                                | false    | none         | none                                                                        |
-| » message    | string                                | false    | none         | none                                                                        |
-| » data       | [KbResponseDto](#schemakbresponsedto) | false    | none         | none                                                                        |
-| »» id        | string                                | true     | none         | Knowledge base entry UUID                                                   |
-| »» title     | string                                | true     | none         | Entry title shown in the CRM and used as RAG context heading                |
-| »» content   | string                                | true     | none         | Full text content (used for vector embedding)                               |
-| »» type      | string                                | true     | none         | TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template |
-| »» fileType  | string                                | true     | none         | How the content was ingested                                                |
-| »» url       | object¦null                           | false    | none         | External URL for LINK or TEMPLATE entries                                   |
-| »» status    | string                                | true     | none         | Processing status — only READY entries are used by the RAG pipeline         |
-| »» isActive  | boolean                               | true     | none         | Inactive entries are excluded from vector search                            |
-| »» createdAt | string(date-time)                     | true     | none         | none                                                                        |
-| »» updatedAt | string(date-time)                     | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[KbResponseDto](#schemakbresponsedto)|false|none|none|
+|»» id|string|true|none|Knowledge base entry UUID|
+|»» title|string|true|none|Entry title shown in the CRM and used as RAG context heading|
+|»» content|string|true|none|Full text content (used for vector embedding)|
+|»» type|string|true|none|TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template|
+|»» fileType|string|true|none|How the content was ingested|
+|»» url|object¦null|false|none|External URL for LINK or TEMPLATE entries|
+|»» status|string|true|none|Processing status — only READY entries are used by the RAG pipeline|
+|»» isActive|boolean|true|none|Inactive entries are excluded from vector search|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value         |
-| -------- | ------------- |
-| type     | TEXT          |
-| type     | LINK          |
-| type     | TEMPLATE      |
-| fileType | TEXT_MANUAL   |
-| fileType | PDF           |
-| fileType | DOCX          |
-| fileType | IMAGE         |
-| fileType | VIDEO_LINK    |
-| fileType | EXTERNAL_LINK |
-| status   | PENDING       |
-| status   | PROCESSING    |
-| status   | READY         |
-| status   | FAILED        |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
+|fileType|TEXT_MANUAL|
+|fileType|PDF|
+|fileType|DOCX|
+|fileType|IMAGE|
+|fileType|VIDEO_LINK|
+|fileType|EXTERNAL_LINK|
+|status|PENDING|
+|status|PROCESSING|
+|status|READY|
+|status|FAILED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5069,7 +7789,7 @@ bearer
 
 `PATCH /knowledge-base/{id}`
 
-_Update KB entry_
+*Update KB entry*
 
 > Body parameter
 
@@ -5089,7 +7809,11 @@ _Update KB entry_
     },
     "type": {
       "type": "string",
-      "enum": ["TEXT", "LINK", "TEMPLATE"],
+      "enum": [
+        "TEXT",
+        "LINK",
+        "TEMPLATE"
+      ],
       "description": "Entry type"
     },
     "url": {
@@ -5108,23 +7832,23 @@ _Update KB entry_
 
 <h3 id="knowledgebasecontroller_update-parameters">Parameters</h3>
 
-| Name       | In   | Type                              | Required | Description                            |
-| ---------- | ---- | --------------------------------- | -------- | -------------------------------------- |
-| id         | path | string(uuid)                      | true     | none                                   |
-| body       | body | [UpdateKbDto](#schemaupdatekbdto) | true     | none                                   |
-| » title    | body | string                            | false    | none                                   |
-| » content  | body | string                            | false    | none                                   |
-| » type     | body | string                            | false    | Entry type                             |
-| » url      | body | string                            | false    | External URL for LINK/TEMPLATE entries |
-| » isActive | body | boolean                           | false    | Activate or deactivate this entry      |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|none|
+|body|body|[UpdateKbDto](#schemaupdatekbdto)|true|none|
+|» title|body|string|false|none|
+|» content|body|string|false|none|
+|» type|body|string|false|Entry type|
+|» url|body|string|false|External URL for LINK/TEMPLATE entries|
+|» isActive|body|boolean|false|Activate or deactivate this entry|
 
 #### Enumerated Values
 
-| Parameter | Value    |
-| --------- | -------- |
-| » type    | TEXT     |
-| » type    | LINK     |
-| » type    | TEMPLATE |
+|Parameter|Value|
+|---|---|
+|» type|TEXT|
+|» type|LINK|
+|» type|TEMPLATE|
 
 > Example responses
 
@@ -5161,7 +7885,11 @@ _Update KB entry_
         },
         "type": {
           "type": "string",
-          "enum": ["TEXT", "LINK", "TEMPLATE"],
+          "enum": [
+            "TEXT",
+            "LINK",
+            "TEMPLATE"
+          ],
           "example": "TEXT",
           "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
         },
@@ -5186,7 +7914,12 @@ _Update KB entry_
         },
         "status": {
           "type": "string",
-          "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+          "enum": [
+            "PENDING",
+            "PROCESSING",
+            "READY",
+            "FAILED"
+          ],
           "example": "READY",
           "description": "Processing status — only READY entries are used by the RAG pipeline"
         },
@@ -5224,48 +7957,48 @@ _Update KB entry_
 
 <h3 id="knowledgebasecontroller_update-responses">Responses</h3>
 
-| Status | Meaning                                                        | Description        | Schema |
-| ------ | -------------------------------------------------------------- | ------------------ | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)        | Entry updated      | Inline |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4) | Resource not found | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Entry updated|Inline|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="knowledgebasecontroller_update-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type                                  | Required | Restrictions | Description                                                                 |
-| ------------ | ------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode | number                                | false    | none         | none                                                                        |
-| » message    | string                                | false    | none         | none                                                                        |
-| » data       | [KbResponseDto](#schemakbresponsedto) | false    | none         | none                                                                        |
-| »» id        | string                                | true     | none         | Knowledge base entry UUID                                                   |
-| »» title     | string                                | true     | none         | Entry title shown in the CRM and used as RAG context heading                |
-| »» content   | string                                | true     | none         | Full text content (used for vector embedding)                               |
-| »» type      | string                                | true     | none         | TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template |
-| »» fileType  | string                                | true     | none         | How the content was ingested                                                |
-| »» url       | object¦null                           | false    | none         | External URL for LINK or TEMPLATE entries                                   |
-| »» status    | string                                | true     | none         | Processing status — only READY entries are used by the RAG pipeline         |
-| »» isActive  | boolean                               | true     | none         | Inactive entries are excluded from vector search                            |
-| »» createdAt | string(date-time)                     | true     | none         | none                                                                        |
-| »» updatedAt | string(date-time)                     | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[KbResponseDto](#schemakbresponsedto)|false|none|none|
+|»» id|string|true|none|Knowledge base entry UUID|
+|»» title|string|true|none|Entry title shown in the CRM and used as RAG context heading|
+|»» content|string|true|none|Full text content (used for vector embedding)|
+|»» type|string|true|none|TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template|
+|»» fileType|string|true|none|How the content was ingested|
+|»» url|object¦null|false|none|External URL for LINK or TEMPLATE entries|
+|»» status|string|true|none|Processing status — only READY entries are used by the RAG pipeline|
+|»» isActive|boolean|true|none|Inactive entries are excluded from vector search|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value         |
-| -------- | ------------- |
-| type     | TEXT          |
-| type     | LINK          |
-| type     | TEMPLATE      |
-| fileType | TEXT_MANUAL   |
-| fileType | PDF           |
-| fileType | DOCX          |
-| fileType | IMAGE         |
-| fileType | VIDEO_LINK    |
-| fileType | EXTERNAL_LINK |
-| status   | PENDING       |
-| status   | PROCESSING    |
-| status   | READY         |
-| status   | FAILED        |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
+|fileType|TEXT_MANUAL|
+|fileType|PDF|
+|fileType|DOCX|
+|fileType|IMAGE|
+|fileType|VIDEO_LINK|
+|fileType|EXTERNAL_LINK|
+|status|PENDING|
+|status|PROCESSING|
+|status|READY|
+|status|FAILED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5278,19 +8011,19 @@ bearer
 
 `DELETE /knowledge-base/{id}`
 
-_Delete KB entry_
+*Delete KB entry*
 
 <h3 id="knowledgebasecontroller_remove-parameters">Parameters</h3>
 
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|none|
 
 <h3 id="knowledgebasecontroller_remove-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description   | Schema |
-| ------ | --------------------------------------------------------------- | ------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | Entry deleted | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Entry deleted|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5303,7 +8036,7 @@ bearer
 
 `POST /knowledge-base/text`
 
-_Create text/link KB entry_
+*Create text/link KB entry*
 
 Embedding generated immediately in background.
 
@@ -5325,7 +8058,11 @@ Embedding generated immediately in background.
     },
     "type": {
       "type": "string",
-      "enum": ["TEXT", "LINK", "TEMPLATE"],
+      "enum": [
+        "TEXT",
+        "LINK",
+        "TEMPLATE"
+      ],
       "default": "TEXT",
       "description": "Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)"
     },
@@ -5335,27 +8072,30 @@ Embedding generated immediately in background.
       "description": "External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)"
     }
   },
-  "required": ["title", "content"]
+  "required": [
+    "title",
+    "content"
+  ]
 }
 ```
 
 <h3 id="knowledgebasecontroller_createtext-parameters">Parameters</h3>
 
-| Name      | In   | Type                              | Required | Description                                                                           |
-| --------- | ---- | --------------------------------- | -------- | ------------------------------------------------------------------------------------- |
-| body      | body | [CreateKbDto](#schemacreatekbdto) | true     | none                                                                                  |
-| » title   | body | string                            | true     | none                                                                                  |
-| » content | body | string                            | true     | none                                                                                  |
-| » type    | body | string                            | false    | Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply) |
-| » url     | body | string                            | false    | External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)                    |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[CreateKbDto](#schemacreatekbdto)|true|none|
+|» title|body|string|true|none|
+|» content|body|string|true|none|
+|» type|body|string|false|Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)|
+|» url|body|string|false|External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)|
 
 #### Enumerated Values
 
-| Parameter | Value    |
-| --------- | -------- |
-| » type    | TEXT     |
-| » type    | LINK     |
-| » type    | TEMPLATE |
+|Parameter|Value|
+|---|---|
+|» type|TEXT|
+|» type|LINK|
+|» type|TEMPLATE|
 
 > Example responses
 
@@ -5392,7 +8132,11 @@ Embedding generated immediately in background.
         },
         "type": {
           "type": "string",
-          "enum": ["TEXT", "LINK", "TEMPLATE"],
+          "enum": [
+            "TEXT",
+            "LINK",
+            "TEMPLATE"
+          ],
           "example": "TEXT",
           "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
         },
@@ -5417,7 +8161,12 @@ Embedding generated immediately in background.
         },
         "status": {
           "type": "string",
-          "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+          "enum": [
+            "PENDING",
+            "PROCESSING",
+            "READY",
+            "FAILED"
+          ],
           "example": "READY",
           "description": "Processing status — only READY entries are used by the RAG pipeline"
         },
@@ -5455,48 +8204,48 @@ Embedding generated immediately in background.
 
 <h3 id="knowledgebasecontroller_createtext-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description       | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)             | Entry created     | Inline |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Entry created|Inline|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <h3 id="knowledgebasecontroller_createtext-responseschema">Response Schema</h3>
 
 Status Code **201**
 
-| Name         | Type                                  | Required | Restrictions | Description                                                                 |
-| ------------ | ------------------------------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| » statusCode | number                                | false    | none         | none                                                                        |
-| » message    | string                                | false    | none         | none                                                                        |
-| » data       | [KbResponseDto](#schemakbresponsedto) | false    | none         | none                                                                        |
-| »» id        | string                                | true     | none         | Knowledge base entry UUID                                                   |
-| »» title     | string                                | true     | none         | Entry title shown in the CRM and used as RAG context heading                |
-| »» content   | string                                | true     | none         | Full text content (used for vector embedding)                               |
-| »» type      | string                                | true     | none         | TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template |
-| »» fileType  | string                                | true     | none         | How the content was ingested                                                |
-| »» url       | object¦null                           | false    | none         | External URL for LINK or TEMPLATE entries                                   |
-| »» status    | string                                | true     | none         | Processing status — only READY entries are used by the RAG pipeline         |
-| »» isActive  | boolean                               | true     | none         | Inactive entries are excluded from vector search                            |
-| »» createdAt | string(date-time)                     | true     | none         | none                                                                        |
-| »» updatedAt | string(date-time)                     | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[KbResponseDto](#schemakbresponsedto)|false|none|none|
+|»» id|string|true|none|Knowledge base entry UUID|
+|»» title|string|true|none|Entry title shown in the CRM and used as RAG context heading|
+|»» content|string|true|none|Full text content (used for vector embedding)|
+|»» type|string|true|none|TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template|
+|»» fileType|string|true|none|How the content was ingested|
+|»» url|object¦null|false|none|External URL for LINK or TEMPLATE entries|
+|»» status|string|true|none|Processing status — only READY entries are used by the RAG pipeline|
+|»» isActive|boolean|true|none|Inactive entries are excluded from vector search|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value         |
-| -------- | ------------- |
-| type     | TEXT          |
-| type     | LINK          |
-| type     | TEMPLATE      |
-| fileType | TEXT_MANUAL   |
-| fileType | PDF           |
-| fileType | DOCX          |
-| fileType | IMAGE         |
-| fileType | VIDEO_LINK    |
-| fileType | EXTERNAL_LINK |
-| status   | PENDING       |
-| status   | PROCESSING    |
-| status   | READY         |
-| status   | FAILED        |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
+|fileType|TEXT_MANUAL|
+|fileType|PDF|
+|fileType|DOCX|
+|fileType|IMAGE|
+|fileType|VIDEO_LINK|
+|fileType|EXTERNAL_LINK|
+|status|PENDING|
+|status|PROCESSING|
+|status|READY|
+|status|FAILED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5509,7 +8258,7 @@ bearer
 
 `POST /knowledge-base/upload`
 
-_Upload file to KB (PDF, DOCX, image)_
+*Upload file to KB (PDF, DOCX, image)*
 
 File is processed asynchronously. Subscribe to GET /knowledge-base/status?kbId=<id> for real-time progress.
 
@@ -5526,22 +8275,23 @@ properties:
     format: binary
   title:
     type: string
+
 ```
 
 <h3 id="knowledgebasecontroller_uploadfile-parameters">Parameters</h3>
 
-| Name    | In   | Type           | Required | Description |
-| ------- | ---- | -------------- | -------- | ----------- |
-| body    | body | object         | true     | none        |
-| » file  | body | string(binary) | true     | none        |
-| » title | body | string         | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|object|true|none|
+|» file|body|string(binary)|true|none|
+|» title|body|string|true|none|
 
 <h3 id="knowledgebasecontroller_uploadfile-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                         | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------------------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)             | Upload accepted, processing started | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed                   | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Upload accepted, processing started|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5554,7 +8304,7 @@ bearer
 
 `POST /knowledge-base/admin/reembed-missing`
 
-_Re-embed missing KB entries_
+*Re-embed missing KB entries*
 
 Queues async embedding generation for all active KB entries that have a null embedding vector. Use after API failures or to backfill legacy entries.
 
@@ -5584,20 +8334,20 @@ Queues async embedding generation for all active KB entries that have a null emb
 
 <h3 id="knowledgebasecontroller_reembedmissing-responses">Responses</h3>
 
-| Status | Meaning                                                 | Description | Schema |
-| ------ | ------------------------------------------------------- | ----------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none        | Inline |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
 
 <h3 id="knowledgebasecontroller_reembedmissing-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type   | Required | Restrictions | Description |
-| ------------ | ------ | -------- | ------------ | ----------- |
-| » statusCode | number | false    | none         | none        |
-| » message    | string | false    | none         | none        |
-| » data       | object | false    | none         | none        |
-| »» queued    | number | false    | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|object|false|none|none|
+|»» queued|number|false|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5610,15 +8360,15 @@ bearer, bearer
 
 `GET /knowledge-base/admin/embedding-stats`
 
-_Embedding coverage stats_
+*Embedding coverage stats*
 
 Returns counts of embedded vs missing embedding for KB entries.
 
 <h3 id="knowledgebasecontroller_embeddingstats-responses">Responses</h3>
 
-| Status | Meaning                                                 | Description | Schema |
-| ------ | ------------------------------------------------------- | ----------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none        | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5633,7 +8383,7 @@ bearer, bearer
 
 `GET /command-menu`
 
-_List all command menu entries_
+*List all command menu entries*
 
 Returns all command menus ordered by display order.
 
@@ -5686,7 +8436,9 @@ Returns all command menus ordered by display order.
               "content": [
                 {
                   "type": "paragraph",
-                  "content": [{}]
+                  "content": [
+                    {}
+                  ]
                 }
               ]
             }
@@ -5742,32 +8494,32 @@ Returns all command menus ordered by display order.
 
 <h3 id="commandmenucontroller_findall-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Command menus retrieved               | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Command menus retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="commandmenucontroller_findall-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                                      | Required | Restrictions | Description                                                                |
-| ----------------- | --------------------------------------------------------- | -------- | ------------ | -------------------------------------------------------------------------- |
-| » statusCode      | number                                                    | false    | none         | none                                                                       |
-| » message         | string                                                    | false    | none         | none                                                                       |
-| » data            | [[CommandMenuResponseDto](#schemacommandmenuresponsedto)] | false    | none         | none                                                                       |
-| »» id             | string                                                    | true     | none         | Command menu record UUID                                                   |
-| »» command        | string                                                    | true     | none         | URL-safe slug, also used as Telegram /command                              |
-| »» label          | string                                                    | true     | none         | Button label shown in Telegram inline keyboard                             |
-| »» description    | object¦null                                               | false    | none         | Short description shown in Telegram command list                           |
-| »» content        | object                                                    | true     | none         | Tiptap JSON document — rendered as Telegram message blocks                 |
-| »» isActive       | boolean                                                   | true     | none         | Inactive menus are hidden from the Telegram /menu keyboard                 |
-| »» showInMenu     | boolean                                                   | true     | none         | Whether this entry appears in the /start inline menu                       |
-| »» showInKeyboard | boolean                                                   | true     | none         | Whether this entry appears in the persistent bottom reply keyboard (max 4) |
-| »» order          | number                                                    | true     | none         | Display order in the Telegram menu (ascending)                             |
-| »» createdAt      | string(date-time)                                         | true     | none         | none                                                                       |
-| »» updatedAt      | string(date-time)                                         | true     | none         | none                                                                       |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[CommandMenuResponseDto](#schemacommandmenuresponsedto)]|false|none|none|
+|»» id|string|true|none|Command menu record UUID|
+|»» command|string|true|none|URL-safe slug, also used as Telegram /command|
+|»» label|string|true|none|Button label shown in Telegram inline keyboard|
+|»» description|object¦null|false|none|Short description shown in Telegram command list|
+|»» content|object|true|none|Tiptap JSON document — rendered as Telegram message blocks|
+|»» isActive|boolean|true|none|Inactive menus are hidden from the Telegram /menu keyboard|
+|»» showInMenu|boolean|true|none|Whether this entry appears in the /start inline menu|
+|»» showInKeyboard|boolean|true|none|Whether this entry appears in the persistent bottom reply keyboard (max 4)|
+|»» order|number|true|none|Display order in the Telegram menu (ascending)|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -5780,7 +8532,7 @@ bearer
 
 `POST /command-menu`
 
-_Create command menu_
+*Create command menu*
 
 Creates a new command menu with Tiptap rich content. Embedding generated asynchronously.
 
@@ -5851,22 +8603,26 @@ Creates a new command menu with Tiptap rich content. Embedding generated asynchr
       "description": "Show this entry in the persistent bottom reply keyboard (max 4 entries, default false)."
     }
   },
-  "required": ["command", "label", "content"]
+  "required": [
+    "command",
+    "label",
+    "content"
+  ]
 }
 ```
 
 <h3 id="commandmenucontroller_create-parameters">Parameters</h3>
 
-| Name             | In   | Type                                                | Required | Description                                                                             |
-| ---------------- | ---- | --------------------------------------------------- | -------- | --------------------------------------------------------------------------------------- |
-| body             | body | [CreateCommandMenuDto](#schemacreatecommandmenudto) | true     | none                                                                                    |
-| » command        | body | string                                              | true     | URL-safe slug. Used as Telegram bot command (e.g. /tutorial-register).                  |
-| » label          | body | string                                              | true     | Button display label shown in Telegram inline keyboard.                                 |
-| » description    | body | string                                              | false    | Short description shown in Telegram bot commands list.                                  |
-| » content        | body | object                                              | true     | Tiptap JSON document (block-based rich content)                                         |
-| » order          | body | number                                              | false    | Display order in the Telegram menu (ascending).                                         |
-| » showInMenu     | body | boolean                                             | false    | Show this entry in the /start inline menu (default true).                               |
-| » showInKeyboard | body | boolean                                             | false    | Show this entry in the persistent bottom reply keyboard (max 4 entries, default false). |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[CreateCommandMenuDto](#schemacreatecommandmenudto)|true|none|
+|» command|body|string|true|URL-safe slug. Used as Telegram bot command (e.g. /tutorial-register).|
+|» label|body|string|true|Button display label shown in Telegram inline keyboard.|
+|» description|body|string|false|Short description shown in Telegram bot commands list.|
+|» content|body|object|true|Tiptap JSON document (block-based rich content)|
+|» order|body|number|false|Display order in the Telegram menu (ascending).|
+|» showInMenu|body|boolean|false|Show this entry in the /start inline menu (default true).|
+|» showInKeyboard|body|boolean|false|Show this entry in the persistent bottom reply keyboard (max 4 entries, default false).|
 
 > Example responses
 
@@ -5975,31 +8731,31 @@ Creates a new command menu with Tiptap rich content. Embedding generated asynchr
 
 <h3 id="commandmenucontroller_create-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description          | Schema |
-| ------ | ------------------------------------------------------------------------ | -------------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)             | Command menu created | Inline |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Command menu created|Inline|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <h3 id="commandmenucontroller_create-responseschema">Response Schema</h3>
 
 Status Code **201**
 
-| Name              | Type                                                    | Required | Restrictions | Description                                                                |
-| ----------------- | ------------------------------------------------------- | -------- | ------------ | -------------------------------------------------------------------------- |
-| » statusCode      | number                                                  | false    | none         | none                                                                       |
-| » message         | string                                                  | false    | none         | none                                                                       |
-| » data            | [CommandMenuResponseDto](#schemacommandmenuresponsedto) | false    | none         | none                                                                       |
-| »» id             | string                                                  | true     | none         | Command menu record UUID                                                   |
-| »» command        | string                                                  | true     | none         | URL-safe slug, also used as Telegram /command                              |
-| »» label          | string                                                  | true     | none         | Button label shown in Telegram inline keyboard                             |
-| »» description    | object¦null                                             | false    | none         | Short description shown in Telegram command list                           |
-| »» content        | object                                                  | true     | none         | Tiptap JSON document — rendered as Telegram message blocks                 |
-| »» isActive       | boolean                                                 | true     | none         | Inactive menus are hidden from the Telegram /menu keyboard                 |
-| »» showInMenu     | boolean                                                 | true     | none         | Whether this entry appears in the /start inline menu                       |
-| »» showInKeyboard | boolean                                                 | true     | none         | Whether this entry appears in the persistent bottom reply keyboard (max 4) |
-| »» order          | number                                                  | true     | none         | Display order in the Telegram menu (ascending)                             |
-| »» createdAt      | string(date-time)                                       | true     | none         | none                                                                       |
-| »» updatedAt      | string(date-time)                                       | true     | none         | none                                                                       |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[CommandMenuResponseDto](#schemacommandmenuresponsedto)|false|none|none|
+|»» id|string|true|none|Command menu record UUID|
+|»» command|string|true|none|URL-safe slug, also used as Telegram /command|
+|»» label|string|true|none|Button label shown in Telegram inline keyboard|
+|»» description|object¦null|false|none|Short description shown in Telegram command list|
+|»» content|object|true|none|Tiptap JSON document — rendered as Telegram message blocks|
+|»» isActive|boolean|true|none|Inactive menus are hidden from the Telegram /menu keyboard|
+|»» showInMenu|boolean|true|none|Whether this entry appears in the /start inline menu|
+|»» showInKeyboard|boolean|true|none|Whether this entry appears in the persistent bottom reply keyboard (max 4)|
+|»» order|number|true|none|Display order in the Telegram menu (ascending)|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -6012,13 +8768,13 @@ bearer
 
 `GET /command-menu/{id}`
 
-_Get command menu by ID_
+*Get command menu by ID*
 
 <h3 id="commandmenucontroller_findone-parameters">Parameters</h3>
 
-| Name | In   | Type   | Required | Description      |
-| ---- | ---- | ------ | -------- | ---------------- |
-| id   | path | string | true     | CommandMenu UUID |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string|true|CommandMenu UUID|
 
 > Example responses
 
@@ -6127,31 +8883,31 @@ _Get command menu by ID_
 
 <h3 id="commandmenucontroller_findone-responses">Responses</h3>
 
-| Status | Meaning                                                        | Description            | Schema |
-| ------ | -------------------------------------------------------------- | ---------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)        | Command menu retrieved | Inline |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4) | Resource not found     | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Command menu retrieved|Inline|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="commandmenucontroller_findone-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                                    | Required | Restrictions | Description                                                                |
-| ----------------- | ------------------------------------------------------- | -------- | ------------ | -------------------------------------------------------------------------- |
-| » statusCode      | number                                                  | false    | none         | none                                                                       |
-| » message         | string                                                  | false    | none         | none                                                                       |
-| » data            | [CommandMenuResponseDto](#schemacommandmenuresponsedto) | false    | none         | none                                                                       |
-| »» id             | string                                                  | true     | none         | Command menu record UUID                                                   |
-| »» command        | string                                                  | true     | none         | URL-safe slug, also used as Telegram /command                              |
-| »» label          | string                                                  | true     | none         | Button label shown in Telegram inline keyboard                             |
-| »» description    | object¦null                                             | false    | none         | Short description shown in Telegram command list                           |
-| »» content        | object                                                  | true     | none         | Tiptap JSON document — rendered as Telegram message blocks                 |
-| »» isActive       | boolean                                                 | true     | none         | Inactive menus are hidden from the Telegram /menu keyboard                 |
-| »» showInMenu     | boolean                                                 | true     | none         | Whether this entry appears in the /start inline menu                       |
-| »» showInKeyboard | boolean                                                 | true     | none         | Whether this entry appears in the persistent bottom reply keyboard (max 4) |
-| »» order          | number                                                  | true     | none         | Display order in the Telegram menu (ascending)                             |
-| »» createdAt      | string(date-time)                                       | true     | none         | none                                                                       |
-| »» updatedAt      | string(date-time)                                       | true     | none         | none                                                                       |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[CommandMenuResponseDto](#schemacommandmenuresponsedto)|false|none|none|
+|»» id|string|true|none|Command menu record UUID|
+|»» command|string|true|none|URL-safe slug, also used as Telegram /command|
+|»» label|string|true|none|Button label shown in Telegram inline keyboard|
+|»» description|object¦null|false|none|Short description shown in Telegram command list|
+|»» content|object|true|none|Tiptap JSON document — rendered as Telegram message blocks|
+|»» isActive|boolean|true|none|Inactive menus are hidden from the Telegram /menu keyboard|
+|»» showInMenu|boolean|true|none|Whether this entry appears in the /start inline menu|
+|»» showInKeyboard|boolean|true|none|Whether this entry appears in the persistent bottom reply keyboard (max 4)|
+|»» order|number|true|none|Display order in the Telegram menu (ascending)|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -6164,7 +8920,7 @@ bearer
 
 `PATCH /command-menu/{id}`
 
-_Update command menu_
+*Update command menu*
 
 Updates label, description, content, order, or isActive. Re-generates embedding if content changes.
 
@@ -6211,17 +8967,17 @@ Updates label, description, content, order, or isActive. Re-generates embedding 
 
 <h3 id="commandmenucontroller_update-parameters">Parameters</h3>
 
-| Name             | In   | Type                                                | Required | Description                                           |
-| ---------------- | ---- | --------------------------------------------------- | -------- | ----------------------------------------------------- |
-| id               | path | string                                              | true     | CommandMenu UUID                                      |
-| body             | body | [UpdateCommandMenuDto](#schemaupdatecommandmenudto) | true     | none                                                  |
-| » label          | body | string                                              | false    | none                                                  |
-| » description    | body | string                                              | false    | none                                                  |
-| » content        | body | object                                              | false    | Tiptap JSON document. Re-generates embedding on save. |
-| » order          | body | number                                              | false    | none                                                  |
-| » isActive       | body | boolean                                             | false    | Show in /start inline menu                            |
-| » showInMenu     | body | boolean                                             | false    | Show in /start inline menu (owner-controlled)         |
-| » showInKeyboard | body | boolean                                             | false    | Show in persistent bottom reply keyboard (max 4)      |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string|true|CommandMenu UUID|
+|body|body|[UpdateCommandMenuDto](#schemaupdatecommandmenudto)|true|none|
+|» label|body|string|false|none|
+|» description|body|string|false|none|
+|» content|body|object|false|Tiptap JSON document. Re-generates embedding on save.|
+|» order|body|number|false|none|
+|» isActive|body|boolean|false|Show in /start inline menu|
+|» showInMenu|body|boolean|false|Show in /start inline menu (owner-controlled)|
+|» showInKeyboard|body|boolean|false|Show in persistent bottom reply keyboard (max 4)|
 
 > Example responses
 
@@ -6330,31 +9086,31 @@ Updates label, description, content, order, or isActive. Re-generates embedding 
 
 <h3 id="commandmenucontroller_update-responses">Responses</h3>
 
-| Status | Meaning                                                        | Description          | Schema |
-| ------ | -------------------------------------------------------------- | -------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)        | Command menu updated | Inline |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4) | Resource not found   | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Command menu updated|Inline|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <h3 id="commandmenucontroller_update-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                                    | Required | Restrictions | Description                                                                |
-| ----------------- | ------------------------------------------------------- | -------- | ------------ | -------------------------------------------------------------------------- |
-| » statusCode      | number                                                  | false    | none         | none                                                                       |
-| » message         | string                                                  | false    | none         | none                                                                       |
-| » data            | [CommandMenuResponseDto](#schemacommandmenuresponsedto) | false    | none         | none                                                                       |
-| »» id             | string                                                  | true     | none         | Command menu record UUID                                                   |
-| »» command        | string                                                  | true     | none         | URL-safe slug, also used as Telegram /command                              |
-| »» label          | string                                                  | true     | none         | Button label shown in Telegram inline keyboard                             |
-| »» description    | object¦null                                             | false    | none         | Short description shown in Telegram command list                           |
-| »» content        | object                                                  | true     | none         | Tiptap JSON document — rendered as Telegram message blocks                 |
-| »» isActive       | boolean                                                 | true     | none         | Inactive menus are hidden from the Telegram /menu keyboard                 |
-| »» showInMenu     | boolean                                                 | true     | none         | Whether this entry appears in the /start inline menu                       |
-| »» showInKeyboard | boolean                                                 | true     | none         | Whether this entry appears in the persistent bottom reply keyboard (max 4) |
-| »» order          | number                                                  | true     | none         | Display order in the Telegram menu (ascending)                             |
-| »» createdAt      | string(date-time)                                       | true     | none         | none                                                                       |
-| »» updatedAt      | string(date-time)                                       | true     | none         | none                                                                       |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[CommandMenuResponseDto](#schemacommandmenuresponsedto)|false|none|none|
+|»» id|string|true|none|Command menu record UUID|
+|»» command|string|true|none|URL-safe slug, also used as Telegram /command|
+|»» label|string|true|none|Button label shown in Telegram inline keyboard|
+|»» description|object¦null|false|none|Short description shown in Telegram command list|
+|»» content|object|true|none|Tiptap JSON document — rendered as Telegram message blocks|
+|»» isActive|boolean|true|none|Inactive menus are hidden from the Telegram /menu keyboard|
+|»» showInMenu|boolean|true|none|Whether this entry appears in the /start inline menu|
+|»» showInKeyboard|boolean|true|none|Whether this entry appears in the persistent bottom reply keyboard (max 4)|
+|»» order|number|true|none|Display order in the Telegram menu (ascending)|
+|»» createdAt|string(date-time)|true|none|none|
+|»» updatedAt|string(date-time)|true|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -6367,20 +9123,20 @@ bearer
 
 `DELETE /command-menu/{id}`
 
-_Delete command menu (SUPERADMIN only)_
+*Delete command menu*
 
 <h3 id="commandmenucontroller_remove-parameters">Parameters</h3>
 
-| Name | In   | Type   | Required | Description      |
-| ---- | ---- | ------ | -------- | ---------------- |
-| id   | path | string | true     | CommandMenu UUID |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string|true|CommandMenu UUID|
 
 <h3 id="commandmenucontroller_remove-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description          | Schema |
-| ------ | --------------------------------------------------------------- | -------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | Command menu deleted | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found   | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|Command menu deleted|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -6393,7 +9149,7 @@ bearer
 
 `PATCH /command-menu/reorder`
 
-_Bulk reorder command menus_
+*Bulk reorder command menus*
 
 Accepts array of { id, order } to update display positions.
 
@@ -6417,29 +9173,34 @@ Accepts array of { id, order } to update display positions.
             "example": 0
           }
         },
-        "required": ["id", "order"]
+        "required": [
+          "id",
+          "order"
+        ]
       }
     }
   },
-  "required": ["items"]
+  "required": [
+    "items"
+  ]
 }
 ```
 
 <h3 id="commandmenucontroller_reorder-parameters">Parameters</h3>
 
-| Name     | In   | Type                                                  | Required | Description |
-| -------- | ---- | ----------------------------------------------------- | -------- | ----------- |
-| body     | body | [ReorderCommandMenuDto](#schemareordercommandmenudto) | true     | none        |
-| » items  | body | [[CommandMenuOrderItem](#schemacommandmenuorderitem)] | true     | none        |
-| »» id    | body | string                                                | true     | none        |
-| »» order | body | number                                                | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[ReorderCommandMenuDto](#schemareordercommandmenudto)|true|none|
+|» items|body|[[CommandMenuOrderItem](#schemacommandmenuorderitem)]|true|none|
+|»» id|body|string|true|none|
+|»» order|body|number|true|none|
 
 <h3 id="commandmenucontroller_reorder-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description       | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | Reorder applied   | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Reorder applied|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -6452,7 +9213,7 @@ bearer
 
 `POST /command-menu/admin/reembed-missing`
 
-_Re-embed missing CommandMenu entries_
+*Re-embed missing CommandMenu entries*
 
 Queues async embedding generation for all active CommandMenu entries that have a null embedding vector.
 
@@ -6482,66 +9243,87 @@ Queues async embedding generation for all active CommandMenu entries that have a
 
 <h3 id="commandmenucontroller_reembedmissing-responses">Responses</h3>
 
-| Status | Meaning                                                 | Description | Schema |
-| ------ | ------------------------------------------------------- | ----------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | none        | Inline |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
 
 <h3 id="commandmenucontroller_reembedmissing-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name         | Type   | Required | Restrictions | Description |
-| ------------ | ------ | -------- | ------------ | ----------- |
-| » statusCode | number | false    | none         | none        |
-| » message    | string | false    | none         | none        |
-| » data       | object | false    | none         | none        |
-| »» queued    | number | false    | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|object|false|none|none|
+|»» queued|number|false|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
 bearer
 </aside>
 
-<h1 id="titan-journal-crm-api-bot">bot</h1>
+<h1 id="titan-journal-crm-api-pending-tasks">pending-tasks</h1>
 
-## BotStatusController_getStatus
+## PendingTasksController_findAll
 
-<a id="opIdBotStatusController_getStatus"></a>
+<a id="opIdPendingTasksController_findAll"></a>
 
-`GET /bot/status`
+`GET /pending-tasks`
 
-_Telegram bot health & webhook info (SUPERADMIN)_
+*List pending tasks*
 
-<h3 id="botstatuscontroller_getstatus-responses">Responses</h3>
+<h3 id="pendingtaskscontroller_findall-parameters">Parameters</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Bot status                            | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|leadId|query|string(uuid)|false|Filter by lead UUID|
+|status|query|string|false|Filter by pending task status|
+|skip|query|number|false|Pagination offset|
+|take|query|number|false|Page size|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|status|PENDING|
+|status|RESOLVED|
+|status|DISMISSED|
+
+<h3 id="pendingtaskscontroller_findall-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Pending tasks retrieved|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
 bearer
 </aside>
 
-<h1 id="titan-journal-crm-api-attachments">attachments</h1>
+## PendingTasksController_findGroupedByLead
 
-## AttachmentsController_findByLead
+<a id="opIdPendingTasksController_findGroupedByLead"></a>
 
-<a id="opIdAttachmentsController_findByLead"></a>
+`GET /pending-tasks/grouped-by-lead`
 
-`GET /attachments`
+*List pending tasks grouped by lead*
 
-_List attachments for a lead_
+<h3 id="pendingtaskscontroller_findgroupedbylead-parameters">Parameters</h3>
 
-Returns all uploaded receipts/screenshots for the given lead UUID.
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|status|query|string|false|Filter grouped tasks by task status (defaults to PENDING when omitted)|
 
-<h3 id="attachmentscontroller_findbylead-parameters">Parameters</h3>
+#### Enumerated Values
 
-| Name   | In    | Type         | Required | Description |
-| ------ | ----- | ------------ | -------- | ----------- |
-| leadId | query | string(uuid) | true     | Lead UUID   |
+|Parameter|Value|
+|---|---|
+|status|PENDING|
+|status|RESOLVED|
+|status|DISMISSED|
 
 > Example responses
 
@@ -6559,81 +9341,372 @@ Returns all uploaded receipts/screenshots for the given lead UUID.
       "example": "Request successful"
     },
     "data": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "leadId": {
-            "type": "string"
-          },
-          "telegramFileId": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
             "type": "object",
-            "nullable": true
-          },
-          "fileKey": {
-            "type": "string"
-          },
-          "fileUrl": {
-            "type": "string"
-          },
-          "mimeType": {
-            "type": "object",
-            "nullable": true
-          },
-          "size": {
-            "type": "object",
-            "nullable": true
-          },
-          "uploadedAt": {
-            "format": "date-time",
-            "type": "string"
+            "properties": {
+              "leadId": {
+                "type": "string"
+              },
+              "lead": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "displayName": {
+                    "type": "object",
+                    "nullable": true
+                  },
+                  "username": {
+                    "type": "object",
+                    "nullable": true
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [],
+                    "nullable": true
+                  },
+                  "email": {
+                    "type": "object",
+                    "nullable": true
+                  },
+                  "hfmBrokerId": {
+                    "type": "object",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "id",
+                  "displayName",
+                  "username",
+                  "status",
+                  "email",
+                  "hfmBrokerId"
+                ]
+              },
+              "statusCounts": {
+                "type": "object",
+                "properties": {
+                  "pending": {
+                    "type": "number",
+                    "example": 5
+                  },
+                  "resolved": {
+                    "type": "number",
+                    "example": 2
+                  },
+                  "dismissed": {
+                    "type": "number",
+                    "example": 1
+                  },
+                  "total": {
+                    "type": "number",
+                    "example": 8
+                  }
+                },
+                "required": [
+                  "pending",
+                  "resolved",
+                  "dismissed",
+                  "total"
+                ]
+              },
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {},
+                    "leadId": {},
+                    "attachmentId": {},
+                    "interactionId": {},
+                    "caption": {},
+                    "status": {},
+                    "createdAt": {},
+                    "resolvedAt": {}
+                  },
+                  "required": [
+                    "id",
+                    "leadId",
+                    "attachmentId",
+                    "interactionId",
+                    "caption",
+                    "status",
+                    "createdAt",
+                    "resolvedAt"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "leadId",
+              "lead",
+              "statusCounts",
+              "tasks"
+            ]
           }
         },
-        "required": [
-          "id",
-          "leadId",
-          "telegramFileId",
-          "fileKey",
-          "fileUrl",
-          "mimeType",
-          "size",
-          "uploadedAt"
-        ]
-      }
+        "totalLeads": {
+          "type": "number",
+          "example": 3
+        },
+        "totalTasks": {
+          "type": "number",
+          "example": 12
+        },
+        "statusCounts": {
+          "type": "object",
+          "properties": {
+            "pending": {
+              "type": "number",
+              "example": 5
+            },
+            "resolved": {
+              "type": "number",
+              "example": 2
+            },
+            "dismissed": {
+              "type": "number",
+              "example": 1
+            },
+            "total": {
+              "type": "number",
+              "example": 8
+            }
+          },
+          "required": [
+            "pending",
+            "resolved",
+            "dismissed",
+            "total"
+          ]
+        }
+      },
+      "required": [
+        "groups",
+        "totalLeads",
+        "totalTasks",
+        "statusCounts"
+      ]
     }
   }
 }
 ```
 
-<h3 id="attachmentscontroller_findbylead-responses">Responses</h3>
+<h3 id="pendingtaskscontroller_findgroupedbylead-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Attachments retrieved                 | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found                    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Pending tasks grouped by lead retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
-<h3 id="attachmentscontroller_findbylead-responseschema">Response Schema</h3>
+<h3 id="pendingtaskscontroller_findgroupedbylead-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name              | Type                                                    | Required | Restrictions | Description |
-| ----------------- | ------------------------------------------------------- | -------- | ------------ | ----------- |
-| » statusCode      | number                                                  | false    | none         | none        |
-| » message         | string                                                  | false    | none         | none        |
-| » data            | [[AttachmentResponseDto](#schemaattachmentresponsedto)] | false    | none         | none        |
-| »» id             | string                                                  | true     | none         | none        |
-| »» leadId         | string                                                  | true     | none         | none        |
-| »» telegramFileId | object¦null                                             | true     | none         | none        |
-| »» fileKey        | string                                                  | true     | none         | none        |
-| »» fileUrl        | string                                                  | true     | none         | none        |
-| »» mimeType       | object¦null                                             | true     | none         | none        |
-| »» size           | object¦null                                             | true     | none         | none        |
-| »» uploadedAt     | string(date-time)                                       | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[PendingTaskGroupedByLeadResponseDto](#schemapendingtaskgroupedbyleadresponsedto)|false|none|none|
+|»» groups|[[PendingTaskLeadGroupResponseDto](#schemapendingtaskleadgroupresponsedto)]|true|none|none|
+|»»» leadId|string|true|none|none|
+|»»» lead|[PendingTaskGroupLeadDto](#schemapendingtaskgroupleaddto)|true|none|none|
+|»»»» id|string|true|none|none|
+|»»»» displayName|object¦null|true|none|none|
+|»»»» username|object¦null|true|none|none|
+|»»»» status|string¦null|true|none|none|
+|»»»» email|object¦null|true|none|none|
+|»»»» hfmBrokerId|object¦null|true|none|none|
+|»»» statusCounts|[PendingTaskStatusCountsDto](#schemapendingtaskstatuscountsdto)|true|none|none|
+|»»»» pending|number|true|none|none|
+|»»»» resolved|number|true|none|none|
+|»»»» dismissed|number|true|none|none|
+|»»»» total|number|true|none|none|
+|»»» tasks|[[PendingTaskResponseDto](#schemapendingtaskresponsedto)]|true|none|none|
+|»»»» id|string|true|none|none|
+|»»»» leadId|string|true|none|none|
+|»»»» attachmentId|object¦null|true|none|none|
+|»»»» interactionId|object¦null|true|none|none|
+|»»»» caption|object¦null|true|none|none|
+|»»»» status|string|true|none|none|
+|»»»» createdAt|string(date-time)|true|none|none|
+|»»»» resolvedAt|object¦null|true|none|none|
+|»» totalLeads|number|true|none|none|
+|»» totalTasks|number|true|none|none|
+|»» statusCounts|[PendingTaskStatusCountsDto](#schemapendingtaskstatuscountsdto)|true|none|none|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+|status|PENDING|
+|status|RESOLVED|
+|status|DISMISSED|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## PendingTasksController_updateStatus
+
+<a id="opIdPendingTasksController_updateStatus"></a>
+
+`PATCH /pending-tasks/{id}/status`
+
+*Update pending task status*
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "RESOLVED",
+        "DISMISSED"
+      ],
+      "description": "New pending task status",
+      "example": "RESOLVED"
+    }
+  },
+  "required": [
+    "status"
+  ]
+}
+```
+
+<h3 id="pendingtaskscontroller_updatestatus-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string(uuid)|true|Pending task UUID|
+|body|body|[UpdatePendingTaskDto](#schemaupdatependingtaskdto)|true|none|
+|» status|body|string|true|New pending task status|
+
+#### Enumerated Values
+
+|Parameter|Value|
+|---|---|
+|» status|RESOLVED|
+|» status|DISMISSED|
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "properties": {
+    "statusCode": {
+      "type": "number",
+      "example": 200
+    },
+    "message": {
+      "type": "string",
+      "example": "Request successful"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "leadId": {
+          "type": "string"
+        },
+        "attachmentId": {
+          "type": "object",
+          "nullable": true
+        },
+        "interactionId": {
+          "type": "object",
+          "nullable": true
+        },
+        "caption": {
+          "type": "object",
+          "nullable": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "PENDING",
+            "RESOLVED",
+            "DISMISSED"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "resolvedAt": {
+          "type": "object",
+          "nullable": true
+        }
+      },
+      "required": [
+        "id",
+        "leadId",
+        "attachmentId",
+        "interactionId",
+        "caption",
+        "status",
+        "createdAt",
+        "resolvedAt"
+      ]
+    }
+  }
+}
+```
+
+<h3 id="pendingtaskscontroller_updatestatus-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Pending task status updated|Inline|
+|400|[Bad Request](https://tools.ietf.org/html/rfc7231#section-6.5.1)|Bad request – invalid input or business rule violation|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<h3 id="pendingtaskscontroller_updatestatus-responseschema">Response Schema</h3>
+
+Status Code **200**
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[PendingTaskResponseDto](#schemapendingtaskresponsedto)|false|none|none|
+|»» id|string|true|none|none|
+|»» leadId|string|true|none|none|
+|»» attachmentId|object¦null|true|none|none|
+|»» interactionId|object¦null|true|none|none|
+|»» caption|object¦null|true|none|none|
+|»» status|string|true|none|none|
+|»» createdAt|string(date-time)|true|none|none|
+|»» resolvedAt|object¦null|true|none|none|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|PENDING|
+|status|RESOLVED|
+|status|DISMISSED|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -6648,7 +9721,7 @@ bearer
 
 `GET /health`
 
-_System health check_
+*System health check*
 
 > Example responses
 
@@ -6671,7 +9744,9 @@ _System health check_
       },
       "additionalProperties": {
         "type": "object",
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "properties": {
           "status": {
             "type": "string"
@@ -6686,7 +9761,9 @@ _System health check_
       "example": {},
       "additionalProperties": {
         "type": "object",
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "properties": {
           "status": {
             "type": "string"
@@ -6705,7 +9782,9 @@ _System health check_
       },
       "additionalProperties": {
         "type": "object",
-        "required": ["status"],
+        "required": [
+          "status"
+        ],
         "properties": {
           "status": {
             "type": "string"
@@ -6720,42 +9799,42 @@ _System health check_
 
 <h3 id="healthcontroller_check-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description                        | Schema |
-| ------ | ------------------------------------------------------------------------ | ---------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | The Health Check is successful     | Inline |
-| 503    | [Service Unavailable](https://tools.ietf.org/html/rfc7231#section-6.6.4) | The Health Check is not successful | Inline |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|The Health Check is successful|Inline|
+|503|[Service Unavailable](https://tools.ietf.org/html/rfc7231#section-6.6.4)|The Health Check is not successful|Inline|
 
 <h3 id="healthcontroller_check-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name                        | Type        | Required | Restrictions | Description |
-| --------------------------- | ----------- | -------- | ------------ | ----------- |
-| » status                    | string      | false    | none         | none        |
-| » info                      | object¦null | false    | none         | none        |
-| »» **additionalProperties** | object      | false    | none         | none        |
-| »»» status                  | string      | true     | none         | none        |
-| » error                     | object¦null | false    | none         | none        |
-| »» **additionalProperties** | object      | false    | none         | none        |
-| »»» status                  | string      | true     | none         | none        |
-| » details                   | object      | false    | none         | none        |
-| »» **additionalProperties** | object      | false    | none         | none        |
-| »»» status                  | string      | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» status|string|false|none|none|
+|» info|object¦null|false|none|none|
+|»» **additionalProperties**|object|false|none|none|
+|»»» status|string|true|none|none|
+|» error|object¦null|false|none|none|
+|»» **additionalProperties**|object|false|none|none|
+|»»» status|string|true|none|none|
+|» details|object|false|none|none|
+|»» **additionalProperties**|object|false|none|none|
+|»»» status|string|true|none|none|
 
 Status Code **503**
 
-| Name                        | Type        | Required | Restrictions | Description |
-| --------------------------- | ----------- | -------- | ------------ | ----------- |
-| » status                    | string      | false    | none         | none        |
-| » info                      | object¦null | false    | none         | none        |
-| »» **additionalProperties** | object      | false    | none         | none        |
-| »»» status                  | string      | true     | none         | none        |
-| » error                     | object¦null | false    | none         | none        |
-| »» **additionalProperties** | object      | false    | none         | none        |
-| »»» status                  | string      | true     | none         | none        |
-| » details                   | object      | false    | none         | none        |
-| »» **additionalProperties** | object      | false    | none         | none        |
-| »»» status                  | string      | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» status|string|false|none|none|
+|» info|object¦null|false|none|none|
+|»» **additionalProperties**|object|false|none|none|
+|»»» status|string|true|none|none|
+|» error|object¦null|false|none|none|
+|»» **additionalProperties**|object|false|none|none|
+|»»» status|string|true|none|none|
+|» details|object|false|none|none|
+|»» **additionalProperties**|object|false|none|none|
+|»»» status|string|true|none|none|
 
 <aside class="success">
 This operation does not require authentication
@@ -6769,30 +9848,31 @@ This operation does not require authentication
 
 `GET /analytics/summary`
 
-_Consolidated Analytics Summary_
+*Consolidated Analytics Summary*
 
 Returns consolidated KPI cards, funnel metrics, and trend series data based on a given timeframe.
 
 <h3 id="analyticscontroller_getsummary-parameters">Parameters</h3>
 
-| Name      | In    | Type   | Required | Description                                            |
-| --------- | ----- | ------ | -------- | ------------------------------------------------------ |
-| timeframe | query | string | false    | The predefined timeframe for the analytics.            |
-| startDate | query | string | false    | Required if timeframe is custom (ISO 8601 date string) |
-| endDate   | query | string | false    | Required if timeframe is custom (ISO 8601 date string) |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|timeframe|query|string|false|The predefined timeframe for the analytics.|
+|startDate|query|string|false|Required if timeframe is custom (ISO 8601 date string)|
+|endDate|query|string|false|Required if timeframe is custom (ISO 8601 date string)|
+|timezone|query|string|false|IANA timezone name for date boundary calculations. Defaults to UTC. Pass the browser value: Intl.DateTimeFormat().resolvedOptions().timeZone|
 
 #### Enumerated Values
 
-| Parameter | Value        |
-| --------- | ------------ |
-| timeframe | today        |
-| timeframe | yesterday    |
-| timeframe | this_week    |
-| timeframe | this_month   |
-| timeframe | last_30_days |
-| timeframe | last_90_days |
-| timeframe | all_time     |
-| timeframe | custom       |
+|Parameter|Value|
+|---|---|
+|timeframe|today|
+|timeframe|yesterday|
+|timeframe|this_week|
+|timeframe|this_month|
+|timeframe|last_30_days|
+|timeframe|last_90_days|
+|timeframe|all_time|
+|timeframe|custom|
 
 > Example responses
 
@@ -6835,14 +9915,23 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
                 },
                 "trend": {
                   "type": "string",
-                  "enum": ["up", "down", "neutral"],
+                  "enum": [
+                    "up",
+                    "down",
+                    "neutral"
+                  ],
                   "example": "up",
                   "description": "Direction of change"
                 }
               },
-              "required": ["current", "previous", "changePercentage", "trend"]
+              "required": [
+                "current",
+                "previous",
+                "changePercentage",
+                "trend"
+              ]
             },
-            "registeredAccounts": {
+            "contactedLeads": {
               "type": "object",
               "properties": {
                 "current": {
@@ -6862,14 +9951,23 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
                 },
                 "trend": {
                   "type": "string",
-                  "enum": ["up", "down", "neutral"],
+                  "enum": [
+                    "up",
+                    "down",
+                    "neutral"
+                  ],
                   "example": "up",
                   "description": "Direction of change"
                 }
               },
-              "required": ["current", "previous", "changePercentage", "trend"]
+              "required": [
+                "current",
+                "previous",
+                "changePercentage",
+                "trend"
+              ]
             },
-            "depositingClients": {
+            "verifiedClients": {
               "type": "object",
               "properties": {
                 "current": {
@@ -6889,14 +9987,23 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
                 },
                 "trend": {
                   "type": "string",
-                  "enum": ["up", "down", "neutral"],
+                  "enum": [
+                    "up",
+                    "down",
+                    "neutral"
+                  ],
                   "example": "up",
                   "description": "Direction of change"
                 }
               },
-              "required": ["current", "previous", "changePercentage", "trend"]
+              "required": [
+                "current",
+                "previous",
+                "changePercentage",
+                "trend"
+              ]
             },
-            "pendingVerifications": {
+            "formSubmissions": {
               "type": "object",
               "properties": {
                 "current": {
@@ -6916,19 +10023,28 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
                 },
                 "trend": {
                   "type": "string",
-                  "enum": ["up", "down", "neutral"],
+                  "enum": [
+                    "up",
+                    "down",
+                    "neutral"
+                  ],
                   "example": "up",
                   "description": "Direction of change"
                 }
               },
-              "required": ["current", "previous", "changePercentage", "trend"]
+              "required": [
+                "current",
+                "previous",
+                "changePercentage",
+                "trend"
+              ]
             }
           },
           "required": [
             "totalLeads",
-            "registeredAccounts",
-            "depositingClients",
-            "pendingVerifications"
+            "contactedLeads",
+            "verifiedClients",
+            "formSubmissions"
           ]
         },
         "funnel": {
@@ -6937,40 +10053,30 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
             "new": {
               "type": "number",
               "example": 144,
-              "description": "Leads in NEW status during the period"
+              "description": "Leads created during the period"
             },
-            "registered": {
-              "type": "number",
-              "example": 74,
-              "description": "Leads in REGISTERED status during the period"
-            },
-            "depositReported": {
+            "formSubmitted": {
               "type": "number",
               "example": 39,
-              "description": "Leads in DEPOSIT_REPORTED status during the period"
+              "description": "Leads that submitted the combined form (DEPOSIT_REPORTED) during the period"
             },
             "depositConfirmed": {
               "type": "number",
               "example": 27,
-              "description": "Leads in DEPOSIT_CONFIRMED status during the period"
+              "description": "Leads confirmed (DEPOSIT_CONFIRMED) during the period"
             },
             "conversionRates": {
               "type": "object",
               "properties": {
-                "newToRegistered": {
+                "newToSubmitted": {
                   "type": "number",
                   "example": 51.4,
-                  "description": "Percentage of NEW leads that became REGISTERED"
+                  "description": "Percentage of NEW leads that submitted the combined form"
                 },
-                "registeredToReported": {
-                  "type": "number",
-                  "example": 52.6,
-                  "description": "Percentage of REGISTERED leads that reported a deposit"
-                },
-                "reportedToConfirmed": {
+                "submittedToConfirmed": {
                   "type": "number",
                   "example": 70,
-                  "description": "Percentage of DEPOSIT_REPORTED leads that were confirmed"
+                  "description": "Percentage of form submissions that were confirmed"
                 },
                 "overall": {
                   "type": "number",
@@ -6979,17 +10085,15 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
                 }
               },
               "required": [
-                "newToRegistered",
-                "registeredToReported",
-                "reportedToConfirmed",
+                "newToSubmitted",
+                "submittedToConfirmed",
                 "overall"
               ]
             }
           },
           "required": [
             "new",
-            "registered",
-            "depositReported",
+            "formSubmitted",
             "depositConfirmed",
             "conversionRates"
           ]
@@ -7009,22 +10113,25 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
                 "example": 18,
                 "description": "New leads for this data point"
               },
-              "registered": {
-                "type": "number",
-                "example": 9,
-                "description": "Registered leads for this data point"
-              },
               "confirmed": {
                 "type": "number",
                 "example": 3,
                 "description": "Deposit-confirmed leads for this data point"
               }
             },
-            "required": ["date", "newLeads", "registered", "confirmed"]
+            "required": [
+              "date",
+              "newLeads",
+              "confirmed"
+            ]
           }
         }
       },
-      "required": ["kpi", "funnel", "trendSeries"]
+      "required": [
+        "kpi",
+        "funnel",
+        "trendSeries"
+      ]
     }
   }
 }
@@ -7032,53 +10139,50 @@ Returns consolidated KPI cards, funnel metrics, and trend series data based on a
 
 <h3 id="analyticscontroller_getsummary-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                              | Schema |
-| ------ | --------------------------------------------------------------- | ---------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Analytics summary retrieved successfully | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT    | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role            | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Analytics summary retrieved successfully|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="analyticscontroller_getsummary-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name                      | Type                                                              | Required | Restrictions | Description                                                                                                                      |
-| ------------------------- | ----------------------------------------------------------------- | -------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| » statusCode              | number                                                            | false    | none         | none                                                                                                                             |
-| » message                 | string                                                            | false    | none         | none                                                                                                                             |
-| » data                    | [AnalyticsSummaryResponseDto](#schemaanalyticssummaryresponsedto) | false    | none         | none                                                                                                                             |
-| »» kpi                    | [AnalyticsKpiDto](#schemaanalyticskpidto)                         | true     | none         | none                                                                                                                             |
-| »»» totalLeads            | [KpiStatDto](#schemakpistatdto)                                   | true     | none         | none                                                                                                                             |
-| »»»» current              | number                                                            | true     | none         | Value for the current period                                                                                                     |
-| »»»» previous             | number                                                            | true     | none         | Value for the previous comparable period                                                                                         |
-| »»»» changePercentage     | number                                                            | true     | none         | Percentage change from previous to current period. Positive = growth.                                                            |
-| »»»» trend                | string                                                            | true     | none         | Direction of change                                                                                                              |
-| »»» registeredAccounts    | [KpiStatDto](#schemakpistatdto)                                   | true     | none         | none                                                                                                                             |
-| »»» depositingClients     | [KpiStatDto](#schemakpistatdto)                                   | true     | none         | none                                                                                                                             |
-| »»» pendingVerifications  | [KpiStatDto](#schemakpistatdto)                                   | true     | none         | none                                                                                                                             |
-| »» funnel                 | [AnalyticsFunnelDto](#schemaanalyticsfunneldto)                   | true     | none         | none                                                                                                                             |
-| »»» new                   | number                                                            | true     | none         | Leads in NEW status during the period                                                                                            |
-| »»» registered            | number                                                            | true     | none         | Leads in REGISTERED status during the period                                                                                     |
-| »»» depositReported       | number                                                            | true     | none         | Leads in DEPOSIT_REPORTED status during the period                                                                               |
-| »»» depositConfirmed      | number                                                            | true     | none         | Leads in DEPOSIT_CONFIRMED status during the period                                                                              |
-| »»» conversionRates       | [FunnelConversionRatesDto](#schemafunnelconversionratesdto)       | true     | none         | none                                                                                                                             |
-| »»»» newToRegistered      | number                                                            | true     | none         | Percentage of NEW leads that became REGISTERED                                                                                   |
-| »»»» registeredToReported | number                                                            | true     | none         | Percentage of REGISTERED leads that reported a deposit                                                                           |
-| »»»» reportedToConfirmed  | number                                                            | true     | none         | Percentage of DEPOSIT_REPORTED leads that were confirmed                                                                         |
-| »»»» overall              | number                                                            | true     | none         | End-to-end conversion: NEW → DEPOSIT_CONFIRMED                                                                                   |
-| »» trendSeries            | [[TrendSeriesDataDto](#schematrendseriesdatadto)]                 | true     | none         | none                                                                                                                             |
-| »»» date                  | string                                                            | true     | none         | Bucket label: ISO datetime (YYYY-MM-DDTHH:mm) for hourly granularity, or date string (YYYY-MM-DD) for day/week/month granularity |
-| »»» newLeads              | number                                                            | true     | none         | New leads for this data point                                                                                                    |
-| »»» registered            | number                                                            | true     | none         | Registered leads for this data point                                                                                             |
-| »»» confirmed             | number                                                            | true     | none         | Deposit-confirmed leads for this data point                                                                                      |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[AnalyticsSummaryResponseDto](#schemaanalyticssummaryresponsedto)|false|none|none|
+|»» kpi|[AnalyticsKpiDto](#schemaanalyticskpidto)|true|none|none|
+|»»» totalLeads|[KpiStatDto](#schemakpistatdto)|true|none|none|
+|»»»» current|number|true|none|Value for the current period|
+|»»»» previous|number|true|none|Value for the previous comparable period|
+|»»»» changePercentage|number|true|none|Percentage change from previous to current period. Positive = growth.|
+|»»»» trend|string|true|none|Direction of change|
+|»»» contactedLeads|[KpiStatDto](#schemakpistatdto)|true|none|none|
+|»»» verifiedClients|[KpiStatDto](#schemakpistatdto)|true|none|none|
+|»»» formSubmissions|[KpiStatDto](#schemakpistatdto)|true|none|none|
+|»» funnel|[AnalyticsFunnelDto](#schemaanalyticsfunneldto)|true|none|none|
+|»»» new|number|true|none|Leads created during the period|
+|»»» formSubmitted|number|true|none|Leads that submitted the combined form (DEPOSIT_REPORTED) during the period|
+|»»» depositConfirmed|number|true|none|Leads confirmed (DEPOSIT_CONFIRMED) during the period|
+|»»» conversionRates|[FunnelConversionRatesDto](#schemafunnelconversionratesdto)|true|none|none|
+|»»»» newToSubmitted|number|true|none|Percentage of NEW leads that submitted the combined form|
+|»»»» submittedToConfirmed|number|true|none|Percentage of form submissions that were confirmed|
+|»»»» overall|number|true|none|End-to-end conversion: NEW → DEPOSIT_CONFIRMED|
+|»» trendSeries|[[TrendSeriesDataDto](#schematrendseriesdatadto)]|true|none|none|
+|»»» date|string|true|none|Bucket label: ISO datetime (YYYY-MM-DDTHH:mm) for hourly granularity, or date string (YYYY-MM-DD) for day/week/month granularity|
+|»»» newLeads|number|true|none|New leads for this data point|
+|»»» confirmed|number|true|none|Deposit-confirmed leads for this data point|
 
 #### Enumerated Values
 
-| Property | Value   |
-| -------- | ------- |
-| trend    | up      |
-| trend    | down    |
-| trend    | neutral |
+|Property|Value|
+|---|---|
+|trend|up|
+|trend|down|
+|trend|neutral|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7091,7 +10195,7 @@ bearer
 
 `GET /analytics/dashboard`
 
-_Dashboard stats (Deprecated)_
+*Dashboard stats (Deprecated)*
 
 Returns lead funnel counts. Use /analytics/summary instead.
 
@@ -7123,15 +10227,15 @@ Returns lead funnel counts. Use /analytics/summary instead.
           "example": 12,
           "description": "Leads in NEW status"
         },
-        "registeredLeads": {
+        "contactedLeads": {
           "type": "number",
-          "example": 85,
-          "description": "Leads who have submitted registration proof"
+          "example": 25,
+          "description": "Leads currently in CONTACTED status"
         },
-        "depositReported": {
+        "formSubmissions": {
           "type": "number",
           "example": 34,
-          "description": "Leads who reported a deposit (DEPOSIT_REPORTED status)"
+          "description": "Leads who submitted the combined form (DEPOSIT_REPORTED status)"
         },
         "depositConfirmed": {
           "type": "number",
@@ -7160,15 +10264,10 @@ Returns lead funnel counts. Use /analytics/summary instead.
                 "example": 5,
                 "description": "New leads that first messaged the bot on this date"
               },
-              "registeredLeads": {
+              "formSubmissions": {
                 "type": "number",
                 "example": 3,
-                "description": "Leads that moved to REGISTERED status on this date"
-              },
-              "depositReported": {
-                "type": "number",
-                "example": 2,
-                "description": "Leads that reported a deposit on this date"
+                "description": "Leads that submitted the combined form on this date"
               },
               "conversions": {
                 "type": "number",
@@ -7201,8 +10300,7 @@ Returns lead funnel counts. Use /analytics/summary instead.
               "id",
               "date",
               "newLeads",
-              "registeredLeads",
-              "depositReported",
+              "formSubmissions",
               "conversions",
               "tokensUsed",
               "totalLeads",
@@ -7215,8 +10313,8 @@ Returns lead funnel counts. Use /analytics/summary instead.
       "required": [
         "totalLeads",
         "newLeads",
-        "registeredLeads",
-        "depositReported",
+        "contactedLeads",
+        "formSubmissions",
         "depositConfirmed",
         "recentStats"
       ]
@@ -7227,37 +10325,36 @@ Returns lead funnel counts. Use /analytics/summary instead.
 
 <h3 id="analyticscontroller_getdashboardstats-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Dashboard stats retrieved             | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Dashboard stats retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="analyticscontroller_getdashboardstats-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name                | Type                                                                  | Required | Restrictions | Description                                                                    |
-| ------------------- | --------------------------------------------------------------------- | -------- | ------------ | ------------------------------------------------------------------------------ |
-| » statusCode        | number                                                                | false    | none         | none                                                                           |
-| » message           | string                                                                | false    | none         | none                                                                           |
-| » data              | [AnalyticsDashboardResponseDto](#schemaanalyticsdashboardresponsedto) | false    | none         | none                                                                           |
-| »» totalLeads       | number                                                                | true     | none         | Total number of leads in the CRM                                               |
-| »» newLeads         | number                                                                | true     | none         | Leads in NEW status                                                            |
-| »» registeredLeads  | number                                                                | true     | none         | Leads who have submitted registration proof                                    |
-| »» depositReported  | number                                                                | true     | none         | Leads who reported a deposit (DEPOSIT_REPORTED status)                         |
-| »» depositConfirmed | number                                                                | true     | none         | Leads whose deposit was confirmed by an Owner/Admin (DEPOSIT_CONFIRMED status) |
-| »» recentStats      | [[DailyStatsResponseDto](#schemadailystatsresponsedto)]               | true     | none         | Last 7 days of daily snapshot stats                                            |
-| »»» id              | string                                                                | true     | none         | DailyStats record UUID                                                         |
-| »»» date            | string(date-time)                                                     | true     | none         | The UTC date this snapshot covers (midnight)                                   |
-| »»» newLeads        | number                                                                | true     | none         | New leads that first messaged the bot on this date                             |
-| »»» registeredLeads | number                                                                | true     | none         | Leads that moved to REGISTERED status on this date                             |
-| »»» depositReported | number                                                                | true     | none         | Leads that reported a deposit on this date                                     |
-| »»» conversions     | number                                                                | true     | none         | Deposits confirmed by an Owner/Admin on this date                              |
-| »»» tokensUsed      | number                                                                | true     | none         | Total OpenAI tokens consumed on this date                                      |
-| »»» totalLeads      | number                                                                | true     | none         | Running total of all leads at end of this date                                 |
-| »»» createdAt       | string(date-time)                                                     | true     | none         | Record creation timestamp (usually 1 AM cron)                                  |
-| »»» updatedAt       | string(date-time)                                                     | true     | none         | none                                                                           |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[AnalyticsDashboardResponseDto](#schemaanalyticsdashboardresponsedto)|false|none|none|
+|»» totalLeads|number|true|none|Total number of leads in the CRM|
+|»» newLeads|number|true|none|Leads in NEW status|
+|»» contactedLeads|number|true|none|Leads currently in CONTACTED status|
+|»» formSubmissions|number|true|none|Leads who submitted the combined form (DEPOSIT_REPORTED status)|
+|»» depositConfirmed|number|true|none|Leads whose deposit was confirmed by an Owner/Admin (DEPOSIT_CONFIRMED status)|
+|»» recentStats|[[DailyStatsResponseDto](#schemadailystatsresponsedto)]|true|none|Last 7 days of daily snapshot stats|
+|»»» id|string|true|none|DailyStats record UUID|
+|»»» date|string(date-time)|true|none|The UTC date this snapshot covers (midnight)|
+|»»» newLeads|number|true|none|New leads that first messaged the bot on this date|
+|»»» formSubmissions|number|true|none|Leads that submitted the combined form on this date|
+|»»» conversions|number|true|none|Deposits confirmed by an Owner/Admin on this date|
+|»»» tokensUsed|number|true|none|Total OpenAI tokens consumed on this date|
+|»»» totalLeads|number|true|none|Running total of all leads at end of this date|
+|»»» createdAt|string(date-time)|true|none|Record creation timestamp (usually 1 AM cron)|
+|»»» updatedAt|string(date-time)|true|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7270,7 +10367,7 @@ bearer
 
 `GET /analytics/stats`
 
-_Today's stats_
+*Today's stats*
 
 Returns today's aggregated stats. Returns null if daily stats haven't been computed yet.
 
@@ -7308,15 +10405,10 @@ Returns today's aggregated stats. Returns null if daily stats haven't been compu
           "example": 5,
           "description": "New leads that first messaged the bot on this date"
         },
-        "registeredLeads": {
+        "formSubmissions": {
           "type": "number",
           "example": 3,
-          "description": "Leads that moved to REGISTERED status on this date"
-        },
-        "depositReported": {
-          "type": "number",
-          "example": 2,
-          "description": "Leads that reported a deposit on this date"
+          "description": "Leads that submitted the combined form on this date"
         },
         "conversions": {
           "type": "number",
@@ -7349,8 +10441,7 @@ Returns today's aggregated stats. Returns null if daily stats haven't been compu
         "id",
         "date",
         "newLeads",
-        "registeredLeads",
-        "depositReported",
+        "formSubmissions",
         "conversions",
         "tokensUsed",
         "totalLeads",
@@ -7364,31 +10455,30 @@ Returns today's aggregated stats. Returns null if daily stats haven't been compu
 
 <h3 id="analyticscontroller_gettodaystats-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Today's stats retrieved               | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Today's stats retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="analyticscontroller_gettodaystats-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name               | Type                                                  | Required | Restrictions | Description                                        |
-| ------------------ | ----------------------------------------------------- | -------- | ------------ | -------------------------------------------------- |
-| » statusCode       | number                                                | false    | none         | none                                               |
-| » message          | string                                                | false    | none         | none                                               |
-| » data             | [DailyStatsResponseDto](#schemadailystatsresponsedto) | false    | none         | none                                               |
-| »» id              | string                                                | true     | none         | DailyStats record UUID                             |
-| »» date            | string(date-time)                                     | true     | none         | The UTC date this snapshot covers (midnight)       |
-| »» newLeads        | number                                                | true     | none         | New leads that first messaged the bot on this date |
-| »» registeredLeads | number                                                | true     | none         | Leads that moved to REGISTERED status on this date |
-| »» depositReported | number                                                | true     | none         | Leads that reported a deposit on this date         |
-| »» conversions     | number                                                | true     | none         | Deposits confirmed by an Owner/Admin on this date  |
-| »» tokensUsed      | number                                                | true     | none         | Total OpenAI tokens consumed on this date          |
-| »» totalLeads      | number                                                | true     | none         | Running total of all leads at end of this date     |
-| »» createdAt       | string(date-time)                                     | true     | none         | Record creation timestamp (usually 1 AM cron)      |
-| »» updatedAt       | string(date-time)                                     | true     | none         | none                                               |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[DailyStatsResponseDto](#schemadailystatsresponsedto)|false|none|none|
+|»» id|string|true|none|DailyStats record UUID|
+|»» date|string(date-time)|true|none|The UTC date this snapshot covers (midnight)|
+|»» newLeads|number|true|none|New leads that first messaged the bot on this date|
+|»» formSubmissions|number|true|none|Leads that submitted the combined form on this date|
+|»» conversions|number|true|none|Deposits confirmed by an Owner/Admin on this date|
+|»» tokensUsed|number|true|none|Total OpenAI tokens consumed on this date|
+|»» totalLeads|number|true|none|Running total of all leads at end of this date|
+|»» createdAt|string(date-time)|true|none|Record creation timestamp (usually 1 AM cron)|
+|»» updatedAt|string(date-time)|true|none|none|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7401,15 +10491,15 @@ bearer
 
 `GET /analytics/weekly`
 
-_Weekly stats_
+*Weekly stats*
 
 Returns new leads, registered leads, and deposits grouped by ISO week. Default: last 8 weeks.
 
 <h3 id="analyticscontroller_getweeklystats-parameters">Parameters</h3>
 
-| Name  | In    | Type   | Required | Description                                 |
-| ----- | ----- | ------ | -------- | ------------------------------------------- |
-| weeks | query | number | false    | Number of past weeks to include (default 8) |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|weeks|query|number|false|Number of past weeks to include (default 8)|
 
 > Example responses
 
@@ -7441,15 +10531,10 @@ Returns new leads, registered leads, and deposits grouped by ISO week. Default: 
             "example": 18,
             "description": "New leads that joined during this week"
           },
-          "registeredLeads": {
-            "type": "number",
-            "example": 9,
-            "description": "Leads that moved to REGISTERED during this week"
-          },
-          "depositReported": {
+          "formSubmissions": {
             "type": "number",
             "example": 5,
-            "description": "Deposits reported during this week"
+            "description": "Leads that submitted the combined form during this week"
           },
           "depositConfirmed": {
             "type": "number",
@@ -7460,8 +10545,7 @@ Returns new leads, registered leads, and deposits grouped by ISO week. Default: 
         "required": [
           "weekStart",
           "newLeads",
-          "registeredLeads",
-          "depositReported",
+          "formSubmissions",
           "depositConfirmed"
         ]
       }
@@ -7472,26 +10556,25 @@ Returns new leads, registered leads, and deposits grouped by ISO week. Default: 
 
 <h3 id="analyticscontroller_getweeklystats-responses">Responses</h3>
 
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Weekly stats retrieved                | Inline |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Weekly stats retrieved|Inline|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <h3 id="analyticscontroller_getweeklystats-responseschema">Response Schema</h3>
 
 Status Code **200**
 
-| Name                | Type                                                      | Required | Restrictions | Description                                     |
-| ------------------- | --------------------------------------------------------- | -------- | ------------ | ----------------------------------------------- |
-| » statusCode        | number                                                    | false    | none         | none                                            |
-| » message           | string                                                    | false    | none         | none                                            |
-| » data              | [[WeeklyStatsResponseDto](#schemaweeklystatsresponsedto)] | false    | none         | none                                            |
-| »» weekStart        | string                                                    | true     | none         | Monday of the ISO week (YYYY-MM-DD)             |
-| »» newLeads         | number                                                    | true     | none         | New leads that joined during this week          |
-| »» registeredLeads  | number                                                    | true     | none         | Leads that moved to REGISTERED during this week |
-| »» depositReported  | number                                                    | true     | none         | Deposits reported during this week              |
-| »» depositConfirmed | number                                                    | true     | none         | Deposits confirmed during this week             |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|» statusCode|number|false|none|none|
+|» message|string|false|none|none|
+|» data|[[WeeklyStatsResponseDto](#schemaweeklystatsresponsedto)]|false|none|none|
+|»» weekStart|string|true|none|Monday of the ISO week (YYYY-MM-DD)|
+|»» newLeads|number|true|none|New leads that joined during this week|
+|»» formSubmissions|number|true|none|Leads that submitted the combined form during this week|
+|»» depositConfirmed|number|true|none|Deposits confirmed during this week|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7504,277 +10587,38 @@ bearer
 
 `GET /analytics/rag-stats`
 
-_RAG quality stats (SUPERADMIN)_
+*RAG quality stats*
 
-Hit rate, avg chunks, zero-hit count, token usage from last N auto-reply interactions.
-
-<h3 id="analyticscontroller_getragstats-parameters">Parameters</h3>
-
-| Name  | In    | Type   | Required | Description                                       |
-| ----- | ----- | ------ | -------- | ------------------------------------------------- |
-| limit | query | number | false    | Number of recent replies to analyse (default 500) |
+Hit rate, avg chunks, zero-hit count, AI failure rate from last 30 days of auto-reply interactions.
 
 <h3 id="analyticscontroller_getragstats-responses">Responses</h3>
 
-| Status | Meaning                                                        | Description                   | Schema |
-| ------ | -------------------------------------------------------------- | ----------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)        | RAG stats retrieved           | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3) | Forbidden – insufficient role | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|RAG stats retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
 bearer
 </aside>
 
-<h1 id="titan-journal-crm-api-follow-ups">follow-ups</h1>
+## AnalyticsController_getLeadVelocity
 
-## FollowUpController_findAll
+<a id="opIdAnalyticsController_getLeadVelocity"></a>
 
-<a id="opIdFollowUpController_findAll"></a>
+`GET /analytics/velocity`
 
-`GET /follow-ups`
+*Lead Velocity*
 
-_List scheduled follow-up messages_
+Returns percentile distributions (p25/p50/p75) for time-to-register and time-to-confirm in days.
 
-<h3 id="followupcontroller_findall-parameters">Parameters</h3>
+<h3 id="analyticscontroller_getleadvelocity-responses">Responses</h3>
 
-| Name   | In    | Type   | Required | Description |
-| ------ | ----- | ------ | -------- | ----------- |
-| leadId | query | string | false    | none        |
-| status | query | string | false    | none        |
-| skip   | query | number | false    | none        |
-| take   | query | number | false    | none        |
-
-#### Enumerated Values
-
-| Parameter | Value     |
-| --------- | --------- |
-| status    | pending   |
-| status    | sent      |
-| status    | cancelled |
-
-<h3 id="followupcontroller_findall-responses">Responses</h3>
-
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Follow-ups retrieved                  | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-bearer
-</aside>
-
-## FollowUpController_cancel
-
-<a id="opIdFollowUpController_cancel"></a>
-
-`DELETE /follow-ups/{id}`
-
-_Cancel a scheduled follow-up by ID_
-
-<h3 id="followupcontroller_cancel-parameters">Parameters</h3>
-
-| Name | In   | Type         | Required | Description |
-| ---- | ---- | ------------ | -------- | ----------- |
-| id   | path | string(uuid) | true     | none        |
-
-<h3 id="followupcontroller_cancel-responses">Responses</h3>
-
-| Status | Meaning                                                         | Description         | Schema |
-| ------ | --------------------------------------------------------------- | ------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5) | Follow-up cancelled | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)  | Resource not found  | None   |
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-bearer
-</aside>
-
-<h1 id="titan-journal-crm-api-system-config">system-config</h1>
-
-## SystemConfigController_getAllowlist
-
-<a id="opIdSystemConfigController_getAllowlist"></a>
-
-`GET /system-config/allowlist`
-
-_List allowed config keys_
-
-<h3 id="systemconfigcontroller_getallowlist-responses">Responses</h3>
-
-| Status | Meaning                                                 | Description        | Schema |
-| ------ | ------------------------------------------------------- | ------------------ | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | Allowlist returned | None   |
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-bearer
-</aside>
-
-## SystemConfigController_findAll
-
-<a id="opIdSystemConfigController_findAll"></a>
-
-`GET /system-config`
-
-_List all system config entries_
-
-<h3 id="systemconfigcontroller_findall-responses">Responses</h3>
-
-| Status | Meaning                                                 | Description              | Schema |
-| ------ | ------------------------------------------------------- | ------------------------ | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | Config entries retrieved | None   |
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-bearer
-</aside>
-
-## SystemConfigController_findOne
-
-<a id="opIdSystemConfigController_findOne"></a>
-
-`GET /system-config/{key}`
-
-_Get a single config entry by key_
-
-<h3 id="systemconfigcontroller_findone-parameters">Parameters</h3>
-
-| Name | In   | Type   | Required | Description |
-| ---- | ---- | ------ | -------- | ----------- |
-| key  | path | string | true     | none        |
-
-<h3 id="systemconfigcontroller_findone-responses">Responses</h3>
-
-| Status | Meaning                                                        | Description            | Schema |
-| ------ | -------------------------------------------------------------- | ---------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)        | Config entry retrieved | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4) | Resource not found     | None   |
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-bearer
-</aside>
-
-## SystemConfigController_upsert
-
-<a id="opIdSystemConfigController_upsert"></a>
-
-`PATCH /system-config/{key}`
-
-_Upsert a config value (validated against allowlist)_
-
-> Body parameter
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "value": {
-      "type": "string",
-      "description": "Config value (raw string)",
-      "example": "0.7"
-    }
-  },
-  "required": ["value"]
-}
-```
-
-<h3 id="systemconfigcontroller_upsert-parameters">Parameters</h3>
-
-| Name    | In   | Type                                                  | Required | Description               |
-| ------- | ---- | ----------------------------------------------------- | -------- | ------------------------- |
-| key     | path | string                                                | true     | none                      |
-| body    | body | [UpsertSystemConfigDto](#schemaupsertsystemconfigdto) | true     | none                      |
-| » value | body | string                                                | true     | Config value (raw string) |
-
-<h3 id="systemconfigcontroller_upsert-responses">Responses</h3>
-
-| Status | Meaning                                                                  | Description       | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)                  | Config updated    | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed | None   |
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-bearer
-</aside>
-
-## SystemConfigController_remove
-
-<a id="opIdSystemConfigController_remove"></a>
-
-`DELETE /system-config/{key}`
-
-_Reset config key to env default (delete DB override)_
-
-<h3 id="systemconfigcontroller_remove-parameters">Parameters</h3>
-
-| Name | In   | Type   | Required | Description |
-| ---- | ---- | ------ | -------- | ----------- |
-| key  | path | string | true     | none        |
-
-<h3 id="systemconfigcontroller_remove-responses">Responses</h3>
-
-| Status | Meaning                                                                  | Description             | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------------- | ------ |
-| 204    | [No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)          | Config reset to default | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed       | None   |
-
-<aside class="warning">
-To perform this operation, you must be authenticated by means of one of the following methods:
-bearer
-</aside>
-
-<h1 id="titan-journal-crm-api-audit-logs">audit-logs</h1>
-
-## AuditLogController_findMany
-
-<a id="opIdAuditLogController_findMany"></a>
-
-`GET /audit-logs`
-
-_Query audit log entries (SUPERADMIN only)_
-
-<h3 id="auditlogcontroller_findmany-parameters">Parameters</h3>
-
-| Name         | In    | Type   | Required | Description  |
-| ------------ | ----- | ------ | -------- | ------------ |
-| userId       | query | string | false    | none         |
-| action       | query | string | false    | none         |
-| resourceType | query | string | false    | none         |
-| from         | query | string | false    | ISO8601 date |
-| to           | query | string | false    | ISO8601 date |
-| skip         | query | number | false    | none         |
-| take         | query | number | false    | none         |
-
-#### Enumerated Values
-
-| Parameter | Value                 |
-| --------- | --------------------- |
-| action    | USER_CREATED          |
-| action    | USER_DEACTIVATED      |
-| action    | USER_REACTIVATED      |
-| action    | USER_ROLE_CHANGED     |
-| action    | PASSWORD_CHANGED      |
-| action    | LEAD_STATUS_CHANGED   |
-| action    | LEAD_VERIFIED         |
-| action    | KB_CREATED            |
-| action    | KB_UPDATED            |
-| action    | KB_DELETED            |
-| action    | COMMAND_MENU_CREATED  |
-| action    | COMMAND_MENU_UPDATED  |
-| action    | COMMAND_MENU_DELETED  |
-| action    | SYSTEM_CONFIG_CHANGED |
-
-<h3 id="auditlogcontroller_findmany-responses">Responses</h3>
-
-| Status | Meaning                                                         | Description                           | Schema |
-| ------ | --------------------------------------------------------------- | ------------------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)         | Audit log entries                     | None   |
-| 401    | [Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1) | Unauthorized – invalid or missing JWT | None   |
-| 403    | [Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)  | Forbidden – insufficient role         | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Velocity stats retrieved|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7789,21 +10633,21 @@ bearer
 
 `GET /activity/stream`
 
-_Real-time activity feed (SSE)_
+*Real-time activity feed (SSE)*
 
 Server-Sent Events stream. Connect with EventSource. Keepalive ping every 30s.
 
 <h3 id="activitycontroller_stream-parameters">Parameters</h3>
 
-| Name  | In    | Type | Required | Description                                                        |
-| ----- | ----- | ---- | -------- | ------------------------------------------------------------------ |
-| token | query | any  | false    | Bearer token (alternative to Authorization header for EventSource) |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|token|query|any|false|Bearer token (alternative to Authorization header for EventSource)|
 
 <h3 id="activitycontroller_stream-responses">Responses</h3>
 
-| Status | Meaning                                                 | Description       | Schema |
-| ------ | ------------------------------------------------------- | ----------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | text/event-stream | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|text/event-stream|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7818,7 +10662,7 @@ bearer
 
 `POST /ai/feedback`
 
-_Submit conversation feedback (rate a bot reply)_
+*Submit conversation feedback (rate a bot reply)*
 
 > Body parameter
 
@@ -7841,41 +10685,49 @@ _Submit conversation feedback (rate a bot reply)_
     "rating": {
       "type": "number",
       "description": "1 = bad, 5 = good",
-      "enum": [1, 5]
+      "enum": [
+        1,
+        5
+      ]
     },
     "notes": {
       "type": "string",
       "description": "Optional notes about why this is good/bad"
     }
   },
-  "required": ["leadId", "userMessage", "botReply", "rating"]
+  "required": [
+    "leadId",
+    "userMessage",
+    "botReply",
+    "rating"
+  ]
 }
 ```
 
 <h3 id="feedbackcontroller_create-parameters">Parameters</h3>
 
-| Name          | In   | Type                                          | Required | Description                               |
-| ------------- | ---- | --------------------------------------------- | -------- | ----------------------------------------- |
-| body          | body | [CreateFeedbackDto](#schemacreatefeedbackdto) | true     | none                                      |
-| » leadId      | body | string                                        | true     | Lead UUID this conversation belongs to    |
-| » userMessage | body | string                                        | true     | The user message being rated              |
-| » botReply    | body | string                                        | true     | The bot reply being rated                 |
-| » rating      | body | number                                        | true     | 1 = bad, 5 = good                         |
-| » notes       | body | string                                        | false    | Optional notes about why this is good/bad |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[CreateFeedbackDto](#schemacreatefeedbackdto)|true|none|
+|» leadId|body|string|true|Lead UUID this conversation belongs to|
+|» userMessage|body|string|true|The user message being rated|
+|» botReply|body|string|true|The bot reply being rated|
+|» rating|body|number|true|1 = bad, 5 = good|
+|» notes|body|string|false|Optional notes about why this is good/bad|
 
 #### Enumerated Values
 
-| Parameter | Value |
-| --------- | ----- |
-| » rating  | 1     |
-| » rating  | 5     |
+|Parameter|Value|
+|---|---|
+|» rating|1|
+|» rating|5|
 
 <h3 id="feedbackcontroller_create-responses">Responses</h3>
 
-| Status | Meaning                                                                  | Description       | Schema |
-| ------ | ------------------------------------------------------------------------ | ----------------- | ------ |
-| 201    | [Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)             | Feedback recorded | None   |
-| 422    | [Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3) | Validation failed | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|201|[Created](https://tools.ietf.org/html/rfc7231#section-6.3.2)|Feedback recorded|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7888,28 +10740,28 @@ bearer
 
 `GET /ai/feedback`
 
-_List feedback entries (SUPERADMIN)_
+*List feedback entries (SUPERADMIN)*
 
 <h3 id="feedbackcontroller_findmany-parameters">Parameters</h3>
 
-| Name   | In    | Type   | Required | Description |
-| ------ | ----- | ------ | -------- | ----------- |
-| rating | query | number | false    | none        |
-| skip   | query | number | false    | none        |
-| take   | query | number | false    | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|rating|query|number|false|none|
+|skip|query|number|false|none|
+|take|query|number|false|none|
 
 #### Enumerated Values
 
-| Parameter | Value |
-| --------- | ----- |
-| rating    | 1     |
-| rating    | 5     |
+|Parameter|Value|
+|---|---|
+|rating|1|
+|rating|5|
 
 <h3 id="feedbackcontroller_findmany-responses">Responses</h3>
 
-| Status | Meaning                                                 | Description                | Schema |
-| ------ | ------------------------------------------------------- | -------------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1) | Feedback entries retrieved | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Feedback entries retrieved|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7922,21 +10774,488 @@ bearer
 
 `PATCH /ai/feedback/{id}/few-shot`
 
-_Toggle usedAsFewShot on a feedback entry (SUPERADMIN)_
+*Toggle usedAsFewShot on a feedback entry (SUPERADMIN)*
 
 <h3 id="feedbackcontroller_togglefewshot-parameters">Parameters</h3>
 
-| Name   | In    | Type   | Required | Description |
-| ------ | ----- | ------ | -------- | ----------- |
-| id     | path  | string | true     | none        |
-| enable | query | string | true     | none        |
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|id|path|string|true|none|
+|enable|query|string|true|none|
 
 <h3 id="feedbackcontroller_togglefewshot-responses">Responses</h3>
 
-| Status | Meaning                                                        | Description           | Schema |
-| ------ | -------------------------------------------------------------- | --------------------- | ------ |
-| 200    | [OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)        | Few-shot flag updated | None   |
-| 404    | [Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4) | Resource not found    | None   |
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Few-shot flag updated|None|
+|404|[Not Found](https://tools.ietf.org/html/rfc7231#section-6.5.4)|Resource not found|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-broadcast">broadcast</h1>
+
+## BroadcastController_send
+
+<a id="opIdBroadcastController_send"></a>
+
+`POST /broadcast`
+
+*Send broadcast message*
+
+Enqueues a Telegram broadcast to all leads with a Telegram account. Supports plain text or photo with caption.
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Message text to broadcast to all leads",
+      "maxLength": 4096
+    },
+    "photoUrl": {
+      "type": "string",
+      "description": "Optional image URL — sent as photo caption"
+    }
+  },
+  "required": [
+    "message"
+  ]
+}
+```
+
+<h3 id="broadcastcontroller_send-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[CreateBroadcastDto](#schemacreatebroadcastdto)|true|none|
+|» message|body|string|true|Message text to broadcast to all leads|
+|» photoUrl|body|string|false|Optional image URL — sent as photo caption|
+
+<h3 id="broadcastcontroller_send-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|Broadcast enqueued|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+|422|[Unprocessable Entity](https://tools.ietf.org/html/rfc2518#section-10.3)|Validation failed|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## BroadcastController_history
+
+<a id="opIdBroadcastController_history"></a>
+
+`GET /broadcast/history`
+
+*Broadcast history*
+
+Returns paginated list of past broadcast interactions.
+
+<h3 id="broadcastcontroller_history-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|limit|query|number|false|none|
+|page|query|number|false|none|
+
+<h3 id="broadcastcontroller_history-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|History retrieved|None|
+|401|[Unauthorized](https://tools.ietf.org/html/rfc7235#section-3.1)|Unauthorized – invalid or missing JWT|None|
+|403|[Forbidden](https://tools.ietf.org/html/rfc7231#section-6.5.3)|Forbidden – insufficient role|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-secrets">Secrets</h1>
+
+## SecretsController_listKeys
+
+<a id="opIdSecretsController_listKeys"></a>
+
+`GET /superadmin/secrets`
+
+*List all secret keys (metadata only, no values)*
+
+<h3 id="secretscontroller_listkeys-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SecretsController_setSecret
+
+<a id="opIdSecretsController_setSecret"></a>
+
+`POST /superadmin/secrets`
+
+*Set or update an encrypted secret*
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "example": "google.serviceAccount"
+    },
+    "value": {
+      "type": "string",
+      "example": "{\"type\":\"service_account\",...}"
+    },
+    "description": {
+      "type": "string",
+      "example": "Google Cloud service account for Sheets/Drive integration"
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ]
+}
+```
+
+<h3 id="secretscontroller_setsecret-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[SetSecretDto](#schemasetsecretdto)|true|none|
+|» key|body|string|true|none|
+|» value|body|string|true|none|
+|» description|body|string|false|none|
+
+<h3 id="secretscontroller_setsecret-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## SecretsController_deleteSecret
+
+<a id="opIdSecretsController_deleteSecret"></a>
+
+`DELETE /superadmin/secrets/{key}`
+
+*Delete a secret*
+
+<h3 id="secretscontroller_deletesecret-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|key|path|string|true|none|
+
+<h3 id="secretscontroller_deletesecret-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-integration-credentials">Integration Credentials</h1>
+
+## IntegrationSecretsController_listCredentials
+
+<a id="opIdIntegrationSecretsController_listCredentials"></a>
+
+`GET /settings/integrations/credentials`
+
+*List Google integration credential keys (metadata only, no values)*
+
+<h3 id="integrationsecretscontroller_listcredentials-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## IntegrationSecretsController_setCredential
+
+<a id="opIdIntegrationSecretsController_setCredential"></a>
+
+`POST /settings/integrations/credentials`
+
+*Set a Google integration credential (encrypted at rest)*
+
+> Body parameter
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "example": "google.serviceAccount"
+    },
+    "value": {
+      "type": "string",
+      "example": "{\"type\":\"service_account\",...}"
+    },
+    "description": {
+      "type": "string",
+      "example": "Google Cloud service account for Sheets/Drive integration"
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ]
+}
+```
+
+<h3 id="integrationsecretscontroller_setcredential-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|body|body|[SetSecretDto](#schemasetsecretdto)|true|none|
+|» key|body|string|true|none|
+|» value|body|string|true|none|
+|» description|body|string|false|none|
+
+<h3 id="integrationsecretscontroller_setcredential-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|204|[No Content](https://tools.ietf.org/html/rfc7231#section-6.3.5)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-google-analytics">Google Analytics</h1>
+
+## GoogleAnalyticsController_getAnalytics
+
+<a id="opIdGoogleAnalyticsController_getAnalytics"></a>
+
+`GET /superadmin/google/analytics`
+
+*Google integration API usage stats + last 50 operations*
+
+<h3 id="googleanalyticscontroller_getanalytics-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-google-oauth2">google-oauth2</h1>
+
+## GoogleOAuth2Controller_connect
+
+<a id="opIdGoogleOAuth2Controller_connect"></a>
+
+`GET /google/oauth/connect`
+
+*Generate Google OAuth2 consent URL (OWNER only)*
+
+Returns a Google OAuth2 consent URL. Open this URL in a popup. After the user approves, Google will redirect to the callback endpoint.
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "authUrl": "https://accounts.google.com/o/oauth2/v2/auth?..."
+}
+```
+
+<h3 id="googleoauth2controller_connect-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+
+<h3 id="googleoauth2controller_connect-responseschema">Response Schema</h3>
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## GoogleOAuth2Controller_callback
+
+<a id="opIdGoogleOAuth2Controller_callback"></a>
+
+`GET /google/oauth/callback`
+
+*Google OAuth2 callback — do not call directly*
+
+<h3 id="googleoauth2controller_callback-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|code|query|string|true|none|
+|state|query|string|true|none|
+|error|query|string|true|none|
+
+<h3 id="googleoauth2controller_callback-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
+
+<aside class="success">
+This operation does not require authentication
+</aside>
+
+## GoogleOAuth2Controller_status
+
+<a id="opIdGoogleOAuth2Controller_status"></a>
+
+`GET /google/oauth/status`
+
+*Get Google OAuth2 connection status*
+
+> Example responses
+
+> 200 Response
+
+```json
+{
+  "connected": true,
+  "email": "owner@example.com",
+  "connectedAt": "2026-03-07T06:00:00.000Z",
+  "connectedBy": "user-id-here"
+}
+```
+
+<h3 id="googleoauth2controller_status-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|Inline|
+
+<h3 id="googleoauth2controller_status-responseschema">Response Schema</h3>
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## GoogleOAuth2Controller_disconnect
+
+<a id="opIdGoogleOAuth2Controller_disconnect"></a>
+
+`DELETE /google/oauth/disconnect`
+
+*Disconnect Google OAuth2 (OWNER only)*
+
+<h3 id="googleoauth2controller_disconnect-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+<h1 id="titan-journal-crm-api-backup">Backup</h1>
+
+## BackupController_triggerBackup
+
+<a id="opIdBackupController_triggerBackup"></a>
+
+`POST /superadmin/backup/trigger`
+
+*Manually trigger a database backup*
+
+<h3 id="backupcontroller_triggerbackup-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|202|[Accepted](https://tools.ietf.org/html/rfc7231#section-6.3.3)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## BackupController_streamProgress
+
+<a id="opIdBackupController_streamProgress"></a>
+
+`GET /superadmin/backup/progress/{jobId}`
+
+*SSE stream for backup job progress*
+
+<h3 id="backupcontroller_streamprogress-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|jobId|path|string|true|none|
+
+<h3 id="backupcontroller_streamprogress-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
+
+<aside class="warning">
+To perform this operation, you must be authenticated by means of one of the following methods:
+bearer
+</aside>
+
+## BackupController_getHistory
+
+<a id="opIdBackupController_getHistory"></a>
+
+`GET /superadmin/backup/history`
+
+*List recent backup logs*
+
+<h3 id="backupcontroller_gethistory-parameters">Parameters</h3>
+
+|Name|In|Type|Required|Description|
+|---|---|---|---|---|
+|limit|query|string|true|none|
+
+<h3 id="backupcontroller_gethistory-responses">Responses</h3>
+
+|Status|Meaning|Description|Schema|
+|---|---|---|---|
+|200|[OK](https://tools.ietf.org/html/rfc7231#section-6.3.1)|none|None|
 
 <aside class="warning">
 To perform this operation, you must be authenticated by means of one of the following methods:
@@ -7969,7 +11288,12 @@ bearer
     "role": {
       "type": "string",
       "example": "ADMIN",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "description": "RBAC role"
     },
     "isActive": {
@@ -7995,6 +11319,11 @@ bearer
       "nullable": true,
       "description": "IP address from the last login"
     },
+    "timezone": {
+      "type": "string",
+      "example": "Asia/Kuala_Lumpur",
+      "description": "User preferred IANA timezone for analytics date boundaries"
+    },
     "createdAt": {
       "format": "date-time",
       "type": "string",
@@ -8016,34 +11345,37 @@ bearer
     "telegramId",
     "lastLoginAt",
     "lastIpAddress",
+    "timezone",
     "createdAt",
     "updatedAt"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name          | Type              | Required | Restrictions | Description                                                |
-| ------------- | ----------------- | -------- | ------------ | ---------------------------------------------------------- |
-| id            | string            | true     | none         | User UUID                                                  |
-| email         | string            | true     | none         | User email address                                         |
-| role          | string            | true     | none         | RBAC role                                                  |
-| isActive      | boolean           | true     | none         | Whether this account is active and can log in              |
-| telegramId    | object¦null       | true     | none         | Telegram user ID linked for TMA login. Null if not linked. |
-| lastLoginAt   | object¦null       | true     | none         | Timestamp of last successful login                         |
-| lastIpAddress | object¦null       | true     | none         | IP address from the last login                             |
-| createdAt     | string(date-time) | true     | none         | Account creation timestamp                                 |
-| updatedAt     | string(date-time) | true     | none         | Last profile update timestamp                              |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|User UUID|
+|email|string|true|none|User email address|
+|role|string|true|none|RBAC role|
+|isActive|boolean|true|none|Whether this account is active and can log in|
+|telegramId|object¦null|true|none|Telegram user ID linked for TMA login. Null if not linked.|
+|lastLoginAt|object¦null|true|none|Timestamp of last successful login|
+|lastIpAddress|object¦null|true|none|IP address from the last login|
+|timezone|string|true|none|User preferred IANA timezone for analytics date boundaries|
+|createdAt|string(date-time)|true|none|Account creation timestamp|
+|updatedAt|string(date-time)|true|none|Last profile update timestamp|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <h2 id="tocS_AuthResponseDto">AuthResponseDto</h2>
 <!-- backwards compatibility -->
@@ -8077,7 +11409,12 @@ bearer
         "role": {
           "type": "string",
           "example": "ADMIN",
-          "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+          "enum": [
+            "SUPERADMIN",
+            "OWNER",
+            "ADMIN",
+            "STAFF"
+          ],
           "description": "RBAC role"
         },
         "isActive": {
@@ -8103,6 +11440,11 @@ bearer
           "nullable": true,
           "description": "IP address from the last login"
         },
+        "timezone": {
+          "type": "string",
+          "example": "Asia/Kuala_Lumpur",
+          "description": "User preferred IANA timezone for analytics date boundaries"
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string",
@@ -8124,21 +11466,26 @@ bearer
         "telegramId",
         "lastLoginAt",
         "lastIpAddress",
+        "timezone",
         "createdAt",
         "updatedAt"
       ]
     }
   },
-  "required": ["accessToken", "user"]
+  "required": [
+    "accessToken",
+    "user"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name        | Type                                      | Required | Restrictions | Description                                                                  |
-| ----------- | ----------------------------------------- | -------- | ------------ | ---------------------------------------------------------------------------- |
-| accessToken | string                                    | true     | none         | Short-lived JWT access token (15 min). Send as Authorization: Bearer <token> |
-| user        | [UserResponseDto](#schemauserresponsedto) | true     | none         | none                                                                         |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|accessToken|string|true|none|Short-lived JWT access token (15 min). Send as Authorization: Bearer <token>|
+|user|[UserResponseDto](#schemauserresponsedto)|true|none|none|
 
 <h2 id="tocS_SessionResponseDto">SessionResponseDto</h2>
 <!-- backwards compatibility -->
@@ -8209,20 +11556,21 @@ bearer
     "isRevoked"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name         | Type              | Required | Restrictions | Description                                           |
-| ------------ | ----------------- | -------- | ------------ | ----------------------------------------------------- |
-| id           | string            | true     | none         | Session UUID                                          |
-| deviceId     | object¦null       | true     | none         | Unique device identifier                              |
-| userAgent    | object¦null       | true     | none         | Browser/app user agent string                         |
-| ipAddress    | object¦null       | true     | none         | Last known IP address for this session                |
-| lastActiveAt | string(date-time) | true     | none         | Timestamp of last API activity                        |
-| createdAt    | string(date-time) | true     | none         | When this session was created                         |
-| expiresAt    | string(date-time) | true     | none         | When the refresh token expires (7 days from creation) |
-| isRevoked    | boolean           | true     | none         | True if this session has been manually revoked        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|Session UUID|
+|deviceId|object¦null|true|none|Unique device identifier|
+|userAgent|object¦null|true|none|Browser/app user agent string|
+|ipAddress|object¦null|true|none|Last known IP address for this session|
+|lastActiveAt|string(date-time)|true|none|Timestamp of last API activity|
+|createdAt|string(date-time)|true|none|When this session was created|
+|expiresAt|string(date-time)|true|none|When the refresh token expires (7 days from creation)|
+|isRevoked|boolean|true|none|True if this session has been manually revoked|
 
 <h2 id="tocS_LoginDto">LoginDto</h2>
 <!-- backwards compatibility -->
@@ -8253,25 +11601,30 @@ bearer
     },
     "deviceId": {
       "type": "string",
-      "example": "device-uuid-v4"
+      "example": "device-uuid-v4",
+      "description": "Unique device identifier (UUID). Must be consistent across logins on the same device."
     },
     "userAgent": {
       "type": "string",
       "example": "Mozilla/5.0 ..."
     }
-  }
+  },
+  "required": [
+    "deviceId"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name      | Type   | Required | Restrictions | Description                                                                                                                                                            |
-| --------- | ------ | -------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| initData  | string | false    | none         | Telegram WebApp initData from window.Telegram.WebApp.initData. Present when running inside a Telegram Mini App. Send even if empty — backend auto-detects the context. |
-| email     | string | false    | none         | User email address. Required when initData is absent.                                                                                                                  |
-| password  | string | false    | none         | User password. Required when initData is absent.                                                                                                                       |
-| deviceId  | string | false    | none         | none                                                                                                                                                                   |
-| userAgent | string | false    | none         | none                                                                                                                                                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|initData|string|false|none|Telegram WebApp initData from window.Telegram.WebApp.initData. Present when running inside a Telegram Mini App. Send even if empty — backend auto-detects the context.|
+|email|string|false|none|User email address. Required when initData is absent.|
+|password|string|false|none|User password. Required when initData is absent.|
+|deviceId|string|true|none|Unique device identifier (UUID). Must be consistent across logins on the same device.|
+|userAgent|string|false|none|none|
 
 <h2 id="tocS_SetupAccountDto">SetupAccountDto</h2>
 <!-- backwards compatibility -->
@@ -8294,11 +11647,6 @@ bearer
       "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram).",
       "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
     },
-    "email": {
-      "type": "string",
-      "example": "newuser@crm.com",
-      "description": "Email to set for this new account"
-    },
     "password": {
       "type": "string",
       "example": "P@ssw0rd!",
@@ -8308,7 +11656,7 @@ bearer
     "deviceId": {
       "type": "string",
       "example": "device-uuid-v4",
-      "description": "Unique device identifier for session tracking"
+      "description": "Unique device identifier (UUID). Must be consistent across sessions on the same device."
     },
     "userAgent": {
       "type": "string",
@@ -8316,20 +11664,24 @@ bearer
       "description": "Device user agent string"
     }
   },
-  "required": ["invitationToken", "email", "password"]
+  "required": [
+    "invitationToken",
+    "password",
+    "deviceId"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name            | Type   | Required | Restrictions | Description                                                                                                                                                                                                                                                                                                                              |
-| --------------- | ------ | -------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| invitationToken | string | true     | none         | Invitation token starting with inv\_ received via Telegram deep link                                                                                                                                                                                                                                                                     |
-| initData        | string | false    | none         | Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram). |
-| email           | string | true     | none         | Email to set for this new account                                                                                                                                                                                                                                                                                                        |
-| password        | string | true     | none         | Password to set (min 8 characters)                                                                                                                                                                                                                                                                                                       |
-| deviceId        | string | false    | none         | Unique device identifier for session tracking                                                                                                                                                                                                                                                                                            |
-| userAgent       | string | false    | none         | Device user agent string                                                                                                                                                                                                                                                                                                                 |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|invitationToken|string|true|none|Invitation token starting with inv_ received via Telegram deep link|
+|initData|string|false|none|Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram).|
+|password|string|true|none|Password to set (min 8 characters)|
+|deviceId|string|true|none|Unique device identifier (UUID). Must be consistent across sessions on the same device.|
+|userAgent|string|false|none|Device user agent string|
 
 <h2 id="tocS_ForgotPasswordDto">ForgotPasswordDto</h2>
 <!-- backwards compatibility -->
@@ -8348,15 +11700,18 @@ bearer
       "description": "Account email address"
     }
   },
-  "required": ["email"]
+  "required": [
+    "email"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name  | Type   | Required | Restrictions | Description           |
-| ----- | ------ | -------- | ------------ | --------------------- |
-| email | string | true     | none         | Account email address |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|email|string|true|none|Account email address|
 
 <h2 id="tocS_ResetPasswordDto">ResetPasswordDto</h2>
 <!-- backwards compatibility -->
@@ -8388,17 +11743,22 @@ bearer
       "description": "New password (min 8 characters)"
     }
   },
-  "required": ["email", "code", "newPassword"]
+  "required": [
+    "email",
+    "code",
+    "newPassword"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name        | Type   | Required | Restrictions | Description                     |
-| ----------- | ------ | -------- | ------------ | ------------------------------- |
-| email       | string | true     | none         | Account email address           |
-| code        | string | true     | none         | 4-digit OTP sent to your email  |
-| newPassword | string | true     | none         | New password (min 8 characters) |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|email|string|true|none|Account email address|
+|code|string|true|none|4-digit OTP sent to your email|
+|newPassword|string|true|none|New password (min 8 characters)|
 
 <h2 id="tocS_ChangeOwnPasswordDto">ChangeOwnPasswordDto</h2>
 <!-- backwards compatibility -->
@@ -8428,17 +11788,22 @@ bearer
       "example": "N3wP@ssword!"
     }
   },
-  "required": ["currentPassword", "newPassword", "confirmPassword"]
+  "required": [
+    "currentPassword",
+    "newPassword",
+    "confirmPassword"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name            | Type   | Required | Restrictions | Description                                  |
-| --------------- | ------ | -------- | ------------ | -------------------------------------------- |
-| currentPassword | string | true     | none         | Your current password                        |
-| newPassword     | string | true     | none         | New password (min 8 characters)              |
-| confirmPassword | string | true     | none         | Repeat new password — must match newPassword |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|currentPassword|string|true|none|Your current password|
+|newPassword|string|true|none|New password (min 8 characters)|
+|confirmPassword|string|true|none|Repeat new password — must match newPassword|
 
 <h2 id="tocS_InvitationResponseDto">InvitationResponseDto</h2>
 <!-- backwards compatibility -->
@@ -8459,7 +11824,12 @@ bearer
     "role": {
       "type": "string",
       "example": "STAFF",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "description": "Role that will be assigned upon account setup"
     },
     "email": {
@@ -8494,27 +11864,58 @@ bearer
     "createdAt"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name             | Type              | Required | Restrictions | Description                                                                 |
-| ---------------- | ----------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| id               | string            | true     | none         | Invitation UUID                                                             |
-| role             | string            | true     | none         | Role that will be assigned upon account setup                               |
-| email            | object¦null       | true     | none         | Pre-filled email (if provided during invite creation)                       |
-| telegramDeepLink | string            | true     | none         | Telegram deep link the invited user must open. Embeds the invitation token. |
-| expiresAt        | string(date-time) | true     | none         | Invitation expires 7 days after creation. Invalid after this timestamp.     |
-| createdAt        | string(date-time) | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|Invitation UUID|
+|role|string|true|none|Role that will be assigned upon account setup|
+|email|object¦null|true|none|Pre-filled email (if provided during invite creation)|
+|telegramDeepLink|string|true|none|Telegram deep link the invited user must open. Embeds the invitation token.|
+|expiresAt|string(date-time)|true|none|Invitation expires 7 days after creation. Invalid after this timestamp.|
+|createdAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
+
+<h2 id="tocS_UpdateTimezoneDto">UpdateTimezoneDto</h2>
+<!-- backwards compatibility -->
+<a id="schemaupdatetimezonedto"></a>
+<a id="schema_UpdateTimezoneDto"></a>
+<a id="tocSupdatetimezonedto"></a>
+<a id="tocsupdatetimezonedto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "timezone": {
+      "type": "string",
+      "description": "IANA timezone name",
+      "example": "Asia/Kuala_Lumpur"
+    }
+  },
+  "required": [
+    "timezone"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|timezone|string|true|none|IANA timezone name|
 
 <h2 id="tocS_ChangePasswordDto">ChangePasswordDto</h2>
 <!-- backwards compatibility -->
@@ -8531,15 +11932,18 @@ bearer
       "type": "string"
     }
   },
-  "required": ["newPassword"]
+  "required": [
+    "newPassword"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name        | Type   | Required | Restrictions | Description |
-| ----------- | ------ | -------- | ------------ | ----------- |
-| newPassword | string | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|newPassword|string|true|none|none|
 
 <h2 id="tocS_InviteUserDto">InviteUserDto</h2>
 <!-- backwards compatibility -->
@@ -8554,35 +11958,44 @@ bearer
   "properties": {
     "role": {
       "type": "string",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "example": "STAFF",
       "description": "Role to assign to the invited user"
     },
     "email": {
       "type": "string",
       "example": "newstaff@crm.com",
-      "description": "Pre-fill email for the invited user (optional). They can set it during setup."
+      "description": "Email address for the invited user. This is used as their CRM login — the invitee will not be prompted to enter an email during setup."
     }
   },
-  "required": ["role"]
+  "required": [
+    "role",
+    "email"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name  | Type   | Required | Restrictions | Description                                                                   |
-| ----- | ------ | -------- | ------------ | ----------------------------------------------------------------------------- |
-| role  | string | true     | none         | Role to assign to the invited user                                            |
-| email | string | false    | none         | Pre-fill email for the invited user (optional). They can set it during setup. |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|role|string|true|none|Role to assign to the invited user|
+|email|string|true|none|Email address for the invited user. This is used as their CRM login — the invitee will not be prompted to enter an email during setup.|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <h2 id="tocS_ChangeRoleDto">ChangeRoleDto</h2>
 <!-- backwards compatibility -->
@@ -8597,29 +12010,37 @@ bearer
   "properties": {
     "role": {
       "type": "string",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "example": "ADMIN",
       "description": "New role to assign to the user"
     }
   },
-  "required": ["role"]
+  "required": [
+    "role"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name | Type   | Required | Restrictions | Description                    |
-| ---- | ------ | -------- | ------------ | ------------------------------ |
-| role | string | true     | none         | New role to assign to the user |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|role|string|true|none|New role to assign to the user|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
 
 <h2 id="tocS_CreateUserDto">CreateUserDto</h2>
 <!-- backwards compatibility -->
@@ -8645,31 +12066,69 @@ bearer
     },
     "role": {
       "type": "string",
-      "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+      "enum": [
+        "SUPERADMIN",
+        "OWNER",
+        "ADMIN",
+        "STAFF"
+      ],
       "example": "STAFF",
       "description": "RBAC role to assign to this user"
     }
   },
-  "required": ["email", "password", "role"]
+  "required": [
+    "email",
+    "password",
+    "role"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name     | Type   | Required | Restrictions | Description                         |
-| -------- | ------ | -------- | ------------ | ----------------------------------- |
-| email    | string | true     | none         | Email address for login             |
-| password | string | true     | none         | Initial password (min 8 characters) |
-| role     | string | true     | none         | RBAC role to assign to this user    |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|email|string|true|none|Email address for login|
+|password|string|true|none|Initial password (min 8 characters)|
+|role|string|true|none|RBAC role to assign to this user|
 
 #### Enumerated Values
 
-| Property | Value      |
-| -------- | ---------- |
-| role     | SUPERADMIN |
-| role     | OWNER      |
-| role     | ADMIN      |
-| role     | STAFF      |
+|Property|Value|
+|---|---|
+|role|SUPERADMIN|
+|role|OWNER|
+|role|ADMIN|
+|role|STAFF|
+
+<h2 id="tocS_ChangeEmailDto">ChangeEmailDto</h2>
+<!-- backwards compatibility -->
+<a id="schemachangeemaildto"></a>
+<a id="schema_ChangeEmailDto"></a>
+<a id="tocSchangeemaildto"></a>
+<a id="tocschangeemaildto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "email"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|email|string|true|none|none|
 
 <h2 id="tocS_LeadResponseDto">LeadResponseDto</h2>
 <!-- backwards compatibility -->
@@ -8710,7 +12169,6 @@ bearer
       "enum": [
         "NEW",
         "CONTACTED",
-        "REGISTERED",
         "DEPOSIT_REPORTED",
         "DEPOSIT_CONFIRMED",
         "REJECTED"
@@ -8741,6 +12199,12 @@ bearer
       "nullable": true,
       "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
     },
+    "contactedAt": {
+      "type": "object",
+      "example": "2026-02-19T08:30:00.000Z",
+      "nullable": true,
+      "description": "When the lead was first moved to CONTACTED status"
+    },
     "registeredAt": {
       "type": "object",
       "example": "2026-02-20T10:00:00.000Z",
@@ -8752,6 +12216,12 @@ bearer
       "example": "2026-02-21T12:00:00.000Z",
       "nullable": true,
       "description": "When an Owner/Admin verified the lead"
+    },
+    "depositReportedAt": {
+      "type": "object",
+      "example": "2026-02-21T09:00:00.000Z",
+      "nullable": true,
+      "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
     },
     "handoverMode": {
       "type": "boolean",
@@ -8781,44 +12251,48 @@ bearer
     "email",
     "phoneNumber",
     "depositBalance",
+    "contactedAt",
     "registeredAt",
     "verifiedAt",
+    "depositReportedAt",
     "handoverMode",
     "createdAt",
     "updatedAt"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name           | Type              | Required | Restrictions | Description                                                            |
-| -------------- | ----------------- | -------- | ------------ | ---------------------------------------------------------------------- |
-| id             | string            | true     | none         | Lead UUID                                                              |
-| telegramUserId | string            | true     | none         | Telegram user ID (serialised as string due to BigInt)                  |
-| username       | object¦null       | true     | none         | Telegram @username without @                                           |
-| displayName    | object¦null       | true     | none         | Telegram display name                                                  |
-| status         | string            | true     | none         | Current CRM lead status                                                |
-| hfmBrokerId    | object¦null       | true     | none         | HFM broker account ID submitted by the lead                            |
-| email          | object¦null       | true     | none         | Email address submitted by the lead                                    |
-| phoneNumber    | object¦null       | true     | none         | Phone number submitted by the lead                                     |
-| depositBalance | object¦null       | true     | none         | Lifetime deposit balance as decimal string (Prisma Decimal serialised) |
-| registeredAt   | object¦null       | true     | none         | When the lead submitted registration proof                             |
-| verifiedAt     | object¦null       | true     | none         | When an Owner/Admin verified the lead                                  |
-| handoverMode   | boolean           | true     | none         | When true the bot hands off to a human agent; bot stops auto-replying  |
-| createdAt      | string(date-time) | true     | none         | When the lead first messaged the bot                                   |
-| updatedAt      | string(date-time) | true     | none         | Last time any lead field was updated                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|Lead UUID|
+|telegramUserId|string|true|none|Telegram user ID (serialised as string due to BigInt)|
+|username|object¦null|true|none|Telegram @username without @|
+|displayName|object¦null|true|none|Telegram display name|
+|status|string|true|none|Current CRM lead status|
+|hfmBrokerId|object¦null|true|none|HFM broker account ID submitted by the lead|
+|email|object¦null|true|none|Email address submitted by the lead|
+|phoneNumber|object¦null|true|none|Phone number submitted by the lead|
+|depositBalance|object¦null|true|none|Lifetime deposit balance as decimal string (Prisma Decimal serialised)|
+|contactedAt|object¦null|true|none|When the lead was first moved to CONTACTED status|
+|registeredAt|object¦null|true|none|When the lead submitted registration proof|
+|verifiedAt|object¦null|true|none|When an Owner/Admin verified the lead|
+|depositReportedAt|object¦null|true|none|When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)|
+|handoverMode|boolean|true|none|When true the bot hands off to a human agent; bot stops auto-replying|
+|createdAt|string(date-time)|true|none|When the lead first messaged the bot|
+|updatedAt|string(date-time)|true|none|Last time any lead field was updated|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
-| status   | REJECTED          |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
 
 <h2 id="tocS_SubmitLeadInfoDto">SubmitLeadInfoDto</h2>
 <!-- backwards compatibility -->
@@ -8834,7 +12308,12 @@ bearer
     "telegramUserId": {
       "type": "number",
       "example": 123456789,
-      "description": "Telegram user ID of the lead"
+      "description": "Telegram user ID of the lead (required if registrationToken is not provided)"
+    },
+    "registrationToken": {
+      "type": "string",
+      "example": "a1b2c3d4-...",
+      "description": "One-time registration token from the bot link (required if telegramUserId is not provided)"
     },
     "email": {
       "type": "string",
@@ -8861,21 +12340,22 @@ bearer
       "example": "2026-02-22T10:00:00Z",
       "description": "When the lead submitted their registration"
     }
-  },
-  "required": ["telegramUserId"]
+  }
 }
+
 ```
 
 ### Properties
 
-| Name           | Type              | Required | Restrictions | Description                                |
-| -------------- | ----------------- | -------- | ------------ | ------------------------------------------ |
-| telegramUserId | number            | true     | none         | Telegram user ID of the lead               |
-| email          | string            | false    | none         | none                                       |
-| hfmBrokerId    | string            | false    | none         | HFM broker account ID                      |
-| phoneNumber    | string            | false    | none         | Lead's phone number (No. Fon)              |
-| depositBalance | string            | false    | none         | Deposit or balance amount (decimal string) |
-| registeredAt   | string(date-time) | false    | none         | When the lead submitted their registration |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|telegramUserId|number|false|none|Telegram user ID of the lead (required if registrationToken is not provided)|
+|registrationToken|string|false|none|One-time registration token from the bot link (required if telegramUserId is not provided)|
+|email|string|false|none|none|
+|hfmBrokerId|string|false|none|HFM broker account ID|
+|phoneNumber|string|false|none|Lead's phone number (No. Fon)|
+|depositBalance|string|false|none|Deposit or balance amount (decimal string)|
+|registeredAt|string(date-time)|false|none|When the lead submitted their registration|
 
 <h2 id="tocS_BulkHandoverDto">BulkHandoverDto</h2>
 <!-- backwards compatibility -->
@@ -8894,15 +12374,117 @@ bearer
       "description": "Enable (true) or disable (false) handover mode for all leads"
     }
   },
-  "required": ["handoverMode"]
+  "required": [
+    "handoverMode"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name         | Type    | Required | Restrictions | Description                                                  |
-| ------------ | ------- | -------- | ------------ | ------------------------------------------------------------ |
-| handoverMode | boolean | true     | none         | Enable (true) or disable (false) handover mode for all leads |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|handoverMode|boolean|true|none|Enable (true) or disable (false) handover mode for all leads|
+
+<h2 id="tocS_BulkUpdateStatusDto">BulkUpdateStatusDto</h2>
+<!-- backwards compatibility -->
+<a id="schemabulkupdatestatusdto"></a>
+<a id="schema_BulkUpdateStatusDto"></a>
+<a id="tocSbulkupdatestatusdto"></a>
+<a id="tocsbulkupdatestatusdto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "ids": {
+      "description": "Array of lead UUIDs to update",
+      "example": [
+        "uuid1",
+        "uuid2"
+      ],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "NEW",
+        "CONTACTED",
+        "DEPOSIT_REPORTED",
+        "DEPOSIT_CONFIRMED",
+        "REJECTED"
+      ],
+      "example": "CONTACTED",
+      "description": "New status to apply to all listed leads"
+    }
+  },
+  "required": [
+    "ids",
+    "status"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|ids|[string]|true|none|Array of lead UUIDs to update|
+|status|string|true|none|New status to apply to all listed leads|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+
+<h2 id="tocS_UpdateLeadInfoDto">UpdateLeadInfoDto</h2>
+<!-- backwards compatibility -->
+<a id="schemaupdateleadinfodto"></a>
+<a id="schema_UpdateLeadInfoDto"></a>
+<a id="tocSupdateleadinfodto"></a>
+<a id="tocsupdateleadinfodto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "hfmBrokerId": {
+      "type": "string",
+      "description": "HFM Broker ID",
+      "example": "HFM-123456"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address",
+      "example": "lead@email.com"
+    },
+    "phoneNumber": {
+      "type": "string",
+      "description": "Phone number",
+      "example": "+601234567890"
+    }
+  }
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|hfmBrokerId|string|false|none|HFM Broker ID|
+|email|string|false|none|Email address|
+|phoneNumber|string|false|none|Phone number|
 
 <h2 id="tocS_UpdateLeadStatusDto">UpdateLeadStatusDto</h2>
 <!-- backwards compatibility -->
@@ -8920,33 +12502,42 @@ bearer
       "enum": [
         "NEW",
         "CONTACTED",
-        "REGISTERED",
         "DEPOSIT_REPORTED",
-        "DEPOSIT_CONFIRMED"
+        "DEPOSIT_CONFIRMED",
+        "REJECTED"
       ],
       "example": "CONTACTED",
       "description": "New lead status"
+    },
+    "rejectReason": {
+      "type": "string",
+      "description": "Rejection reason — required when status is REJECTED. This message is sent directly to the lead via Telegram.",
+      "example": "Receipt image is blurry and amount does not match."
     }
   },
-  "required": ["status"]
+  "required": [
+    "status"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name   | Type   | Required | Restrictions | Description     |
-| ------ | ------ | -------- | ------------ | --------------- |
-| status | string | true     | none         | New lead status |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|status|string|true|none|New lead status|
+|rejectReason|string|false|none|Rejection reason — required when status is REJECTED. This message is sent directly to the lead via Telegram.|
 
 #### Enumerated Values
 
-| Property | Value             |
-| -------- | ----------------- |
-| status   | NEW               |
-| status   | CONTACTED         |
-| status   | REGISTERED        |
-| status   | DEPOSIT_REPORTED  |
-| status   | DEPOSIT_CONFIRMED |
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
 
 <h2 id="tocS_UpdateHandoverDto">UpdateHandoverDto</h2>
 <!-- backwards compatibility -->
@@ -8965,15 +12556,115 @@ bearer
       "description": "Enable (true) or disable (false) handover mode"
     }
   },
-  "required": ["handoverMode"]
+  "required": [
+    "handoverMode"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name         | Type    | Required | Restrictions | Description                                    |
-| ------------ | ------- | -------- | ------------ | ---------------------------------------------- |
-| handoverMode | boolean | true     | none         | Enable (true) or disable (false) handover mode |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|handoverMode|boolean|true|none|Enable (true) or disable (false) handover mode|
+
+<h2 id="tocS_UpsertSystemConfigDto">UpsertSystemConfigDto</h2>
+<!-- backwards compatibility -->
+<a id="schemaupsertsystemconfigdto"></a>
+<a id="schema_UpsertSystemConfigDto"></a>
+<a id="tocSupsertsystemconfigdto"></a>
+<a id="tocsupsertsystemconfigdto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "description": "Config value (raw string)",
+      "example": "0.7"
+    }
+  },
+  "required": [
+    "value"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|value|string|true|none|Config value (raw string)|
+
+<h2 id="tocS_AttachmentResponseDto">AttachmentResponseDto</h2>
+<!-- backwards compatibility -->
+<a id="schemaattachmentresponsedto"></a>
+<a id="schema_AttachmentResponseDto"></a>
+<a id="tocSattachmentresponsedto"></a>
+<a id="tocsattachmentresponsedto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "leadId": {
+      "type": "string"
+    },
+    "telegramFileId": {
+      "type": "object",
+      "nullable": true
+    },
+    "fileKey": {
+      "type": "string"
+    },
+    "fileUrl": {
+      "type": "string"
+    },
+    "mimeType": {
+      "type": "object",
+      "nullable": true
+    },
+    "size": {
+      "type": "object",
+      "nullable": true
+    },
+    "uploadedAt": {
+      "format": "date-time",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "leadId",
+    "telegramFileId",
+    "fileKey",
+    "fileUrl",
+    "mimeType",
+    "size",
+    "uploadedAt"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|none|
+|leadId|string|true|none|none|
+|telegramFileId|object¦null|true|none|none|
+|fileKey|string|true|none|none|
+|fileUrl|string|true|none|none|
+|mimeType|object¦null|true|none|none|
+|size|object¦null|true|none|none|
+|uploadedAt|string(date-time)|true|none|none|
 
 <h2 id="tocS_KbResponseDto">KbResponseDto</h2>
 <!-- backwards compatibility -->
@@ -9003,7 +12694,11 @@ bearer
     },
     "type": {
       "type": "string",
-      "enum": ["TEXT", "LINK", "TEMPLATE"],
+      "enum": [
+        "TEXT",
+        "LINK",
+        "TEMPLATE"
+      ],
       "example": "TEXT",
       "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
     },
@@ -9028,7 +12723,12 @@ bearer
     },
     "status": {
       "type": "string",
-      "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+      "enum": [
+        "PENDING",
+        "PROCESSING",
+        "READY",
+        "FAILED"
+      ],
       "example": "READY",
       "description": "Processing status — only READY entries are used by the RAG pipeline"
     },
@@ -9060,40 +12760,41 @@ bearer
     "updatedAt"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name      | Type              | Required | Restrictions | Description                                                                 |
-| --------- | ----------------- | -------- | ------------ | --------------------------------------------------------------------------- |
-| id        | string            | true     | none         | Knowledge base entry UUID                                                   |
-| title     | string            | true     | none         | Entry title shown in the CRM and used as RAG context heading                |
-| content   | string            | true     | none         | Full text content (used for vector embedding)                               |
-| type      | string            | true     | none         | TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template |
-| fileType  | string            | true     | none         | How the content was ingested                                                |
-| url       | object¦null       | false    | none         | External URL for LINK or TEMPLATE entries                                   |
-| status    | string            | true     | none         | Processing status — only READY entries are used by the RAG pipeline         |
-| isActive  | boolean           | true     | none         | Inactive entries are excluded from vector search                            |
-| createdAt | string(date-time) | true     | none         | none                                                                        |
-| updatedAt | string(date-time) | true     | none         | none                                                                        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|Knowledge base entry UUID|
+|title|string|true|none|Entry title shown in the CRM and used as RAG context heading|
+|content|string|true|none|Full text content (used for vector embedding)|
+|type|string|true|none|TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template|
+|fileType|string|true|none|How the content was ingested|
+|url|object¦null|false|none|External URL for LINK or TEMPLATE entries|
+|status|string|true|none|Processing status — only READY entries are used by the RAG pipeline|
+|isActive|boolean|true|none|Inactive entries are excluded from vector search|
+|createdAt|string(date-time)|true|none|none|
+|updatedAt|string(date-time)|true|none|none|
 
 #### Enumerated Values
 
-| Property | Value         |
-| -------- | ------------- |
-| type     | TEXT          |
-| type     | LINK          |
-| type     | TEMPLATE      |
-| fileType | TEXT_MANUAL   |
-| fileType | PDF           |
-| fileType | DOCX          |
-| fileType | IMAGE         |
-| fileType | VIDEO_LINK    |
-| fileType | EXTERNAL_LINK |
-| status   | PENDING       |
-| status   | PROCESSING    |
-| status   | READY         |
-| status   | FAILED        |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
+|fileType|TEXT_MANUAL|
+|fileType|PDF|
+|fileType|DOCX|
+|fileType|IMAGE|
+|fileType|VIDEO_LINK|
+|fileType|EXTERNAL_LINK|
+|status|PENDING|
+|status|PROCESSING|
+|status|READY|
+|status|FAILED|
 
 <h2 id="tocS_CreateKbDto">CreateKbDto</h2>
 <!-- backwards compatibility -->
@@ -9118,7 +12819,11 @@ bearer
     },
     "type": {
       "type": "string",
-      "enum": ["TEXT", "LINK", "TEMPLATE"],
+      "enum": [
+        "TEXT",
+        "LINK",
+        "TEMPLATE"
+      ],
       "default": "TEXT",
       "description": "Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)"
     },
@@ -9128,26 +12833,30 @@ bearer
       "description": "External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)"
     }
   },
-  "required": ["title", "content"]
+  "required": [
+    "title",
+    "content"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name    | Type   | Required | Restrictions | Description                                                                           |
-| ------- | ------ | -------- | ------------ | ------------------------------------------------------------------------------------- |
-| title   | string | true     | none         | none                                                                                  |
-| content | string | true     | none         | none                                                                                  |
-| type    | string | false    | none         | Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply) |
-| url     | string | false    | none         | External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)                    |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|title|string|true|none|none|
+|content|string|true|none|none|
+|type|string|false|none|Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)|
+|url|string|false|none|External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)|
 
 #### Enumerated Values
 
-| Property | Value    |
-| -------- | -------- |
-| type     | TEXT     |
-| type     | LINK     |
-| type     | TEMPLATE |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
 
 <h2 id="tocS_UpdateKbDto">UpdateKbDto</h2>
 <!-- backwards compatibility -->
@@ -9172,7 +12881,11 @@ bearer
     },
     "type": {
       "type": "string",
-      "enum": ["TEXT", "LINK", "TEMPLATE"],
+      "enum": [
+        "TEXT",
+        "LINK",
+        "TEMPLATE"
+      ],
       "description": "Entry type"
     },
     "url": {
@@ -9187,25 +12900,26 @@ bearer
     }
   }
 }
+
 ```
 
 ### Properties
 
-| Name     | Type    | Required | Restrictions | Description                            |
-| -------- | ------- | -------- | ------------ | -------------------------------------- |
-| title    | string  | false    | none         | none                                   |
-| content  | string  | false    | none         | none                                   |
-| type     | string  | false    | none         | Entry type                             |
-| url      | string  | false    | none         | External URL for LINK/TEMPLATE entries |
-| isActive | boolean | false    | none         | Activate or deactivate this entry      |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|title|string|false|none|none|
+|content|string|false|none|none|
+|type|string|false|none|Entry type|
+|url|string|false|none|External URL for LINK/TEMPLATE entries|
+|isActive|boolean|false|none|Activate or deactivate this entry|
 
 #### Enumerated Values
 
-| Property | Value    |
-| -------- | -------- |
-| type     | TEXT     |
-| type     | LINK     |
-| type     | TEMPLATE |
+|Property|Value|
+|---|---|
+|type|TEXT|
+|type|LINK|
+|type|TEMPLATE|
 
 <h2 id="tocS_CommandMenuResponseDto">CommandMenuResponseDto</h2>
 <!-- backwards compatibility -->
@@ -9301,23 +13015,24 @@ bearer
     "updatedAt"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name           | Type              | Required | Restrictions | Description                                                                |
-| -------------- | ----------------- | -------- | ------------ | -------------------------------------------------------------------------- |
-| id             | string            | true     | none         | Command menu record UUID                                                   |
-| command        | string            | true     | none         | URL-safe slug, also used as Telegram /command                              |
-| label          | string            | true     | none         | Button label shown in Telegram inline keyboard                             |
-| description    | object¦null       | false    | none         | Short description shown in Telegram command list                           |
-| content        | object            | true     | none         | Tiptap JSON document — rendered as Telegram message blocks                 |
-| isActive       | boolean           | true     | none         | Inactive menus are hidden from the Telegram /menu keyboard                 |
-| showInMenu     | boolean           | true     | none         | Whether this entry appears in the /start inline menu                       |
-| showInKeyboard | boolean           | true     | none         | Whether this entry appears in the persistent bottom reply keyboard (max 4) |
-| order          | number            | true     | none         | Display order in the Telegram menu (ascending)                             |
-| createdAt      | string(date-time) | true     | none         | none                                                                       |
-| updatedAt      | string(date-time) | true     | none         | none                                                                       |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|Command menu record UUID|
+|command|string|true|none|URL-safe slug, also used as Telegram /command|
+|label|string|true|none|Button label shown in Telegram inline keyboard|
+|description|object¦null|false|none|Short description shown in Telegram command list|
+|content|object|true|none|Tiptap JSON document — rendered as Telegram message blocks|
+|isActive|boolean|true|none|Inactive menus are hidden from the Telegram /menu keyboard|
+|showInMenu|boolean|true|none|Whether this entry appears in the /start inline menu|
+|showInKeyboard|boolean|true|none|Whether this entry appears in the persistent bottom reply keyboard (max 4)|
+|order|number|true|none|Display order in the Telegram menu (ascending)|
+|createdAt|string(date-time)|true|none|none|
+|updatedAt|string(date-time)|true|none|none|
 
 <h2 id="tocS_CreateCommandMenuDto">CreateCommandMenuDto</h2>
 <!-- backwards compatibility -->
@@ -9391,21 +13106,26 @@ bearer
       "description": "Show this entry in the persistent bottom reply keyboard (max 4 entries, default false)."
     }
   },
-  "required": ["command", "label", "content"]
+  "required": [
+    "command",
+    "label",
+    "content"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name           | Type    | Required | Restrictions | Description                                                                             |
-| -------------- | ------- | -------- | ------------ | --------------------------------------------------------------------------------------- |
-| command        | string  | true     | none         | URL-safe slug. Used as Telegram bot command (e.g. /tutorial-register).                  |
-| label          | string  | true     | none         | Button display label shown in Telegram inline keyboard.                                 |
-| description    | string  | false    | none         | Short description shown in Telegram bot commands list.                                  |
-| content        | object  | true     | none         | Tiptap JSON document (block-based rich content)                                         |
-| order          | number  | false    | none         | Display order in the Telegram menu (ascending).                                         |
-| showInMenu     | boolean | false    | none         | Show this entry in the /start inline menu (default true).                               |
-| showInKeyboard | boolean | false    | none         | Show this entry in the persistent bottom reply keyboard (max 4 entries, default false). |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|command|string|true|none|URL-safe slug. Used as Telegram bot command (e.g. /tutorial-register).|
+|label|string|true|none|Button display label shown in Telegram inline keyboard.|
+|description|string|false|none|Short description shown in Telegram bot commands list.|
+|content|object|true|none|Tiptap JSON document (block-based rich content)|
+|order|number|false|none|Display order in the Telegram menu (ascending).|
+|showInMenu|boolean|false|none|Show this entry in the /start inline menu (default true).|
+|showInKeyboard|boolean|false|none|Show this entry in the persistent bottom reply keyboard (max 4 entries, default false).|
 
 <h2 id="tocS_CommandMenuOrderItem">CommandMenuOrderItem</h2>
 <!-- backwards compatibility -->
@@ -9427,16 +13147,20 @@ bearer
       "example": 0
     }
   },
-  "required": ["id", "order"]
+  "required": [
+    "id",
+    "order"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name  | Type   | Required | Restrictions | Description |
-| ----- | ------ | -------- | ------------ | ----------- |
-| id    | string | true     | none         | none        |
-| order | number | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|none|
+|order|number|true|none|none|
 
 <h2 id="tocS_ReorderCommandMenuDto">ReorderCommandMenuDto</h2>
 <!-- backwards compatibility -->
@@ -9463,19 +13187,25 @@ bearer
             "example": 0
           }
         },
-        "required": ["id", "order"]
+        "required": [
+          "id",
+          "order"
+        ]
       }
     }
   },
-  "required": ["items"]
+  "required": [
+    "items"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name  | Type                                                  | Required | Restrictions | Description |
-| ----- | ----------------------------------------------------- | -------- | ------------ | ----------- |
-| items | [[CommandMenuOrderItem](#schemacommandmenuorderitem)] | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|items|[[CommandMenuOrderItem](#schemacommandmenuorderitem)]|true|none|none|
 
 <h2 id="tocS_UpdateCommandMenuDto">UpdateCommandMenuDto</h2>
 <!-- backwards compatibility -->
@@ -9521,26 +13251,27 @@ bearer
     }
   }
 }
+
 ```
 
 ### Properties
 
-| Name           | Type    | Required | Restrictions | Description                                           |
-| -------------- | ------- | -------- | ------------ | ----------------------------------------------------- |
-| label          | string  | false    | none         | none                                                  |
-| description    | string  | false    | none         | none                                                  |
-| content        | object  | false    | none         | Tiptap JSON document. Re-generates embedding on save. |
-| order          | number  | false    | none         | none                                                  |
-| isActive       | boolean | false    | none         | Show in /start inline menu                            |
-| showInMenu     | boolean | false    | none         | Show in /start inline menu (owner-controlled)         |
-| showInKeyboard | boolean | false    | none         | Show in persistent bottom reply keyboard (max 4)      |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|label|string|false|none|none|
+|description|string|false|none|none|
+|content|object|false|none|Tiptap JSON document. Re-generates embedding on save.|
+|order|number|false|none|none|
+|isActive|boolean|false|none|Show in /start inline menu|
+|showInMenu|boolean|false|none|Show in /start inline menu (owner-controlled)|
+|showInKeyboard|boolean|false|none|Show in persistent bottom reply keyboard (max 4)|
 
-<h2 id="tocS_AttachmentResponseDto">AttachmentResponseDto</h2>
+<h2 id="tocS_PendingTaskResponseDto">PendingTaskResponseDto</h2>
 <!-- backwards compatibility -->
-<a id="schemaattachmentresponsedto"></a>
-<a id="schema_AttachmentResponseDto"></a>
-<a id="tocSattachmentresponsedto"></a>
-<a id="tocsattachmentresponsedto"></a>
+<a id="schemapendingtaskresponsedto"></a>
+<a id="schema_PendingTaskResponseDto"></a>
+<a id="tocSpendingtaskresponsedto"></a>
+<a id="tocspendingtaskresponsedto"></a>
 
 ```json
 {
@@ -9552,54 +13283,593 @@ bearer
     "leadId": {
       "type": "string"
     },
-    "telegramFileId": {
+    "attachmentId": {
       "type": "object",
       "nullable": true
     },
-    "fileKey": {
-      "type": "string"
-    },
-    "fileUrl": {
-      "type": "string"
-    },
-    "mimeType": {
+    "interactionId": {
       "type": "object",
       "nullable": true
     },
-    "size": {
+    "caption": {
       "type": "object",
       "nullable": true
     },
-    "uploadedAt": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "RESOLVED",
+        "DISMISSED"
+      ]
+    },
+    "createdAt": {
       "format": "date-time",
       "type": "string"
+    },
+    "resolvedAt": {
+      "type": "object",
+      "nullable": true
     }
   },
   "required": [
     "id",
     "leadId",
-    "telegramFileId",
-    "fileKey",
-    "fileUrl",
-    "mimeType",
-    "size",
-    "uploadedAt"
+    "attachmentId",
+    "interactionId",
+    "caption",
+    "status",
+    "createdAt",
+    "resolvedAt"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name           | Type              | Required | Restrictions | Description |
-| -------------- | ----------------- | -------- | ------------ | ----------- |
-| id             | string            | true     | none         | none        |
-| leadId         | string            | true     | none         | none        |
-| telegramFileId | object¦null       | true     | none         | none        |
-| fileKey        | string            | true     | none         | none        |
-| fileUrl        | string            | true     | none         | none        |
-| mimeType       | object¦null       | true     | none         | none        |
-| size           | object¦null       | true     | none         | none        |
-| uploadedAt     | string(date-time) | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|none|
+|leadId|string|true|none|none|
+|attachmentId|object¦null|true|none|none|
+|interactionId|object¦null|true|none|none|
+|caption|object¦null|true|none|none|
+|status|string|true|none|none|
+|createdAt|string(date-time)|true|none|none|
+|resolvedAt|object¦null|true|none|none|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|PENDING|
+|status|RESOLVED|
+|status|DISMISSED|
+
+<h2 id="tocS_PendingTaskGroupLeadDto">PendingTaskGroupLeadDto</h2>
+<!-- backwards compatibility -->
+<a id="schemapendingtaskgroupleaddto"></a>
+<a id="schema_PendingTaskGroupLeadDto"></a>
+<a id="tocSpendingtaskgroupleaddto"></a>
+<a id="tocspendingtaskgroupleaddto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "displayName": {
+      "type": "object",
+      "nullable": true
+    },
+    "username": {
+      "type": "object",
+      "nullable": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "NEW",
+        "CONTACTED",
+        "DEPOSIT_REPORTED",
+        "DEPOSIT_CONFIRMED",
+        "REJECTED"
+      ],
+      "nullable": true
+    },
+    "email": {
+      "type": "object",
+      "nullable": true
+    },
+    "hfmBrokerId": {
+      "type": "object",
+      "nullable": true
+    }
+  },
+  "required": [
+    "id",
+    "displayName",
+    "username",
+    "status",
+    "email",
+    "hfmBrokerId"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|none|
+|displayName|object¦null|true|none|none|
+|username|object¦null|true|none|none|
+|status|string¦null|true|none|none|
+|email|object¦null|true|none|none|
+|hfmBrokerId|object¦null|true|none|none|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|NEW|
+|status|CONTACTED|
+|status|DEPOSIT_REPORTED|
+|status|DEPOSIT_CONFIRMED|
+|status|REJECTED|
+
+<h2 id="tocS_PendingTaskStatusCountsDto">PendingTaskStatusCountsDto</h2>
+<!-- backwards compatibility -->
+<a id="schemapendingtaskstatuscountsdto"></a>
+<a id="schema_PendingTaskStatusCountsDto"></a>
+<a id="tocSpendingtaskstatuscountsdto"></a>
+<a id="tocspendingtaskstatuscountsdto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "pending": {
+      "type": "number",
+      "example": 5
+    },
+    "resolved": {
+      "type": "number",
+      "example": 2
+    },
+    "dismissed": {
+      "type": "number",
+      "example": 1
+    },
+    "total": {
+      "type": "number",
+      "example": 8
+    }
+  },
+  "required": [
+    "pending",
+    "resolved",
+    "dismissed",
+    "total"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|pending|number|true|none|none|
+|resolved|number|true|none|none|
+|dismissed|number|true|none|none|
+|total|number|true|none|none|
+
+<h2 id="tocS_PendingTaskLeadGroupResponseDto">PendingTaskLeadGroupResponseDto</h2>
+<!-- backwards compatibility -->
+<a id="schemapendingtaskleadgroupresponsedto"></a>
+<a id="schema_PendingTaskLeadGroupResponseDto"></a>
+<a id="tocSpendingtaskleadgroupresponsedto"></a>
+<a id="tocspendingtaskleadgroupresponsedto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "leadId": {
+      "type": "string"
+    },
+    "lead": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "object",
+          "nullable": true
+        },
+        "username": {
+          "type": "object",
+          "nullable": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "NEW",
+            "CONTACTED",
+            "DEPOSIT_REPORTED",
+            "DEPOSIT_CONFIRMED",
+            "REJECTED"
+          ],
+          "nullable": true
+        },
+        "email": {
+          "type": "object",
+          "nullable": true
+        },
+        "hfmBrokerId": {
+          "type": "object",
+          "nullable": true
+        }
+      },
+      "required": [
+        "id",
+        "displayName",
+        "username",
+        "status",
+        "email",
+        "hfmBrokerId"
+      ]
+    },
+    "statusCounts": {
+      "type": "object",
+      "properties": {
+        "pending": {
+          "type": "number",
+          "example": 5
+        },
+        "resolved": {
+          "type": "number",
+          "example": 2
+        },
+        "dismissed": {
+          "type": "number",
+          "example": 1
+        },
+        "total": {
+          "type": "number",
+          "example": 8
+        }
+      },
+      "required": [
+        "pending",
+        "resolved",
+        "dismissed",
+        "total"
+      ]
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "leadId": {
+            "type": "string"
+          },
+          "attachmentId": {
+            "type": "object",
+            "nullable": true
+          },
+          "interactionId": {
+            "type": "object",
+            "nullable": true
+          },
+          "caption": {
+            "type": "object",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RESOLVED",
+              "DISMISSED"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "resolvedAt": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "leadId",
+          "attachmentId",
+          "interactionId",
+          "caption",
+          "status",
+          "createdAt",
+          "resolvedAt"
+        ]
+      }
+    }
+  },
+  "required": [
+    "leadId",
+    "lead",
+    "statusCounts",
+    "tasks"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|leadId|string|true|none|none|
+|lead|[PendingTaskGroupLeadDto](#schemapendingtaskgroupleaddto)|true|none|none|
+|statusCounts|[PendingTaskStatusCountsDto](#schemapendingtaskstatuscountsdto)|true|none|none|
+|tasks|[[PendingTaskResponseDto](#schemapendingtaskresponsedto)]|true|none|none|
+
+<h2 id="tocS_PendingTaskGroupedByLeadResponseDto">PendingTaskGroupedByLeadResponseDto</h2>
+<!-- backwards compatibility -->
+<a id="schemapendingtaskgroupedbyleadresponsedto"></a>
+<a id="schema_PendingTaskGroupedByLeadResponseDto"></a>
+<a id="tocSpendingtaskgroupedbyleadresponsedto"></a>
+<a id="tocspendingtaskgroupedbyleadresponsedto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "leadId": {
+            "type": "string"
+          },
+          "lead": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "object",
+                "nullable": true
+              },
+              "username": {
+                "type": "object",
+                "nullable": true
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "NEW",
+                  "CONTACTED",
+                  "DEPOSIT_REPORTED",
+                  "DEPOSIT_CONFIRMED",
+                  "REJECTED"
+                ],
+                "nullable": true
+              },
+              "email": {
+                "type": "object",
+                "nullable": true
+              },
+              "hfmBrokerId": {
+                "type": "object",
+                "nullable": true
+              }
+            },
+            "required": [
+              "id",
+              "displayName",
+              "username",
+              "status",
+              "email",
+              "hfmBrokerId"
+            ]
+          },
+          "statusCounts": {
+            "type": "object",
+            "properties": {
+              "pending": {
+                "type": "number",
+                "example": 5
+              },
+              "resolved": {
+                "type": "number",
+                "example": 2
+              },
+              "dismissed": {
+                "type": "number",
+                "example": 1
+              },
+              "total": {
+                "type": "number",
+                "example": 8
+              }
+            },
+            "required": [
+              "pending",
+              "resolved",
+              "dismissed",
+              "total"
+            ]
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "leadId": {
+                  "type": "string"
+                },
+                "attachmentId": {
+                  "type": "object",
+                  "nullable": true
+                },
+                "interactionId": {
+                  "type": "object",
+                  "nullable": true
+                },
+                "caption": {
+                  "type": "object",
+                  "nullable": true
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "RESOLVED",
+                    "DISMISSED"
+                  ]
+                },
+                "createdAt": {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "resolvedAt": {
+                  "type": "object",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "leadId",
+                "attachmentId",
+                "interactionId",
+                "caption",
+                "status",
+                "createdAt",
+                "resolvedAt"
+              ]
+            }
+          }
+        },
+        "required": [
+          "leadId",
+          "lead",
+          "statusCounts",
+          "tasks"
+        ]
+      }
+    },
+    "totalLeads": {
+      "type": "number",
+      "example": 3
+    },
+    "totalTasks": {
+      "type": "number",
+      "example": 12
+    },
+    "statusCounts": {
+      "type": "object",
+      "properties": {
+        "pending": {
+          "type": "number",
+          "example": 5
+        },
+        "resolved": {
+          "type": "number",
+          "example": 2
+        },
+        "dismissed": {
+          "type": "number",
+          "example": 1
+        },
+        "total": {
+          "type": "number",
+          "example": 8
+        }
+      },
+      "required": [
+        "pending",
+        "resolved",
+        "dismissed",
+        "total"
+      ]
+    }
+  },
+  "required": [
+    "groups",
+    "totalLeads",
+    "totalTasks",
+    "statusCounts"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|groups|[[PendingTaskLeadGroupResponseDto](#schemapendingtaskleadgroupresponsedto)]|true|none|none|
+|totalLeads|number|true|none|none|
+|totalTasks|number|true|none|none|
+|statusCounts|[PendingTaskStatusCountsDto](#schemapendingtaskstatuscountsdto)|true|none|none|
+
+<h2 id="tocS_UpdatePendingTaskDto">UpdatePendingTaskDto</h2>
+<!-- backwards compatibility -->
+<a id="schemaupdatependingtaskdto"></a>
+<a id="schema_UpdatePendingTaskDto"></a>
+<a id="tocSupdatependingtaskdto"></a>
+<a id="tocsupdatependingtaskdto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "RESOLVED",
+        "DISMISSED"
+      ],
+      "description": "New pending task status",
+      "example": "RESOLVED"
+    }
+  },
+  "required": [
+    "status"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|status|string|true|none|New pending task status|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|status|RESOLVED|
+|status|DISMISSED|
 
 <h2 id="tocS_DailyStatsResponseDto">DailyStatsResponseDto</h2>
 <!-- backwards compatibility -->
@@ -9628,15 +13898,10 @@ bearer
       "example": 5,
       "description": "New leads that first messaged the bot on this date"
     },
-    "registeredLeads": {
+    "formSubmissions": {
       "type": "number",
       "example": 3,
-      "description": "Leads that moved to REGISTERED status on this date"
-    },
-    "depositReported": {
-      "type": "number",
-      "example": 2,
-      "description": "Leads that reported a deposit on this date"
+      "description": "Leads that submitted the combined form on this date"
     },
     "conversions": {
       "type": "number",
@@ -9669,8 +13934,7 @@ bearer
     "id",
     "date",
     "newLeads",
-    "registeredLeads",
-    "depositReported",
+    "formSubmissions",
     "conversions",
     "tokensUsed",
     "totalLeads",
@@ -9678,22 +13942,22 @@ bearer
     "updatedAt"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name            | Type              | Required | Restrictions | Description                                        |
-| --------------- | ----------------- | -------- | ------------ | -------------------------------------------------- |
-| id              | string            | true     | none         | DailyStats record UUID                             |
-| date            | string(date-time) | true     | none         | The UTC date this snapshot covers (midnight)       |
-| newLeads        | number            | true     | none         | New leads that first messaged the bot on this date |
-| registeredLeads | number            | true     | none         | Leads that moved to REGISTERED status on this date |
-| depositReported | number            | true     | none         | Leads that reported a deposit on this date         |
-| conversions     | number            | true     | none         | Deposits confirmed by an Owner/Admin on this date  |
-| tokensUsed      | number            | true     | none         | Total OpenAI tokens consumed on this date          |
-| totalLeads      | number            | true     | none         | Running total of all leads at end of this date     |
-| createdAt       | string(date-time) | true     | none         | Record creation timestamp (usually 1 AM cron)      |
-| updatedAt       | string(date-time) | true     | none         | none                                               |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|id|string|true|none|DailyStats record UUID|
+|date|string(date-time)|true|none|The UTC date this snapshot covers (midnight)|
+|newLeads|number|true|none|New leads that first messaged the bot on this date|
+|formSubmissions|number|true|none|Leads that submitted the combined form on this date|
+|conversions|number|true|none|Deposits confirmed by an Owner/Admin on this date|
+|tokensUsed|number|true|none|Total OpenAI tokens consumed on this date|
+|totalLeads|number|true|none|Running total of all leads at end of this date|
+|createdAt|string(date-time)|true|none|Record creation timestamp (usually 1 AM cron)|
+|updatedAt|string(date-time)|true|none|none|
 
 <h2 id="tocS_AnalyticsDashboardResponseDto">AnalyticsDashboardResponseDto</h2>
 <!-- backwards compatibility -->
@@ -9716,15 +13980,15 @@ bearer
       "example": 12,
       "description": "Leads in NEW status"
     },
-    "registeredLeads": {
+    "contactedLeads": {
       "type": "number",
-      "example": 85,
-      "description": "Leads who have submitted registration proof"
+      "example": 25,
+      "description": "Leads currently in CONTACTED status"
     },
-    "depositReported": {
+    "formSubmissions": {
       "type": "number",
       "example": 34,
-      "description": "Leads who reported a deposit (DEPOSIT_REPORTED status)"
+      "description": "Leads who submitted the combined form (DEPOSIT_REPORTED status)"
     },
     "depositConfirmed": {
       "type": "number",
@@ -9753,15 +14017,10 @@ bearer
             "example": 5,
             "description": "New leads that first messaged the bot on this date"
           },
-          "registeredLeads": {
+          "formSubmissions": {
             "type": "number",
             "example": 3,
-            "description": "Leads that moved to REGISTERED status on this date"
-          },
-          "depositReported": {
-            "type": "number",
-            "example": 2,
-            "description": "Leads that reported a deposit on this date"
+            "description": "Leads that submitted the combined form on this date"
           },
           "conversions": {
             "type": "number",
@@ -9794,8 +14053,7 @@ bearer
           "id",
           "date",
           "newLeads",
-          "registeredLeads",
-          "depositReported",
+          "formSubmissions",
           "conversions",
           "tokensUsed",
           "totalLeads",
@@ -9808,24 +14066,25 @@ bearer
   "required": [
     "totalLeads",
     "newLeads",
-    "registeredLeads",
-    "depositReported",
+    "contactedLeads",
+    "formSubmissions",
     "depositConfirmed",
     "recentStats"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name             | Type                                                    | Required | Restrictions | Description                                                                    |
-| ---------------- | ------------------------------------------------------- | -------- | ------------ | ------------------------------------------------------------------------------ |
-| totalLeads       | number                                                  | true     | none         | Total number of leads in the CRM                                               |
-| newLeads         | number                                                  | true     | none         | Leads in NEW status                                                            |
-| registeredLeads  | number                                                  | true     | none         | Leads who have submitted registration proof                                    |
-| depositReported  | number                                                  | true     | none         | Leads who reported a deposit (DEPOSIT_REPORTED status)                         |
-| depositConfirmed | number                                                  | true     | none         | Leads whose deposit was confirmed by an Owner/Admin (DEPOSIT_CONFIRMED status) |
-| recentStats      | [[DailyStatsResponseDto](#schemadailystatsresponsedto)] | true     | none         | Last 7 days of daily snapshot stats                                            |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|totalLeads|number|true|none|Total number of leads in the CRM|
+|newLeads|number|true|none|Leads in NEW status|
+|contactedLeads|number|true|none|Leads currently in CONTACTED status|
+|formSubmissions|number|true|none|Leads who submitted the combined form (DEPOSIT_REPORTED status)|
+|depositConfirmed|number|true|none|Leads whose deposit was confirmed by an Owner/Admin (DEPOSIT_CONFIRMED status)|
+|recentStats|[[DailyStatsResponseDto](#schemadailystatsresponsedto)]|true|none|Last 7 days of daily snapshot stats|
 
 <h2 id="tocS_WeeklyStatsResponseDto">WeeklyStatsResponseDto</h2>
 <!-- backwards compatibility -->
@@ -9848,15 +14107,10 @@ bearer
       "example": 18,
       "description": "New leads that joined during this week"
     },
-    "registeredLeads": {
-      "type": "number",
-      "example": 9,
-      "description": "Leads that moved to REGISTERED during this week"
-    },
-    "depositReported": {
+    "formSubmissions": {
       "type": "number",
       "example": 5,
-      "description": "Deposits reported during this week"
+      "description": "Leads that submitted the combined form during this week"
     },
     "depositConfirmed": {
       "type": "number",
@@ -9867,22 +14121,21 @@ bearer
   "required": [
     "weekStart",
     "newLeads",
-    "registeredLeads",
-    "depositReported",
+    "formSubmissions",
     "depositConfirmed"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name             | Type   | Required | Restrictions | Description                                     |
-| ---------------- | ------ | -------- | ------------ | ----------------------------------------------- |
-| weekStart        | string | true     | none         | Monday of the ISO week (YYYY-MM-DD)             |
-| newLeads         | number | true     | none         | New leads that joined during this week          |
-| registeredLeads  | number | true     | none         | Leads that moved to REGISTERED during this week |
-| depositReported  | number | true     | none         | Deposits reported during this week              |
-| depositConfirmed | number | true     | none         | Deposits confirmed during this week             |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|weekStart|string|true|none|Monday of the ISO week (YYYY-MM-DD)|
+|newLeads|number|true|none|New leads that joined during this week|
+|formSubmissions|number|true|none|Leads that submitted the combined form during this week|
+|depositConfirmed|number|true|none|Deposits confirmed during this week|
 
 <h2 id="tocS_MonthlyStatsResponseDto">MonthlyStatsResponseDto</h2>
 <!-- backwards compatibility -->
@@ -9905,15 +14158,10 @@ bearer
       "example": 74,
       "description": "New leads that joined during this month"
     },
-    "registeredLeads": {
-      "type": "number",
-      "example": 38,
-      "description": "Leads that moved to REGISTERED during this month"
-    },
-    "depositReported": {
+    "formSubmissions": {
       "type": "number",
       "example": 20,
-      "description": "Deposits reported during this month"
+      "description": "Leads that submitted the combined form during this month"
     },
     "depositConfirmed": {
       "type": "number",
@@ -9924,22 +14172,21 @@ bearer
   "required": [
     "monthStart",
     "newLeads",
-    "registeredLeads",
-    "depositReported",
+    "formSubmissions",
     "depositConfirmed"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name             | Type   | Required | Restrictions | Description                                      |
-| ---------------- | ------ | -------- | ------------ | ------------------------------------------------ |
-| monthStart       | string | true     | none         | First day of the calendar month (YYYY-MM-DD)     |
-| newLeads         | number | true     | none         | New leads that joined during this month          |
-| registeredLeads  | number | true     | none         | Leads that moved to REGISTERED during this month |
-| depositReported  | number | true     | none         | Deposits reported during this month              |
-| depositConfirmed | number | true     | none         | Deposits confirmed during this month             |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|monthStart|string|true|none|First day of the calendar month (YYYY-MM-DD)|
+|newLeads|number|true|none|New leads that joined during this month|
+|formSubmissions|number|true|none|Leads that submitted the combined form during this month|
+|depositConfirmed|number|true|none|Deposits confirmed during this month|
 
 <h2 id="tocS_KpiStatDto">KpiStatDto</h2>
 <!-- backwards compatibility -->
@@ -9969,31 +14216,41 @@ bearer
     },
     "trend": {
       "type": "string",
-      "enum": ["up", "down", "neutral"],
+      "enum": [
+        "up",
+        "down",
+        "neutral"
+      ],
       "example": "up",
       "description": "Direction of change"
     }
   },
-  "required": ["current", "previous", "changePercentage", "trend"]
+  "required": [
+    "current",
+    "previous",
+    "changePercentage",
+    "trend"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name             | Type   | Required | Restrictions | Description                                                           |
-| ---------------- | ------ | -------- | ------------ | --------------------------------------------------------------------- |
-| current          | number | true     | none         | Value for the current period                                          |
-| previous         | number | true     | none         | Value for the previous comparable period                              |
-| changePercentage | number | true     | none         | Percentage change from previous to current period. Positive = growth. |
-| trend            | string | true     | none         | Direction of change                                                   |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|current|number|true|none|Value for the current period|
+|previous|number|true|none|Value for the previous comparable period|
+|changePercentage|number|true|none|Percentage change from previous to current period. Positive = growth.|
+|trend|string|true|none|Direction of change|
 
 #### Enumerated Values
 
-| Property | Value   |
-| -------- | ------- |
-| trend    | up      |
-| trend    | down    |
-| trend    | neutral |
+|Property|Value|
+|---|---|
+|trend|up|
+|trend|down|
+|trend|neutral|
 
 <h2 id="tocS_AnalyticsKpiDto">AnalyticsKpiDto</h2>
 <!-- backwards compatibility -->
@@ -10026,14 +14283,23 @@ bearer
         },
         "trend": {
           "type": "string",
-          "enum": ["up", "down", "neutral"],
+          "enum": [
+            "up",
+            "down",
+            "neutral"
+          ],
           "example": "up",
           "description": "Direction of change"
         }
       },
-      "required": ["current", "previous", "changePercentage", "trend"]
+      "required": [
+        "current",
+        "previous",
+        "changePercentage",
+        "trend"
+      ]
     },
-    "registeredAccounts": {
+    "contactedLeads": {
       "type": "object",
       "properties": {
         "current": {
@@ -10053,14 +14319,23 @@ bearer
         },
         "trend": {
           "type": "string",
-          "enum": ["up", "down", "neutral"],
+          "enum": [
+            "up",
+            "down",
+            "neutral"
+          ],
           "example": "up",
           "description": "Direction of change"
         }
       },
-      "required": ["current", "previous", "changePercentage", "trend"]
+      "required": [
+        "current",
+        "previous",
+        "changePercentage",
+        "trend"
+      ]
     },
-    "depositingClients": {
+    "verifiedClients": {
       "type": "object",
       "properties": {
         "current": {
@@ -10080,14 +14355,23 @@ bearer
         },
         "trend": {
           "type": "string",
-          "enum": ["up", "down", "neutral"],
+          "enum": [
+            "up",
+            "down",
+            "neutral"
+          ],
           "example": "up",
           "description": "Direction of change"
         }
       },
-      "required": ["current", "previous", "changePercentage", "trend"]
+      "required": [
+        "current",
+        "previous",
+        "changePercentage",
+        "trend"
+      ]
     },
-    "pendingVerifications": {
+    "formSubmissions": {
       "type": "object",
       "properties": {
         "current": {
@@ -10107,31 +14391,41 @@ bearer
         },
         "trend": {
           "type": "string",
-          "enum": ["up", "down", "neutral"],
+          "enum": [
+            "up",
+            "down",
+            "neutral"
+          ],
           "example": "up",
           "description": "Direction of change"
         }
       },
-      "required": ["current", "previous", "changePercentage", "trend"]
+      "required": [
+        "current",
+        "previous",
+        "changePercentage",
+        "trend"
+      ]
     }
   },
   "required": [
     "totalLeads",
-    "registeredAccounts",
-    "depositingClients",
-    "pendingVerifications"
+    "contactedLeads",
+    "verifiedClients",
+    "formSubmissions"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name                 | Type                            | Required | Restrictions | Description |
-| -------------------- | ------------------------------- | -------- | ------------ | ----------- |
-| totalLeads           | [KpiStatDto](#schemakpistatdto) | true     | none         | none        |
-| registeredAccounts   | [KpiStatDto](#schemakpistatdto) | true     | none         | none        |
-| depositingClients    | [KpiStatDto](#schemakpistatdto) | true     | none         | none        |
-| pendingVerifications | [KpiStatDto](#schemakpistatdto) | true     | none         | none        |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|totalLeads|[KpiStatDto](#schemakpistatdto)|true|none|none|
+|contactedLeads|[KpiStatDto](#schemakpistatdto)|true|none|none|
+|verifiedClients|[KpiStatDto](#schemakpistatdto)|true|none|none|
+|formSubmissions|[KpiStatDto](#schemakpistatdto)|true|none|none|
 
 <h2 id="tocS_FunnelConversionRatesDto">FunnelConversionRatesDto</h2>
 <!-- backwards compatibility -->
@@ -10144,20 +14438,15 @@ bearer
 {
   "type": "object",
   "properties": {
-    "newToRegistered": {
+    "newToSubmitted": {
       "type": "number",
       "example": 51.4,
-      "description": "Percentage of NEW leads that became REGISTERED"
+      "description": "Percentage of NEW leads that submitted the combined form"
     },
-    "registeredToReported": {
-      "type": "number",
-      "example": 52.6,
-      "description": "Percentage of REGISTERED leads that reported a deposit"
-    },
-    "reportedToConfirmed": {
+    "submittedToConfirmed": {
       "type": "number",
       "example": 70,
-      "description": "Percentage of DEPOSIT_REPORTED leads that were confirmed"
+      "description": "Percentage of form submissions that were confirmed"
     },
     "overall": {
       "type": "number",
@@ -10166,22 +14455,21 @@ bearer
     }
   },
   "required": [
-    "newToRegistered",
-    "registeredToReported",
-    "reportedToConfirmed",
+    "newToSubmitted",
+    "submittedToConfirmed",
     "overall"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name                 | Type   | Required | Restrictions | Description                                              |
-| -------------------- | ------ | -------- | ------------ | -------------------------------------------------------- |
-| newToRegistered      | number | true     | none         | Percentage of NEW leads that became REGISTERED           |
-| registeredToReported | number | true     | none         | Percentage of REGISTERED leads that reported a deposit   |
-| reportedToConfirmed  | number | true     | none         | Percentage of DEPOSIT_REPORTED leads that were confirmed |
-| overall              | number | true     | none         | End-to-end conversion: NEW → DEPOSIT_CONFIRMED           |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|newToSubmitted|number|true|none|Percentage of NEW leads that submitted the combined form|
+|submittedToConfirmed|number|true|none|Percentage of form submissions that were confirmed|
+|overall|number|true|none|End-to-end conversion: NEW → DEPOSIT_CONFIRMED|
 
 <h2 id="tocS_AnalyticsFunnelDto">AnalyticsFunnelDto</h2>
 <!-- backwards compatibility -->
@@ -10197,40 +14485,30 @@ bearer
     "new": {
       "type": "number",
       "example": 144,
-      "description": "Leads in NEW status during the period"
+      "description": "Leads created during the period"
     },
-    "registered": {
-      "type": "number",
-      "example": 74,
-      "description": "Leads in REGISTERED status during the period"
-    },
-    "depositReported": {
+    "formSubmitted": {
       "type": "number",
       "example": 39,
-      "description": "Leads in DEPOSIT_REPORTED status during the period"
+      "description": "Leads that submitted the combined form (DEPOSIT_REPORTED) during the period"
     },
     "depositConfirmed": {
       "type": "number",
       "example": 27,
-      "description": "Leads in DEPOSIT_CONFIRMED status during the period"
+      "description": "Leads confirmed (DEPOSIT_CONFIRMED) during the period"
     },
     "conversionRates": {
       "type": "object",
       "properties": {
-        "newToRegistered": {
+        "newToSubmitted": {
           "type": "number",
           "example": 51.4,
-          "description": "Percentage of NEW leads that became REGISTERED"
+          "description": "Percentage of NEW leads that submitted the combined form"
         },
-        "registeredToReported": {
-          "type": "number",
-          "example": 52.6,
-          "description": "Percentage of REGISTERED leads that reported a deposit"
-        },
-        "reportedToConfirmed": {
+        "submittedToConfirmed": {
           "type": "number",
           "example": 70,
-          "description": "Percentage of DEPOSIT_REPORTED leads that were confirmed"
+          "description": "Percentage of form submissions that were confirmed"
         },
         "overall": {
           "type": "number",
@@ -10239,32 +14517,30 @@ bearer
         }
       },
       "required": [
-        "newToRegistered",
-        "registeredToReported",
-        "reportedToConfirmed",
+        "newToSubmitted",
+        "submittedToConfirmed",
         "overall"
       ]
     }
   },
   "required": [
     "new",
-    "registered",
-    "depositReported",
+    "formSubmitted",
     "depositConfirmed",
     "conversionRates"
   ]
 }
+
 ```
 
 ### Properties
 
-| Name             | Type                                                        | Required | Restrictions | Description                                         |
-| ---------------- | ----------------------------------------------------------- | -------- | ------------ | --------------------------------------------------- |
-| new              | number                                                      | true     | none         | Leads in NEW status during the period               |
-| registered       | number                                                      | true     | none         | Leads in REGISTERED status during the period        |
-| depositReported  | number                                                      | true     | none         | Leads in DEPOSIT_REPORTED status during the period  |
-| depositConfirmed | number                                                      | true     | none         | Leads in DEPOSIT_CONFIRMED status during the period |
-| conversionRates  | [FunnelConversionRatesDto](#schemafunnelconversionratesdto) | true     | none         | none                                                |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|new|number|true|none|Leads created during the period|
+|formSubmitted|number|true|none|Leads that submitted the combined form (DEPOSIT_REPORTED) during the period|
+|depositConfirmed|number|true|none|Leads confirmed (DEPOSIT_CONFIRMED) during the period|
+|conversionRates|[FunnelConversionRatesDto](#schemafunnelconversionratesdto)|true|none|none|
 
 <h2 id="tocS_TrendSeriesDataDto">TrendSeriesDataDto</h2>
 <!-- backwards compatibility -->
@@ -10287,29 +14563,28 @@ bearer
       "example": 18,
       "description": "New leads for this data point"
     },
-    "registered": {
-      "type": "number",
-      "example": 9,
-      "description": "Registered leads for this data point"
-    },
     "confirmed": {
       "type": "number",
       "example": 3,
       "description": "Deposit-confirmed leads for this data point"
     }
   },
-  "required": ["date", "newLeads", "registered", "confirmed"]
+  "required": [
+    "date",
+    "newLeads",
+    "confirmed"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name       | Type   | Required | Restrictions | Description                                                                                                                      |
-| ---------- | ------ | -------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| date       | string | true     | none         | Bucket label: ISO datetime (YYYY-MM-DDTHH:mm) for hourly granularity, or date string (YYYY-MM-DD) for day/week/month granularity |
-| newLeads   | number | true     | none         | New leads for this data point                                                                                                    |
-| registered | number | true     | none         | Registered leads for this data point                                                                                             |
-| confirmed  | number | true     | none         | Deposit-confirmed leads for this data point                                                                                      |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|date|string|true|none|Bucket label: ISO datetime (YYYY-MM-DDTHH:mm) for hourly granularity, or date string (YYYY-MM-DD) for day/week/month granularity|
+|newLeads|number|true|none|New leads for this data point|
+|confirmed|number|true|none|Deposit-confirmed leads for this data point|
 
 <h2 id="tocS_AnalyticsSummaryResponseDto">AnalyticsSummaryResponseDto</h2>
 <!-- backwards compatibility -->
@@ -10345,14 +14620,23 @@ bearer
             },
             "trend": {
               "type": "string",
-              "enum": ["up", "down", "neutral"],
+              "enum": [
+                "up",
+                "down",
+                "neutral"
+              ],
               "example": "up",
               "description": "Direction of change"
             }
           },
-          "required": ["current", "previous", "changePercentage", "trend"]
+          "required": [
+            "current",
+            "previous",
+            "changePercentage",
+            "trend"
+          ]
         },
-        "registeredAccounts": {
+        "contactedLeads": {
           "type": "object",
           "properties": {
             "current": {
@@ -10372,14 +14656,23 @@ bearer
             },
             "trend": {
               "type": "string",
-              "enum": ["up", "down", "neutral"],
+              "enum": [
+                "up",
+                "down",
+                "neutral"
+              ],
               "example": "up",
               "description": "Direction of change"
             }
           },
-          "required": ["current", "previous", "changePercentage", "trend"]
+          "required": [
+            "current",
+            "previous",
+            "changePercentage",
+            "trend"
+          ]
         },
-        "depositingClients": {
+        "verifiedClients": {
           "type": "object",
           "properties": {
             "current": {
@@ -10399,14 +14692,23 @@ bearer
             },
             "trend": {
               "type": "string",
-              "enum": ["up", "down", "neutral"],
+              "enum": [
+                "up",
+                "down",
+                "neutral"
+              ],
               "example": "up",
               "description": "Direction of change"
             }
           },
-          "required": ["current", "previous", "changePercentage", "trend"]
+          "required": [
+            "current",
+            "previous",
+            "changePercentage",
+            "trend"
+          ]
         },
-        "pendingVerifications": {
+        "formSubmissions": {
           "type": "object",
           "properties": {
             "current": {
@@ -10426,19 +14728,28 @@ bearer
             },
             "trend": {
               "type": "string",
-              "enum": ["up", "down", "neutral"],
+              "enum": [
+                "up",
+                "down",
+                "neutral"
+              ],
               "example": "up",
               "description": "Direction of change"
             }
           },
-          "required": ["current", "previous", "changePercentage", "trend"]
+          "required": [
+            "current",
+            "previous",
+            "changePercentage",
+            "trend"
+          ]
         }
       },
       "required": [
         "totalLeads",
-        "registeredAccounts",
-        "depositingClients",
-        "pendingVerifications"
+        "contactedLeads",
+        "verifiedClients",
+        "formSubmissions"
       ]
     },
     "funnel": {
@@ -10447,40 +14758,30 @@ bearer
         "new": {
           "type": "number",
           "example": 144,
-          "description": "Leads in NEW status during the period"
+          "description": "Leads created during the period"
         },
-        "registered": {
-          "type": "number",
-          "example": 74,
-          "description": "Leads in REGISTERED status during the period"
-        },
-        "depositReported": {
+        "formSubmitted": {
           "type": "number",
           "example": 39,
-          "description": "Leads in DEPOSIT_REPORTED status during the period"
+          "description": "Leads that submitted the combined form (DEPOSIT_REPORTED) during the period"
         },
         "depositConfirmed": {
           "type": "number",
           "example": 27,
-          "description": "Leads in DEPOSIT_CONFIRMED status during the period"
+          "description": "Leads confirmed (DEPOSIT_CONFIRMED) during the period"
         },
         "conversionRates": {
           "type": "object",
           "properties": {
-            "newToRegistered": {
+            "newToSubmitted": {
               "type": "number",
               "example": 51.4,
-              "description": "Percentage of NEW leads that became REGISTERED"
+              "description": "Percentage of NEW leads that submitted the combined form"
             },
-            "registeredToReported": {
-              "type": "number",
-              "example": 52.6,
-              "description": "Percentage of REGISTERED leads that reported a deposit"
-            },
-            "reportedToConfirmed": {
+            "submittedToConfirmed": {
               "type": "number",
               "example": 70,
-              "description": "Percentage of DEPOSIT_REPORTED leads that were confirmed"
+              "description": "Percentage of form submissions that were confirmed"
             },
             "overall": {
               "type": "number",
@@ -10489,17 +14790,15 @@ bearer
             }
           },
           "required": [
-            "newToRegistered",
-            "registeredToReported",
-            "reportedToConfirmed",
+            "newToSubmitted",
+            "submittedToConfirmed",
             "overall"
           ]
         }
       },
       "required": [
         "new",
-        "registered",
-        "depositReported",
+        "formSubmitted",
         "depositConfirmed",
         "conversionRates"
       ]
@@ -10519,59 +14818,36 @@ bearer
             "example": 18,
             "description": "New leads for this data point"
           },
-          "registered": {
-            "type": "number",
-            "example": 9,
-            "description": "Registered leads for this data point"
-          },
           "confirmed": {
             "type": "number",
             "example": 3,
             "description": "Deposit-confirmed leads for this data point"
           }
         },
-        "required": ["date", "newLeads", "registered", "confirmed"]
+        "required": [
+          "date",
+          "newLeads",
+          "confirmed"
+        ]
       }
     }
   },
-  "required": ["kpi", "funnel", "trendSeries"]
+  "required": [
+    "kpi",
+    "funnel",
+    "trendSeries"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name        | Type                                              | Required | Restrictions | Description |
-| ----------- | ------------------------------------------------- | -------- | ------------ | ----------- |
-| kpi         | [AnalyticsKpiDto](#schemaanalyticskpidto)         | true     | none         | none        |
-| funnel      | [AnalyticsFunnelDto](#schemaanalyticsfunneldto)   | true     | none         | none        |
-| trendSeries | [[TrendSeriesDataDto](#schematrendseriesdatadto)] | true     | none         | none        |
-
-<h2 id="tocS_UpsertSystemConfigDto">UpsertSystemConfigDto</h2>
-<!-- backwards compatibility -->
-<a id="schemaupsertsystemconfigdto"></a>
-<a id="schema_UpsertSystemConfigDto"></a>
-<a id="tocSupsertsystemconfigdto"></a>
-<a id="tocsupsertsystemconfigdto"></a>
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "value": {
-      "type": "string",
-      "description": "Config value (raw string)",
-      "example": "0.7"
-    }
-  },
-  "required": ["value"]
-}
-```
-
-### Properties
-
-| Name  | Type   | Required | Restrictions | Description               |
-| ----- | ------ | -------- | ------------ | ------------------------- |
-| value | string | true     | none         | Config value (raw string) |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|kpi|[AnalyticsKpiDto](#schemaanalyticskpidto)|true|none|none|
+|funnel|[AnalyticsFunnelDto](#schemaanalyticsfunneldto)|true|none|none|
+|trendSeries|[[TrendSeriesDataDto](#schematrendseriesdatadto)]|true|none|none|
 
 <h2 id="tocS_CreateFeedbackDto">CreateFeedbackDto</h2>
 <!-- backwards compatibility -->
@@ -10599,30 +14875,158 @@ bearer
     "rating": {
       "type": "number",
       "description": "1 = bad, 5 = good",
-      "enum": [1, 5]
+      "enum": [
+        1,
+        5
+      ]
     },
     "notes": {
       "type": "string",
       "description": "Optional notes about why this is good/bad"
     }
   },
-  "required": ["leadId", "userMessage", "botReply", "rating"]
+  "required": [
+    "leadId",
+    "userMessage",
+    "botReply",
+    "rating"
+  ]
 }
+
 ```
 
 ### Properties
 
-| Name        | Type   | Required | Restrictions | Description                               |
-| ----------- | ------ | -------- | ------------ | ----------------------------------------- |
-| leadId      | string | true     | none         | Lead UUID this conversation belongs to    |
-| userMessage | string | true     | none         | The user message being rated              |
-| botReply    | string | true     | none         | The bot reply being rated                 |
-| rating      | number | true     | none         | 1 = bad, 5 = good                         |
-| notes       | string | false    | none         | Optional notes about why this is good/bad |
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|leadId|string|true|none|Lead UUID this conversation belongs to|
+|userMessage|string|true|none|The user message being rated|
+|botReply|string|true|none|The bot reply being rated|
+|rating|number|true|none|1 = bad, 5 = good|
+|notes|string|false|none|Optional notes about why this is good/bad|
 
 #### Enumerated Values
 
-| Property | Value |
-| -------- | ----- |
-| rating   | 1     |
-| rating   | 5     |
+|Property|Value|
+|---|---|
+|rating|1|
+|rating|5|
+
+<h2 id="tocS_CreateBroadcastDto">CreateBroadcastDto</h2>
+<!-- backwards compatibility -->
+<a id="schemacreatebroadcastdto"></a>
+<a id="schema_CreateBroadcastDto"></a>
+<a id="tocScreatebroadcastdto"></a>
+<a id="tocscreatebroadcastdto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "message": {
+      "type": "string",
+      "description": "Message text to broadcast to all leads",
+      "maxLength": 4096
+    },
+    "photoUrl": {
+      "type": "string",
+      "description": "Optional image URL — sent as photo caption"
+    }
+  },
+  "required": [
+    "message"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|message|string|true|none|Message text to broadcast to all leads|
+|photoUrl|string|false|none|Optional image URL — sent as photo caption|
+
+<h2 id="tocS_SetSecretDto">SetSecretDto</h2>
+<!-- backwards compatibility -->
+<a id="schemasetsecretdto"></a>
+<a id="schema_SetSecretDto"></a>
+<a id="tocSsetsecretdto"></a>
+<a id="tocssetsecretdto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "example": "google.serviceAccount"
+    },
+    "value": {
+      "type": "string",
+      "example": "{\"type\":\"service_account\",...}"
+    },
+    "description": {
+      "type": "string",
+      "example": "Google Cloud service account for Sheets/Drive integration"
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|key|string|true|none|none|
+|value|string|true|none|none|
+|description|string|false|none|none|
+
+<h2 id="tocS_TriggerSyncDto">TriggerSyncDto</h2>
+<!-- backwards compatibility -->
+<a id="schematriggersyncdto"></a>
+<a id="schema_TriggerSyncDto"></a>
+<a id="tocStriggersyncdto"></a>
+<a id="tocstriggersyncdto"></a>
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "target": {
+      "type": "string",
+      "enum": [
+        "sheets",
+        "drive",
+        "all"
+      ],
+      "description": "\"sheets\" → full lead sync to Google Sheets, \"drive\" → batch attachment upload to Google Drive, \"all\" → both.",
+      "example": "all"
+    }
+  },
+  "required": [
+    "target"
+  ]
+}
+
+```
+
+### Properties
+
+|Name|Type|Required|Restrictions|Description|
+|---|---|---|---|---|
+|target|string|true|none|"sheets" → full lead sync to Google Sheets, "drive" → batch attachment upload to Google Drive, "all" → both.|
+
+#### Enumerated Values
+
+|Property|Value|
+|---|---|
+|target|sheets|
+|target|drive|
+|target|all|
+

@@ -56,13 +56,15 @@ export interface CellUpdate {
 }
 
 declare module "@tanstack/react-table" {
-  // biome-ignore lint/correctness/noUnusedVariables: TData and TValue are used in the ColumnMeta interface
+  // biome-ignore lint/correctness/noUnusedVariables: required by TanStack declaration merging
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     label?: string;
     cell?: CellOpts;
   }
 
-  // biome-ignore lint/correctness/noUnusedVariables: TData is used in the TableMeta interface
+  // biome-ignore lint/correctness/noUnusedVariables: required by TanStack declaration merging
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
     dataGridRef?: React.RefObject<HTMLElement | null>;
     cellMapRef?: React.RefObject<Map<string, HTMLDivElement>>;

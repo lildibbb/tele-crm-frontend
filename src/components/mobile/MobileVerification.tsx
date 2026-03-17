@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
@@ -11,18 +17,28 @@ import {
   Image as PhosphorImage,
   Receipt,
   Eye,
+  Paperclip,
 } from "@phosphor-icons/react";
-import { useLeadsList, useVerifyLead, useUpdateLeadStatus } from "@/queries/useLeadsQuery";
+import {
+  useLeadsList,
+  useVerifyLead,
+  useUpdateLeadStatus,
+} from "@/queries/useLeadsQuery";
 import type { Lead } from "@/queries/useLeadsQuery";
 import { LeadStatus } from "@/types/enums";
 import { attachmentsApi, type Attachment } from "@/lib/api/attachments";
-import { leadsApi } from "@/lib/api/leads";
+import { LEAD_REPLY_REQUIRED_MESSAGE, leadsApi } from "@/lib/api/leads";
+import {
+  canSendLeadReply,
+  normalizeLeadReplyMessage,
+} from "@/lib/reply/leadReplyContract";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { validateReplyAttachmentFile } from "@/lib/replyAttachmentPolicy";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export type FilterTab = "PENDING" | "ALL";
@@ -52,7 +68,10 @@ function timeAgoShort(iso: string): string {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+const STATUS_META: Record<
+  string,
+  { label: string; color: string; bg: string }
+> = {
   [LeadStatus.DEPOSIT_REPORTED]: {
     label: "Pending",
     color: "text-warning",
@@ -71,7 +90,8 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string }> 
 };
 
 function toVerificationItem(lead: Lead): VerificationItem {
-  const meta = STATUS_META[lead.status] ?? STATUS_META[LeadStatus.DEPOSIT_REPORTED];
+  const meta =
+    STATUS_META[lead.status] ?? STATUS_META[LeadStatus.DEPOSIT_REPORTED];
   return {
     id: lead.id,
     leadName: lead.displayName ?? "Unknown",
@@ -125,7 +145,10 @@ function SkeletonStats() {
   return (
     <div className="flex gap-3 px-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="flex-1 p-3 rounded-xl bg-card border border-border-subtle">
+        <div
+          key={i}
+          className="flex-1 p-3 rounded-xl bg-card border border-border-subtle"
+        >
           <Skeleton className="w-6 h-6 rounded-lg mb-2" />
           <Skeleton className="h-5 w-8 mb-1" />
           <Skeleton className="h-3 w-14" />
@@ -136,7 +159,13 @@ function SkeletonStats() {
 }
 
 // ── Receipt Thumbnail ──────────────────────────────────────────────────────────
-function ReceiptThumbnail({ leadId, onView }: { leadId: string; onView: () => void }) {
+function ReceiptThumbnail({
+  leadId,
+  onView,
+}: {
+  leadId: string;
+  onView: () => void;
+}) {
   const [thumb, setThumb] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -147,14 +176,16 @@ function ReceiptThumbnail({ leadId, onView }: { leadId: string; onView: () => vo
       .then((res) => {
         if (cancelled) return;
         const attachments: Attachment[] = res.data?.data ?? [];
-        const img = attachments.find((a) =>
-          a.mimeType?.startsWith("image/"),
-        );
+        const img = attachments.find((a) => a.mimeType?.startsWith("image/"));
         if (img) setThumb(img.fileUrl);
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [leadId]);
 
   if (loading) {
@@ -163,13 +194,20 @@ function ReceiptThumbnail({ leadId, onView }: { leadId: string; onView: () => vo
 
   return (
     <button
-      onClick={(e) => { e.stopPropagation(); onView(); }}
+      onClick={(e) => {
+        e.stopPropagation();
+        onView();
+      }}
       className="relative w-11 h-11 rounded-lg bg-elevated overflow-hidden shrink-0 active:scale-95 transition-transform"
     >
       {thumb ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={thumb} alt="Receipt" className="w-full h-full object-cover" />
+          <img
+            src={thumb}
+            alt="Receipt"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
             <Eye size={14} className="text-white" weight="bold" />
           </div>
@@ -227,11 +265,16 @@ function ReceiptPreview({
         ) : attachments.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-20">
             <PhosphorImage size={48} className="text-text-muted" />
-            <span className="font-sans text-[14px] text-text-muted">No receipts uploaded</span>
+            <span className="font-sans text-[14px] text-text-muted">
+              No receipts uploaded
+            </span>
           </div>
         ) : (
           attachments.map((att) => (
-            <div key={att.id} className="rounded-xl border border-border-subtle overflow-hidden bg-card">
+            <div
+              key={att.id}
+              className="rounded-xl border border-border-subtle overflow-hidden bg-card"
+            >
               {att.mimeType?.startsWith("image/") ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -276,22 +319,52 @@ function VerificationCard({
   onViewReceipt: () => void;
   onViewLead: () => void;
 }) {
-  const meta = STATUS_META[item.status] ?? STATUS_META[LeadStatus.DEPOSIT_REPORTED];
+  const meta =
+    STATUS_META[item.status] ?? STATUS_META[LeadStatus.DEPOSIT_REPORTED];
   const isPending = item.status === LeadStatus.DEPOSIT_REPORTED;
+  const isApproved = item.status === LeadStatus.DEPOSIT_CONFIRMED;
+  const isRejected = item.status === LeadStatus.REJECTED;
 
   return (
     <div
       className={cn(
-        "rounded-xl border border-border-subtle bg-card shadow-sm",
-        isPending && "bg-warning/5",
+        "relative rounded-3xl border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden group",
+        isPending && "border-amber-500/20",
+        isApproved && "border-emerald-500/20",
+        isRejected && "border-rose-500/20",
+        !isPending && !isApproved && !isRejected && "border-white/10",
       )}
     >
+      {/* Subtle glass reflection */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+      {/* Top glowing accent for status */}
+      <div
+        className={cn(
+          "absolute top-0 left-0 right-0 h-[1px] opacity-60",
+          isPending &&
+            "bg-gradient-to-r from-transparent via-amber-500 to-transparent",
+          isApproved &&
+            "bg-gradient-to-r from-transparent via-emerald-500 to-transparent",
+          isRejected &&
+            "bg-gradient-to-r from-transparent via-rose-500 to-transparent",
+        )}
+      />
+
       {/* Header row: avatar + name + status badge */}
       <button
         className="flex items-center gap-3 p-4 pb-0 w-full text-left active:opacity-80 transition-opacity"
         onClick={onViewLead}
       >
-        <div className="w-11 h-11 rounded-full flex items-center justify-center bg-crimson-subtle shrink-0">
+        <div
+          className={cn(
+            "w-11 h-11 rounded-full flex items-center justify-center shrink-0",
+            isPending && "bg-amber-500/10",
+            isApproved && "bg-emerald-500/10",
+            isRejected && "bg-rose-500/10",
+            !isPending && !isApproved && !isRejected && "bg-crimson-subtle",
+          )}
+        >
           <span className="font-sans font-bold text-[15px] text-text-primary">
             {item.initials}
           </span>
@@ -301,65 +374,82 @@ function VerificationCard({
             {item.leadName}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="font-mono text-[11px] text-text-muted">{item.leadId}</span>
+            <span className="font-mono text-[11px] text-text-muted">
+              {item.leadId}
+            </span>
             <span className="text-text-muted">·</span>
-            <span className="font-mono text-[11px] text-text-muted">HFM: {item.hfmId}</span>
+            <span className="font-mono text-[11px] text-text-muted">
+              HFM: {item.hfmId}
+            </span>
           </div>
         </div>
-        <Badge variant="secondary" className="text-[10px] font-medium shrink-0">{meta.label}</Badge>
+        <Badge
+          variant="secondary"
+          className={cn(
+            "text-[10px] font-semibold shrink-0 uppercase tracking-wider border",
+            isPending && "bg-amber-500/10 text-amber-600 border-amber-500/20",
+            isApproved &&
+              "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+            isRejected && "bg-rose-500/10 text-rose-600 border-rose-500/20",
+          )}
+        >
+          {meta.label}
+        </Badge>
       </button>
 
       {/* Deposit + date + receipt */}
       <div className="px-4 pt-3 pb-3">
-        <div className="h-px bg-border-subtle mb-3" />
+        <div className="h-px bg-white/5 mb-3" />
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-sans font-bold text-[20px] text-text-primary leading-none">
+            <div className="font-mono font-bold text-[22px] text-text-primary leading-none">
               {item.depositAmount}
             </div>
             <div className="flex items-center gap-1 mt-1">
               <Clock size={12} className="text-text-muted" />
-              <span className="font-sans text-[11px] text-text-muted">{item.submittedAt}</span>
+              <span className="font-sans text-[11px] text-text-muted">
+                {item.submittedAt}
+              </span>
             </div>
           </div>
           <ReceiptThumbnail leadId={item.id} onView={onViewReceipt} />
         </div>
       </div>
 
-      {/* Action buttons — only for pending items */}
+      {/* Action buttons — colored for pending items */}
       {isPending && (
         <div className="flex gap-2 px-4 pb-4">
           <button
             onClick={onApprove}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl font-sans font-semibold text-[13px]",
-              "bg-elevated text-text-primary",
-              "active:scale-[0.97] transition-transform",
+              "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20",
+              "active:scale-[0.97] active:bg-emerald-500/20 transition-all",
             )}
           >
-            <CheckCircle size={16} weight="bold" className="text-text-secondary" />
+            <CheckCircle size={16} weight="bold" />
             Approve
           </button>
           <button
             onClick={onReject}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl font-sans font-semibold text-[13px]",
-              "bg-elevated text-text-primary",
-              "active:scale-[0.97] transition-transform",
+              "bg-rose-500/10 text-rose-600 border border-rose-500/20",
+              "active:scale-[0.97] active:bg-rose-500/20 transition-all",
             )}
           >
-            <XCircle size={16} weight="bold" className="text-text-secondary" />
+            <XCircle size={16} weight="bold" />
             Reject
           </button>
           <button
             onClick={onAskMore}
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 h-11 rounded-xl font-sans font-semibold text-[13px]",
-              "bg-elevated text-text-primary",
-              "active:scale-[0.97] transition-transform",
+              "bg-blue-500/10 text-blue-600 border border-blue-500/20",
+              "active:scale-[0.97] active:bg-blue-500/20 transition-all",
             )}
           >
-            <ChatCircleDots size={16} weight="bold" className="text-text-secondary" />
+            <ChatCircleDots size={16} weight="bold" />
             Ask More
           </button>
         </div>
@@ -375,7 +465,9 @@ function EmptyState({ todayCount }: { todayCount: number }) {
       <div className="w-16 h-16 rounded-2xl bg-elevated flex items-center justify-center">
         <ShieldCheck size={36} className="text-text-secondary" weight="fill" />
       </div>
-      <span className="font-sans font-bold text-[22px] text-text-primary">All caught up!</span>
+      <span className="font-sans font-bold text-[22px] text-text-primary">
+        All caught up!
+      </span>
       <span className="font-sans text-[14px] text-text-secondary leading-snug">
         No pending verifications in the queue.
         <br />
@@ -397,21 +489,52 @@ export default function MobileVerification({
 }: MobileVerificationProps) {
   const router = useRouter();
   const verificationStatuses = `${LeadStatus.DEPOSIT_REPORTED},${LeadStatus.DEPOSIT_CONFIRMED},${LeadStatus.REJECTED}`;
-  const { data: leadsResult, isLoading } = useLeadsList({ skip: 0, take: 50, statuses: verificationStatuses });
+  const { data: leadsResult, isLoading } = useLeadsList({
+    skip: 0,
+    take: 50,
+    statuses: verificationStatuses,
+  });
   // 3 separate queries for accurate counts (mirrors desktop)
-  const { data: pendingResult } = useLeadsList({ skip: 0, take: 1, status: LeadStatus.DEPOSIT_REPORTED });
-  const { data: approvedResult } = useLeadsList({ skip: 0, take: 1, status: LeadStatus.DEPOSIT_CONFIRMED });
-  const { data: rejectedResult } = useLeadsList({ skip: 0, take: 1, status: LeadStatus.REJECTED });
-  const leads = leadsResult?.data ?? [];
+  const { data: pendingResult } = useLeadsList({
+    skip: 0,
+    take: 1,
+    status: LeadStatus.DEPOSIT_REPORTED,
+  });
+  const { data: approvedResult } = useLeadsList({
+    skip: 0,
+    take: 1,
+    status: LeadStatus.DEPOSIT_CONFIRMED,
+  });
+  const { data: rejectedResult } = useLeadsList({
+    skip: 0,
+    take: 1,
+    status: LeadStatus.REJECTED,
+  });
+  const leads = useMemo(() => leadsResult?.data ?? [], [leadsResult?.data]);
   const verifyMutation = useVerifyLead();
   const updateStatusMutation = useUpdateLeadStatus();
   const [filter, setFilter] = useState<FilterTab>("PENDING");
   const [askMoreLeadId, setAskMoreLeadId] = useState<string | null>(null);
   const [askMoreMsg, setAskMoreMsg] = useState("");
+  const [askMoreFile, setAskMoreFile] = useState<File | null>(null);
   const [askMoreError, setAskMoreError] = useState<string | null>(null);
   const [askMoreSending, setAskMoreSending] = useState(false);
+  const askMoreFileInputRef = useRef<HTMLInputElement>(null);
+  const askMoreFilePreviewUrl = useMemo(
+    () => (askMoreFile ? URL.createObjectURL(askMoreFile) : null),
+    [askMoreFile],
+  );
 
-  const [receiptPreview, setReceiptPreview] = useState<{ id: string; name: string } | null>(null);
+  useEffect(() => {
+    return () => {
+      if (askMoreFilePreviewUrl) URL.revokeObjectURL(askMoreFilePreviewUrl);
+    };
+  }, [askMoreFilePreviewUrl]);
+
+  const [receiptPreview, setReceiptPreview] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // ── Derived data ───────────────────────────────────────────────────────────
   const pendingLeads = useMemo(
@@ -446,8 +569,12 @@ export default function MobileVerification({
   );
   const pendingCount = pendingResult?.total ?? localPendingCount;
 
-  const approvedToday = approvedResult?.total ?? leads.filter((l) => l.status === LeadStatus.DEPOSIT_CONFIRMED).length;
-  const rejectedToday = rejectedResult?.total ?? leads.filter((l) => l.status === LeadStatus.REJECTED).length;
+  const approvedToday =
+    approvedResult?.total ??
+    leads.filter((l) => l.status === LeadStatus.DEPOSIT_CONFIRMED).length;
+  const rejectedToday =
+    rejectedResult?.total ??
+    leads.filter((l) => l.status === LeadStatus.REJECTED).length;
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const handleApprove = useCallback(
@@ -456,8 +583,13 @@ export default function MobileVerification({
       setTodayCount((c) => c + 1);
       toast.success("Lead approved");
       onApprove?.(id);
-      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([8, 40, 8]);
-      try { verifyMutation.mutate(id); } catch { /* noop */ }
+      if (typeof navigator !== "undefined" && navigator.vibrate)
+        navigator.vibrate([8, 40, 8]);
+      try {
+        verifyMutation.mutate(id);
+      } catch {
+        /* noop */
+      }
     },
     [onApprove, verifyMutation],
   );
@@ -467,20 +599,23 @@ export default function MobileVerification({
       setProcessedIds((prev) => new Set(prev).add(id));
       toast.error("Lead rejected");
       onReject?.(id);
-      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(30);
-      try { updateStatusMutation.mutate({ id, data: { status: "REJECTED" } }); } catch { /* noop */ }
+      if (typeof navigator !== "undefined" && navigator.vibrate)
+        navigator.vibrate(30);
+      try {
+        updateStatusMutation.mutate({ id, data: { status: "REJECTED" } });
+      } catch {
+        /* noop */
+      }
     },
     [onReject, updateStatusMutation],
   );
 
-  const handleAskMore = useCallback(
-    (id: string) => {
-      setAskMoreLeadId(id);
-      setAskMoreMsg("");
-      setAskMoreError(null);
-    },
-    [],
-  );
+  const handleAskMore = useCallback((id: string) => {
+    setAskMoreLeadId(id);
+    setAskMoreMsg("");
+    setAskMoreFile(null);
+    setAskMoreError(null);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background pb-6">
@@ -488,8 +623,14 @@ export default function MobileVerification({
       <div className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border-subtle">
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2.5">
-            <ShieldCheck size={22} className="text-text-secondary" weight="fill" />
-            <h1 className="font-sans font-bold text-[18px] text-text-primary">Verification</h1>
+            <ShieldCheck
+              size={22}
+              className="text-text-secondary"
+              weight="fill"
+            />
+            <h1 className="font-sans font-bold text-[18px] text-text-primary">
+              Verification
+            </h1>
           </div>
           {pendingCount > 0 && (
             <span className="flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-full bg-crimson font-mono text-[12px] font-bold text-white">
@@ -505,15 +646,17 @@ export default function MobileVerification({
               key={tab.id}
               onClick={() => setFilter(tab.id)}
               className={cn(
-                "shrink-0 rounded-full h-8 px-4 font-sans text-[13px] font-medium transition-colors",
+                "shrink-0 rounded-full h-8 px-4 font-sans text-[13px] font-semibold transition-all duration-200 border",
                 filter === tab.id
-                  ? "bg-crimson/15 text-crimson"
-                  : "bg-card text-text-secondary border border-border-subtle",
+                  ? "bg-crimson/10 text-crimson border-crimson/20 shadow-sm"
+                  : "bg-card text-text-secondary border-border-subtle active:text-text-primary",
               )}
             >
               {tab.label}
               {tab.id === "PENDING" && pendingCount > 0 && (
-                <span className="ml-1.5 font-mono text-[11px]">({pendingCount})</span>
+                <span className="ml-1.5 font-mono text-[11px]">
+                  ({pendingCount})
+                </span>
               )}
             </button>
           ))}
@@ -526,35 +669,45 @@ export default function MobileVerification({
           <SkeletonStats />
         ) : (
           <div className="flex gap-3 px-4">
-            {/* Pending */}
-            <div className="flex-1 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
-              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated">
-                <Clock size={16} className="text-text-secondary" weight="fill" />
+            {/* Pending — amber */}
+            <div className="flex-1 p-3 rounded-2xl bg-amber-500/5 border border-amber-500/15 shadow-sm">
+              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-amber-500/10">
+                <Clock size={16} className="text-amber-500" weight="fill" />
               </span>
-              <p className="font-sans text-[22px] font-bold text-text-primary leading-none mt-2">
+              <p className="font-mono text-[22px] font-bold text-text-primary leading-none mt-2">
                 {pendingCount}
               </p>
-              <p className="font-sans text-[11px] text-text-muted mt-0.5">Pending</p>
+              <p className="font-sans text-[11px] text-amber-600 font-medium mt-0.5">
+                Pending
+              </p>
             </div>
-            {/* Approved */}
-            <div className="flex-1 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
-              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated">
-                <CheckCircle size={16} className="text-text-secondary" weight="fill" />
+            {/* Approved — emerald */}
+            <div className="flex-1 p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 shadow-sm">
+              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/10">
+                <CheckCircle
+                  size={16}
+                  className="text-emerald-500"
+                  weight="fill"
+                />
               </span>
-              <p className="font-sans text-[22px] font-bold text-text-primary leading-none mt-2">
+              <p className="font-mono text-[22px] font-bold text-text-primary leading-none mt-2">
                 {approvedToday + todayCount}
               </p>
-              <p className="font-sans text-[11px] text-text-muted mt-0.5">Approved</p>
+              <p className="font-sans text-[11px] text-emerald-600 font-medium mt-0.5">
+                Approved
+              </p>
             </div>
-            {/* Rejected */}
-            <div className="flex-1 p-3 rounded-xl bg-card border border-border-subtle shadow-sm">
-              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-elevated">
-                <XCircle size={16} className="text-text-secondary" weight="fill" />
+            {/* Rejected — rose */}
+            <div className="flex-1 p-3 rounded-2xl bg-rose-500/5 border border-rose-500/15 shadow-sm">
+              <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-rose-500/10">
+                <XCircle size={16} className="text-rose-500" weight="fill" />
               </span>
-              <p className="font-sans text-[22px] font-bold text-text-primary leading-none mt-2">
+              <p className="font-mono text-[22px] font-bold text-text-primary leading-none mt-2">
                 {rejectedToday}
               </p>
-              <p className="font-sans text-[11px] text-text-muted mt-0.5">Rejected</p>
+              <p className="font-sans text-[11px] text-rose-600 font-medium mt-0.5">
+                Rejected
+              </p>
             </div>
           </div>
         )}
@@ -578,8 +731,10 @@ export default function MobileVerification({
               onApprove={() => handleApprove(item.id)}
               onReject={() => handleReject(item.id)}
               onAskMore={() => handleAskMore(item.id)}
-              onViewReceipt={() => setReceiptPreview({ id: item.id, name: item.leadName })}
-              onViewLead={() => router.push(`/leads/${item.id}`)}
+              onViewReceipt={() =>
+                setReceiptPreview({ id: item.id, name: item.leadName })
+              }
+              onViewLead={() => router.push(`/leads/detail?id=${item.id}`)}
             />
           ))
         )}
@@ -597,9 +752,19 @@ export default function MobileVerification({
       {/* ── Ask More Sheet ───────────────────────────────────────────────────── */}
       <Sheet
         open={!!askMoreLeadId}
-        onOpenChange={(open) => { if (!open) { setAskMoreLeadId(null); setAskMoreMsg(""); setAskMoreError(null); } }}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAskMoreLeadId(null);
+            setAskMoreMsg("");
+            setAskMoreFile(null);
+            setAskMoreError(null);
+          }
+        }}
       >
-        <SheetContent side="bottom" className="rounded-t-xl px-4 pb-[calc(24px+env(safe-area-inset-bottom))] pt-0">
+        <SheetContent
+          side="bottom"
+          className="rounded-t-xl px-4 pb-[calc(24px+env(safe-area-inset-bottom))] pt-0"
+        >
           {/* Drag handle */}
           <div className="flex justify-center pt-3 pb-4">
             <div className="w-10 h-1 rounded-full bg-border-subtle" />
@@ -607,36 +772,102 @@ export default function MobileVerification({
           <p className="font-sans font-semibold text-[16px] text-text-primary mb-3">
             Ask for more info
           </p>
+          <input
+            ref={askMoreFileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const selected = e.target.files?.[0] ?? null;
+              if (!selected) return;
+              const error = validateReplyAttachmentFile(selected);
+              if (error) {
+                setAskMoreError(error);
+                e.currentTarget.value = "";
+                return;
+              }
+              setAskMoreError(null);
+              setAskMoreFile(selected);
+            }}
+          />
           <Textarea
             placeholder="Type your message…"
             value={askMoreMsg}
-            onChange={(e) => setAskMoreMsg(e.target.value)}
+            onChange={(e) => {
+              setAskMoreMsg(e.target.value);
+              if (askMoreError) setAskMoreError(null);
+            }}
             rows={4}
             className="resize-none mb-3"
           />
+          <div className="mb-3 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => askMoreFileInputRef.current?.click()}
+              className="h-9 px-3 rounded-lg bg-elevated text-text-secondary text-[13px] font-sans font-medium flex items-center gap-1"
+            >
+              <Paperclip size={14} />
+              Attach file
+            </button>
+            {askMoreFile && (
+              <div className="flex min-w-0 items-center gap-2">
+                {askMoreFile.type.startsWith("image/") && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={askMoreFilePreviewUrl ?? undefined}
+                    alt={askMoreFile.name}
+                    className="h-10 w-10 shrink-0 rounded-md border border-border-subtle object-cover"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAskMoreFile(null);
+                    if (askMoreFileInputRef.current)
+                      askMoreFileInputRef.current.value = "";
+                  }}
+                  className="truncate text-[12px] text-text-muted"
+                >
+                  {askMoreFile.name} (remove)
+                </button>
+              </div>
+            )}
+          </div>
           {askMoreError && (
-            <p className="font-sans text-[13px] text-danger mb-2">{askMoreError}</p>
+            <p className="font-sans text-[13px] text-danger mb-2">
+              {askMoreError}
+            </p>
           )}
           <button
-            disabled={!askMoreMsg.trim() || askMoreSending}
+            disabled={askMoreSending}
             onClick={async () => {
-              if (!askMoreLeadId || !askMoreMsg.trim()) return;
+              if (!askMoreLeadId) return;
+              const message = normalizeLeadReplyMessage(askMoreMsg);
+              if (!canSendLeadReply(message, askMoreFile)) {
+                setAskMoreError(LEAD_REPLY_REQUIRED_MESSAGE);
+                return;
+              }
               setAskMoreSending(true);
               setAskMoreError(null);
               try {
-                await leadsApi.reply(askMoreLeadId, askMoreMsg.trim());
+                await leadsApi.reply(askMoreLeadId, {
+                  message,
+                  file: askMoreFile,
+                });
                 toast.success("Message sent");
                 setAskMoreLeadId(null);
                 setAskMoreMsg("");
+                setAskMoreFile(null);
               } catch (err) {
-                setAskMoreError(err instanceof Error ? err.message : "Failed to send message");
+                setAskMoreError(
+                  err instanceof Error ? err.message : "Failed to send message",
+                );
               } finally {
                 setAskMoreSending(false);
               }
             }}
             className={cn(
               "w-full h-[48px] rounded-xl font-sans font-semibold text-[15px] flex items-center justify-center gap-2 transition-colors",
-              askMoreMsg.trim() && !askMoreSending
+              canSendLeadReply(askMoreMsg, askMoreFile) && !askMoreSending
                 ? "bg-crimson text-white active:scale-[0.97]"
                 : "bg-elevated text-text-muted cursor-not-allowed",
             )}

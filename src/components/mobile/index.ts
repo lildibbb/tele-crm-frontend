@@ -51,6 +51,9 @@ export type { MobileAuditLogsProps } from "./MobileAuditLogs";
 export { default as MobileFollowUps } from "./MobileFollowUps";
 export type { MobileFollowUpsProps } from "./MobileFollowUps";
 
+export { default as MobilePendingTasks } from "./MobilePendingTasks";
+export type { MobilePendingTasksProps } from "./MobilePendingTasks";
+
 export { default as MobileBroadcasts } from "./MobileBroadcasts";
 export type { MobileBroadcastsProps } from "./MobileBroadcasts";
 
@@ -94,3 +97,6 @@ export { default as MobileIntegrations } from "./MobileIntegrations";
 export type { MobileIntegrationsProps } from "./MobileIntegrations";
 
 export { default as MobileBotConfig } from "./MobileBotConfig";
+
+export { default as MobileAdminAiFeedback } from "./MobileAdminAiFeedback";
+export { default as MobileAdminFeatures } from "./MobileAdminFeatures";

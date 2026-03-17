@@ -8,7 +8,7 @@ import { useAsRef } from "@/hooks/use-as-ref";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import type { SearchState } from "@/types/data-grid";
 
-interface DataGridSearchProps extends SearchState {}
+type DataGridSearchProps = SearchState
 
 export const DataGridSearch = React.memo(DataGridSearchImpl, (prev, next) => {
   if (prev.searchOpen !== next.searchOpen) return false;

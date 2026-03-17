@@ -147,7 +147,7 @@ export default function BroadcastsPage() {
   const totalPages = Math.ceil(historyTotal / 20);
 
   return (
-    <div className="space-y-6 animate-in-up">
+    <div className="space-y-6 animate-in-up" data-testid="broadcasts-page">
       {!broadcastEnabled && (
         <FeatureDisabledBanner feature="Broadcast Messages" />
       )}
@@ -227,6 +227,7 @@ export default function BroadcastsPage() {
                 placeholder={t(K.broadcast.messagePlaceholder)}
                 rows={4}
                 maxLength={4096}
+                data-testid="broadcast-message-input"
                 className="resize-none text-sm"
               />
               <p className="font-sans text-[11px] text-muted-foreground text-right">
@@ -245,6 +246,7 @@ export default function BroadcastsPage() {
                 value={photoUrl}
                 onChange={(e) => setPhotoUrl(e.target.value)}
                 placeholder={t(K.broadcast.photoUrlPlaceholder)}
+                data-testid="broadcast-photo-input"
                 className="text-sm font-mono"
               />
               <p className="font-sans text-[11px] text-muted-foreground">
@@ -282,6 +284,7 @@ export default function BroadcastsPage() {
                 disabled={!message.trim() || isSending}
                 variant="default"
                 size="sm"
+                data-testid="broadcast-send-button"
                 className="gap-1.5 px-4 min-w-[90px]"
               >
                 {isSending ? (
@@ -412,7 +415,10 @@ export default function BroadcastsPage() {
 
         {/* ── Confirm Dialog ────────────────────────────────────────────────── */}
         <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
-          <DialogContent className="max-w-sm rounded-2xl">
+          <DialogContent
+            className="max-w-sm rounded-2xl"
+            data-testid="broadcast-confirm-dialog"
+          >
             <DialogHeader>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-full bg-warning/15 border border-warning/20 flex items-center justify-center flex-shrink-0">
@@ -440,6 +446,7 @@ export default function BroadcastsPage() {
               <Button
                 variant="ghost"
                 onClick={() => setShowConfirm(false)}
+                data-testid="broadcast-confirm-cancel"
                 className="flex-1"
               >
                 {t(K.common.cancel)}
@@ -447,6 +454,7 @@ export default function BroadcastsPage() {
               <Button
                 onClick={() => !isBlocked && void handleSend()}
                 disabled={isBlocked}
+                data-testid="broadcast-confirm-send"
                 className="flex-1 bg-crimson hover:bg-crimson/90 text-white gap-2 disabled:opacity-50"
               >
                 <PaperPlaneRight className="h-4 w-4" />

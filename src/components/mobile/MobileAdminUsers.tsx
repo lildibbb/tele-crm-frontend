@@ -51,7 +51,7 @@ const ROLES = [UserRole.SUPERADMIN, UserRole.OWNER, UserRole.STAFF] as const;
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 
-export interface MobileAdminUsersProps {}
+export type MobileAdminUsersProps = Record<never, never>
 
 // ── Skeleton card ──────────────────────────────────────────────────────────────
 

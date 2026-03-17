@@ -28,7 +28,7 @@ import { EMPTY_TIPTAP_DOC } from "@/lib/schemas/commandMenu.schema";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-export interface MobileCommandsProps {}
+export type MobileCommandsProps = Record<never, never>
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 

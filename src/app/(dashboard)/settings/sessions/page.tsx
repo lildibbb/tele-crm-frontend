@@ -10,8 +10,10 @@ import {
   AlertCircle,
   Globe,
   Clock,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authApi } from "@/lib/api/auth";
@@ -31,6 +33,33 @@ const SETTINGS_TABS = [
 function getDeviceType(userAgent: string | null): "mobile" | "desktop" {
   if (!userAgent) return "desktop";
   return /mobile|android|iphone|ipad/i.test(userAgent) ? "mobile" : "desktop";
+}
+
+/** Parse raw UA into a human-readable label like "Chrome 134 · macOS" */
+function parseUserAgent(ua: string | null): { label: string; detail: string } {
+  if (!ua) return { label: "Unknown device", detail: "Unknown browser" };
+
+  // Browser
+  let browser = "Unknown browser";
+  const chromeMatch = ua.match(/Chrome\/([\d]+)/);
+  const firefoxMatch = ua.match(/Firefox\/([\d]+)/);
+  const safariMatch = ua.match(/Version\/([\d]+).*Safari/);
+  const edgeMatch = ua.match(/Edg\/([\d]+)/);
+  if (edgeMatch) browser = `Edge ${edgeMatch[1]}`;
+  else if (chromeMatch) browser = `Chrome ${chromeMatch[1]}`;
+  else if (firefoxMatch) browser = `Firefox ${firefoxMatch[1]}`;
+  else if (safariMatch) browser = `Safari ${safariMatch[1]}`;
+
+  // OS
+  let os = "Unknown OS";
+  if (/Windows NT 10|Windows NT 11/.test(ua)) os = "Windows";
+  else if (/Windows NT/.test(ua)) os = "Windows";
+  else if (/Mac OS X/.test(ua)) os = "macOS";
+  else if (/Linux/.test(ua)) os = "Linux";
+  else if (/Android/.test(ua)) os = "Android";
+  else if (/iPhone|iPad/.test(ua)) os = "iOS";
+
+  return { label: `${browser} · ${os}`, detail: ua };
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -87,9 +116,16 @@ export default function SessionsPage() {
     }
   };
 
+  // Most recently active session = current session
+  const mostRecentId = sessions.length
+    ? sessions.reduce((a, b) =>
+        new Date(a.lastActiveAt) > new Date(b.lastActiveAt) ? a : b
+      ).id
+    : null;
+
   return (
-    <div className="space-y-5 animate-in-up">
-      {/* Header */}
+    <div data-testid="settings-sessions-page" className="space-y-5 animate-in-up">
+      {/* Page heading */}
       <div>
         <h1 className="font-display font-extrabold text-3xl text-text-primary">
           Settings
@@ -112,7 +148,7 @@ export default function SessionsPage() {
         ))}
       </div>
 
-      {/* Page header */}
+      {/* Section header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display font-bold text-2xl text-text-primary">
@@ -125,6 +161,7 @@ export default function SessionsPage() {
         </div>
         {sessions.length > 0 && (
           <Button
+            data-testid="sessions-revoke-all-btn"
             variant="outline"
             size="sm"
             onClick={revokeAll}
@@ -146,72 +183,95 @@ export default function SessionsPage() {
       </div>
 
       {/* Session cards */}
-      <div className="space-y-3">
+      <div data-testid="sessions-list" className="space-y-3">
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-[80px] rounded-xl" />
+            <Skeleton key={i} className="h-[76px] rounded-xl" />
           ))
         ) : sessions.length === 0 ? (
-          <div className="surface-card p-6 text-center shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto mb-3">
+          <div className="surface-card p-8 text-center shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-success/20 border border-success/30 flex items-center justify-center mx-auto mb-3">
               <Shield className="h-5 w-5 text-success" />
             </div>
-            <p className="font-sans font-medium text-text-primary text-sm">
+            <p className="font-sans font-semibold text-text-primary text-sm">
               No active sessions
             </p>
             <p className="font-sans text-xs text-text-secondary mt-1">
-              Your account has no active sessions.
+              Your account has no other active sessions.
             </p>
           </div>
-        ) : sessions.map((session, i) => {
-          const deviceType = getDeviceType(session.userAgent);
-          return (
-            <div
-              key={session.id}
-              className="surface-card p-5 transition-all animate-in-up shadow-sm"
-              style={{ animationDelay: `${i * 50}ms` }}
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-elevated border border-border-default">
-                  {deviceType === "mobile" ? (
-                    <Smartphone className="h-5 w-5 text-text-secondary" />
-                  ) : (
-                    <Monitor className="h-5 w-5 text-text-secondary" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-sans font-medium text-[13px] text-text-primary mb-1 truncate">
-                    {session.userAgent ?? "Unknown device"}
-                  </p>
-                  <div className="flex items-center gap-4 flex-wrap">
-                    {session.ipAddress && (
-                      <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
-                        <Shield className="h-3 w-3 text-text-muted" />
-                        <span className="data-mono">{session.ipAddress}</span>
-                      </div>
+        ) : (
+          sessions.map((session, i) => {
+            const deviceType = getDeviceType(session.userAgent);
+            const isCurrent = session.id === mostRecentId;
+            const { label: deviceLabel } = parseUserAgent(session.userAgent);
+
+            return (
+              <div
+                key={session.id}
+                data-testid={`session-card-${session.id}`}
+                className={`surface-card p-5 transition-all animate-in-up shadow-sm ${isCurrent ? "border border-brand/30" : ""}`}
+                style={{ animationDelay: `${i * 50}ms` }}
+              >
+                <div className="flex items-center gap-4">
+                  {/* Device icon */}
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border ${isCurrent ? "bg-brand/10 border-brand/20" : "bg-elevated border-border-default"}`}>
+                    {deviceType === "mobile" ? (
+                      <Smartphone className={`h-5 w-5 ${isCurrent ? "text-brand" : "text-text-secondary"}`} />
+                    ) : (
+                      <Monitor className={`h-5 w-5 ${isCurrent ? "text-brand" : "text-text-secondary"}`} />
                     )}
-                    <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
-                      <Globe className="h-3 w-3 text-text-muted" />
-                      {new Date(session.createdAt).toLocaleDateString()}
+                  </div>
+
+                  {/* Session info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-sans font-semibold text-[13px] text-text-primary truncate">
+                        {deviceLabel}
+                      </p>
+                      {isCurrent && (
+                        <Badge data-testid="session-current-badge" variant="outline" className="text-[10px] px-1.5 py-0 border-brand/30 text-brand bg-brand/10 gap-1 flex-shrink-0">
+                          <CheckCircle className="h-2.5 w-2.5" /> Current
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
-                      <Clock className="h-3 w-3 text-text-muted" />
-                      {formatRelativeTime(session.lastActiveAt)}
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {session.ipAddress && (
+                        <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
+                          <Shield className="h-3 w-3 text-text-muted flex-shrink-0" />
+                          <span className="data-mono">{session.ipAddress}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
+                        <Globe className="h-3 w-3 text-text-muted flex-shrink-0" />
+                        {new Date(session.createdAt).toLocaleDateString()}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs font-sans text-text-secondary">
+                        <Clock className="h-3 w-3 text-text-muted flex-shrink-0" />
+                        {formatRelativeTime(session.lastActiveAt)}
+                      </div>
                     </div>
                   </div>
+
+                  {/* Revoke button — only for non-current sessions */}
+                  {!isCurrent ? (
+                    <Button
+                      data-testid={`session-revoke-btn-${session.id}`}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRevokeId(session.id)}
+                      className="gap-1.5 text-danger border-danger/20 bg-danger/10 hover:bg-danger/20 hover:text-danger flex-shrink-0"
+                    >
+                      <LogOut className="h-3.5 w-3.5" /> Revoke
+                    </Button>
+                  ) : (
+                    <span className="text-xs font-sans text-text-muted flex-shrink-0 px-2">This device</span>
+                  )}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setRevokeId(session.id)}
-                  className="gap-1.5 text-danger border-danger/20 bg-danger/10 hover:bg-danger/20 hover:text-danger flex-shrink-0"
-                >
-                  <LogOut className="h-3.5 w-3.5" /> Revoke
-                </Button>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Confirm revoke dialog */}
@@ -229,8 +289,9 @@ export default function SessionsPage() {
             This device will be signed out immediately and will need to log in again.
           </p>
           <div className="flex gap-3 pt-1">
-            <Button variant="outline" className="flex-1" onClick={() => setRevokeId(null)}>Cancel</Button>
+            <Button data-testid="session-revoke-cancel-btn" variant="outline" className="flex-1" onClick={() => setRevokeId(null)}>Cancel</Button>
             <Button
+              data-testid="session-revoke-confirm-btn"
               variant="destructive"
               className="flex-1 gap-2"
               disabled={revoking}

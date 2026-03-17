@@ -30,7 +30,12 @@ export const FunnelOverview = React.memo(function FunnelOverview({
   labels,
 }: FunnelOverviewProps) {
   return (
-    <div className="xl:col-span-4 bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+    <div className="xl:col-span-4 relative overflow-hidden bg-elevated rounded-xl p-5 border border-border-subtle shadow-[var(--shadow-card)]">
+      {/* Crimson top accent line */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--color-crimson)]/40 to-transparent" />
+      {/* Corner glow */}
+      <div className="absolute -top-10 -left-10 w-36 h-36 rounded-full bg-[var(--color-crimson)]/6 blur-3xl pointer-events-none" />
+
       <div className="flex items-center justify-between mb-1">
         <h2 className="font-sans font-semibold text-[15px] text-text-primary">
           {labels.title}
@@ -44,19 +49,20 @@ export const FunnelOverview = React.memo(function FunnelOverview({
       </p>
 
       <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8">
-        {/* Donut */}
-        <div className="relative flex-shrink-0">
-          <ResponsiveContainer width={180} height={180}>
+        {/* Donut — dark viewport */}
+        <div className="relative flex-shrink-0 rounded-full bg-[#0c0e12] p-1">
+          <ResponsiveContainer width={200} height={200}>
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={58}
-                outerRadius={84}
+                innerRadius={65}
+                outerRadius={95}
                 paddingAngle={3}
                 dataKey="value"
-                strokeWidth={0}
+                stroke="#0c0e12"
+                strokeWidth={2}
               >
                 {data.map((entry) => (
                   <Cell key={entry.name} fill={entry.color} />
@@ -64,17 +70,34 @@ export const FunnelOverview = React.memo(function FunnelOverview({
               </Pie>
               <Tooltip
                 content={<FunnelTooltip />}
-                offset={12}
+                contentStyle={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  boxShadow: "none",
+                }}
+                wrapperStyle={{ pointerEvents: "none", outline: "none" }}
                 isAnimationActive={false}
-                wrapperStyle={{ pointerEvents: "none" }}
+                offset={14}
               />
             </PieChart>
           </ResponsiveContainer>
+          {/* Center label with glow ring */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-xl font-bold data-mono text-text-primary leading-none">
+            {/* Subtle inner ring */}
+            <div
+              className="absolute rounded-full border border-white/[0.06]"
+              style={{
+                width: 118,
+                height: 118,
+                boxShadow:
+                  "0 0 20px rgba(34,211,160,0.10), inset 0 0 16px rgba(34,211,160,0.06)",
+              }}
+            />
+            <span className="text-2xl font-bold data-mono text-white leading-none relative z-10">
               {totalLeads.toLocaleString()}
             </span>
-            <span className="text-[11px] mt-0.5 text-text-muted">
+            <span className="text-[11px] mt-0.5 text-white/50 relative z-10">
               {labels.totalLeads}
             </span>
           </div>
@@ -103,7 +126,7 @@ export const FunnelOverview = React.memo(function FunnelOverview({
                   </span>
                 </div>
                 <div
-                  className="h-1.5 rounded-full overflow-hidden"
+                  className="h-2 rounded-full overflow-hidden"
                   style={{ background: "var(--border-subtle)" }}
                 >
                   <div
@@ -112,6 +135,7 @@ export const FunnelOverview = React.memo(function FunnelOverview({
                       width: `${pct}%`,
                       background: item.color,
                       opacity: 0.85,
+                      transition: "width 600ms ease",
                     }}
                   />
                 </div>

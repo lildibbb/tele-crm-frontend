@@ -32,12 +32,13 @@ import {
   CartesianGrid,
 } from "recharts";
 import { useAnalyticsSummary } from "@/queries/useAnalyticsQuery";
+import type { AnalyticsSummaryParams } from "@/lib/schemas/analytics.schema";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAnalyticsProps {}
+export type MobileAnalyticsProps = Record<never, never>
 
 const PERIODS = [
   { key: "today", label: "Today" },
@@ -110,20 +111,20 @@ function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl bg-elevated border border-border-subtle px-3 py-2.5 shadow-lg backdrop-blur-sm">
+    <div className="rounded-xl bg-elevated/95 border border-border-subtle px-3.5 py-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.22)] backdrop-blur-sm">
       {label && (
         <p className="font-sans text-[11px] text-text-muted mb-1.5">{label}</p>
       )}
       {payload.map((entry) => (
-        <div key={entry.name} className="flex items-center gap-2">
+        <div key={entry.name} className="flex items-center gap-2 mb-1 last:mb-0">
           <span
-            className="h-2 w-2 rounded-full shrink-0"
+            className="h-3 w-1.5 rounded-full shrink-0"
             style={{ background: entry.color }}
           />
           <span className="font-sans text-[11px] text-text-secondary capitalize">
             {entry.name}
           </span>
-          <span className="font-mono text-[12px] text-text-primary ml-auto font-semibold">
+          <span className="font-mono text-[12px] text-text-primary ml-auto pl-3 font-semibold">
             {entry.value.toLocaleString()}
           </span>
         </div>
@@ -165,14 +166,14 @@ function TrendBadge({
 
 // ── Main ───────────────────────────────────────────────────────────────────────
 export default function MobileAnalytics({}: MobileAnalyticsProps) {
-  const [activePeriod, setActivePeriod] = useState("this_week");
+  const [activePeriod, setActivePeriod] = useState<AnalyticsSummaryParams["timeframe"]>("this_week");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [appliedFrom, setAppliedFrom] = useState("");
   const [appliedTo, setAppliedTo] = useState("");
   const { data: summary, isLoading } = useAnalyticsSummary({
-    timeframe: activePeriod as any,
+    timeframe: activePeriod,
     ...(activePeriod === "custom" && appliedFrom && appliedTo
       ? {
           startDate: new Date(appliedFrom).toISOString(),
@@ -320,7 +321,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
             onClick={() =>
               p.key === "custom"
                 ? setDateSheetOpen(true)
-                : setActivePeriod(p.key as string)
+                : setActivePeriod(p.key as AnalyticsSummaryParams["timeframe"])
             }
             className={cn(
               "shrink-0 px-3 h-7 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors",
@@ -402,68 +403,96 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
         }
       >
         {isLoading ? (
-          <ChartSkeleton height="h-[180px]" />
+          <ChartSkeleton height="h-[220px]" />
         ) : trendData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart
-              data={trendData}
-              margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
-            >
-              <defs>
-                <linearGradient id="maNew" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#60A5FA" stopOpacity={0.02} />
-                </linearGradient>
-                <linearGradient id="maDep" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22D3A0" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#22D3A0" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--border-subtle)"
-                strokeOpacity={0.4}
-                vertical={false}
-              />
-              <XAxis
-                dataKey="date"
-                tick={{
-                  fill: "var(--text-muted)",
-                  fontSize: 10,
-                  fontFamily: "var(--font-mono)",
-                }}
-                axisLine={false}
-                tickLine={false}
-                interval="preserveStartEnd"
-              />
-              <YAxis hide />
-              <Tooltip
-                content={<ChartTooltip />}
-                cursor={{ stroke: "var(--border-subtle)", strokeWidth: 1 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="New Leads"
-                stroke="#60A5FA"
-                strokeWidth={2}
-                fill="url(#maNew)"
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0, fill: "#60A5FA" }}
-              />
-              <Area
-                type="monotone"
-                dataKey="Confirmed"
-                stroke="#22D3A0"
-                strokeWidth={2}
-                fill="url(#maDep)"
-                dot={false}
-                activeDot={{ r: 4, strokeWidth: 0, fill: "#22D3A0" }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="rounded-xl overflow-hidden bg-[#0c0e12] px-1 pt-3 pb-1">
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart
+                data={trendData}
+                margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+              >
+                <defs>
+                  <linearGradient id="maNew" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--color-crimson)" stopOpacity={0.65} />
+                    <stop offset="50%" stopColor="var(--color-crimson)" stopOpacity={0.22} />
+                    <stop offset="100%" stopColor="var(--color-crimson)" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="maDep" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22D3A0" stopOpacity={0.58} />
+                    <stop offset="50%" stopColor="#22D3A0" stopOpacity={0.18} />
+                    <stop offset="100%" stopColor="#22D3A0" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.06)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: "rgba(255,255,255,0.40)", fontSize: 10, fontFamily: "inherit" }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  width={28}
+                  tickFormatter={(v: number) =>
+                    v >= 1000
+                      ? (v / 1000).toFixed(1).replace(".0", "") + "K"
+                      : String(v)
+                  }
+                  tick={{ fontSize: 9, fill: "rgba(255,255,255,0.35)", fontFamily: "var(--font-jetbrains-mono,monospace)" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  content={<ChartTooltip />}
+                  cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1 }}
+                  contentStyle={{ background: "transparent", border: "none", padding: 0, boxShadow: "none" }}
+                  wrapperStyle={{ pointerEvents: "none", outline: "none" }}
+                  isAnimationActive={false}
+                />
+                <Area
+                  animationDuration={900}
+                  animationEasing="ease-out"
+                  type="monotone"
+                  dataKey="New Leads"
+                  stroke="var(--color-crimson)"
+                  strokeWidth={2}
+                  fill="url(#maNew)"
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 2,
+                    stroke: "#0c0e12",
+                    fill: "var(--color-crimson)",
+                    style: { filter: "drop-shadow(0 0 4px var(--color-crimson))" },
+                  }}
+                />
+                <Area
+                  animationDuration={1050}
+                  animationEasing="ease-out"
+                  type="monotone"
+                  dataKey="Confirmed"
+                  stroke="#22D3A0"
+                  strokeWidth={2}
+                  fill="url(#maDep)"
+                  dot={false}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 2,
+                    stroke: "#0c0e12",
+                    fill: "#22D3A0",
+                    style: { filter: "drop-shadow(0 0 4px #22D3A0)" },
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         ) : (
-          <div className="flex items-center justify-center h-[180px] rounded-xl bg-elevated/30">
-            <span className="font-sans text-[13px] text-text-muted">
+          <div className="flex items-center justify-center h-[220px] rounded-xl bg-[#0c0e12]">
+            <span className="font-sans text-[13px] text-white/30">
               No trend data available
             </span>
           </div>
@@ -473,7 +502,7 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
         {!isLoading && trendData.length > 0 && (
           <div className="flex items-center justify-center gap-4 mt-3">
             {[
-              { label: "Leads", color: "#60A5FA" },
+              { label: "Leads", color: "var(--color-crimson)" },
               { label: "Confirmed", color: "#22D3A0" },
             ].map((l) => (
               <span
@@ -509,47 +538,62 @@ export default function MobileAnalytics({}: MobileAnalyticsProps) {
         }
       >
         {isLoading ? (
-          <ChartSkeleton height="h-[180px]" />
+          <ChartSkeleton height="h-[220px]" />
         ) : (
           <>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart
-                data={funnelWithPct}
-                margin={{ top: 4, right: 4, bottom: 0, left: -24 }}
-                barSize={32}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="var(--border-subtle)"
-                  strokeOpacity={0.4}
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="stage"
-                  tick={{
-                    fill: "var(--text-muted)",
-                    fontSize: 10,
-                    fontFamily: "var(--font-mono)",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis hide />
-                <Tooltip
-                  content={<ChartTooltip />}
-                  cursor={{ fill: "var(--border-subtle)", fillOpacity: 0.15 }}
-                />
-                <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  {funnelWithPct.map((entry, idx) => (
-                    <Cell
-                      key={`cell-${idx}`}
-                      fill={entry.color}
-                      fillOpacity={0.85}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="rounded-xl overflow-hidden bg-[#0c0e12] px-1 pt-3 pb-1">
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart
+                  data={funnelWithPct}
+                  margin={{ top: 4, right: 8, bottom: 0, left: 0 }}
+                  barSize={32}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.06)"
+                    vertical={false}
+                  />
+                  <XAxis
+                    dataKey="stage"
+                    tick={{ fill: "rgba(255,255,255,0.40)", fontSize: 10, fontFamily: "inherit" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    width={28}
+                    tickFormatter={(v: number) =>
+                      v >= 1000
+                        ? (v / 1000).toFixed(1).replace(".0", "") + "K"
+                        : String(v)
+                    }
+                    tick={{ fontSize: 9, fill: "rgba(255,255,255,0.35)", fontFamily: "var(--font-jetbrains-mono,monospace)" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={<ChartTooltip />}
+                    cursor={{ fill: "rgba(255,255,255,0.05)", rx: 6 }}
+                    contentStyle={{ background: "transparent", border: "none", padding: 0, boxShadow: "none" }}
+                    wrapperStyle={{ pointerEvents: "none", outline: "none" }}
+                    isAnimationActive={false}
+                  />
+                  <Bar
+                    animationDuration={700}
+                    animationEasing="ease-out"
+                    dataKey="count"
+                    radius={[6, 6, 0, 0]}
+                  >
+                    {funnelWithPct.map((entry, idx) => (
+                      <Cell
+                        key={`cell-${idx}`}
+                        fill={entry.color}
+                        fillOpacity={0.85}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
             {/* Funnel progress bars */}
             <div className="flex flex-col gap-2.5 mt-4">

@@ -1,22 +1,41 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import {
   CheckCircle,
   XCircle,
   Clock,
   ArrowCounterClockwise,
+  SpinnerGap,
+  Play,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useGoogleAnalyticsStats } from "@/queries/useGoogleAnalyticsQuery";
+import { useTriggerGoogleSync } from "@/queries/useSuperadminQuery";
+import { useSystemConfig } from "@/queries/useSystemConfigQuery";
+import { useGoogleOAuth2Status } from "@/queries/useGoogleOAuth2Query";
+import { integrationsApi } from "@/lib/api/integrations";
+import { parseApiData } from "@/lib/api/parseResponse";
+import type { GoogleSyncTarget, SecretMeta } from "@/lib/api/superadmin";
 import type { GoogleOpLog } from "@/lib/api/googleAnalytics";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export interface MobileAdminGoogleProps {}
+export type MobileAdminGoogleProps = Record<never, never>
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
@@ -123,6 +142,160 @@ function OpLogCard({ op }: { op: GoogleOpLog }) {
   );
 }
 
+// ── Force Sync Card ───────────────────────────────────────────────────────────
+
+const MOBILE_SYNC_BUTTONS: {
+  label: string;
+  target: GoogleSyncTarget;
+  icon: string;
+}[] = [
+  { label: "Sheets", target: "sheets", icon: "logos:google-sheets" },
+  { label: "Drive", target: "drive", icon: "logos:google-drive" },
+  { label: "All", target: "all", icon: "ph:arrows-clockwise-bold" },
+];
+
+function MobileForceSyncCard() {
+  const { mutate: triggerSync, isPending } = useTriggerGoogleSync();
+  const [activeTarget, setActiveTarget] = useState<GoogleSyncTarget | null>(null);
+  const [pendingTarget, setPendingTarget] = useState<GoogleSyncTarget | null>(null);
+  const [credentials, setCredentials] = useState<SecretMeta[]>([]);
+
+  const { data: entries = {} } = useSystemConfig();
+  const { data: oauthStatus } = useGoogleOAuth2Status();
+
+  useEffect(() => {
+    integrationsApi
+      .listCredentials()
+      .then((res) => setCredentials(parseApiData<SecretMeta[]>(res.data) ?? []))
+      .catch(() => {});
+  }, []);
+
+  const getVal = (key: string) => entries[key] ?? "false";
+  const hasCred = (key: string) => credentials.some((c) => c.key === key);
+  const oauthConnected = oauthStatus?.connected === true;
+
+  const getValidationError = (target: GoogleSyncTarget): string | null => {
+    if (target === "sheets" || target === "all") {
+      if (getVal("integration.googleSheets.enabled") !== "true")
+        return "Google Sheets is disabled. Enable it in Settings → Integrations.";
+      if (getVal("integration.serviceAccount.configured") !== "true")
+        return "Service account not configured. Set up in Settings → Integrations.";
+      if (!hasCred("google.sheetId"))
+        return "Spreadsheet ID not set. Add it in Settings → Integrations.";
+    }
+    if (target === "drive" || target === "all") {
+      const serviceAccountEnabled =
+        getVal("integration.googleDrive.enabled") === "true";
+      const serviceAccountReady =
+        serviceAccountEnabled &&
+        getVal("integration.serviceAccount.configured") === "true" &&
+        hasCred("google.driveFolderId");
+      if (!oauthConnected && !serviceAccountReady) {
+        if (!serviceAccountEnabled)
+          return "Google Drive is disabled. Enable it in Settings → Integrations, or connect via Google OAuth2.";
+        return "Drive not ready — configure a folder ID or connect OAuth2 in Settings → Integrations.";
+      }
+    }
+    return null;
+  };
+
+  const handleClickSync = (target: GoogleSyncTarget) => {
+    const err = getValidationError(target);
+    if (err) {
+      toast.warning("Cannot sync", { description: err });
+      return;
+    }
+    setPendingTarget(target);
+  };
+
+  const handleConfirmSync = () => {
+    if (!pendingTarget) return;
+    const target = pendingTarget;
+    setActiveTarget(target);
+    triggerSync(target, {
+      onSuccess: (result) => {
+        toast.success("Sync enqueued", {
+          description: `Job ID${result.jobIds.length > 1 ? "s" : ""}: ${result.jobIds.join(", ")}`,
+        });
+        setActiveTarget(null);
+        setPendingTarget(null);
+      },
+      onError: (err) => {
+        toast.error("Sync failed", { description: err.message });
+        setActiveTarget(null);
+        setPendingTarget(null);
+      },
+    });
+  };
+
+  return (
+    <>
+      <div className="mx-4 mb-4 rounded-2xl bg-card border border-border-subtle p-4 shadow-[var(--shadow-card)]">
+        <p className="font-sans text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-1">
+          Force Sync
+        </p>
+        <p className="font-sans text-[11px] text-text-muted mb-3">
+          Emergency sync — rate-limited to once/60s per target.
+        </p>
+        <div className="flex gap-2">
+          {MOBILE_SYNC_BUTTONS.map(({ label, target }) => {
+            const loading = isPending && activeTarget === target;
+            return (
+              <button
+                key={target}
+                onClick={() => handleClickSync(target)}
+                disabled={isPending}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border-subtle bg-elevated py-2.5 text-[12px] font-semibold text-text-primary transition-colors active:bg-card disabled:opacity-50"
+              >
+                {loading ? (
+                  <SpinnerGap className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Play size={13} weight="fill" />
+                )}
+                {loading ? "…" : label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <AlertDialog
+        open={pendingTarget !== null}
+        onOpenChange={(open) => !open && setPendingTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Sync{" "}
+              {pendingTarget === "all"
+                ? "All"
+                : pendingTarget === "sheets"
+                  ? "Sheets"
+                  : "Drive"}{" "}
+              Now?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will immediately queue a{" "}
+              {pendingTarget === "all"
+                ? "full (Sheets + Drive)"
+                : pendingTarget === "sheets"
+                  ? "Google Sheets"
+                  : "Google Drive"}{" "}
+              sync job. The job runs in the background.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSync}>
+              Run Sync
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function MobileAdminGoogle({}: MobileAdminGoogleProps) {
@@ -222,6 +395,9 @@ export default function MobileAdminGoogle({}: MobileAdminGoogleProps) {
           </div>
         )}
       </div>
+
+      {/* ── Force Sync ─────────────────────────────────────────────── */}
+      <MobileForceSyncCard />
 
       {/* ── Recent ops ─────────────────────────────────────────────── */}
       <div className="px-4">

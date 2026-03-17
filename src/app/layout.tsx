@@ -38,9 +38,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Titan Journal CRM — IB Funnel Intelligence Platform",
-  description:
-    "Enterprise-grade IB lead management, bot automation, and deposit verification platform.",
+  title: "Titan Journal CRM",
+  description: "Internal CRM for Titan Journal",
+  icons: {
+    icon: "/assets/logo/titan-logo-03.svg",
+  },
 };
 
 export default function RootLayout({
@@ -68,18 +70,18 @@ export default function RootLayout({
           <NuqsAdapter>
             <QueryProvider>
               <AuthProvider>
-              <LocaleProvider>
-                <TooltipProvider delayDuration={300}>
-                  <SidebarConfigProvider>{children}</SidebarConfigProvider>
-                  <Toaster
-                    richColors
-                    position="bottom-right"
-                    visibleToasts={3}
-                    closeButton
-                    gap={8}
-                  />
-                </TooltipProvider>
-              </LocaleProvider>
+                <LocaleProvider>
+                  <TooltipProvider delayDuration={300}>
+                    <SidebarConfigProvider>{children}</SidebarConfigProvider>
+                    <Toaster
+                      richColors
+                      position="bottom-right"
+                      visibleToasts={3}
+                      closeButton
+                      gap={8}
+                    />
+                  </TooltipProvider>
+                </LocaleProvider>
               </AuthProvider>
             </QueryProvider>
           </NuqsAdapter>

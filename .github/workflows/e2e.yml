@@ -1,0 +1,86 @@
+name: E2E Tests (TypeScript Playwright)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Override base URL (default: staging)"
+        required: false
+        type: string
+
+env:
+  E2E_BASE_URL: ${{ inputs.base_url || secrets.E2E_BASE_URL }}
+  E2E_SUPERADMIN_EMAIL: ${{ secrets.E2E_SUPERADMIN_EMAIL }}
+  E2E_SUPERADMIN_PASSWORD: ${{ secrets.E2E_SUPERADMIN_PASSWORD }}
+  E2E_OWNER_EMAIL: ${{ secrets.E2E_OWNER_EMAIL }}
+  E2E_OWNER_PASSWORD: ${{ secrets.E2E_OWNER_PASSWORD }}
+  E2E_HEADLESS: "true"
+
+jobs:
+  smoke:
+    if: false # Temporarily disabled to save GitHub Actions runner minutes
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+      - name: Run smoke tests
+        run: pnpm test:e2e:smoke
+        env:
+          CI: true
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-smoke-report
+          path: tests/e2e/artifacts/playwright-report/
+          retention-days: 14
+      - name: Upload test results (JUnit)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-smoke-junit
+          path: tests/e2e/artifacts/playwright-results.xml
+          retention-days: 14
+
+  rbac:
+    if: false # Temporarily disabled to save GitHub Actions runner minutes
+    name: RBAC Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+      - name: Run RBAC tests
+        run: pnpm test:e2e:rbac
+        env:
+          CI: true
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-rbac-report
+          path: tests/e2e/artifacts/playwright-report/
+          retention-days: 14

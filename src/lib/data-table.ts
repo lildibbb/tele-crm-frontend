@@ -1,6 +1,6 @@
 import type { Column } from "@tanstack/react-table";
 import type { CSSProperties } from "react";
-import { FILTER_OPERATORS, type FilterOperatorValue } from "@/config/data-table";
+import { type FilterOperatorValue } from "@/config/data-table";
 import type { DataTableConfig } from "@/config/data-table";
 
 type FilterVariant = DataTableConfig["filterVariants"][number];

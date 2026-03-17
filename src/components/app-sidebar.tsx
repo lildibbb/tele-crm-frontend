@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   SquaresFour,
@@ -15,7 +16,6 @@ import {
   ClipboardText,
   SignOut,
   UserCircle,
-  CaretUpDown,
   CaretDown,
   Warning,
   HardDrives,
@@ -24,6 +24,8 @@ import {
   ListBullets,
   Desktop,
   Eye,
+  Robot,
+  ThumbsUp,
 } from "@phosphor-icons/react";
 import { useT } from "@/i18n";
 import { useAuthStore } from "@/store/authStore";
@@ -53,7 +55,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
-import { EllipsisVertical } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 
 const ADMIN_SUB_ITEMS = [
@@ -67,6 +69,7 @@ const ADMIN_SUB_ITEMS = [
   { href: "/admin/queues", icon: ListBullets, label: "Queue Manager" },
   { href: "/admin/sessions", icon: Desktop, label: "Sessions" },
   { href: "/admin/features", icon: Eye, label: "Feature Visibility" },
+  { href: "/admin/ai-feedback", icon: ThumbsUp, label: "AI Feedback" },
 ];
 
 const ALL_NAV_ITEMS = [
@@ -87,6 +90,17 @@ const ALL_NAV_ITEMS = [
     icon: ShieldCheck,
     labelKey: "nav.verificationQueue",
     roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF],
+  },
+  {
+    href: "/pending-tasks",
+    icon: ClipboardText,
+    labelKey: "nav.pendingTasks",
+    roles: [
+      UserRole.OWNER,
+      UserRole.ADMIN,
+      UserRole.STAFF,
+      UserRole.SUPERADMIN,
+    ],
   },
   {
     href: "/broadcasts",
@@ -121,11 +135,7 @@ const ALL_NAV_ITEMS = [
     href: "/settings",
     icon: Sliders,
     labelKey: "nav.settings",
-    roles: [
-      UserRole.OWNER,
-      UserRole.ADMIN,
-      UserRole.SUPERADMIN,
-    ],
+    roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.SUPERADMIN],
   },
   {
     href: "/settings",
@@ -152,91 +162,143 @@ export function AppSidebar() {
   const isAdminPath = pathname.startsWith("/admin");
   const visibility = useFeatureVisibility();
 
-  // Auto-expand admin group when on an admin route
   const [adminOpen, setAdminOpen] = useState(() => isAdminPath);
   useEffect(() => {
     if (isAdminPath) setAdminOpen(true);
   }, [isAdminPath]);
 
-  // Filter nav items by current user's role
   const visibleItems = ALL_NAV_ITEMS.filter((item) => {
     if (!role || !item.roles.includes(role)) return false;
-    // Superadmin always sees all navigation items
     if (role === UserRole.SUPERADMIN) return true;
-    // Hide Follow-ups if superadmin has disabled the feature
-    if (item.href === '/follow-ups' && !visibility.followUps) return false;
+    if (item.href === "/follow-ups" && !visibility.followUps) return false;
     return true;
   });
 
+  const isCollapsed = sidebarState === "collapsed";
+
+  // Derive user initials for avatar
+  const userInitials = user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : "?";
+
+  const roleBadgeClass = cn(
+    "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold leading-none tracking-wide",
+    user?.role === UserRole.OWNER || user?.role === UserRole.SUPERADMIN
+      ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25"
+      : user?.role === UserRole.ADMIN
+        ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25"
+        : "bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
+  );
+
   return (
     <Sidebar collapsible="icon" variant="inset">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <Link href="/l">
-                <div className="font-display font-extrabold tracking-tight leading-none select-none w-full flex items-center justify-center h-full">
-                  {/* Full Logo - Hidden when collapsed */}
-                  <div className="flex items-center text-[13px] gap-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden w-full whitespace-nowrap overflow-hidden">
-                    <span className="text-text-primary">TITAN</span>
-                    <span className="text-text-secondary font-bold">
-                      {" "}
-                      JOURNAL
-                    </span>
-                    <span className="text-crimson font-bold"> CRM</span>
-                  </div>
-                  {/* Icon Logo - Shown ONLY when collapsed */}
-                  <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full text-crimson text-lg">
-                    T.
-                  </div>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      {/* ── Header / Logo ──────────────────────────────────────── */}
+      <SidebarHeader className="px-3 py-3 border-b border-sidebar-border/60">
+        <Link
+          href="/"
+          className="flex items-center h-9 w-full overflow-hidden"
+          onClick={() => setOpenMobile(false)}
+        >
+          {/* Full logo + title — hidden when collapsed */}
+          <div className="group-data-[collapsible=icon]:hidden flex items-center gap-3 w-full">
+            <Image
+              src="/assets/logo/titan-logo-02.svg"
+              alt="Titan CRM"
+              width={130}
+              height={32}
+              className="object-contain h-8 w-auto max-w-[140px]"
+              priority
+              unoptimized
+            />
+            <div className="flex flex-col leading-tight">
+              <span className="font-display font-extrabold text-text-primary text-sm tracking-tight">
+                TITAN JOURNAL
+              </span>
+              <span className="text-crimson font-bold text-xs tracking-tight">
+                CRM
+              </span>
+            </div>
+          </div>
+
+          {/* Icon logo — shown only when collapsed */}
+          <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center w-full">
+            <Image
+              src="/assets/logo/titan-logo-03.svg"
+              alt="T"
+              width={28}
+              height={28}
+              className="object-contain h-7 w-7"
+              priority
+              unoptimized
+            />
+          </div>
+        </Link>
       </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarMenu className="space-y-1">
-          {/* ── Regular nav items ──────────────────────── */}
+      {/* ── Nav Content ───────────────────────────────────────── */}
+      <SidebarContent className="px-2 py-3">
+        {/* Section label */}
+        <p className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-muted/60 select-none group-data-[collapsible=icon]:hidden">
+          Navigation
+        </p>
+
+        <SidebarMenu className="gap-0.5">
+          {/* ── Regular nav items ── */}
           {visibleItems.map(({ href, icon: Icon, labelKey }) => {
             const label = t(labelKey);
             const isActive =
               href === "/"
                 ? pathname === "/"
                 : pathname === href || pathname.startsWith(href + "/");
+            const isSettings = href === "/settings";
 
             return (
-              <SidebarMenuItem key={href}>
+              <SidebarMenuItem key={href} className="relative">
+                {/* Left accent bar — hidden in icon mode */}
+                {isActive && (
+                  <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-crimson z-10 group-data-[collapsible=icon]:hidden pointer-events-none" />
+                )}
                 <SidebarMenuButton
                   asChild
                   isActive={isActive}
                   tooltip={label}
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-300 overflow-hidden ${isActive ? "!bg-crimson/10 !text-crimson active" : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"}`}
+                  className={cn(
+                    "group/navitem h-auto py-2.5 px-3 rounded-lg transition-all duration-150 overflow-hidden",
+                    isActive
+                      ? "!bg-crimson/8 !text-crimson"
+                      : "text-text-secondary hover:!bg-elevated hover:!text-text-primary",
+                  )}
                   onClick={() => setOpenMobile(false)}
                 >
-                  <Link href={href} className="flex items-center">
+                  <Link href={href} className="flex items-center gap-2.5">
                     <Icon
-                      size={18}
-                      weight={isActive ? "fill" : "light"}
-                      className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                      size={17}
+                      weight={isActive ? "fill" : "regular"}
+                      className={cn(
+                        "flex-shrink-0 transition-transform duration-150",
+                        "group-hover/navitem:scale-110",
+                      )}
                     />
-                    <span className="font-medium ml-2">{label}</span>
-                    {href === "/settings" && (
+                    <span className="font-medium text-[13px] leading-none">
+                      {label}
+                    </span>
+                    {/* Bot status dot on settings */}
+                    {isSettings && (
                       <span
-                        className={`ml-auto w-2 h-2 rounded-full flex-shrink-0 transition-colors ${
+                        className={cn(
+                          "ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
                           botOnline === true
-                            ? "bg-success"
+                            ? "bg-success shadow-[0_0_4px_var(--color-success)]"
                             : botOnline === false
                               ? "bg-danger"
-                              : "bg-text-muted/40"
-                        }`}
+                              : "bg-text-muted/30",
+                        )}
                         title={
                           botOnline === true
                             ? "Bot online"
                             : botOnline === false
                               ? "Bot offline"
-                              : "Checking..."
+                              : "Checking…"
                         }
                       />
                     )}
@@ -246,25 +308,31 @@ export function AppSidebar() {
             );
           })}
 
-          {/* ── Superadmin collapsible group ───────────── */}
+          {/* ── Superadmin section ── */}
           {isSuperAdmin && (
             <>
-              {/* Divider */}
-              <li className="group-data-[collapsible=icon]:hidden">
-                <div className="mx-1 my-1.5 border-t border-border-subtle/40" />
+              <li className="group-data-[collapsible=icon]:hidden pt-2 pb-1 px-2">
+                <div className="border-t border-sidebar-border/60" />
+                <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-text-muted/60 select-none">
+                  Superadmin
+                </p>
               </li>
 
-              <SidebarMenuItem>
+              <SidebarMenuItem className="relative">
+                {isAdminPath && (
+                  <span className="absolute left-0 inset-y-1.5 w-0.5 rounded-r-full bg-crimson z-10 group-data-[collapsible=icon]:hidden pointer-events-none" />
+                )}
                 <SidebarMenuButton
                   isActive={isAdminPath}
                   tooltip="Superadmin"
-                  className={`nav-item group h-auto py-2.5 px-3 transition-all duration-300 overflow-hidden cursor-pointer select-none ${
+                  className={cn(
+                    "group/navitem h-auto py-2.5 px-3 rounded-lg transition-all duration-150 overflow-hidden cursor-pointer select-none",
                     isAdminPath
-                      ? "!bg-crimson/10 !text-crimson active"
-                      : "text-text-secondary hover:!bg-elevated hover:!text-text-primary"
-                  }`}
+                      ? "!bg-crimson/8 !text-crimson"
+                      : "text-text-secondary hover:!bg-elevated hover:!text-text-primary",
+                  )}
                   onClick={() => {
-                    if (sidebarState === "collapsed") {
+                    if (isCollapsed) {
                       router.push("/admin/overview");
                       setOpenMobile(false);
                     } else {
@@ -273,30 +341,31 @@ export function AppSidebar() {
                   }}
                 >
                   <Crown
-                    size={18}
-                    weight={isAdminPath ? "fill" : "light"}
-                    className="flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                    size={17}
+                    weight={isAdminPath ? "fill" : "regular"}
+                    className="flex-shrink-0 transition-transform duration-150 group-hover/navitem:scale-110"
                   />
-                  <span className="font-medium ml-3 truncate flex-1 transition-opacity duration-300 group-data-[collapsible=icon]:hidden">
+                  <span className="font-medium text-[13px] leading-none flex-1 group-data-[collapsible=icon]:hidden">
                     {t("nav.superAdmin")}
                   </span>
-                  {/* Caret — hidden in icon mode */}
                   <CaretDown
-                    size={13}
+                    size={12}
                     weight="bold"
-                    className={`ml-auto flex-shrink-0 text-text-muted transition-all duration-200 group-data-[collapsible=icon]:hidden ${
-                      adminOpen ? "rotate-180" : "rotate-0"
-                    }`}
+                    className={cn(
+                      "ml-auto flex-shrink-0 text-current opacity-50 transition-transform duration-200 group-data-[collapsible=icon]:hidden",
+                      adminOpen ? "rotate-180" : "rotate-0",
+                    )}
                   />
                 </SidebarMenuButton>
 
-                {/* Sub-items — animated slide */}
+                {/* Sub-items */}
                 <div
-                  className={`overflow-hidden transition-all duration-200 ease-in-out group-data-[collapsible=icon]:hidden ${
-                    adminOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                  }`}
+                  className={cn(
+                    "overflow-hidden transition-all duration-200 ease-in-out group-data-[collapsible=icon]:hidden",
+                    adminOpen ? "max-h-[480px] opacity-100" : "max-h-0 opacity-0",
+                  )}
                 >
-                  <SidebarMenuSub className="mt-0.5">
+                  <SidebarMenuSub className="mt-1 ml-1 border-l border-sidebar-border/60 space-y-0.5">
                     {ADMIN_SUB_ITEMS.map(({ href, icon: SubIcon, label }) => {
                       const isSubActive =
                         pathname === href || pathname.startsWith(href + "/");
@@ -305,11 +374,12 @@ export function AppSidebar() {
                           <SidebarMenuSubButton
                             asChild
                             isActive={isSubActive}
-                            className={`h-8 transition-colors duration-150 ${
+                            className={cn(
+                              "h-8 rounded-md transition-colors duration-150 text-[12px]",
                               isSubActive
-                                ? "!text-crimson !bg-crimson/8 font-medium"
-                                : "text-text-secondary hover:!text-text-primary hover:!bg-elevated/60"
-                            }`}
+                                ? "!text-crimson !bg-crimson/8 font-semibold"
+                                : "text-text-secondary hover:!text-text-primary hover:!bg-elevated/60",
+                            )}
                           >
                             <Link
                               href={href}
@@ -317,13 +387,11 @@ export function AppSidebar() {
                               className="flex items-center gap-2"
                             >
                               <SubIcon
-                                size={14}
+                                size={13}
                                 weight={isSubActive ? "fill" : "regular"}
                                 className="flex-shrink-0"
                               />
-                              <span className="text-xs font-medium">
-                                {label}
-                              </span>
+                              <span>{label}</span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -337,79 +405,113 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter>
+      {/* ── Footer / User ─────────────────────────────────────── */}
+      <SidebarFooter className="px-2 pb-3 pt-2 border-t border-sidebar-border/60">
+        {/* Bot status pill — shown only when expanded */}
+        {botOnline !== null && (
+          <div className={cn(
+            "mb-2 mx-1 group-data-[collapsible=icon]:hidden",
+          )}>
+            <div className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border",
+              botOnline
+                ? "bg-success/8 border-success/20 text-success"
+                : "bg-danger/8 border-danger/20 text-danger",
+            )}>
+              <Robot size={12} weight="duotone" className="flex-shrink-0" />
+              <span className="flex-1">Bot</span>
+              <span className="flex items-center gap-1 font-semibold">
+                <span className={cn(
+                  "w-1.5 h-1.5 rounded-full",
+                  botOnline ? "bg-success animate-pulse" : "bg-danger",
+                )} />
+                {botOnline ? "Online" : "Offline"}
+              </span>
+            </div>
+          </div>
+        )}
+
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
+                  data-testid="sidebar-user-menu-trigger"
+                  className="h-auto py-2 px-2.5 rounded-xl cursor-pointer transition-colors duration-150 hover:!bg-elevated data-[state=open]:!bg-elevated group/user"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg">
-                    <Avatar>
-                      <AvatarFallback className="bg-crimson-subtle border border-crimson/30 text-crimson">
-                        {user?.email?.[0]?.toUpperCase() ?? "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">
+                  {/* Avatar */}
+                  <Avatar className="h-8 w-8 rounded-lg flex-shrink-0">
+                    <AvatarFallback className="rounded-lg bg-crimson/10 border border-crimson/20 text-crimson text-[11px] font-bold">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* User info — hidden in icon mode */}
+                  <div className="flex-1 min-w-0 text-left group-data-[collapsible=icon]:hidden">
+                    <p className="text-[12px] font-semibold text-text-primary truncate leading-tight">
                       {user?.email ?? "—"}
-                    </span>
-                    <span
-                      className={cn(
-                        "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold leading-none mt-0.5 w-fit",
-                        user?.role === UserRole.OWNER || user?.role === UserRole.SUPERADMIN
-                          ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25"
-                          : user?.role === UserRole.ADMIN
-                            ? "bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25"
-                            : "bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
-                      )}
-                    >
+                    </p>
+                    <span className={cn("mt-0.5", roleBadgeClass)}>
                       {user?.role?.toUpperCase() ?? "—"}
                     </span>
                   </div>
-                  <EllipsisVertical className="ml-auto size-4" />
+
+                  <ChevronUp
+                    size={14}
+                    className="ml-auto text-text-muted opacity-60 group-data-[collapsible=icon]:hidden group-data-[state=open]/user:rotate-180 transition-transform duration-200"
+                  />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent
-                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-52 rounded-xl border border-border-subtle shadow-lg"
                 align="end"
-                sideOffset={4}
+                side="top"
+                sideOffset={6}
               >
                 <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <p className="text-xs font-semibold text-text-primary truncate">
+                  <div className="flex items-center gap-2.5 px-3 py-2.5">
+                    <Avatar className="h-9 w-9 rounded-lg flex-shrink-0">
+                      <AvatarFallback className="rounded-lg bg-crimson/10 border border-crimson/20 text-crimson text-[12px] font-bold">
+                        {userInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-text-primary truncate">
                         {user?.email}
                       </p>
-                      <p className="text-[10px] text-text-muted">
-                        {user?.role}
-                      </p>
+                      <span className={cn("mt-0.5", roleBadgeClass)}>
+                        {user?.role?.toUpperCase() ?? "—"}
+                      </span>
                     </div>
                   </div>
                 </DropdownMenuLabel>
+
                 <DropdownMenuSeparator />
+
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    className="gap-2 cursor-pointer"
+                    className="gap-2 cursor-pointer rounded-lg mx-1 my-0.5"
                     onClick={() => {
                       setOpenMobile(false);
                       router.push("/profile");
                     }}
                   >
-                    <UserCircle />
-                    My Profile
+                    <UserCircle size={15} weight="regular" className="text-text-secondary" />
+                    <span className="text-[13px]">My Profile</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
+
                 <DropdownMenuSeparator />
+
                 <DropdownMenuItem
-                  className="gap-2 cursor-pointer text-danger focus:text-danger focus:bg-danger/10"
+                  data-testid="sidebar-user-menu-logout"
+                  className="gap-2 cursor-pointer rounded-lg mx-1 mb-1 text-danger focus:text-danger focus:bg-danger/10"
                   onClick={() => logout()}
                 >
-                  <SignOut />
-                  {t("nav.logout")}
+                  <SignOut size={15} weight="regular" />
+                  <span className="text-[13px]">{t("nav.logout")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -11,6 +11,15 @@ This document outlines the technical architecture and component design for the T
 - **State Management**: Zustand (for global UI state, e.g., active modals, user session data bridging)
 - **Forms & Validation**: React Hook Form + Zod (Strictly typed form submission)
 
+## 1.1 2026-03 Final UX Addendum (Implemented)
+
+The architecture has been finalized with the following shipped UX behavior:
+
+1. **Grouped Pending Tasks by lead** on `/pending-tasks`, powered by backend grouped API data.
+2. **Context chat modal with instant reply** in pending-task review (text + optional attachment).
+3. **Duplicate caption prevention** in chat timeline consumption (single inbound event for file+caption uploads).
+4. **Inline media rendering + responsive lead detail** for desktop/tablet/mobile chat surfaces.
+
 ## 2. Project Structure (Next.js App Router)
 
 ```text
@@ -24,7 +33,9 @@ src/
 │   │   ├── page.tsx        # High-level Analytics (The "Tally" Dashboard)
 │   │   ├── leads/          # Lead Management CRM Portal
 │   │   │   ├── page.tsx
-│   │   │   └── [id]/page.tsx
+│   │   │   └── detail/page.tsx
+│   │   ├── pending-tasks/  # Lead-grouped pending task review + context chat modal
+│   │   │   └── page.tsx
 │   │   ├── verification/   # Verification Queue
 │   │   │   └── page.tsx
 │   │   └── settings/       # Bot Config, Templates, Team Members
@@ -67,7 +78,7 @@ src/
 
 - **Real-time Vibe**: While true WebSockets are ideal, we can simulate real-time updates using fast polling (via SWR/React Query) on specific endpoints (like the live lead indicator) combined with Framer Motion layout animations when lists update.
 - **Media Viewer**: Implement a React Portal dialog (shadcn `Dialog` component) that can render images or a standard HTML5 `<video>` player for S3/GCS links pulled from the backend.
-- **Bot Handover**: The Lead Detail view (`/leads/[id]`) will feature a distinct UI panel. Toggling the "Take Over" switch will hit `PATCH /leads/:id/handover`. The chat interface below will then become active, hitting a standard messaging endpoint (to be defined/confirmed with the backend).
+- **Bot Handover**: The Lead Detail view (`/leads/detail`) exposes the handover switch (`PATCH /leads/:id/handover`) and manual reply pipeline (`POST /leads/:id/reply`) with optional single attachment support (multipart). Chat bubbles render inline image/video previews when metadata is previewable.
 
 ## 5. Next Steps for Implementation
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, Send } from "lucide-react";
@@ -12,175 +12,12 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { LoginSchema, type LoginInput } from "@/lib/schemas/auth.schema";
 import { useAuthStore } from "@/store/authStore";
 import { getDeviceId, getUserAgent } from "@/lib/deviceId";
-
-/* ── Brand mark ───────────────────────────────────────────── */
-function TitanMark({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-    >
-      {/* Top bar — full width */}
-      <rect x="2" y="3" width="20" height="3.5" rx="1.75" fill="currentColor" />
-      {/* Vertical stem — left aligned */}
-      <rect x="2" y="3" width="3.5" height="18" rx="1.75" fill="currentColor" />
-      {/* Bottom accent — right offset */}
-      <rect
-        x="9"
-        y="17.5"
-        width="13"
-        height="3.5"
-        rx="1.75"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-/* ── Signal Network ───────────────────────────────────────── */
-function SignalNetwork() {
-  // 25 nodes: [cx, cy] in a 100×100 viewBox
-  const nodes: [number, number][] = [
-    [8, 12],
-    [22, 8],
-    [38, 15],
-    [55, 6],
-    [72, 18],
-    [90, 9],
-    [14, 28],
-    [32, 35],
-    [50, 25],
-    [66, 32],
-    [84, 24],
-    [5, 47],
-    [20, 54],
-    [36, 45],
-    [52, 52],
-    [68, 44],
-    [86, 50],
-    [11, 68],
-    [28, 75],
-    [44, 65],
-    [61, 72],
-    [79, 62],
-    [17, 88],
-    [40, 82],
-    [63, 90],
-  ];
-
-  const edges: [number, number][] = [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [3, 4],
-    [4, 5],
-    [0, 6],
-    [1, 6],
-    [2, 7],
-    [3, 8],
-    [4, 9],
-    [5, 10],
-    [6, 7],
-    [7, 8],
-    [8, 9],
-    [9, 10],
-    [6, 11],
-    [7, 12],
-    [8, 13],
-    [9, 14],
-    [10, 15],
-    [10, 16],
-    [11, 12],
-    [12, 13],
-    [13, 14],
-    [14, 15],
-    [15, 16],
-    [12, 17],
-    [13, 18],
-    [14, 19],
-    [15, 20],
-    [16, 21],
-    [17, 18],
-    [18, 19],
-    [19, 20],
-    [20, 21],
-    [17, 22],
-    [19, 23],
-    [21, 24],
-    [22, 23],
-    [23, 24],
-  ];
-
-  const activeNodes = new Set([2, 8, 14, 19]);
-  const glowNode = 13;
-
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-      className="absolute inset-0 w-full h-full pointer-events-none z-[1]"
-      aria-hidden="true"
-    >
-      <defs>
-        <filter id="node-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow
-            dx="0"
-            dy="0"
-            stdDeviation="1.5"
-            floodColor="rgba(196,35,45,0.9)"
-          />
-        </filter>
-      </defs>
-
-      {/* Edges */}
-      {edges.map(([a, b], i) => (
-        <line
-          key={i}
-          x1={nodes[a][0]}
-          y1={nodes[a][1]}
-          x2={nodes[b][0]}
-          y2={nodes[b][1]}
-          stroke="rgba(196,35,45,0.14)"
-          strokeWidth="0.18"
-          className="dark:stroke-[rgba(196,35,45,0.14)] stroke-[rgba(220,38,38,0.08)]"
-        />
-      ))}
-
-      {/* Nodes */}
-      {nodes.map(([cx, cy], i) => (
-        <circle
-          key={i}
-          cx={cx}
-          cy={cy}
-          r={i === glowNode ? 0.8 : 0.55}
-          fill={i === glowNode ? "rgba(196,35,45,0.7)" : "rgba(196,35,45,0.3)"}
-          className={
-            i >= 12
-              ? "dark:fill-[rgba(196,35,45,0.3)] fill-[rgba(220,38,38,0.14)]"
-              : "dark:fill-[rgba(196,35,45,0.3)] fill-[rgba(220,38,38,0.12)]"
-          }
-          filter={i === glowNode ? "url(#node-glow)" : undefined}
-          style={
-            activeNodes.has(i)
-              ? {
-                  animation: `pulse-node 3s ease-in-out infinite`,
-                  animationDelay: `${(i % 4) * 0.8}s`,
-                }
-              : undefined
-          }
-        />
-      ))}
-    </svg>
-  );
-}
+import { TitanLogo } from "@/components/ui/titan-logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -217,16 +54,13 @@ export default function LoginPage() {
       const initData = window.Telegram?.WebApp?.initData;
 
       if (initData) {
-        // Use persistent device ID and user agent
         const deviceId = getDeviceId();
         const userAgent = getUserAgent();
 
-        // Store in form so it gets included if they need to manually login to link
         form.setValue("initData", initData);
         form.setValue("deviceId", deviceId);
         form.setValue("userAgent", userAgent);
 
-        // Attempt auto login
         login({ initData, deviceId, userAgent })
           .then(() => {
             router.push("/");
@@ -241,7 +75,6 @@ export default function LoginPage() {
         attempts++;
         setTimeout(checkInitData, 100);
       } else {
-        // Timed out waiting for Telegram
         setIsAuthenticatingTma(false);
       }
     };
@@ -251,7 +84,6 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     try {
-      // Include persistent device ID and user agent with login request
       const loginData: LoginInput = {
         ...data,
         deviceId: data.deviceId || getDeviceId(),
@@ -260,203 +92,249 @@ export default function LoginPage() {
       await login(loginData);
       router.push("/");
     } catch {
-      // error is set in store; form stays open
+      // error is set in store
     }
   };
+
   return (
-    <div className="flex min-h-svh bg-void">
-      {/* Left panel — cinematic branding */}
-      <div className="hidden lg:flex lg:w-[55%] relative bg-base overflow-hidden flex-col justify-between p-10 lg:p-14 border-r border-border-subtle/30 shadow-[10px_0_40px_rgba(0,0,0,0.1)]">
-        {/* Dynamic theme-adapting glow effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute -left-[20%] top-[-10%] h-[70%] w-[70%] rounded-full bg-crimson/10 blur-[130px] mix-blend-screen dark:mix-blend-normal [animation:pulse_10s_cubic-bezier(0.4,0,0.6,1)_infinite]" />
-          <div className="absolute -right-[20%] bottom-[-10%] h-[70%] w-[70%] rounded-full bg-crimson/8 blur-[140px] mix-blend-screen dark:mix-blend-normal" />
-          <div className="absolute left-[20%] top-[40%] h-[50%] w-[50%] rounded-full bg-crimson/5 blur-[100px] mix-blend-screen dark:mix-blend-normal" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(150,150,150,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(150,150,150,0.04)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_20%,transparent_100%)]" />
+    <div className="flex min-h-svh bg-void relative overflow-hidden">
+      {/* SVG clip-path definition — wavy right edge (objectBoundingBox = 0–1 relative to element) */}
+      <svg width="0" height="0" className="absolute" aria-hidden="true">
+        <defs>
+          <clipPath id="login-left-wave" clipPathUnits="objectBoundingBox">
+            {/* Wave: right edge oscillates between x=0.88 (dip) and x=1.0 (peak), 2 S-curves */}
+            <path d="M0,0 L0.94,0 C1,0.15 0.88,0.35 0.94,0.5 C1,0.65 0.88,0.85 0.94,1 L0,1 Z" />
+          </clipPath>
+        </defs>
+      </svg>
+
+      {/* ── LEFT PANEL (desktop only) ──────────────────────────────── */}
+      {/* clip-path carves the wavy right edge — panel's own bg, glows & dot-grid form the wave */}
+      <div
+        className="hidden lg:flex lg:w-[52%] relative flex-col p-14 bg-[#0D0F14] dark:bg-[#16171a]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(255,255,255,0.08) 1.5px, transparent 1.5px)",
+          backgroundSize: "24px 24px",
+          clipPath: "url(#login-left-wave)",
+        }}
+      >
+        {/* Crimson glows — vivid on dark panel */}
+        <div
+          className="absolute -bottom-48 -left-24 w-[640px] h-[640px] rounded-full bg-crimson/30 blur-[180px] pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute -top-40 right-8 w-[400px] h-[400px] rounded-full bg-crimson/12 blur-[130px] pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute top-0 left-0 w-[200px] h-[200px] rounded-full bg-crimson/8 blur-[80px] pointer-events-none"
+          aria-hidden="true"
+        />
+
+        {/* Logo — inverted to white for dark panel */}
+        <div className="relative z-10 animate-in fade-in slide-in-from-left-6 duration-700">
+          <TitanLogo
+            variant="full"
+            size="md"
+            priority
+            className="brightness-0 invert"
+          />
         </div>
 
-        {/* Signal Network SVG overlay */}
-        <SignalNetwork />
-
-        {/* Logo + tagline */}
-        <div className="relative z-20 animate-in fade-in slide-in-from-left-8 duration-700">
-          <div className="flex items-center gap-3">
-            <TitanMark className="w-9 h-9 text-crimson drop-shadow-[0_0_8px_rgba(196,35,45,0.5)]" />
-            <h1 className="font-display font-extrabold text-3xl text-text-primary tracking-tight">
-              TITAN <span className="text-crimson">JOURNAL</span>
+        {/* Editorial headline — vertically centered */}
+        <div className="flex-1 flex flex-col justify-center relative z-10">
+          <div className="max-w-[320px] animate-in fade-in slide-in-from-left-6 duration-700 delay-100 fill-mode-both">
+            <h1 className="font-display font-bold text-white tracking-tight leading-[1.05] text-[2.75rem] xl:text-[3.25rem]">
+              Command
+              <br />
+              Center.
             </h1>
+
+            {/* Crimson accent rule */}
+            <div className="w-9 h-[2.5px] bg-crimson mt-5 mb-6 rounded-full" />
+
+            {/* Value props */}
+            <div className="space-y-[10px]">
+              {[
+                "Lead intelligence",
+                "Conversation automation",
+                "Funnel control",
+              ].map((line) => (
+                <p
+                  key={line}
+                  className="font-sans text-[13px] text-white/45 tracking-wide"
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Footer badges */}
-        <div className="relative z-20 flex items-center gap-2 flex-wrap animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300 fill-mode-both">
-          {["ENCRYPTED", "ZERO TRUST", "SOC2"].map((badge) => (
-            <span
-              key={badge}
-              className="text-[10px] uppercase tracking-widest text-text-muted font-semibold px-2.5 py-1 rounded border border-border-subtle/50 bg-card/30"
-            >
-              {badge}
-            </span>
-          ))}
+        {/* Bottom stamp */}
+        <div className="relative z-10 animate-in fade-in duration-700 delay-300 fill-mode-both">
+          <p className="font-mono text-[10px] text-white/25 tracking-widest uppercase">
+            IB Funnel Intelligence Platform
+          </p>
         </div>
       </div>
 
-      {/* Right panel — auth form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-void relative">
-        {/* Right side glow for continuity on mobile */}
-        <div className="absolute right-0 top-0 h-[50%] w-[50%] rounded-full bg-crimson/5 blur-[150px] pointer-events-none lg:hidden" />
+      {/* ── RIGHT PANEL — auth form ───────────────────────────────── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-10 sm:px-10 bg-void relative">
+        {/* Mobile ambient glow */}
+        <div
+          className="absolute top-0 right-0 w-[280px] h-[280px] rounded-full bg-crimson/6 blur-[100px] pointer-events-none lg:hidden"
+          aria-hidden="true"
+        />
 
-        <div className="w-full max-w-[420px] animate-in slide-in-from-bottom-4 fade-in duration-500 relative z-10">
+        <div className="w-full max-w-[360px] relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Mobile logo */}
-          <div className="lg:hidden mb-10 mt-4 text-center flex flex-col items-center">
-            <TitanMark className="w-10 h-10 text-crimson mb-5 drop-shadow-[0_0_8px_rgba(196,35,45,0.4)]" />
-            <h1 className="font-display font-extrabold text-3xl text-text-primary tracking-tight">
-              TITAN <span className="text-crimson">JOURNAL</span>
-            </h1>
-            <p className="text-text-secondary font-sans text-xs mt-2">
-              Intelligence Platform
-            </p>
+          <div className="lg:hidden mb-10 flex justify-center">
+            <TitanLogo variant="full" size="lg" priority />
           </div>
 
-          {/* Form card */}
-          <div className="surface-card relative overflow-hidden p-8 sm:p-10 rounded-2xl shadow-[0_0_60px_var(--crimson-glow)] ring-1 ring-border-subtle/50 backdrop-blur-xl">
-            {/* Top highlight */}
-            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-crimson/40 to-transparent" />
-
-            {isAuthenticatingTma ? (
-              <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in zoom-in duration-300">
-                <div className="w-14 h-14 rounded-full bg-[#2AABEE]/10 border border-[#2AABEE]/30 flex items-center justify-center mb-6 relative">
-                  <div className="absolute inset-0 rounded-full border border-[#2AABEE]/20 animate-ping opacity-20"></div>
-                  <Send className="h-6 w-6 text-[#2AABEE] relative z-10 pr-[2px] pt-[2px]" />
-                </div>
-                <h2 className="font-display font-bold text-xl text-text-primary mb-2">
-                  Authorising with Telegram
-                </h2>
-                <div className="flex items-center gap-2 text-text-secondary font-sans text-sm mt-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-crimson" />
-                  <span>Establishing secure connection...</span>
-                </div>
+          {/* ── TMA Authenticating state ──────────────────────────── */}
+          {isAuthenticatingTma ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in zoom-in duration-300">
+              <div className="w-12 h-12 rounded-full bg-[#2AABEE]/10 border border-[#2AABEE]/25 flex items-center justify-center mb-5 relative">
+                <div className="absolute inset-0 rounded-full border border-[#2AABEE]/20 animate-ping opacity-20" />
+                <Send className="h-5 w-5 text-[#2AABEE] relative z-10 ml-[2px]" />
               </div>
-            ) : (
-              <>
-                {/* Header */}
-                <div className="mb-8">
-                  <h2 className="font-display font-bold text-2xl sm:text-3xl text-text-primary tracking-tight">
-                    {isLinkingMode ? "Link Account" : "Welcome back"}
-                  </h2>
-                  <p className="text-text-secondary font-sans text-sm mt-2">
-                    {isLinkingMode
-                      ? "Sign in with your email and password to link your Telegram account."
-                      : "Sign in to your command center."}
-                  </p>
-                </div>
-
-                <div className="h-px bg-border-subtle/50 mb-8" />
-
-                {/* Global API error */}
-                {error && (
-                  <div className="mb-4 p-3 rounded-lg bg-danger/10 border border-danger/30 text-danger text-xs font-sans">
-                    {error}
-                  </div>
-                )}
-
-                {/* Form */}
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Email Address
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="owner@titanjournal.com"
-                              {...field}
-                              className="text-sm bg-base/50 focus-visible:ring-crimson/50 focus-visible:border-crimson h-11 transition-all shadow-sm"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center justify-between mt-5">
-                            <FormLabel className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                              Password
-                            </FormLabel>
-                            <a
-                              href="/forgot-password"
-                              className="text-[11px] text-crimson hover:text-crimson-hover font-semibold transition-colors"
-                            >
-                              Forgot password?
-                            </a>
-                          </div>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type={showPass ? "text" : "password"}
-                                placeholder="••••••••"
-                                className="pr-10 bg-base/50 focus-visible:ring-crimson/50 focus-visible:border-crimson h-11 transition-all shadow-sm"
-                                {...field}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-text-muted hover:text-text-secondary hover:bg-transparent"
-                                onClick={() => setShowPass(!showPass)}
-                              >
-                                {showPass ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage className="text-xs" />
-                        </FormItem>
-                      )}
-                    />
-
-                    <Button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full mt-6 h-11 font-semibold tracking-wide transition-all hover:shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:-translate-y-0.5 active:translate-y-0 relative overflow-hidden group"
-                      size="lg"
-                    >
-                      {/* Subtle shine effect on hover */}
-                      <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
-                      {isLoading ? (
-                        <span className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" /> Signing
-                          in...
-                        </span>
-                      ) : (
-                        "Sign In"
-                      )}
-                    </Button>
-                  </form>
-                </Form>
-
-                <p className="text-center text-[11px] text-text-muted font-sans mt-5">
-                  Need access? Contact your administrator.
+              <h2 className="font-display font-bold text-lg text-text-primary mb-1.5">
+                Authorising with Telegram
+              </h2>
+              <div className="flex items-center gap-2 text-text-muted font-sans text-sm mt-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-crimson" />
+                <span>Establishing secure connection&hellip;</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Heading */}
+              <div className="mb-7">
+                <h2 className="font-display font-bold text-[1.6rem] text-text-primary tracking-tight leading-tight">
+                  {isLinkingMode ? "Link your account" : "Welcome back"}
+                </h2>
+                <p className="text-text-muted font-sans text-[13px] mt-1.5 leading-relaxed">
+                  {isLinkingMode
+                    ? "Sign in with your credentials to link Telegram."
+                    : "Sign in to your workspace."}
                 </p>
-              </>
-            )}
-          </div>
+              </div>
+
+              {/* Error banner */}
+              {error && (
+                <div className="mb-5 px-3.5 py-2.5 rounded-lg bg-danger/8 border border-danger/25 text-danger text-xs font-sans leading-relaxed">
+                  {error}
+                </div>
+              )}
+
+              {/* ── Form — no labels ─────────────────────────────── */}
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-3"
+                  data-testid="login-form"
+                >
+                  {/* Email */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="email"
+                            autoComplete="email"
+                            placeholder="Work email"
+                            data-testid="login-email"
+                            {...field}
+                            className="h-11 text-sm bg-white dark:bg-base/60 border-border-default/80 focus-visible:ring-crimson/40 focus-visible:border-crimson transition-colors shadow-none"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Password */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showPass ? "text" : "password"}
+                              autoComplete="current-password"
+                              placeholder="Password"
+                              data-testid="login-password"
+                              className="h-11 pr-10 text-sm bg-white dark:bg-base/60 border-border-default/80 focus-visible:ring-crimson/40 focus-visible:border-crimson transition-colors shadow-none"
+                              {...field}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => setShowPass(!showPass)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+                              aria-label={
+                                showPass ? "Hide password" : "Show password"
+                              }
+                            >
+                              {showPass ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-xs" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Forgot password — right-aligned, below inputs */}
+                  <div className="flex justify-end pt-0.5">
+                    <a
+                      href="/forgot-password"
+                      className="text-[12px] text-crimson hover:text-crimson-hover font-medium transition-colors"
+                      data-testid="login-forgot-password"
+                    >
+                      Forgot password?
+                    </a>
+                  </div>
+
+                  {/* Submit */}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    data-testid="login-submit"
+                    className="w-full h-11 mt-1 font-semibold tracking-wide transition-all hover:shadow-[0_0_24px_rgba(196,35,45,0.25)] hover:-translate-y-px active:translate-y-0 relative overflow-hidden group"
+                    size="lg"
+                  >
+                    {/* Shimmer on hover */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Signing in&hellip;
+                      </span>
+                    ) : (
+                      "Sign in"
+                    )}
+                  </Button>
+                </form>
+              </Form>
+
+              <p className="text-center text-[11px] text-text-muted/70 font-sans mt-7 leading-relaxed">
+                Need access?&ensp;Contact your administrator.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

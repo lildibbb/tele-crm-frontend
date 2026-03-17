@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { UserPlus, Copy, Check, UserX, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,27 +44,39 @@ import {
 import { UserRole } from "@/types/enums";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/i18n";
 
-const ROLE_CONFIG: Record<string, { label: string; cls: string }> = {
+const ROLE_CONFIG: Record<string, { cls: string }> = {
   OWNER: {
-    label: "Owner",
     cls: "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25",
   },
   ADMIN: {
-    label: "Admin",
     cls: "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/15 text-blue-700 dark:text-blue-400 ring-1 ring-inset ring-blue-500/25",
   },
   STAFF: {
-    label: "Staff",
     cls: "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
   },
   SUPERADMIN: {
-    label: "Superadmin",
     cls: "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-inset ring-amber-500/25",
   },
 };
 
 export function TeamTab() {
+  const t = useT();
+  const roleLabel = (role: string) => {
+    switch (role) {
+      case UserRole.OWNER:
+        return t("settings.teamTab.role.owner");
+      case UserRole.ADMIN:
+        return t("settings.teamTab.role.admin");
+      case UserRole.STAFF:
+        return t("settings.teamTab.role.staff");
+      case UserRole.SUPERADMIN:
+        return t("settings.teamTab.role.superadmin");
+      default:
+        return role;
+    }
+  };
   const [showModal, setShowModal] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -77,8 +89,7 @@ export function TeamTab() {
   const deleteInvitationMutation = useDeleteInvitation();
 
   const form = useForm<InviteUserInput>({
-    // Zod v4 schemas require `as any` due to type mismatch with @hookform/resolvers
-    resolver: zodResolver(InviteUserSchema as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: standardSchemaResolver(InviteUserSchema),
     defaultValues: { role: UserRole.STAFF, email: "" },
   });
 
@@ -86,9 +97,9 @@ export function TeamTab() {
     try {
       const res = await inviteUserMutation.mutateAsync(data);
       setInviteLink(res.data.data.telegramDeepLink);
-      toast.success("Invite generated");
+      toast.success(t("settings.teamTab.toast.inviteGenerated"));
     } catch {
-      toast.error("Couldn't create the invitation. Please try again.");
+      toast.error(t("settings.teamTab.toast.inviteError"));
     }
   };
 
@@ -109,42 +120,44 @@ export function TeamTab() {
   const handleDeactivate = async (id: string) => {
     try {
       await deactivateUserMutation.mutateAsync(id);
-      toast.success("User deactivated");
+      toast.success(t("settings.teamTab.toast.userDeactivated"));
     } catch {
-      toast.error("Couldn't deactivate this user. Please try again.");
+      toast.error(t("settings.teamTab.toast.userDeactivateError"));
     }
   };
 
   const handleReactivate = async (id: string) => {
     try {
       await reactivateUserMutation.mutateAsync(id);
-      toast.success("User reactivated");
+      toast.success(t("settings.teamTab.toast.userReactivated"));
     } catch {
-      toast.error("Couldn't reactivate this user. Please try again.");
+      toast.error(t("settings.teamTab.toast.userReactivateError"));
     }
   };
 
   const handleDeleteInvitation = async (id: string) => {
     try {
       await deleteInvitationMutation.mutateAsync(id);
-      toast.success("Invitation revoked");
+      toast.success(t("settings.teamTab.toast.invitationRevoked"));
     } catch {
-      toast.error("Couldn't revoke this invitation. Please try again.");
+      toast.error(t("settings.teamTab.toast.invitationRevokeError"));
     }
   };
 
   return (
-    <div className="space-y-5 animate-in-up">
+    <div data-testid="team-tab" className="space-y-5 animate-in-up">
       {/* Page header */}
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-xl font-bold text-text-primary">Team Members</h2>
-        <Button onClick={() => setShowModal(true)} className="gap-1.5">
-          <UserPlus className="h-4 w-4" /> Invite Member
+        <h2 className="text-xl font-bold text-text-primary">
+          {t("settings.teamTab.title")}
+        </h2>
+        <Button data-testid="team-invite-btn" onClick={() => setShowModal(true)} className="gap-1.5">
+          <UserPlus className="h-4 w-4" /> {t("settings.teamTab.inviteMember")}
         </Button>
       </div>
 
       {/* Members table */}
-      <div className="bg-elevated rounded-xl overflow-hidden">
+      <div data-testid="team-members-table" className="bg-elevated rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="p-4 space-y-3">
@@ -156,7 +169,13 @@ export function TeamTab() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-elevated/40 hover:bg-elevated/40">
-                  {["Member", "Role", "Status", "Last Login", "Actions"].map(
+                  {[
+                    t("settings.teamTab.table.member"),
+                    t("settings.teamTab.table.role"),
+                    t("settings.teamTab.table.status"),
+                    t("settings.teamTab.table.lastLogin"),
+                    t("settings.teamTab.table.actions"),
+                  ].map(
                     (h) => (
                       <TableHead
                         key={h}
@@ -171,7 +190,6 @@ export function TeamTab() {
               <TableBody>
                 {users.map((m) => {
                   const roleConf = ROLE_CONFIG[m.role] ?? {
-                    label: m.role,
                     cls: "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle",
                   };
                   const initials = m.email.slice(0, 2).toUpperCase();
@@ -195,7 +213,7 @@ export function TeamTab() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={roleConf.cls}>{roleConf.label}</Badge>
+                        <Badge className={roleConf.cls}>{roleLabel(m.role)}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -205,7 +223,9 @@ export function TeamTab() {
                               : "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/10 text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-500/20"
                           }
                         >
-                          {m.isActive ? "Active" : "Inactive"}
+                           {m.isActive
+                             ? t("settings.teamTab.active")
+                             : t("settings.teamTab.inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell className="data-mono text-[12px] whitespace-nowrap">
@@ -221,7 +241,8 @@ export function TeamTab() {
                             className="gap-1.5 text-success hover:text-success h-7 text-xs"
                             onClick={() => handleReactivate(m.id)}
                           >
-                            <RefreshCw className="h-3 w-3" /> Reactivate
+                            <RefreshCw className="h-3 w-3" />{" "}
+                            {t("settings.teamTab.reactivate")}
                           </Button>
                         ) : (
                           <div className="flex items-center gap-2">
@@ -231,7 +252,8 @@ export function TeamTab() {
                               className="h-7 text-xs gap-1 text-danger hover:text-danger hover:bg-danger/10"
                               onClick={() => handleDeactivate(m.id)}
                             >
-                              <UserX className="h-3 w-3" /> Deactivate
+                                <UserX className="h-3 w-3" />{" "}
+                                {t("settings.teamTab.deactivate")}
                             </Button>
                           </div>
                         )}
@@ -249,13 +271,13 @@ export function TeamTab() {
       <div className="bg-elevated rounded-xl overflow-hidden">
         <div className="px-5 py-4 bg-card rounded-t-xl shadow-sm">
           <h3 className="font-sans font-semibold text-[14px] text-text-primary">
-            Pending Invitations
+            {t("settings.teamTab.pendingInvitations")}
           </h3>
         </div>
         <div className="px-5 pb-5 pt-4">
           {invitations.length === 0 ? (
             <p className="text-sm font-sans text-text-secondary">
-              No pending invitations.
+              {t("settings.teamTab.noPendingInvitations")}
             </p>
           ) : (
             <div className="space-y-0">
@@ -267,17 +289,18 @@ export function TeamTab() {
                   <p className="data-mono flex-1 min-w-[200px]">
                     {inv.email ?? "—"}
                   </p>
-                  <span
-                    className={
-                      ROLE_CONFIG[inv.role]?.cls ??
-                      "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle"
-                    }
-                  >
-                    {ROLE_CONFIG[inv.role]?.label ?? inv.role}
-                  </span>
+                    <span
+                      className={
+                        ROLE_CONFIG[inv.role]?.cls ??
+                        "inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold bg-muted text-text-secondary ring-1 ring-inset ring-border-subtle"
+                      }
+                    >
+                      {roleLabel(inv.role)}
+                    </span>
                   <div className="flex items-center gap-1 text-warning text-xs font-sans whitespace-nowrap">
                     <Clock className="h-3 w-3" />
-                    Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                     {t("settings.teamTab.expires")}{" "}
+                     {new Date(inv.expiresAt).toLocaleDateString()}
                   </div>
                   <Button
                     variant="ghost"
@@ -285,7 +308,7 @@ export function TeamTab() {
                     className="h-7 text-xs text-danger hover:text-danger hover:bg-danger/10"
                     onClick={() => handleDeleteInvitation(inv.id)}
                   >
-                    Revoke
+                    {t("settings.teamTab.revoke")}
                   </Button>
                 </div>
               ))}
@@ -304,7 +327,7 @@ export function TeamTab() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="font-bold text-xl text-text-primary">
-              Invite Team Member
+              {t("settings.teamTab.modal.title")}
             </DialogTitle>
           </DialogHeader>
 
@@ -320,12 +343,14 @@ export function TeamTab() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-medium text-text-secondary">
-                        Email Address <span className="text-crimson">*</span>
+                        {t("settings.teamTab.modal.emailLabel")}{" "}
+                        <span className="text-crimson">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input
+                          data-testid="team-invite-email-input"
                           type="email"
-                          placeholder="colleague@company.com"
+                          placeholder={t("settings.teamTab.modal.emailPlaceholder")}
                           {...field}
                         />
                       </FormControl>
@@ -339,7 +364,7 @@ export function TeamTab() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xs font-medium text-text-secondary">
-                        Role
+                        {t("settings.teamTab.table.role")}
                       </FormLabel>
                       <FormControl>
                         <div className="flex gap-2">
@@ -351,7 +376,7 @@ export function TeamTab() {
                                 onClick={() => field.onChange(r)}
                                 className={`flex-1 py-2.5 rounded-lg text-sm font-sans font-medium transition-colors border ${field.value === r ? "border-crimson bg-crimson/10 text-text-primary" : "border-border-default bg-card text-text-secondary hover:text-text-primary"}`}
                               >
-                                {ROLE_CONFIG[r].label}
+                                {roleLabel(r)}
                               </button>
                             ),
                           )}
@@ -362,8 +387,7 @@ export function TeamTab() {
                   )}
                 />
                 <p className="text-[11px] font-sans text-text-muted">
-                  They&apos;ll receive a Telegram deep link to set up their
-                  account.
+                  {t("settings.teamTab.modal.hint")}
                 </p>
                 <div className="flex gap-3">
                   <Button
@@ -372,16 +396,17 @@ export function TeamTab() {
                     className="flex-1"
                     onClick={closeModal}
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button
+                    data-testid="team-invite-submit-btn"
                     type="submit"
                     className="flex-1"
                     disabled={form.formState.isSubmitting}
                   >
                     {form.formState.isSubmitting
-                      ? "Generating…"
-                      : "Generate Invite Link"}
+                      ? t("settings.teamTab.modal.generating")
+                      : t("settings.teamTab.modal.generateInviteLink")}
                   </Button>
                 </div>
               </form>
@@ -391,12 +416,12 @@ export function TeamTab() {
               <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/20">
                 <Check className="h-4 w-4 text-success flex-shrink-0" />
                 <p className="text-xs font-sans text-success">
-                  Invite link generated successfully.
+                  {t("settings.teamTab.modal.generated")}
                 </p>
               </div>
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-text-secondary">
-                  Invite Deep Link
+                   {t("settings.teamTab.modal.deepLink")}
                 </p>
                 <div className="flex gap-2">
                   <Input
@@ -405,6 +430,7 @@ export function TeamTab() {
                     className="text-xs font-mono flex-1"
                   />
                   <Button
+                    data-testid="team-invite-copy-btn"
                     variant="outline"
                     size="sm"
                     onClick={handleCopy}
@@ -412,21 +438,22 @@ export function TeamTab() {
                   >
                     {copied ? (
                       <>
-                        <Check className="h-3.5 w-3.5" /> Copied
+                        <Check className="h-3.5 w-3.5" />{" "}
+                        {t("settings.teamTab.modal.copied")}
                       </>
                     ) : (
                       <>
-                        <Copy className="h-3.5 w-3.5" /> Copy
+                        <Copy className="h-3.5 w-3.5" /> {t("settings.teamTab.modal.copy")}
                       </>
                     )}
                   </Button>
                 </div>
               </div>
               <p className="text-[11px] font-sans text-text-muted">
-                Share this Telegram deep link directly with your team member.
+                 {t("settings.teamTab.modal.shareHint")}
               </p>
               <Button variant="outline" className="w-full" onClick={closeModal}>
-                Done
+                {t("settings.teamTab.modal.done")}
               </Button>
             </div>
           )}

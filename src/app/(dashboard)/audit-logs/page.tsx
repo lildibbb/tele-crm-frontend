@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ClipboardText,
   ArrowCounterClockwise,
-  Warning,
   MagnifyingGlass,
   Hash,
   ChartBar,
   Users,
   Calendar,
+  Warning,
   X,
   Copy,
   Check,
@@ -78,7 +78,7 @@ function AuditDrawer({ log, onClose }: { log: AuditLog; onClose: () => void }) {
             <IconComp
               size={20}
               weight="duotone"
-              className="text-text-secondary flex-shrink-0"
+              className={`${colorCls} flex-shrink-0`}
             />
             <div>
               <h3 className="font-sans font-semibold text-[14px] text-text-primary">
@@ -321,7 +321,7 @@ export default function AuditLogsPage() {
 
   return (
     <>
-      <div className="space-y-6 animate-in-up">
+      <div className="space-y-6 animate-in-up" data-testid="audit-logs-page">
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -370,32 +370,28 @@ export default function AuditLogsPage() {
             {
               icon: Hash,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.total),
               value: total.toLocaleString(),
             },
             {
               icon: Calendar,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.today),
               value: String(todayCount),
             },
             {
               icon: ChartBar,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.topAction),
               value: mostCommonAction,
             },
             {
               icon: Users,
               color: "#A78BFA",
-              bg: "bg-elevated",
               label: t(K.auditLog.stats.actors),
               value: String(uniqueActors),
             },
-          ].map(({ icon: Icon, color, bg, label, value }) => (
+          ].map(({ icon: Icon, color, label, value }) => (
             <div
               key={label}
               className="bg-card rounded-xl border border-border-subtle p-4 shadow-[var(--shadow-card)]"
@@ -433,6 +429,7 @@ export default function AuditLogsPage() {
                 setPage(0);
               }}
               className="w-full pl-8 pr-3 py-2 text-xs font-sans rounded-lg bg-elevated border border-border-subtle text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+              data-testid="audit-logs-search"
             />
           </div>
 
@@ -522,7 +519,7 @@ export default function AuditLogsPage() {
         )}
 
         {/* ── Table ── */}
-        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden">
+        <div className="bg-card rounded-xl border border-border-subtle overflow-hidden" data-testid="audit-logs-table">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-16">
               <div className="w-6 h-6 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />

@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/format";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-export interface MobileAdminSessionsProps {}
+export type MobileAdminSessionsProps = Record<never, never>
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

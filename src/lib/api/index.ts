@@ -12,6 +12,7 @@ export { commandMenuApi } from "./commandMenu";
 export { attachmentsApi, type Attachment } from "./attachments";
 export { botApi } from "./bot";
 export { followUpsApi } from "./followUps";
+export { pendingTasksApi } from "./pendingTasks";
 export { systemConfigApi } from "./systemConfig";
 export { auditLogsApi } from "./auditLogs";
 export { activityApi } from "./activity";

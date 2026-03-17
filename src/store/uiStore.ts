@@ -24,7 +24,7 @@ interface UIActions {
 // ── Store ──────────────────────────────────────────────────────────────────
 export const useUIStore = create<UIState & UIActions>()(
   devtools(
-    (set, get) => ({
+    (set, _get) => ({
       sidebarOpen: false,
       notificationsOpen: false,
       globalLoading: false,

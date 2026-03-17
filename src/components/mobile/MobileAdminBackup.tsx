@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import type { BackupStatus } from "@/lib/api/superadmin";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-export interface MobileAdminBackupProps {}
+export type MobileAdminBackupProps = Record<never, never>
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function formatBytes(bytes: number): string {

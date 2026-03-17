@@ -9,7 +9,6 @@ import {
   Sliders,
   ChartBar,
   Crown,
-  MagnifyingGlass,
   Keyboard,
   Gear,
 } from "@phosphor-icons/react";
@@ -93,7 +92,7 @@ export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
             heading={group.heading}
             className="overflow-hidden p-1 text-text-primary [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-text-muted [&_[cmdk-group]]:pt-0"
           >
-            {group.items.map((item, itemIndex) => (
+            {group.items.map((item) => (
               <CommandItem
                 key={item.href}
                 value={t(item.labelKey)}

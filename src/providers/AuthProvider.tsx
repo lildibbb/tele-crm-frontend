@@ -14,13 +14,13 @@ const PUBLIC_ROUTES = [
   "/register",
   "/deposit",
   "/status",
-  "/docs-public",
+  "/submit",
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { initAuth, skipAuthCheck, isInitialized, isLoading, user } = useAuthStore();
+  const { initAuth, skipAuthCheck, isInitialized, user } = useAuthStore();
 
   // Check if current route is public
   const isPublicRoute = useMemo(() => {
@@ -37,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       "/register",
       "/forgot-password",
       "/reset-password",
+      "/setup-account",
+      "/submit",
     ].some((route) => pathname === route || pathname.startsWith(route + "/"));
 
     if (isGuestOnlyRoute) {

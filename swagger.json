@@ -70,17 +70,19 @@
           }
         },
         "summary": "Unified login (web + Telegram Mini App)",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/refresh": {
       "post": {
-        "description": "Reads the refresh_token HTTP-Only cookie and issues a new short-lived access token.",
+        "description": "Reads the refresh_token HTTP-Only cookie and issues a new short-lived access token. The refresh token is rotated on each call for security.",
         "operationId": "AuthController_refresh",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Token refreshed",
+            "description": "Token refreshed - returns new accessToken and refreshToken",
             "content": {
               "application/json": {
                 "schema": {
@@ -94,6 +96,9 @@
                     "data": {
                       "properties": {
                         "accessToken": {
+                          "type": "string"
+                        },
+                        "refreshToken": {
                           "type": "string"
                         }
                       }
@@ -116,7 +121,9 @@
           }
         ],
         "summary": "Refresh access token",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/logout": {
@@ -138,7 +145,64 @@
           }
         ],
         "summary": "Logout current session",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/invitation-info": {
+      "get": {
+        "description": "Returns public metadata (email, role) for a valid pending invitation. Used by the setup-account page to determine whether to show the email field. Does NOT consume the token.",
+        "operationId": "AuthController_getInvitationInfo",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "description": "Invitation token (inv_<32 hex chars>)",
+            "schema": {
+              "example": "inv_a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation info retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/InvitationInfoResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request – invalid input or business rule violation"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "429": {
+            "description": "Too many requests – rate limit exceeded"
+          }
+        },
+        "summary": "Get invitation info",
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/setup-account": {
@@ -190,7 +254,9 @@
           }
         },
         "summary": "Setup invited account",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/sessions": {
@@ -234,7 +300,9 @@
           }
         ],
         "summary": "List active sessions",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       },
       "delete": {
         "description": "Revokes ALL sessions for the current user and clears the refresh cookie.",
@@ -254,7 +322,9 @@
           }
         ],
         "summary": "Logout everywhere",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/sessions/{sessionId}": {
@@ -290,7 +360,9 @@
           }
         ],
         "summary": "Revoke a session",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/forgot-password": {
@@ -336,7 +408,9 @@
           }
         },
         "summary": "Request password reset",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/reset-password": {
@@ -385,7 +459,9 @@
           }
         },
         "summary": "Reset password with OTP",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/auth/change-own-password": {
@@ -423,7 +499,9 @@
           }
         ],
         "summary": "Change own password",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/users": {
@@ -470,7 +548,65 @@
           }
         ],
         "summary": "List all users",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/me/timezone": {
+      "patch": {
+        "description": "Saves the authenticated user's preferred IANA timezone. Used by analytics to compute correct date boundaries.",
+        "operationId": "UsersController_updateTimezone",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTimezoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Timezone updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update own timezone",
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/me": {
@@ -511,12 +647,14 @@
           }
         ],
         "summary": "Get own profile",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/invitations": {
       "get": {
-        "description": "Returns all pending and accepted invitations.",
+        "description": "Returns active pending invitations (not yet accepted, not expired).",
         "operationId": "UsersController_listInvitations",
         "parameters": [],
         "responses": {
@@ -558,7 +696,9 @@
           }
         ],
         "summary": "List invitations",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/{id}": {
@@ -615,7 +755,9 @@
           }
         ],
         "summary": "Get user by ID",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/{id}/deactivate": {
@@ -654,7 +796,9 @@
           }
         ],
         "summary": "Deactivate user",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/{id}/change-password": {
@@ -706,7 +850,9 @@
           }
         ],
         "summary": "Force password change",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/invite": {
@@ -763,7 +909,9 @@
           }
         ],
         "summary": "Invite a team member",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/invitations/{id}": {
@@ -802,7 +950,9 @@
           }
         ],
         "summary": "Delete invitation",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/{id}/reactivate": {
@@ -860,7 +1010,9 @@
           }
         ],
         "summary": "Reactivate user",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/users/{id}/role": {
@@ -931,7 +1083,9 @@
           }
         ],
         "summary": "Change user role",
-        "tags": ["users"]
+        "tags": [
+          "users"
+        ]
       }
     },
     "/superadmin/users": {
@@ -985,7 +1139,9 @@
           }
         ],
         "summary": "Create system user",
-        "tags": ["superadmin"]
+        "tags": [
+          "superadmin"
+        ]
       },
       "get": {
         "description": "Returns all CRM system users. Requires SUPERADMIN role.",
@@ -1030,7 +1186,9 @@
           }
         ],
         "summary": "List all users",
-        "tags": ["superadmin"]
+        "tags": [
+          "superadmin"
+        ]
       }
     },
     "/superadmin/users/{id}": {
@@ -1085,7 +1243,9 @@
           }
         ],
         "summary": "Get user by ID",
-        "tags": ["superadmin"]
+        "tags": [
+          "superadmin"
+        ]
       },
       "delete": {
         "description": "Deactivates the user and instantly revokes all their sessions (SUPERADMIN only).",
@@ -1119,7 +1279,9 @@
           }
         ],
         "summary": "Deactivate user",
-        "tags": ["superadmin"]
+        "tags": [
+          "superadmin"
+        ]
       }
     },
     "/superadmin/users/{id}/change-password": {
@@ -1165,7 +1327,9 @@
           }
         ],
         "summary": "Force password change",
-        "tags": ["superadmin"]
+        "tags": [
+          "superadmin"
+        ]
       }
     },
     "/superadmin/users/{id}/reactivate": {
@@ -1220,7 +1384,9 @@
           }
         ],
         "summary": "Reactivate user",
-        "tags": ["superadmin"]
+        "tags": [
+          "superadmin"
+        ]
       }
     },
     "/superadmin/users/{id}/role": {
@@ -1285,7 +1451,138 @@
           }
         ],
         "summary": "Change user role",
-        "tags": ["superadmin"]
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/users/{id}/email": {
+      "patch": {
+        "operationId": "SuperadminUsersController_changeEmail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change user email address",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/users/{id}/leads": {
+      "get": {
+        "operationId": "SuperadminUsersController_getUserLeads",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User leads retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get leads assigned to user",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/bot/status": {
+      "get": {
+        "operationId": "BotStatusController_getStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Bot status"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Telegram bot health & webhook info (OWNER / ADMIN / SUPERADMIN)",
+        "tags": [
+          "bot"
+        ]
       }
     },
     "/leads/submit-info": {
@@ -1334,7 +1631,299 @@
           }
         },
         "summary": "Submit lead info (public)",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/submit-deposit": {
+      "post": {
+        "description": "Public endpoint: a lead submits their deposit amount and optional receipt files via tokenized form link.",
+        "operationId": "LeadsController_submitDeposit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "depositToken",
+                  "depositBalance"
+                ],
+                "properties": {
+                  "depositToken": {
+                    "type": "string",
+                    "description": "One-time deposit token from the bot link"
+                  },
+                  "depositBalance": {
+                    "type": "string",
+                    "description": "Deposit amount (e.g. \"500.00\")"
+                  },
+                  "hfmBrokerId": {
+                    "type": "string"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "receipts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Up to 3 receipt files"
+                  }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "depositToken",
+                  "depositBalance"
+                ],
+                "properties": {
+                  "depositToken": {
+                    "type": "string",
+                    "description": "One-time deposit token from the bot link"
+                  },
+                  "depositBalance": {
+                    "type": "string",
+                    "description": "Deposit amount (e.g. \"500.00\")"
+                  },
+                  "hfmBrokerId": {
+                    "type": "string"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "receipts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Up to 3 receipt files"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deposit info recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Submit deposit proof (public)",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/token-info": {
+      "get": {
+        "description": "Returns the token type (register/deposit) and lead name. Used by the combined form to determine which fields to show.",
+        "operationId": "LeadsController_getTokenInfo",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token resolved"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Resolve a bot token (public)",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/submit": {
+      "post": {
+        "description": "Single endpoint for both registration and deposit forms. Pass the token from the bot link — the server auto-detects the token type.",
+        "operationId": "LeadsController_submitForm",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Register or deposit token from bot link"
+                  },
+                  "hfmBrokerId": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phoneNumber": {
+                    "type": "string"
+                  },
+                  "depositBalance": {
+                    "type": "string",
+                    "description": "Required for deposit tokens"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "receipts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Up to 3 receipt files (deposit only)"
+                  }
+                }
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Register or deposit token from bot link"
+                  },
+                  "hfmBrokerId": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phoneNumber": {
+                    "type": "string"
+                  },
+                  "depositBalance": {
+                    "type": "string",
+                    "description": "Required for deposit tokens"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "receipts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Up to 3 receipt files (deposit only)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Form submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "summary": "Combined form submit (public)",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/status": {
+      "get": {
+        "description": "Returns the lead status and key timeline timestamps for the status page.",
+        "operationId": "LeadsController_getLeadStatus",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Status returned"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "summary": "Get lead status by token (public)",
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads": {
@@ -1351,10 +1940,19 @@
               "enum": [
                 "NEW",
                 "CONTACTED",
-                "REGISTERED",
                 "DEPOSIT_REPORTED",
-                "DEPOSIT_CONFIRMED"
+                "DEPOSIT_CONFIRMED",
+                "REJECTED"
               ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "statuses",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated list of statuses (e.g. DEPOSIT_REPORTED,DEPOSIT_CONFIRMED). Overrides single status param.",
+            "schema": {
               "type": "string"
             }
           },
@@ -1427,7 +2025,10 @@
             "in": "query",
             "description": "Sort direction (default: desc)",
             "schema": {
-              "enum": ["asc", "desc"],
+              "enum": [
+                "asc",
+                "desc"
+              ],
               "type": "string"
             }
           },
@@ -1435,7 +2036,7 @@
             "name": "skip",
             "required": false,
             "in": "query",
-            "description": "Pagination offset",
+            "description": "Pagination offset (alternative to page)",
             "schema": {
               "example": 0,
               "type": "number"
@@ -1445,9 +2046,19 @@
             "name": "take",
             "required": false,
             "in": "query",
-            "description": "Page size (default 20, max 200)",
+            "description": "Page size (default 20, max 100)",
             "schema": {
               "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number (1-indexed). Overrides skip when provided.",
+            "schema": {
+              "example": 1,
               "type": "number"
             }
           }
@@ -1491,7 +2102,9 @@
           }
         ],
         "summary": "List leads",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/leaderboard": {
@@ -1513,7 +2126,11 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": ["hot", "warm", "cold"],
+              "enum": [
+                "hot",
+                "warm",
+                "cold"
+              ],
               "type": "string"
             }
           }
@@ -1535,14 +2152,29 @@
           }
         ],
         "summary": "AI score leaderboard",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/export": {
       "get": {
-        "description": "Streams a CSV file of all leads matching optional filters.",
-        "operationId": "LeadsController_exportCsv",
+        "description": "Downloads a leads export file. Pass `format=xlsx` for a multi-sheet Excel workbook (one sheet per status). Omit `format` or pass `format=csv` for the original CSV stream (backwards-compatible). If `status` is supplied with `format=xlsx`, only that status tab is generated.",
+        "operationId": "LeadsController_exportLeads",
         "parameters": [
+          {
+            "name": "format",
+            "required": false,
+            "in": "query",
+            "description": "Response format (default: csv)",
+            "schema": {
+              "enum": [
+                "csv",
+                "xlsx"
+              ],
+              "type": "string"
+            }
+          },
           {
             "name": "status",
             "required": false,
@@ -1551,9 +2183,9 @@
               "enum": [
                 "NEW",
                 "CONTACTED",
-                "REGISTERED",
                 "DEPOSIT_REPORTED",
-                "DEPOSIT_CONFIRMED"
+                "DEPOSIT_CONFIRMED",
+                "REJECTED"
               ],
               "type": "string"
             }
@@ -1562,7 +2194,7 @@
             "name": "from",
             "required": false,
             "in": "query",
-            "description": "ISO8601 start date",
+            "description": "ISO8601 start date (createdAt ≥)",
             "schema": {
               "type": "string"
             }
@@ -1571,7 +2203,7 @@
             "name": "to",
             "required": false,
             "in": "query",
-            "description": "ISO8601 end date",
+            "description": "ISO8601 end date (createdAt ≤)",
             "schema": {
               "type": "string"
             }
@@ -1579,7 +2211,38 @@
         ],
         "responses": {
           "200": {
-            "description": "CSV file stream",
+            "description": "File stream",
+            "content": {
+              "text/csv": {},
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {}
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Export leads (CSV or multi-sheet Excel)",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/import/template": {
+      "get": {
+        "description": "Returns a ready-to-fill CSV file with all supported column headers. Only `telegram_id` is required; all other columns are optional.",
+        "operationId": "LeadsController_downloadImportTemplate",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "CSV template",
             "content": {
               "text/csv": {}
             }
@@ -1596,8 +2259,93 @@
             "bearer": []
           }
         ],
-        "summary": "Export leads as CSV",
-        "tags": ["leads"]
+        "summary": "Download CSV import template",
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/import": {
+      "post": {
+        "description": "Uploads a CSV file and upserts leads. `telegram_id` is **required** and acts as the upsert key — existing leads are updated, new ones are created. Max file size: 5 MB. Download a template from `GET /leads/import/template`.",
+        "operationId": "LeadsController_importLeads",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "CSV file (max 5 MB)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Import result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "imported": {
+                          "type": "number",
+                          "example": 10
+                        },
+                        "updated": {
+                          "type": "number",
+                          "example": 3
+                        },
+                        "skipped": {
+                          "type": "number",
+                          "example": 1
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Import leads from CSV",
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/bulk/handover": {
@@ -1635,7 +2383,49 @@
           }
         ],
         "summary": "Bulk toggle handover mode for all leads",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/bulk/status": {
+      "patch": {
+        "description": "Updates the status for a list of lead IDs in a single operation.",
+        "operationId": "LeadsController_bulkUpdateStatus",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkUpdateStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Statuses updated"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bulk update lead status",
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/{id}": {
@@ -1693,7 +2483,75 @@
           }
         ],
         "summary": "Get lead by ID",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/{id}/info": {
+      "patch": {
+        "operationId": "LeadsController_updateLeadInfo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLeadInfoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lead info updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/LeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update lead info (hfmBrokerId, email, phoneNumber)",
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/{id}/status": {
@@ -1763,7 +2621,9 @@
           }
         ],
         "summary": "Update lead status",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/{id}/handover": {
@@ -1831,7 +2691,9 @@
           }
         ],
         "summary": "Toggle handover mode",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/{id}/verify": {
@@ -1889,7 +2751,97 @@
           }
         ],
         "summary": "Verify lead",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
+      }
+    },
+    "/leads/{id}/reply": {
+      "post": {
+        "description": "Sends a Telegram message to the lead and logs it as MANUAL_REPLY_SENT. Text-only replies send one text message. Attachment replies (handover mode only) send one single Telegram media message with caption (no split text + media sends).",
+        "operationId": "LeadsController_replyToLead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "message"
+                ],
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "maxLength": 4096,
+                    "description": "Message to send to the lead via Telegram"
+                  },
+                  "attachment": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Optional single attachment file. When provided, the reply is delivered as one media message with caption = message."
+                  }
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "message"
+                ],
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "maxLength": 4096,
+                    "description": "Message to send to the lead via Telegram"
+                  },
+                  "attachment": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Optional single attachment file. When provided, the reply is delivered as one media message with caption = message."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Send manual reply to a lead",
+        "tags": [
+          "leads"
+        ]
       }
     },
     "/leads/{id}/interactions": {
@@ -1953,1284 +2905,17 @@
           }
         ],
         "summary": "Paginated interaction timeline for a lead",
-        "tags": ["leads"]
+        "tags": [
+          "leads"
+        ]
       }
     },
-    "/knowledge-base": {
+    "/audit-logs/export": {
       "get": {
-        "operationId": "KnowledgeBaseController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Entries retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/KbResponseDto"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List all KB entries",
-        "tags": ["knowledge-base"]
-      },
-      "post": {
-        "description": "Use POST /text or POST /upload instead.",
-        "operationId": "KnowledgeBaseController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateKbDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Entry created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/KbResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create KB entry (legacy)",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/knowledge-base/active": {
-      "get": {
-        "operationId": "KnowledgeBaseController_findActive",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Active entries retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/KbResponseDto"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List active KB entries (RAG-ready)",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/knowledge-base/status": {
-      "get": {
-        "description": "Subscribe with ?kbId=<id> to receive real-time processing updates.",
-        "operationId": "KnowledgeBaseController_getProcessingStatus",
+        "operationId": "AuditLogController_exportCsv",
         "parameters": [
           {
-            "name": "kbId",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "SSE stream of { status, progress, kbId?, error? }"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "SSE stream for KB file processing status",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/knowledge-base/{id}": {
-      "get": {
-        "operationId": "KnowledgeBaseController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/KbResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get KB entry by ID",
-        "tags": ["knowledge-base"]
-      },
-      "patch": {
-        "operationId": "KnowledgeBaseController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateKbDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Entry updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/KbResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update KB entry",
-        "tags": ["knowledge-base"]
-      },
-      "delete": {
-        "operationId": "KnowledgeBaseController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Entry deleted"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete KB entry",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/knowledge-base/text": {
-      "post": {
-        "description": "Embedding generated immediately in background.",
-        "operationId": "KnowledgeBaseController_createText",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateKbDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Entry created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/KbResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create text/link KB entry",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/knowledge-base/upload": {
-      "post": {
-        "description": "File is processed asynchronously. Subscribe to GET /knowledge-base/status?kbId=<id> for real-time progress.",
-        "operationId": "KnowledgeBaseController_uploadFile",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "required": ["file", "title"],
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  },
-                  "title": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Upload accepted, processing started"
-          },
-          "422": {
-            "description": "Validation failed"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Upload file to KB (PDF, DOCX, image)",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/knowledge-base/admin/reembed-missing": {
-      "post": {
-        "description": "Queues async embedding generation for all active KB entries that have a null embedding vector. Use after API failures or to backfill legacy entries.",
-        "operationId": "KnowledgeBaseController_reembedMissing",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "properties": {
-                        "queued": {
-                          "type": "number"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Re-embed missing KB entries",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/knowledge-base/admin/embedding-stats": {
-      "get": {
-        "description": "Returns counts of embedded vs missing embedding for KB entries.",
-        "operationId": "KnowledgeBaseController_embeddingStats",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Embedding coverage stats",
-        "tags": ["knowledge-base"]
-      }
-    },
-    "/command-menu": {
-      "get": {
-        "description": "Returns all command menus ordered by display order.",
-        "operationId": "CommandMenuController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Command menus retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/CommandMenuResponseDto"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List all command menu entries",
-        "tags": ["command-menu"]
-      },
-      "post": {
-        "description": "Creates a new command menu with Tiptap rich content. Embedding generated asynchronously.",
-        "operationId": "CommandMenuController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCommandMenuDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Command menu created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CommandMenuResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create command menu",
-        "tags": ["command-menu"]
-      }
-    },
-    "/command-menu/{id}": {
-      "get": {
-        "operationId": "CommandMenuController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "CommandMenu UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Command menu retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CommandMenuResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get command menu by ID",
-        "tags": ["command-menu"]
-      },
-      "patch": {
-        "description": "Updates label, description, content, order, or isActive. Re-generates embedding if content changes.",
-        "operationId": "CommandMenuController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "CommandMenu UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCommandMenuDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Command menu updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/CommandMenuResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Resource not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update command menu",
-        "tags": ["command-menu"]
-      },
-      "delete": {
-        "operationId": "CommandMenuController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "description": "CommandMenu UUID",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Command menu deleted"
-          },
-          "404": {
-            "description": "Resource not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete command menu (SUPERADMIN only)",
-        "tags": ["command-menu"]
-      }
-    },
-    "/command-menu/reorder": {
-      "patch": {
-        "description": "Accepts array of { id, order } to update display positions.",
-        "operationId": "CommandMenuController_reorder",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReorderCommandMenuDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Reorder applied"
-          },
-          "422": {
-            "description": "Validation failed"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Bulk reorder command menus",
-        "tags": ["command-menu"]
-      }
-    },
-    "/command-menu/admin/reembed-missing": {
-      "post": {
-        "description": "Queues async embedding generation for all active CommandMenu entries that have a null embedding vector.",
-        "operationId": "CommandMenuController_reembedMissing",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "properties": {
-                        "queued": {
-                          "type": "number"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Re-embed missing CommandMenu entries",
-        "tags": ["command-menu"]
-      }
-    },
-    "/bot/status": {
-      "get": {
-        "operationId": "BotStatusController_getStatus",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Bot status"
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Telegram bot health & webhook info (SUPERADMIN)",
-        "tags": ["bot"]
-      }
-    },
-    "/attachments": {
-      "get": {
-        "description": "Returns all uploaded receipts/screenshots for the given lead UUID.",
-        "operationId": "AttachmentsController_findByLead",
-        "parameters": [
-          {
-            "name": "leadId",
-            "required": true,
-            "in": "query",
-            "description": "Lead UUID",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Attachments retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/AttachmentResponseDto"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          },
-          "404": {
-            "description": "Resource not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List attachments for a lead",
-        "tags": ["attachments"]
-      }
-    },
-    "/health": {
-      "get": {
-        "operationId": "HealthController_check",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "The Health Check is successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "ok"
-                    },
-                    "info": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "error": {
-                      "type": "object",
-                      "example": {},
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "details": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "The Health Check is not successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "example": "error"
-                    },
-                    "info": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "error": {
-                      "type": "object",
-                      "example": {
-                        "redis": {
-                          "status": "down",
-                          "message": "Could not connect"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      },
-                      "nullable": true
-                    },
-                    "details": {
-                      "type": "object",
-                      "example": {
-                        "database": {
-                          "status": "up"
-                        },
-                        "redis": {
-                          "status": "down",
-                          "message": "Could not connect"
-                        }
-                      },
-                      "additionalProperties": {
-                        "type": "object",
-                        "required": ["status"],
-                        "properties": {
-                          "status": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "summary": "System health check",
-        "tags": ["health"]
-      }
-    },
-    "/analytics/summary": {
-      "get": {
-        "description": "Returns consolidated KPI cards, funnel metrics, and trend series data based on a given timeframe.",
-        "operationId": "AnalyticsController_getSummary",
-        "parameters": [
-          {
-            "name": "timeframe",
-            "required": false,
-            "in": "query",
-            "description": "The predefined timeframe for the analytics.",
-            "schema": {
-              "default": "last_30_days",
-              "type": "string",
-              "enum": [
-                "today",
-                "yesterday",
-                "this_week",
-                "this_month",
-                "last_30_days",
-                "last_90_days",
-                "all_time",
-                "custom"
-              ]
-            }
-          },
-          {
-            "name": "startDate",
-            "required": false,
-            "in": "query",
-            "description": "Required if timeframe is custom (ISO 8601 date string)",
-            "schema": {
-              "example": "2026-01-01",
-              "type": "string"
-            }
-          },
-          {
-            "name": "endDate",
-            "required": false,
-            "in": "query",
-            "description": "Required if timeframe is custom (ISO 8601 date string)",
-            "schema": {
-              "example": "2026-01-31",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Analytics summary retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/AnalyticsSummaryResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Consolidated Analytics Summary",
-        "tags": ["analytics"]
-      }
-    },
-    "/analytics/dashboard": {
-      "get": {
-        "deprecated": true,
-        "description": "Returns lead funnel counts. Use /analytics/summary instead.",
-        "operationId": "AnalyticsController_getDashboardStats",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Dashboard stats retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/AnalyticsDashboardResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Dashboard stats (Deprecated)",
-        "tags": ["analytics"]
-      }
-    },
-    "/analytics/stats": {
-      "get": {
-        "description": "Returns today's aggregated stats. Returns null if daily stats haven't been computed yet.",
-        "operationId": "AnalyticsController_getTodayStats",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Today's stats retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "$ref": "#/components/schemas/DailyStatsResponseDto"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Today's stats",
-        "tags": ["analytics"]
-      }
-    },
-    "/analytics/weekly": {
-      "get": {
-        "description": "Returns new leads, registered leads, and deposits grouped by ISO week. Default: last 8 weeks.",
-        "operationId": "AnalyticsController_getWeeklyStats",
-        "parameters": [
-          {
-            "name": "weeks",
-            "required": false,
-            "in": "query",
-            "description": "Number of past weeks to include (default 8)",
-            "schema": {
-              "example": 8,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Weekly stats retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "statusCode": {
-                      "type": "number",
-                      "example": 200
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Request successful"
-                    },
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/WeeklyStatsResponseDto"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized – invalid or missing JWT"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Weekly stats",
-        "tags": ["analytics"]
-      }
-    },
-    "/analytics/rag-stats": {
-      "get": {
-        "description": "Hit rate, avg chunks, zero-hit count, token usage from last N auto-reply interactions.",
-        "operationId": "AnalyticsController_getRagStats",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Number of recent replies to analyse (default 500)",
-            "schema": {
-              "example": 500,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "RAG stats retrieved"
-          },
-          "403": {
-            "description": "Forbidden – insufficient role"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "RAG quality stats (SUPERADMIN)",
-        "tags": ["analytics"]
-      }
-    },
-    "/follow-ups": {
-      "get": {
-        "operationId": "FollowUpController_findAll",
-        "parameters": [
-          {
-            "name": "leadId",
+            "name": "userId",
             "required": false,
             "in": "query",
             "schema": {
@@ -3238,68 +2923,57 @@
             }
           },
           {
-            "name": "status",
+            "name": "userEmail",
             "required": false,
             "in": "query",
             "schema": {
-              "enum": ["pending", "sent", "cancelled"],
               "type": "string"
             }
           },
           {
-            "name": "skip",
+            "name": "action",
             "required": false,
             "in": "query",
             "schema": {
-              "type": "number"
+              "type": "string"
             }
           },
           {
-            "name": "take",
+            "name": "resourceType",
             "required": false,
             "in": "query",
             "schema": {
-              "type": "number"
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO8601 date",
+            "schema": {
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Follow-ups retrieved"
+            "description": "CSV file"
           },
           "401": {
             "description": "Unauthorized – invalid or missing JWT"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List scheduled follow-up messages",
-        "tags": ["follow-ups"]
-      }
-    },
-    "/follow-ups/{id}": {
-      "delete": {
-        "operationId": "FollowUpController_cancel",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Follow-up cancelled"
           },
-          "404": {
-            "description": "Resource not found"
+          "403": {
+            "description": "Forbidden – insufficient role"
           }
         },
         "security": [
@@ -3307,143 +2981,10 @@
             "bearer": []
           }
         ],
-        "summary": "Cancel a scheduled follow-up by ID",
-        "tags": ["follow-ups"]
-      }
-    },
-    "/system-config/allowlist": {
-      "get": {
-        "operationId": "SystemConfigController_getAllowlist",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Allowlist returned"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List allowed config keys",
-        "tags": ["system-config"]
-      }
-    },
-    "/system-config": {
-      "get": {
-        "operationId": "SystemConfigController_findAll",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Config entries retrieved"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "List all system config entries",
-        "tags": ["system-config"]
-      }
-    },
-    "/system-config/{key}": {
-      "get": {
-        "operationId": "SystemConfigController_findOne",
-        "parameters": [
-          {
-            "name": "key",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "ai.similarityThreshold",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Config entry retrieved"
-          },
-          "404": {
-            "description": "Resource not found"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get a single config entry by key",
-        "tags": ["system-config"]
-      },
-      "patch": {
-        "operationId": "SystemConfigController_upsert",
-        "parameters": [
-          {
-            "name": "key",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "ai.rateLimitPerMinute",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpsertSystemConfigDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Config updated"
-          },
-          "422": {
-            "description": "Validation failed"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Upsert a config value (validated against allowlist)",
-        "tags": ["system-config"]
-      },
-      "delete": {
-        "operationId": "SystemConfigController_remove",
-        "parameters": [
-          {
-            "name": "key",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "example": "ai.similarityThreshold",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Config reset to default"
-          },
-          "422": {
-            "description": "Validation failed"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Reset config key to env default (delete DB override)",
-        "tags": ["system-config"]
+        "summary": "Export audit logs as CSV (max 10 000 rows)",
+        "tags": [
+          "audit-logs"
+        ]
       }
     },
     "/audit-logs": {
@@ -3454,6 +2995,15 @@
             "name": "userId",
             "required": false,
             "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userEmail",
+            "required": false,
+            "in": "query",
+            "description": "Partial email match",
             "schema": {
               "type": "string"
             }
@@ -3541,8 +3091,1881 @@
             "bearer": []
           }
         ],
-        "summary": "Query audit log entries (SUPERADMIN only)",
-        "tags": ["audit-logs"]
+        "summary": "Query audit log entries (OWNER / ADMIN / SUPERADMIN)",
+        "tags": [
+          "audit-logs"
+        ]
+      }
+    },
+    "/follow-ups": {
+      "get": {
+        "operationId": "FollowUpController_findAll",
+        "parameters": [
+          {
+            "name": "leadId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "pending",
+                "sent",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Follow-ups retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List scheduled follow-up messages",
+        "tags": [
+          "follow-ups"
+        ]
+      }
+    },
+    "/follow-ups/{id}": {
+      "delete": {
+        "operationId": "FollowUpController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Follow-up cancelled"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel a scheduled follow-up by ID",
+        "tags": [
+          "follow-ups"
+        ]
+      }
+    },
+    "/follow-ups/failed": {
+      "get": {
+        "operationId": "FollowUpController_listFailed",
+        "parameters": [
+          {
+            "name": "start",
+            "required": false,
+            "in": "query",
+            "description": "Start index for pagination",
+            "schema": {
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "end",
+            "required": false,
+            "in": "query",
+            "description": "End index for pagination",
+            "schema": {
+              "example": 49,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Failed jobs retrieved"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List failed follow-up jobs (OWNER / ADMIN / SUPERADMIN)",
+        "tags": [
+          "follow-ups"
+        ]
+      }
+    },
+    "/follow-ups/retry/{jobId}": {
+      "post": {
+        "operationId": "FollowUpController_retryFailed",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job re-queued"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retry a failed follow-up job (OWNER / ADMIN / SUPERADMIN)",
+        "tags": [
+          "follow-ups"
+        ]
+      }
+    },
+    "/system-config/allowlist": {
+      "get": {
+        "operationId": "SystemConfigController_getAllowlist",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Allowlist returned"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List allowed config keys",
+        "tags": [
+          "system-config"
+        ]
+      }
+    },
+    "/system-config/public": {
+      "get": {
+        "operationId": "SystemConfigController_getPublicConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Public config returned"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Public config — returns system.* and feature.* keys (no auth required)",
+        "tags": [
+          "system-config"
+        ]
+      }
+    },
+    "/system-config": {
+      "get": {
+        "operationId": "SystemConfigController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Config entries retrieved"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all system config entries",
+        "tags": [
+          "system-config"
+        ]
+      }
+    },
+    "/system-config/{key}": {
+      "get": {
+        "operationId": "SystemConfigController_findOne",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "ai.similarityThreshold",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Config entry retrieved"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a single config entry by key",
+        "tags": [
+          "system-config"
+        ]
+      },
+      "patch": {
+        "operationId": "SystemConfigController_upsert",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "ai.rateLimitPerMinute",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertSystemConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Config updated"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upsert a config value (validated against allowlist)",
+        "tags": [
+          "system-config"
+        ]
+      },
+      "delete": {
+        "operationId": "SystemConfigController_remove",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "ai.similarityThreshold",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Config reset to default"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reset config key to env default — SUPERADMIN only",
+        "tags": [
+          "system-config"
+        ]
+      }
+    },
+    "/attachments": {
+      "get": {
+        "description": "Returns all uploaded receipts/screenshots for the given lead UUID.",
+        "operationId": "AttachmentsController_findByLead",
+        "parameters": [
+          {
+            "name": "leadId",
+            "required": true,
+            "in": "query",
+            "description": "Lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attachments retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AttachmentResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List attachments for a lead",
+        "tags": [
+          "attachments"
+        ]
+      }
+    },
+    "/knowledge-base": {
+      "get": {
+        "operationId": "KnowledgeBaseController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Entries retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/KbResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all KB entries",
+        "tags": [
+          "knowledge-base"
+        ]
+      },
+      "post": {
+        "description": "Use POST /text or POST /upload instead.",
+        "operationId": "KnowledgeBaseController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKbDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create KB entry (legacy)",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/knowledge-base/active": {
+      "get": {
+        "operationId": "KnowledgeBaseController_findActive",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Active entries retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/KbResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List active KB entries (RAG-ready)",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/knowledge-base/status": {
+      "get": {
+        "description": "Subscribe with ?kbId=<id> to receive real-time processing updates.",
+        "operationId": "KnowledgeBaseController_getProcessingStatus",
+        "parameters": [
+          {
+            "name": "kbId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream of { status, progress, kbId?, error? }"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "SSE stream for KB file processing status",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/knowledge-base/{id}": {
+      "get": {
+        "operationId": "KnowledgeBaseController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get KB entry by ID",
+        "tags": [
+          "knowledge-base"
+        ]
+      },
+      "patch": {
+        "operationId": "KnowledgeBaseController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKbDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update KB entry",
+        "tags": [
+          "knowledge-base"
+        ]
+      },
+      "delete": {
+        "operationId": "KnowledgeBaseController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entry deleted"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete KB entry",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/knowledge-base/text": {
+      "post": {
+        "description": "Embedding generated immediately in background.",
+        "operationId": "KnowledgeBaseController_createText",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKbDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/KbResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create text/link KB entry",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/knowledge-base/upload": {
+      "post": {
+        "description": "File is processed asynchronously. Subscribe to GET /knowledge-base/status?kbId=<id> for real-time progress.",
+        "operationId": "KnowledgeBaseController_uploadFile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "title"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Upload accepted, processing started"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload file to KB (PDF, DOCX, image)",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/knowledge-base/admin/reembed-missing": {
+      "post": {
+        "description": "Queues async embedding generation for all active KB entries that have a null embedding vector. Use after API failures or to backfill legacy entries.",
+        "operationId": "KnowledgeBaseController_reembedMissing",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "queued": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Re-embed missing KB entries",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/knowledge-base/admin/embedding-stats": {
+      "get": {
+        "description": "Returns counts of embedded vs missing embedding for KB entries.",
+        "operationId": "KnowledgeBaseController_embeddingStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Embedding coverage stats",
+        "tags": [
+          "knowledge-base"
+        ]
+      }
+    },
+    "/command-menu": {
+      "get": {
+        "description": "Returns all command menus ordered by display order.",
+        "operationId": "CommandMenuController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Command menus retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommandMenuResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all command menu entries",
+        "tags": [
+          "command-menu"
+        ]
+      },
+      "post": {
+        "description": "Creates a new command menu with Tiptap rich content. Embedding generated asynchronously.",
+        "operationId": "CommandMenuController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommandMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Command menu created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CommandMenuResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create command menu",
+        "tags": [
+          "command-menu"
+        ]
+      }
+    },
+    "/command-menu/{id}": {
+      "get": {
+        "operationId": "CommandMenuController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "CommandMenu UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Command menu retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CommandMenuResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get command menu by ID",
+        "tags": [
+          "command-menu"
+        ]
+      },
+      "patch": {
+        "description": "Updates label, description, content, order, or isActive. Re-generates embedding if content changes.",
+        "operationId": "CommandMenuController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "CommandMenu UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommandMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Command menu updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CommandMenuResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update command menu",
+        "tags": [
+          "command-menu"
+        ]
+      },
+      "delete": {
+        "operationId": "CommandMenuController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "CommandMenu UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Command menu deleted"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete command menu",
+        "tags": [
+          "command-menu"
+        ]
+      }
+    },
+    "/command-menu/reorder": {
+      "patch": {
+        "description": "Accepts array of { id, order } to update display positions.",
+        "operationId": "CommandMenuController_reorder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderCommandMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reorder applied"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bulk reorder command menus",
+        "tags": [
+          "command-menu"
+        ]
+      }
+    },
+    "/command-menu/admin/reembed-missing": {
+      "post": {
+        "description": "Queues async embedding generation for all active CommandMenu entries that have a null embedding vector.",
+        "operationId": "CommandMenuController_reembedMissing",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "properties": {
+                        "queued": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Re-embed missing CommandMenu entries",
+        "tags": [
+          "command-menu"
+        ]
+      }
+    },
+    "/pending-tasks": {
+      "get": {
+        "operationId": "PendingTasksController_findAll",
+        "parameters": [
+          {
+            "name": "leadId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by lead UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by pending task status",
+            "schema": {
+              "enum": [
+                "PENDING",
+                "RESOLVED",
+                "DISMISSED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "take",
+            "required": false,
+            "in": "query",
+            "description": "Page size",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending tasks retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List pending tasks",
+        "tags": [
+          "pending-tasks"
+        ]
+      }
+    },
+    "/pending-tasks/grouped-by-lead": {
+      "get": {
+        "operationId": "PendingTasksController_findGroupedByLead",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter grouped tasks by task status (defaults to PENDING when omitted)",
+            "schema": {
+              "enum": [
+                "PENDING",
+                "RESOLVED",
+                "DISMISSED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pending tasks grouped by lead retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PendingTaskGroupedByLeadResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List pending tasks grouped by lead",
+        "tags": [
+          "pending-tasks"
+        ]
+      }
+    },
+    "/pending-tasks/{id}/status": {
+      "patch": {
+        "operationId": "PendingTasksController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Pending task UUID",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePendingTaskDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pending task status updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PendingTaskResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request – invalid input or business rule violation"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "404": {
+            "description": "Resource not found"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update pending task status",
+        "tags": [
+          "pending-tasks"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "System health check",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/analytics/summary": {
+      "get": {
+        "description": "Returns consolidated KPI cards, funnel metrics, and trend series data based on a given timeframe.",
+        "operationId": "AnalyticsController_getSummary",
+        "parameters": [
+          {
+            "name": "timeframe",
+            "required": false,
+            "in": "query",
+            "description": "The predefined timeframe for the analytics.",
+            "schema": {
+              "default": "last_30_days",
+              "type": "string",
+              "enum": [
+                "today",
+                "yesterday",
+                "this_week",
+                "this_month",
+                "last_30_days",
+                "last_90_days",
+                "all_time",
+                "custom"
+              ]
+            }
+          },
+          {
+            "name": "startDate",
+            "required": false,
+            "in": "query",
+            "description": "Required if timeframe is custom (ISO 8601 date string)",
+            "schema": {
+              "example": "2026-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endDate",
+            "required": false,
+            "in": "query",
+            "description": "Required if timeframe is custom (ISO 8601 date string)",
+            "schema": {
+              "example": "2026-01-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "timezone",
+            "required": false,
+            "in": "query",
+            "description": "IANA timezone name for date boundary calculations. Defaults to UTC. Pass the browser value: Intl.DateTimeFormat().resolvedOptions().timeZone",
+            "schema": {
+              "example": "Asia/Kuala_Lumpur",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analytics summary retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AnalyticsSummaryResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consolidated Analytics Summary",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/analytics/dashboard": {
+      "get": {
+        "deprecated": true,
+        "description": "Returns lead funnel counts. Use /analytics/summary instead.",
+        "operationId": "AnalyticsController_getDashboardStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AnalyticsDashboardResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dashboard stats (Deprecated)",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/analytics/stats": {
+      "get": {
+        "description": "Returns today's aggregated stats. Returns null if daily stats haven't been computed yet.",
+        "operationId": "AnalyticsController_getTodayStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Today's stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DailyStatsResponseDto"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Today's stats",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/analytics/weekly": {
+      "get": {
+        "description": "Returns new leads, registered leads, and deposits grouped by ISO week. Default: last 8 weeks.",
+        "operationId": "AnalyticsController_getWeeklyStats",
+        "parameters": [
+          {
+            "name": "weeks",
+            "required": false,
+            "in": "query",
+            "description": "Number of past weeks to include (default 8)",
+            "schema": {
+              "example": 8,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Weekly stats retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "statusCode": {
+                      "type": "number",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request successful"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WeeklyStatsResponseDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Weekly stats",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/analytics/rag-stats": {
+      "get": {
+        "description": "Hit rate, avg chunks, zero-hit count, AI failure rate from last 30 days of auto-reply interactions.",
+        "operationId": "AnalyticsController_getRagStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "RAG stats retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "RAG quality stats",
+        "tags": [
+          "analytics"
+        ]
+      }
+    },
+    "/analytics/velocity": {
+      "get": {
+        "description": "Returns percentile distributions (p25/p50/p75) for time-to-register and time-to-confirm in days.",
+        "operationId": "AnalyticsController_getLeadVelocity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Velocity stats retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lead Velocity",
+        "tags": [
+          "analytics"
+        ]
       }
     },
     "/activity/stream": {
@@ -3569,7 +4992,9 @@
           }
         ],
         "summary": "Real-time activity feed (SSE)",
-        "tags": ["activity"]
+        "tags": [
+          "activity"
+        ]
       }
     },
     "/ai/feedback": {
@@ -3600,7 +5025,9 @@
           }
         ],
         "summary": "Submit conversation feedback (rate a bot reply)",
-        "tags": ["ai-feedback"]
+        "tags": [
+          "ai-feedback"
+        ]
       },
       "get": {
         "operationId": "FeedbackController_findMany",
@@ -3610,7 +5037,10 @@
             "required": false,
             "in": "query",
             "schema": {
-              "enum": [1, 5],
+              "enum": [
+                1,
+                5
+              ],
               "type": "number"
             }
           },
@@ -3642,7 +5072,9 @@
           }
         ],
         "summary": "List feedback entries (SUPERADMIN)",
-        "tags": ["ai-feedback"]
+        "tags": [
+          "ai-feedback"
+        ]
       }
     },
     "/ai/feedback/{id}/few-shot": {
@@ -3680,7 +5112,759 @@
           }
         ],
         "summary": "Toggle usedAsFewShot on a feedback entry (SUPERADMIN)",
-        "tags": ["ai-feedback"]
+        "tags": [
+          "ai-feedback"
+        ]
+      }
+    },
+    "/broadcast": {
+      "post": {
+        "description": "Enqueues a Telegram broadcast to all leads with a Telegram account. Supports plain text or photo with caption.",
+        "operationId": "BroadcastController_send",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBroadcastDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Broadcast enqueued"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          },
+          "422": {
+            "description": "Validation failed"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Send broadcast message",
+        "tags": [
+          "broadcast"
+        ]
+      }
+    },
+    "/broadcast/history": {
+      "get": {
+        "description": "Returns paginated list of past broadcast interactions.",
+        "operationId": "BroadcastController_history",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History retrieved"
+          },
+          "401": {
+            "description": "Unauthorized – invalid or missing JWT"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Broadcast history",
+        "tags": [
+          "broadcast"
+        ]
+      }
+    },
+    "/superadmin/queues": {
+      "get": {
+        "description": "Returns waiting/active/completed/failed/delayed counts per queue. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_getQueues",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Queue stats retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "BullMQ queue job counts",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/token-usage": {
+      "get": {
+        "description": "Returns daily AI token usage for the last 30 days with estimated cost. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_getTokenUsage",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Token usage retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "AI token usage (30 days)",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/kb-health": {
+      "get": {
+        "description": "Returns KB embedding coverage, status breakdown, and type counts. No content exposed. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_getKbHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "KB health retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Knowledge base health stats",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/sentiment-trend": {
+      "get": {
+        "description": "Returns daily positive/negative/neutral sentiment counts for the last 30 days from interaction metadata. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_getSentimentTrend",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Sentiment trend retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daily sentiment trend (30 days)",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/queues/{q}/retry-failed": {
+      "post": {
+        "description": "Retries every failed job in the named BullMQ queue. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_retryFailedJobs",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Failed jobs retried"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retry all failed jobs in a queue",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/queues/{q}/failed": {
+      "delete": {
+        "description": "Removes all failed jobs from the named BullMQ queue. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_purgeFailedJobs",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Failed jobs purged"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Purge all failed jobs in a queue",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/lead-score-stats": {
+      "get": {
+        "description": "Returns average AI score and hot/warm/cold/unscored tier counts. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_getLeadScoreStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Lead score stats retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "AI lead score distribution",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/sessions": {
+      "get": {
+        "description": "Returns all non-revoked, non-expired sessions. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_getSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Sessions retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all active user sessions",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/sessions/{id}": {
+      "delete": {
+        "description": "Marks the given session as revoked, invalidating its refresh token. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_revokeSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session revoked"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke a specific session by ID",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/system-health": {
+      "get": {
+        "description": "Returns health status of database, Redis, and BullMQ queues. SUPERADMIN only.",
+        "operationId": "SuperadminOpsController_getSystemHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "System health retrieved"
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "System health check",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/superadmin/secrets": {
+      "get": {
+        "operationId": "SecretsController_listKeys",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List all secret keys (metadata only, no values)",
+        "tags": [
+          "Secrets"
+        ]
+      },
+      "post": {
+        "operationId": "SecretsController_setSecret",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSecretDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set or update an encrypted secret",
+        "tags": [
+          "Secrets"
+        ]
+      }
+    },
+    "/superadmin/secrets/{key}": {
+      "delete": {
+        "operationId": "SecretsController_deleteSecret",
+        "parameters": [
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a secret",
+        "tags": [
+          "Secrets"
+        ]
+      }
+    },
+    "/settings/integrations/credentials": {
+      "get": {
+        "operationId": "IntegrationSecretsController_listCredentials",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List Google integration credential keys (metadata only, no values)",
+        "tags": [
+          "Integration Credentials"
+        ]
+      },
+      "post": {
+        "operationId": "IntegrationSecretsController_setCredential",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSecretDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set a Google integration credential (encrypted at rest)",
+        "tags": [
+          "Integration Credentials"
+        ]
+      }
+    },
+    "/superadmin/google/analytics": {
+      "get": {
+        "operationId": "GoogleAnalyticsController_getAnalytics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Google integration API usage stats + last 50 operations",
+        "tags": [
+          "Google Analytics"
+        ]
+      }
+    },
+    "/superadmin/google/sync": {
+      "post": {
+        "description": "Enqueues a BullMQ sync job for the requested target. \"sheets\" runs a full lead export to Google Sheets, \"drive\" runs the batch attachment mirror to Google Drive, \"all\" runs both. Rate-limited to once per 60 seconds per target. Returns job IDs immediately — track progress at GET /superadmin/queues.",
+        "operationId": "GoogleSyncController_triggerSync",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriggerSyncDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sync job(s) enqueued successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": {
+                      "target": "all",
+                      "jobIds": [
+                        "1",
+                        "2"
+                      ],
+                      "queuedAt": "2026-03-12T10:00:00.000Z",
+                      "message": "Sync enqueued for: Google Sheets, Google Drive. Track progress via GET /superadmin/queues."
+                    },
+                    "message": "Sync enqueued"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden – insufficient role"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trigger an immediate Google Sheets / Drive sync",
+        "tags": [
+          "superadmin"
+        ]
+      }
+    },
+    "/google/oauth/connect": {
+      "get": {
+        "description": "Returns a Google OAuth2 consent URL. Open this URL in a popup. After the user approves, Google will redirect to the callback endpoint.",
+        "operationId": "GoogleOAuth2Controller_connect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "authUrl": "https://accounts.google.com/o/oauth2/v2/auth?..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate Google OAuth2 consent URL (OWNER only)",
+        "tags": [
+          "google-oauth2"
+        ]
+      }
+    },
+    "/google/oauth/callback": {
+      "get": {
+        "operationId": "GoogleOAuth2Controller_callback",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Google OAuth2 callback — do not call directly",
+        "tags": [
+          "google-oauth2"
+        ]
+      }
+    },
+    "/google/oauth/status": {
+      "get": {
+        "operationId": "GoogleOAuth2Controller_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "connected": true,
+                    "email": "owner@example.com",
+                    "connectedAt": "2026-03-07T06:00:00.000Z",
+                    "connectedBy": "user-id-here"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get Google OAuth2 connection status",
+        "tags": [
+          "google-oauth2"
+        ]
+      }
+    },
+    "/google/oauth/disconnect": {
+      "delete": {
+        "operationId": "GoogleOAuth2Controller_disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Disconnect Google OAuth2 (OWNER only)",
+        "tags": [
+          "google-oauth2"
+        ]
+      }
+    },
+    "/superadmin/backup/trigger": {
+      "post": {
+        "operationId": "BackupController_triggerBackup",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Manually trigger a database backup",
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
+    "/superadmin/backup/progress/{jobId}": {
+      "get": {
+        "operationId": "BackupController_streamProgress",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "SSE stream for backup job progress",
+        "tags": [
+          "Backup"
+        ]
+      }
+    },
+    "/superadmin/backup/history": {
+      "get": {
+        "operationId": "BackupController_getHistory",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List recent backup logs",
+        "tags": [
+          "Backup"
+        ]
       }
     }
   },
@@ -3727,7 +5911,12 @@
           "role": {
             "type": "string",
             "example": "ADMIN",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "description": "RBAC role"
           },
           "isActive": {
@@ -3753,6 +5942,11 @@
             "nullable": true,
             "description": "IP address from the last login"
           },
+          "timezone": {
+            "type": "string",
+            "example": "Asia/Kuala_Lumpur",
+            "description": "User preferred IANA timezone for analytics date boundaries"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string",
@@ -3774,6 +5968,7 @@
           "telegramId",
           "lastLoginAt",
           "lastIpAddress",
+          "timezone",
           "createdAt",
           "updatedAt"
         ]
@@ -3790,7 +5985,10 @@
             "$ref": "#/components/schemas/UserResponseDto"
           }
         },
-        "required": ["accessToken", "user"]
+        "required": [
+          "accessToken",
+          "user"
+        ]
       },
       "SessionResponseDto": {
         "type": "object",
@@ -3874,13 +6072,17 @@
           },
           "deviceId": {
             "type": "string",
-            "example": "device-uuid-v4"
+            "example": "device-uuid-v4",
+            "description": "Unique device identifier (UUID). Must be consistent across logins on the same device."
           },
           "userAgent": {
             "type": "string",
             "example": "Mozilla/5.0 ..."
           }
-        }
+        },
+        "required": [
+          "deviceId"
+        ]
       },
       "SetupAccountDto": {
         "type": "object",
@@ -3895,11 +6097,6 @@
             "description": "Telegram WebApp initData string from window.Telegram.WebApp.initData. Required when setup is done inside a Telegram Mini App. When the setup URL is opened in a regular browser after clicking the Telegram deep link, the telegramId is automatically retrieved from the server (recorded when you opened the invite link in Telegram).",
             "example": "query_id=AAHd...&user=%7B%22id%22%3A123456789%7D&auth_date=1708768000&hash=abc123"
           },
-          "email": {
-            "type": "string",
-            "example": "newuser@crm.com",
-            "description": "Email to set for this new account"
-          },
           "password": {
             "type": "string",
             "example": "P@ssw0rd!",
@@ -3909,7 +6106,7 @@
           "deviceId": {
             "type": "string",
             "example": "device-uuid-v4",
-            "description": "Unique device identifier for session tracking"
+            "description": "Unique device identifier (UUID). Must be consistent across sessions on the same device."
           },
           "userAgent": {
             "type": "string",
@@ -3917,7 +6114,11 @@
             "description": "Device user agent string"
           }
         },
-        "required": ["invitationToken", "email", "password"]
+        "required": [
+          "invitationToken",
+          "password",
+          "deviceId"
+        ]
       },
       "ForgotPasswordDto": {
         "type": "object",
@@ -3928,7 +6129,9 @@
             "description": "Account email address"
           }
         },
-        "required": ["email"]
+        "required": [
+          "email"
+        ]
       },
       "ResetPasswordDto": {
         "type": "object",
@@ -3952,7 +6155,11 @@
             "description": "New password (min 8 characters)"
           }
         },
-        "required": ["email", "code", "newPassword"]
+        "required": [
+          "email",
+          "code",
+          "newPassword"
+        ]
       },
       "ChangeOwnPasswordDto": {
         "type": "object",
@@ -3974,7 +6181,11 @@
             "example": "N3wP@ssword!"
           }
         },
-        "required": ["currentPassword", "newPassword", "confirmPassword"]
+        "required": [
+          "currentPassword",
+          "newPassword",
+          "confirmPassword"
+        ]
       },
       "InvitationResponseDto": {
         "type": "object",
@@ -3987,7 +6198,12 @@
           "role": {
             "type": "string",
             "example": "STAFF",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "description": "Role that will be assigned upon account setup"
           },
           "email": {
@@ -4022,6 +6238,19 @@
           "createdAt"
         ]
       },
+      "UpdateTimezoneDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string",
+            "description": "IANA timezone name",
+            "example": "Asia/Kuala_Lumpur"
+          }
+        },
+        "required": [
+          "timezone"
+        ]
+      },
       "ChangePasswordDto": {
         "type": "object",
         "properties": {
@@ -4029,36 +6258,53 @@
             "type": "string"
           }
         },
-        "required": ["newPassword"]
+        "required": [
+          "newPassword"
+        ]
       },
       "InviteUserDto": {
         "type": "object",
         "properties": {
           "role": {
             "type": "string",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "example": "STAFF",
             "description": "Role to assign to the invited user"
           },
           "email": {
             "type": "string",
             "example": "newstaff@crm.com",
-            "description": "Pre-fill email for the invited user (optional). They can set it during setup."
+            "description": "Email address for the invited user. This is used as their CRM login — the invitee will not be prompted to enter an email during setup."
           }
         },
-        "required": ["role"]
+        "required": [
+          "role",
+          "email"
+        ]
       },
       "ChangeRoleDto": {
         "type": "object",
         "properties": {
           "role": {
             "type": "string",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "example": "ADMIN",
             "description": "New role to assign to the user"
           }
         },
-        "required": ["role"]
+        "required": [
+          "role"
+        ]
       },
       "CreateUserDto": {
         "type": "object",
@@ -4076,12 +6322,32 @@
           },
           "role": {
             "type": "string",
-            "enum": ["SUPERADMIN", "OWNER", "ADMIN", "STAFF"],
+            "enum": [
+              "SUPERADMIN",
+              "OWNER",
+              "ADMIN",
+              "STAFF"
+            ],
             "example": "STAFF",
             "description": "RBAC role to assign to this user"
           }
         },
-        "required": ["email", "password", "role"]
+        "required": [
+          "email",
+          "password",
+          "role"
+        ]
+      },
+      "ChangeEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
       },
       "LeadResponseDto": {
         "type": "object",
@@ -4114,7 +6380,6 @@
             "enum": [
               "NEW",
               "CONTACTED",
-              "REGISTERED",
               "DEPOSIT_REPORTED",
               "DEPOSIT_CONFIRMED",
               "REJECTED"
@@ -4145,6 +6410,12 @@
             "nullable": true,
             "description": "Lifetime deposit balance as decimal string (Prisma Decimal serialised)"
           },
+          "contactedAt": {
+            "type": "object",
+            "example": "2026-02-19T08:30:00.000Z",
+            "nullable": true,
+            "description": "When the lead was first moved to CONTACTED status"
+          },
           "registeredAt": {
             "type": "object",
             "example": "2026-02-20T10:00:00.000Z",
@@ -4156,6 +6427,12 @@
             "example": "2026-02-21T12:00:00.000Z",
             "nullable": true,
             "description": "When an Owner/Admin verified the lead"
+          },
+          "depositReportedAt": {
+            "type": "object",
+            "example": "2026-02-21T09:00:00.000Z",
+            "nullable": true,
+            "description": "When the lead submitted a deposit report (entered DEPOSIT_REPORTED state)"
           },
           "handoverMode": {
             "type": "boolean",
@@ -4185,8 +6462,10 @@
           "email",
           "phoneNumber",
           "depositBalance",
+          "contactedAt",
           "registeredAt",
           "verifiedAt",
+          "depositReportedAt",
           "handoverMode",
           "createdAt",
           "updatedAt"
@@ -4198,7 +6477,12 @@
           "telegramUserId": {
             "type": "number",
             "example": 123456789,
-            "description": "Telegram user ID of the lead"
+            "description": "Telegram user ID of the lead (required if registrationToken is not provided)"
+          },
+          "registrationToken": {
+            "type": "string",
+            "example": "a1b2c3d4-...",
+            "description": "One-time registration token from the bot link (required if telegramUserId is not provided)"
           },
           "email": {
             "type": "string",
@@ -4225,8 +6509,7 @@
             "example": "2026-02-22T10:00:00Z",
             "description": "When the lead submitted their registration"
           }
-        },
-        "required": ["telegramUserId"]
+        }
       },
       "BulkHandoverDto": {
         "type": "object",
@@ -4237,7 +6520,61 @@
             "description": "Enable (true) or disable (false) handover mode for all leads"
           }
         },
-        "required": ["handoverMode"]
+        "required": [
+          "handoverMode"
+        ]
+      },
+      "BulkUpdateStatusDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "description": "Array of lead UUIDs to update",
+            "example": [
+              "uuid1",
+              "uuid2"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "CONTACTED",
+              "DEPOSIT_REPORTED",
+              "DEPOSIT_CONFIRMED",
+              "REJECTED"
+            ],
+            "example": "CONTACTED",
+            "description": "New status to apply to all listed leads"
+          }
+        },
+        "required": [
+          "ids",
+          "status"
+        ]
+      },
+      "UpdateLeadInfoDto": {
+        "type": "object",
+        "properties": {
+          "hfmBrokerId": {
+            "type": "string",
+            "description": "HFM Broker ID",
+            "example": "HFM-123456"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address",
+            "example": "lead@email.com"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "Phone number",
+            "example": "+601234567890"
+          }
+        }
       },
       "UpdateLeadStatusDto": {
         "type": "object",
@@ -4247,15 +6584,22 @@
             "enum": [
               "NEW",
               "CONTACTED",
-              "REGISTERED",
               "DEPOSIT_REPORTED",
-              "DEPOSIT_CONFIRMED"
+              "DEPOSIT_CONFIRMED",
+              "REJECTED"
             ],
             "example": "CONTACTED",
             "description": "New lead status"
+          },
+          "rejectReason": {
+            "type": "string",
+            "description": "Rejection reason — required when status is REJECTED. This message is sent directly to the lead via Telegram.",
+            "example": "Receipt image is blurry and amount does not match."
           }
         },
-        "required": ["status"]
+        "required": [
+          "status"
+        ]
       },
       "UpdateHandoverDto": {
         "type": "object",
@@ -4266,7 +6610,65 @@
             "description": "Enable (true) or disable (false) handover mode"
           }
         },
-        "required": ["handoverMode"]
+        "required": [
+          "handoverMode"
+        ]
+      },
+      "UpsertSystemConfigDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Config value (raw string)",
+            "example": "0.7"
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "AttachmentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "leadId": {
+            "type": "string"
+          },
+          "telegramFileId": {
+            "type": "object",
+            "nullable": true
+          },
+          "fileKey": {
+            "type": "string"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "object",
+            "nullable": true
+          },
+          "size": {
+            "type": "object",
+            "nullable": true
+          },
+          "uploadedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "leadId",
+          "telegramFileId",
+          "fileKey",
+          "fileUrl",
+          "mimeType",
+          "size",
+          "uploadedAt"
+        ]
       },
       "KbResponseDto": {
         "type": "object",
@@ -4288,7 +6690,11 @@
           },
           "type": {
             "type": "string",
-            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "enum": [
+              "TEXT",
+              "LINK",
+              "TEMPLATE"
+            ],
             "example": "TEXT",
             "description": "TEXT = RAG context, LINK = external resource, TEMPLATE = bot reply template"
           },
@@ -4313,7 +6719,12 @@
           },
           "status": {
             "type": "string",
-            "enum": ["PENDING", "PROCESSING", "READY", "FAILED"],
+            "enum": [
+              "PENDING",
+              "PROCESSING",
+              "READY",
+              "FAILED"
+            ],
             "example": "READY",
             "description": "Processing status — only READY entries are used by the RAG pipeline"
           },
@@ -4360,7 +6771,11 @@
           },
           "type": {
             "type": "string",
-            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "enum": [
+              "TEXT",
+              "LINK",
+              "TEMPLATE"
+            ],
             "default": "TEXT",
             "description": "Entry type: TEXT (RAG context), LINK (external resource), TEMPLATE (bot button reply)"
           },
@@ -4370,7 +6785,10 @@
             "description": "External URL for LINK/TEMPLATE entries (GDrive, YouTube, S3, etc.)"
           }
         },
-        "required": ["title", "content"]
+        "required": [
+          "title",
+          "content"
+        ]
       },
       "UpdateKbDto": {
         "type": "object",
@@ -4387,7 +6805,11 @@
           },
           "type": {
             "type": "string",
-            "enum": ["TEXT", "LINK", "TEMPLATE"],
+            "enum": [
+              "TEXT",
+              "LINK",
+              "TEMPLATE"
+            ],
             "description": "Entry type"
           },
           "url": {
@@ -4552,7 +6974,11 @@
             "description": "Show this entry in the persistent bottom reply keyboard (max 4 entries, default false)."
           }
         },
-        "required": ["command", "label", "content"]
+        "required": [
+          "command",
+          "label",
+          "content"
+        ]
       },
       "CommandMenuOrderItem": {
         "type": "object",
@@ -4566,7 +6992,10 @@
             "example": 0
           }
         },
-        "required": ["id", "order"]
+        "required": [
+          "id",
+          "order"
+        ]
       },
       "ReorderCommandMenuDto": {
         "type": "object",
@@ -4578,7 +7007,9 @@
             }
           }
         },
-        "required": ["items"]
+        "required": [
+          "items"
+        ]
       },
       "UpdateCommandMenuDto": {
         "type": "object",
@@ -4616,7 +7047,7 @@
           }
         }
       },
-      "AttachmentResponseDto": {
+      "PendingTaskResponseDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -4625,38 +7056,185 @@
           "leadId": {
             "type": "string"
           },
-          "telegramFileId": {
+          "attachmentId": {
             "type": "object",
             "nullable": true
           },
-          "fileKey": {
-            "type": "string"
-          },
-          "fileUrl": {
-            "type": "string"
-          },
-          "mimeType": {
+          "interactionId": {
             "type": "object",
             "nullable": true
           },
-          "size": {
+          "caption": {
             "type": "object",
             "nullable": true
           },
-          "uploadedAt": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RESOLVED",
+              "DISMISSED"
+            ]
+          },
+          "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "resolvedAt": {
+            "type": "object",
+            "nullable": true
           }
         },
         "required": [
           "id",
           "leadId",
-          "telegramFileId",
-          "fileKey",
-          "fileUrl",
-          "mimeType",
-          "size",
-          "uploadedAt"
+          "attachmentId",
+          "interactionId",
+          "caption",
+          "status",
+          "createdAt",
+          "resolvedAt"
+        ]
+      },
+      "PendingTaskGroupLeadDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "object",
+            "nullable": true
+          },
+          "username": {
+            "type": "object",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "CONTACTED",
+              "DEPOSIT_REPORTED",
+              "DEPOSIT_CONFIRMED",
+              "REJECTED"
+            ],
+            "nullable": true
+          },
+          "email": {
+            "type": "object",
+            "nullable": true
+          },
+          "hfmBrokerId": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "username",
+          "status",
+          "email",
+          "hfmBrokerId"
+        ]
+      },
+      "PendingTaskStatusCountsDto": {
+        "type": "object",
+        "properties": {
+          "pending": {
+            "type": "number",
+            "example": 5
+          },
+          "resolved": {
+            "type": "number",
+            "example": 2
+          },
+          "dismissed": {
+            "type": "number",
+            "example": 1
+          },
+          "total": {
+            "type": "number",
+            "example": 8
+          }
+        },
+        "required": [
+          "pending",
+          "resolved",
+          "dismissed",
+          "total"
+        ]
+      },
+      "PendingTaskLeadGroupResponseDto": {
+        "type": "object",
+        "properties": {
+          "leadId": {
+            "type": "string"
+          },
+          "lead": {
+            "$ref": "#/components/schemas/PendingTaskGroupLeadDto"
+          },
+          "statusCounts": {
+            "$ref": "#/components/schemas/PendingTaskStatusCountsDto"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingTaskResponseDto"
+            }
+          }
+        },
+        "required": [
+          "leadId",
+          "lead",
+          "statusCounts",
+          "tasks"
+        ]
+      },
+      "PendingTaskGroupedByLeadResponseDto": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingTaskLeadGroupResponseDto"
+            }
+          },
+          "totalLeads": {
+            "type": "number",
+            "example": 3
+          },
+          "totalTasks": {
+            "type": "number",
+            "example": 12
+          },
+          "statusCounts": {
+            "$ref": "#/components/schemas/PendingTaskStatusCountsDto"
+          }
+        },
+        "required": [
+          "groups",
+          "totalLeads",
+          "totalTasks",
+          "statusCounts"
+        ]
+      },
+      "UpdatePendingTaskDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "RESOLVED",
+              "DISMISSED"
+            ],
+            "description": "New pending task status",
+            "example": "RESOLVED"
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "DailyStatsResponseDto": {
@@ -4678,15 +7256,10 @@
             "example": 5,
             "description": "New leads that first messaged the bot on this date"
           },
-          "registeredLeads": {
+          "formSubmissions": {
             "type": "number",
             "example": 3,
-            "description": "Leads that moved to REGISTERED status on this date"
-          },
-          "depositReported": {
-            "type": "number",
-            "example": 2,
-            "description": "Leads that reported a deposit on this date"
+            "description": "Leads that submitted the combined form on this date"
           },
           "conversions": {
             "type": "number",
@@ -4719,8 +7292,7 @@
           "id",
           "date",
           "newLeads",
-          "registeredLeads",
-          "depositReported",
+          "formSubmissions",
           "conversions",
           "tokensUsed",
           "totalLeads",
@@ -4741,15 +7313,15 @@
             "example": 12,
             "description": "Leads in NEW status"
           },
-          "registeredLeads": {
+          "contactedLeads": {
             "type": "number",
-            "example": 85,
-            "description": "Leads who have submitted registration proof"
+            "example": 25,
+            "description": "Leads currently in CONTACTED status"
           },
-          "depositReported": {
+          "formSubmissions": {
             "type": "number",
             "example": 34,
-            "description": "Leads who reported a deposit (DEPOSIT_REPORTED status)"
+            "description": "Leads who submitted the combined form (DEPOSIT_REPORTED status)"
           },
           "depositConfirmed": {
             "type": "number",
@@ -4767,8 +7339,8 @@
         "required": [
           "totalLeads",
           "newLeads",
-          "registeredLeads",
-          "depositReported",
+          "contactedLeads",
+          "formSubmissions",
           "depositConfirmed",
           "recentStats"
         ]
@@ -4786,15 +7358,10 @@
             "example": 18,
             "description": "New leads that joined during this week"
           },
-          "registeredLeads": {
-            "type": "number",
-            "example": 9,
-            "description": "Leads that moved to REGISTERED during this week"
-          },
-          "depositReported": {
+          "formSubmissions": {
             "type": "number",
             "example": 5,
-            "description": "Deposits reported during this week"
+            "description": "Leads that submitted the combined form during this week"
           },
           "depositConfirmed": {
             "type": "number",
@@ -4805,8 +7372,7 @@
         "required": [
           "weekStart",
           "newLeads",
-          "registeredLeads",
-          "depositReported",
+          "formSubmissions",
           "depositConfirmed"
         ]
       },
@@ -4823,15 +7389,10 @@
             "example": 74,
             "description": "New leads that joined during this month"
           },
-          "registeredLeads": {
-            "type": "number",
-            "example": 38,
-            "description": "Leads that moved to REGISTERED during this month"
-          },
-          "depositReported": {
+          "formSubmissions": {
             "type": "number",
             "example": 20,
-            "description": "Deposits reported during this month"
+            "description": "Leads that submitted the combined form during this month"
           },
           "depositConfirmed": {
             "type": "number",
@@ -4842,8 +7403,7 @@
         "required": [
           "monthStart",
           "newLeads",
-          "registeredLeads",
-          "depositReported",
+          "formSubmissions",
           "depositConfirmed"
         ]
       },
@@ -4867,12 +7427,21 @@
           },
           "trend": {
             "type": "string",
-            "enum": ["up", "down", "neutral"],
+            "enum": [
+              "up",
+              "down",
+              "neutral"
+            ],
             "example": "up",
             "description": "Direction of change"
           }
         },
-        "required": ["current", "previous", "changePercentage", "trend"]
+        "required": [
+          "current",
+          "previous",
+          "changePercentage",
+          "trend"
+        ]
       },
       "AnalyticsKpiDto": {
         "type": "object",
@@ -4880,40 +7449,35 @@
           "totalLeads": {
             "$ref": "#/components/schemas/KpiStatDto"
           },
-          "registeredAccounts": {
+          "contactedLeads": {
             "$ref": "#/components/schemas/KpiStatDto"
           },
-          "depositingClients": {
+          "verifiedClients": {
             "$ref": "#/components/schemas/KpiStatDto"
           },
-          "pendingVerifications": {
+          "formSubmissions": {
             "$ref": "#/components/schemas/KpiStatDto"
           }
         },
         "required": [
           "totalLeads",
-          "registeredAccounts",
-          "depositingClients",
-          "pendingVerifications"
+          "contactedLeads",
+          "verifiedClients",
+          "formSubmissions"
         ]
       },
       "FunnelConversionRatesDto": {
         "type": "object",
         "properties": {
-          "newToRegistered": {
+          "newToSubmitted": {
             "type": "number",
             "example": 51.4,
-            "description": "Percentage of NEW leads that became REGISTERED"
+            "description": "Percentage of NEW leads that submitted the combined form"
           },
-          "registeredToReported": {
-            "type": "number",
-            "example": 52.6,
-            "description": "Percentage of REGISTERED leads that reported a deposit"
-          },
-          "reportedToConfirmed": {
+          "submittedToConfirmed": {
             "type": "number",
             "example": 70,
-            "description": "Percentage of DEPOSIT_REPORTED leads that were confirmed"
+            "description": "Percentage of form submissions that were confirmed"
           },
           "overall": {
             "type": "number",
@@ -4922,9 +7486,8 @@
           }
         },
         "required": [
-          "newToRegistered",
-          "registeredToReported",
-          "reportedToConfirmed",
+          "newToSubmitted",
+          "submittedToConfirmed",
           "overall"
         ]
       },
@@ -4934,22 +7497,17 @@
           "new": {
             "type": "number",
             "example": 144,
-            "description": "Leads in NEW status during the period"
+            "description": "Leads created during the period"
           },
-          "registered": {
-            "type": "number",
-            "example": 74,
-            "description": "Leads in REGISTERED status during the period"
-          },
-          "depositReported": {
+          "formSubmitted": {
             "type": "number",
             "example": 39,
-            "description": "Leads in DEPOSIT_REPORTED status during the period"
+            "description": "Leads that submitted the combined form (DEPOSIT_REPORTED) during the period"
           },
           "depositConfirmed": {
             "type": "number",
             "example": 27,
-            "description": "Leads in DEPOSIT_CONFIRMED status during the period"
+            "description": "Leads confirmed (DEPOSIT_CONFIRMED) during the period"
           },
           "conversionRates": {
             "$ref": "#/components/schemas/FunnelConversionRatesDto"
@@ -4957,8 +7515,7 @@
         },
         "required": [
           "new",
-          "registered",
-          "depositReported",
+          "formSubmitted",
           "depositConfirmed",
           "conversionRates"
         ]
@@ -4976,18 +7533,17 @@
             "example": 18,
             "description": "New leads for this data point"
           },
-          "registered": {
-            "type": "number",
-            "example": 9,
-            "description": "Registered leads for this data point"
-          },
           "confirmed": {
             "type": "number",
             "example": 3,
             "description": "Deposit-confirmed leads for this data point"
           }
         },
-        "required": ["date", "newLeads", "registered", "confirmed"]
+        "required": [
+          "date",
+          "newLeads",
+          "confirmed"
+        ]
       },
       "AnalyticsSummaryResponseDto": {
         "type": "object",
@@ -5005,18 +7561,11 @@
             }
           }
         },
-        "required": ["kpi", "funnel", "trendSeries"]
-      },
-      "UpsertSystemConfigDto": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "string",
-            "description": "Config value (raw string)",
-            "example": "0.7"
-          }
-        },
-        "required": ["value"]
+        "required": [
+          "kpi",
+          "funnel",
+          "trendSeries"
+        ]
       },
       "CreateFeedbackDto": {
         "type": "object",
@@ -5036,25 +7585,100 @@
           "rating": {
             "type": "number",
             "description": "1 = bad, 5 = good",
-            "enum": [1, 5]
+            "enum": [
+              1,
+              5
+            ]
           },
           "notes": {
             "type": "string",
             "description": "Optional notes about why this is good/bad"
           }
         },
-        "required": ["leadId", "userMessage", "botReply", "rating"]
+        "required": [
+          "leadId",
+          "userMessage",
+          "botReply",
+          "rating"
+        ]
+      },
+      "CreateBroadcastDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message text to broadcast to all leads",
+            "maxLength": 4096
+          },
+          "photoUrl": {
+            "type": "string",
+            "description": "Optional image URL — sent as photo caption"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "SetSecretDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "google.serviceAccount"
+          },
+          "value": {
+            "type": "string",
+            "example": "{\"type\":\"service_account\",...}"
+          },
+          "description": {
+            "type": "string",
+            "example": "Google Cloud service account for Sheets/Drive integration"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ]
+      },
+      "TriggerSyncDto": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string",
+            "enum": [
+              "sheets",
+              "drive",
+              "all"
+            ],
+            "description": "\"sheets\" → full lead sync to Google Sheets, \"drive\" → batch attachment upload to Google Drive, \"all\" → both.",
+            "example": "all"
+          }
+        },
+        "required": [
+          "target"
+        ]
       }
     }
   },
   "x-tagGroups": [
     {
       "name": "🔐 System Administration (Superadmin)",
-      "tags": ["auth", "superadmin", "users", "health"]
+      "tags": [
+        "auth",
+        "superadmin",
+        "users",
+        "health"
+      ]
     },
     {
       "name": "📊 CRM Operations (Owner / Admin / Staff)",
-      "tags": ["leads", "analytics", "attachments", "activity", "audit-logs"]
+      "tags": [
+        "leads",
+        "analytics",
+        "attachments",
+        "activity",
+        "audit-logs"
+      ]
     },
     {
       "name": "🤖 Bot & AI",
@@ -5068,7 +7692,9 @@
     },
     {
       "name": "⚙️ Configuration (Owner / Superadmin)",
-      "tags": ["system-config"]
+      "tags": [
+        "system-config"
+      ]
     }
   ]
 }

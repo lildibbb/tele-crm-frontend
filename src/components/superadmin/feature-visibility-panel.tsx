@@ -28,7 +28,7 @@ import {
   HardDrives,
   Table,
 } from "@phosphor-icons/react";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -111,7 +111,7 @@ export function FeatureVisibilityPanel() {
       setSaved(key);
       setTimeout(() => setSaved(null), 2500);
     } catch {
-      toast.error(t(K.superadmin.featureVisibility.saveFailed));
+      showToast.error(t(K.superadmin.featureVisibility.saveFailed));
     } finally {
       setIsSaving(false);
     }

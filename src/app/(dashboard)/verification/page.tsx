@@ -19,6 +19,7 @@ import {
   ArrowSquareOut,
   CaretLeft,
   CaretRight,
+  Receipt,
 } from "@phosphor-icons/react";
 
 import {
@@ -393,8 +394,6 @@ function AttachmentPreviewDialog({
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loadingAtts, setLoadingAtts] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [slideDir, setSlideDir] = useState<"left" | "right">("right");
-  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (!open || !req?.id) return;
@@ -407,21 +406,16 @@ function AttachmentPreviewDialog({
       .finally(() => setLoadingAtts(false));
   }, [open, req?.id]);
 
+  // Simple index-only navigation — no setTimeout, no isAnimating guard
   const goNext = useCallback(() => {
-    if (attachments.length <= 1 || isAnimating) return;
-    setSlideDir("right");
-    setIsAnimating(true);
+    if (attachments.length <= 1) return;
     setActiveIdx((i) => (i + 1) % attachments.length);
-    setTimeout(() => setIsAnimating(false), 300);
-  }, [attachments.length, isAnimating]);
+  }, [attachments.length]);
 
   const goPrev = useCallback(() => {
-    if (attachments.length <= 1 || isAnimating) return;
-    setSlideDir("left");
-    setIsAnimating(true);
+    if (attachments.length <= 1) return;
     setActiveIdx((i) => (i - 1 + attachments.length) % attachments.length);
-    setTimeout(() => setIsAnimating(false), 300);
-  }, [attachments.length, isAnimating]);
+  }, [attachments.length]);
 
   useEffect(() => {
     if (!open) return;
@@ -433,125 +427,174 @@ function AttachmentPreviewDialog({
     return () => window.removeEventListener("keydown", handler);
   }, [open, goNext, goPrev]);
 
-  const active = attachments[activeIdx];
-  const isImg = active?.mimeType?.startsWith("image/");
   const hasMultiple = attachments.length > 1;
 
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !o && onClose()}>
       <DialogPortal>
-        <DialogOverlay className="bg-black/60 backdrop-blur-[8px]" />
+        <DialogOverlay className="bg-black/80 backdrop-blur-md" />
         <DialogContent
           showCloseButton={false}
-          className="sm:max-w-md bg-transparent border-0 shadow-none p-0 gap-0"
+          className="sm:max-w-lg bg-transparent border-0 shadow-none p-0 gap-0 focus-visible:outline-none"
         >
           <DialogTitle className="sr-only">Attachment Preview</DialogTitle>
           <DialogDescription className="sr-only">
             Full preview of the uploaded proof attachment
           </DialogDescription>
-          <div className="relative flex flex-col items-center gap-3 px-1">
-            {/* Close button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="absolute -top-1 -right-1 z-20 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 backdrop-blur-sm transition-all"
-            >
-              <X size={14} weight="bold" />
-            </Button>
 
-            {/* Main preview area */}
-            <div className="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-black/50 border border-white/10 flex items-center justify-center">
-              {loadingAtts ? (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-8 h-8 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-                  <p className="text-white/40 text-xs font-sans">Loading…</p>
+          <div className="flex flex-col gap-3">
+            {/* ── Top bar: lead info + counter + close ── */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Avatar
+                  name={req?.displayName ?? req?.username ?? "—"}
+                  size={30}
+                />
+                <div>
+                  <p className="font-semibold text-[13px] text-white leading-tight">
+                    {req?.displayName ?? req?.username ?? "—"}
+                  </p>
+                  <p className="text-[11px] text-white/50 font-mono">
+                    {req?.hfmBrokerId ?? "—"}
+                  </p>
                 </div>
-              ) : !active ? (
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center">
+              </div>
+              <div className="flex items-center gap-2">
+                {hasMultiple && (
+                  <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-white/70 text-[11px] font-mono font-medium backdrop-blur-sm">
+                    {activeIdx + 1} / {attachments.length}
+                  </span>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 backdrop-blur-sm transition-all cursor-pointer"
+                >
+                  <X size={14} weight="bold" />
+                </Button>
+              </div>
+            </div>
+
+            {/* ── GPU-accelerated carousel ── */}
+            <div className="relative rounded-2xl overflow-hidden bg-black/60 border border-white/10 aspect-[3/4]">
+              {loadingAtts ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/8 border border-white/12 flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
+                  </div>
+                  <p className="text-white/40 text-xs font-sans tracking-wide">
+                    Loading receipts…
+                  </p>
+                </div>
+              ) : attachments.length === 0 ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <div className="w-16 h-16 rounded-2xl bg-white/8 border border-white/12 flex items-center justify-center">
                     <PhosphorImage
                       weight="duotone"
-                      size={36}
-                      className="text-white/50"
+                      size={30}
+                      className="text-white/40"
                     />
                   </div>
-                  <p className="font-sans text-sm text-white/50">
+                  <p className="font-sans text-sm text-white/40">
                     No attachments yet
                   </p>
                 </div>
-              ) : isImg ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={activeIdx}
-                  src={active.fileUrl}
-                  alt="Proof attachment"
-                  className="w-full h-full object-contain"
-                  style={{
-                    animation: hasMultiple
-                      ? `${slideDir === "right" ? "slideInRight" : "slideInLeft2"} 0.28s cubic-bezier(0.22,1,0.36,1) forwards`
-                      : undefined,
-                  }}
-                />
               ) : (
-                <div className="flex flex-col items-center gap-4">
-                  <FileTypeBadge mimeType={active.mimeType} size={64} />
-                  <a
-                    href={active.fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sky-300 underline text-xs font-sans"
-                  >
-                    Open file ↗
-                  </a>
+                /*
+                 * Carousel track — all slides rendered simultaneously.
+                 * translateX driven by activeIdx → browser composites on GPU,
+                 * zero React re-renders during the CSS transition.
+                 */
+                <div
+                  className="flex h-full transition-transform duration-[220ms] ease-out"
+                  style={{
+                    width: `${attachments.length * 100}%`,
+                    transform: `translateX(-${(activeIdx / attachments.length) * 100}%)`,
+                    willChange: "transform",
+                  }}
+                >
+                  {attachments.map((att) => {
+                    const isImg = att.mimeType?.startsWith("image/");
+                    const isVid = att.mimeType?.startsWith("video/");
+                    return (
+                      <div
+                        key={att.id}
+                        className="flex items-center justify-center h-full"
+                        style={{ width: `${100 / attachments.length}%` }}
+                      >
+                        {isImg ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={att.fileUrl}
+                            alt="Proof attachment"
+                            className="w-full h-full object-contain"
+                            loading="eager"
+                            decoding="async"
+                          />
+                        ) : isVid ? (
+                          <video
+                            src={att.fileUrl}
+                            className="w-full h-full object-contain"
+                            controls
+                            playsInline
+                            preload="metadata"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-4">
+                            <FileTypeBadge mimeType={att.mimeType} size={60} />
+                            <a
+                              href={att.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/18 border border-white/15 text-white/80 hover:text-white text-xs font-sans transition-colors cursor-pointer"
+                            >
+                              Open file
+                              <ArrowSquareOut size={12} weight="regular" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
-              {/* Counter badge */}
-              {hasMultiple && (
-                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm border border-white/15 text-white text-[11px] font-mono font-medium">
-                  {activeIdx + 1} / {attachments.length}
-                </div>
-              )}
-
-              {/* Prev / Next nav */}
+              {/* Prev / Next arrows */}
               {hasMultiple && !loadingAtts && (
                 <>
                   <button
                     type="button"
                     onClick={goPrev}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95"
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer"
                     aria-label="Previous attachment"
                   >
-                    <CaretLeft size={14} weight="bold" />
+                    <CaretLeft size={15} weight="bold" />
                   </button>
                   <button
                     type="button"
                     onClick={goNext}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/55 hover:bg-black/75 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer"
                     aria-label="Next attachment"
                   >
-                    <CaretRight size={14} weight="bold" />
+                    <CaretRight size={15} weight="bold" />
                   </button>
                 </>
               )}
             </div>
 
-            {/* Dot indicators */}
+            {/* ── Dot indicators ── */}
             {hasMultiple && (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center justify-center gap-1.5">
                 {attachments.map((_, i) => (
                   <button
                     key={i}
                     type="button"
-                    onClick={() => {
-                      setSlideDir(i > activeIdx ? "right" : "left");
-                      setActiveIdx(i);
-                    }}
-                    className={`rounded-full transition-all ${
+                    onClick={() => setActiveIdx(i)}
+                    className={`rounded-full transition-all duration-200 cursor-pointer ${
                       i === activeIdx
-                        ? "w-4 h-1.5 bg-white"
-                        : "w-1.5 h-1.5 bg-white/30 hover:bg-white/50"
+                        ? "w-5 h-1.5 bg-white"
+                        : "w-1.5 h-1.5 bg-white/30 hover:bg-white/55"
                     }`}
                     aria-label={`Go to attachment ${i + 1}`}
                   />
@@ -559,23 +602,20 @@ function AttachmentPreviewDialog({
               </div>
             )}
 
-            {/* Thumbnail strip */}
+            {/* ── Thumbnail strip ── */}
             {hasMultiple && (
               <div
-                className="flex gap-1.5 overflow-x-auto max-w-full pb-0.5"
+                className="flex gap-2 overflow-x-auto pb-0.5"
                 style={{ scrollbarWidth: "none" }}
               >
                 {attachments.map((att, i) => (
                   <button
                     key={att.id}
-                    onClick={() => {
-                      setSlideDir(i > activeIdx ? "right" : "left");
-                      setActiveIdx(i);
-                    }}
-                    className={`w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all hover:opacity-100 ${
+                    onClick={() => setActiveIdx(i)}
+                    className={`w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all duration-200 cursor-pointer ${
                       i === activeIdx
-                        ? "border-white/80 scale-105 shadow-lg"
-                        : "border-white/15 opacity-50 hover:border-white/40"
+                        ? "border-white opacity-100 scale-105 shadow-lg shadow-black/50"
+                        : "border-white/20 opacity-45 hover:opacity-80 hover:border-white/45"
                     }`}
                   >
                     {att.mimeType?.startsWith("image/") ? (
@@ -584,6 +624,7 @@ function AttachmentPreviewDialog({
                         src={att.fileUrl}
                         alt=""
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     ) : (
                       <div className="w-full h-full bg-white/10 flex items-center justify-center">
@@ -595,24 +636,13 @@ function AttachmentPreviewDialog({
               </div>
             )}
 
-            {/* Lead info bar */}
+            {/* ── Amount footer ── */}
             {req && (
-              <div className="w-full flex items-center justify-between px-1 pb-1">
-                <div className="flex items-center gap-2.5">
-                  <Avatar
-                    name={req.displayName ?? req.username ?? "—"}
-                    size={32}
-                  />
-                  <div>
-                    <p className="font-sans font-semibold text-[13px] text-white leading-snug">
-                      {req.displayName ?? req.username ?? "—"}
-                    </p>
-                    <p className="data-mono text-[11px] text-white/50">
-                      {req.hfmBrokerId ?? "—"}
-                    </p>
-                  </div>
-                </div>
-                <p className="font-bold text-gold data-mono text-[13px]">
+              <div className="flex items-center justify-between px-0.5">
+                <p className="text-[11px] text-white/40 font-sans">
+                  Deposit Amount
+                </p>
+                <p className="font-bold text-gold font-mono text-[14px]">
                   ${Number(req.depositBalance ?? 0).toLocaleString()}{" "}
                   <span className="text-[10px] text-white/40 font-normal tracking-wide">
                     USD
@@ -659,28 +689,38 @@ function ReceiptDialog({
         open={open}
         onOpenChange={(o) => !o && onClose()}
       >
-        <DialogContent className="sm:max-w-[400px] rounded-3xl border border-border-subtle bg-card gap-0 p-0 overflow-hidden shadow-[var(--shadow-modal)]">
+        <DialogContent className="sm:max-w-[380px] rounded-2xl border border-border-subtle bg-card p-0 overflow-hidden shadow-[var(--shadow-modal)] gap-0">
           <DialogDescription className="sr-only">
             View deposit receipt details for this submission
           </DialogDescription>
 
-          {/* ── Header bar ── */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-4">
-            <DialogTitle className="font-bold text-[15px] text-text-primary leading-tight">
-              {t(K.verification.depositReceipt)}
-            </DialogTitle>
+          {/* ── Header ── */}
+          <div className="flex items-start justify-between px-5 pt-5 pb-4 border-b border-border-subtle">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-elevated border border-border-subtle flex items-center justify-center flex-shrink-0">
+                <Receipt weight="duotone" size={17} className="text-text-secondary" />
+              </div>
+              <div>
+                <DialogTitle className="font-bold text-[14px] text-text-primary leading-tight">
+                  {t(K.verification.depositReceipt)}
+                </DialogTitle>
+                <p className="text-[11px] text-text-muted mt-0.5">
+                  Deposit verification details
+                </p>
+              </div>
+            </div>
             {isVerified && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/8 border border-success/20 text-success text-[11px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-success/8 border border-success/20 text-success text-[10px] font-semibold tracking-wide flex-shrink-0">
+                <ShieldCheck size={11} weight="duotone" />
                 Verified
               </span>
             )}
           </div>
 
           {req && (
-            <>
-              {/* ── Lead identity row ── */}
-              <div className="mx-5 mb-4 flex items-center gap-3 p-3 rounded-2xl bg-elevated border border-border-subtle">
+            <div className="px-5 py-4 space-y-3">
+              {/* ── Lead identity ── */}
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-elevated border border-border-subtle">
                 <Avatar
                   name={req.displayName ?? req.username ?? "—"}
                   size={36}
@@ -695,12 +735,12 @@ function ReceiptDialog({
                 </div>
               </div>
 
-              {/* ── Hero amount panel ── */}
-              <div className="mx-5 mb-4 rounded-2xl bg-elevated border border-border-subtle p-4 flex flex-col items-center gap-1">
-                <p className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+              {/* ── Hero amount ── */}
+              <div className="rounded-xl bg-elevated border border-border-subtle p-4 flex flex-col items-center gap-1">
+                <p className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">
                   {t(K.verification.amount)}
                 </p>
-                <p className="font-display font-bold text-[28px] text-gold data-mono leading-none tracking-tight">
+                <p className="font-bold text-[32px] text-gold data-mono leading-none tracking-tight">
                   ${Number(req.depositBalance ?? 0).toLocaleString()}
                 </p>
                 <span className="text-[10px] font-semibold text-text-muted tracking-widest uppercase">
@@ -709,7 +749,7 @@ function ReceiptDialog({
               </div>
 
               {/* ── Meta rows ── */}
-              <div className="mx-5 mb-4 rounded-2xl bg-elevated border border-border-subtle overflow-hidden divide-y divide-border-subtle">
+              <div className="rounded-xl bg-elevated border border-border-subtle overflow-hidden divide-y divide-border-subtle">
                 <div className="flex items-center gap-3 px-4 py-3">
                   <Hash
                     size={13}
@@ -739,21 +779,23 @@ function ReceiptDialog({
               </div>
 
               {/* ── View proof CTA ── */}
-              <div className="mx-5 mb-5">
-                <button
-                  onClick={() => setAttachmentOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-card border border-border-default text-text-secondary hover:text-text-primary hover:border-border-default transition-colors text-[12px] font-medium"
-                >
-                  <PhosphorImage weight="duotone" size={15} />
-                  {t(K.verification.viewReceipt)}
-                  <ArrowSquareOut
-                    size={12}
-                    weight="regular"
-                    className="ml-0.5 opacity-60"
-                  />
-                </button>
-              </div>
-            </>
+              <button
+                onClick={() => setAttachmentOpen(true)}
+                className="w-full flex items-center justify-center gap-2 h-11 rounded-xl bg-elevated border border-border-default hover:bg-card/60 hover:border-border-default transition-all duration-150 text-[12px] font-medium text-text-secondary hover:text-text-primary cursor-pointer group"
+              >
+                <PhosphorImage
+                  weight="duotone"
+                  size={15}
+                  className="text-text-muted group-hover:text-text-secondary transition-colors"
+                />
+                {t(K.verification.viewReceipt)}
+                <ArrowSquareOut
+                  size={11}
+                  weight="regular"
+                  className="opacity-40 group-hover:opacity-70 transition-opacity"
+                />
+              </button>
+            </div>
           )}
 
           {/* ── Footer ── */}

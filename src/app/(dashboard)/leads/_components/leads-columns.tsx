@@ -44,7 +44,7 @@ export function getLeadsColumns({
           .toUpperCase();
         return (
           <Link
-            href={`/leads/${lead.id}`}
+            href={`/leads/detail?id=${lead.id}`}
             className="flex items-center gap-3 group/lead"
           >
             <div className="relative flex-shrink-0">
@@ -233,7 +233,7 @@ export function getLeadsColumns({
                 )}
               </button>
             </div>
-            <Link href={`/leads/${lead.id}`}>
+            <Link href={`/leads/detail?id=${lead.id}`}>
               <Button
                 variant="ghost"
                 size="icon"

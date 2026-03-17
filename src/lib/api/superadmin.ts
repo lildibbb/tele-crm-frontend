@@ -7,6 +7,17 @@ import type {
 import type { ChangePasswordInput } from "@/lib/schemas/auth.schema";
 import type { ApiResponse } from "@/lib/schemas/common";
 
+// ── Google Sync ───────────────────────────────────────────────────────────────
+
+export type GoogleSyncTarget = "sheets" | "drive" | "all";
+
+export interface TriggerSyncResult {
+  target: GoogleSyncTarget;
+  jobIds: string[];
+  queuedAt: string;
+  message: string;
+}
+
 // ── Backup ────────────────────────────────────────────────────────────────────
 
 export type BackupStatus = "success" | "partial" | "failed";
@@ -43,6 +54,7 @@ export interface QueueStats { queues: QueueJobCount[] }
 export interface AdminSession {
   id: string;
   userId: string;
+  user: { email: string; role: string };
   deviceId: string | null;
   userAgent: string | null;
   ipAddress: string | null;
@@ -52,11 +64,43 @@ export interface AdminSession {
   isRevoked: boolean;
 }
 
-export interface TokenDay { date: string; tokens: number; estimatedCostUsd: number }
+export interface TokenDay {
+  date: string;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  estimatedCostUsd: number;
+}
 export interface TokenUsageData {
   daily: TokenDay[];
+  rolling30dInputTokens: number;
+  rolling30dOutputTokens: number;
   rolling30dTokens: number;
   rolling30dCostUsd: number;
+  configuredRates: {
+    inputCostPer1MTokens: number;
+    outputCostPer1MTokens: number;
+  };
+}
+
+export interface SentimentDay {
+  date: string;
+  positive: number;
+  negative: number;
+  neutral: number;
+}
+
+export interface RagDailyStats {
+  date: string;
+  hitRate: number;
+  zeroHits: number;
+  totalRequests: number;
+  avgChunks: number;
+}
+
+export interface TopKbChunk {
+  title: string;
+  usageCount: number;
 }
 
 export interface KbHealthData {
@@ -90,6 +134,14 @@ export interface SystemHealthData {
  * Superadmin-only API endpoints for system administration.
  * These endpoints require SUPERADMIN role.
  */
+export interface LeadScoreStats {
+  averageScore: number;
+  hot: number;
+  warm: number;
+  cold: number;
+  unscored: number;
+}
+
 export const superadminApi = {
   /**
    * Returns all CRM system users. Requires SUPERADMIN role.
@@ -165,11 +217,25 @@ export const superadminApi = {
     const res = await apiClient.get<ApiResponse<SystemHealthData>>('/superadmin/system-health');
     return res.data.data;
   },
+  getSentimentTrend: async (): Promise<SentimentDay[]> => {
+    const res = await apiClient.get<ApiResponse<SentimentDay[]>>('/superadmin/sentiment-trend');
+    return res.data.data;
+  },
+
+  getLeadScoreStats: async (): Promise<LeadScoreStats> => {
+    const res = await apiClient.get<ApiResponse<LeadScoreStats>>('/superadmin/lead-score-stats');
+    return res.data.data;
+  },
 
   // ── Backup ───────────────────────────────────────────────────────────────
 
+  /**
+   * Queues an immediate backup job. Returns jobId for SSE progress tracking.
+   */
   triggerBackup: () =>
-    apiClient.post<ApiResponse<{ message: string }>>("/superadmin/backup/trigger"),
+    apiClient.post<ApiResponse<{ jobId: string; status: string; destinations: string[] }>>(
+      "/superadmin/backup/trigger",
+    ),
 
   getBackupHistory: (limit = 10) =>
     apiClient.get<ApiResponse<BackupLog[]>>(`/superadmin/backup/history?limit=${limit}`),
@@ -184,4 +250,18 @@ export const superadminApi = {
 
   deleteSecret: (key: string) =>
     apiClient.delete<void>(`/superadmin/secrets/${key}`),
+
+  // ── Google Sync ──────────────────────────────────────────────────────────
+
+  /**
+   * Enqueues an immediate Google Sheets/Drive sync job (SUPERADMIN only).
+   * Rate-limited to once per 60 seconds per target.
+   */
+  triggerGoogleSync: async (target: GoogleSyncTarget): Promise<TriggerSyncResult> => {
+    const res = await apiClient.post<ApiResponse<TriggerSyncResult>>(
+      "/superadmin/google/sync",
+      { target },
+    );
+    return res.data.data;
+  },
 };

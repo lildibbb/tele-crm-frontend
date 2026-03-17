@@ -272,7 +272,7 @@ export function getVerificationColumns({
             >
               <Receipt weight="regular" className="h-4 w-4" />
             </Button>
-            <Link href={`/leads/${lead.id}`}>
+            <Link href={`/leads/detail?id=${lead.id}`}>
               <Button
                 size="icon"
                 variant="ghost"
