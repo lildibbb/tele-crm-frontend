@@ -59,6 +59,20 @@ let failedQueue: Array<{
   reject: (err: unknown) => void;
 }> = [];
 
+const REFRESH_EXEMPT_401_ENDPOINTS = new Set([
+  "/auth/login",
+  "/auth/setup-account",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/auth/invitation-info",
+]);
+
+function isRefreshExempt401Request(url?: string): boolean {
+  if (!url) return false;
+  const normalized = url.split("?")[0] ?? url;
+  return REFRESH_EXEMPT_401_ENDPOINTS.has(normalized);
+}
+
 function processQueue(error: unknown, token: string | null) {
   failedQueue.forEach((prom) => {
     if (error) prom.reject(error);
@@ -82,6 +96,12 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
+    // 401 on public/auth entry points should not trigger refresh flow.
+    // Example: invalid credentials on /auth/login must surface its own message.
+    if (isRefreshExempt401Request(originalRequest.url)) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
