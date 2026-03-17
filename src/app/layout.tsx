@@ -15,6 +15,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { SidebarConfigProvider } from "@/context/sidebar-context";
 
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL &&
+  /^https?:\/\//.test(process.env.NEXT_PUBLIC_APP_URL)
+    ? process.env.NEXT_PUBLIC_APP_URL
+    : "https://titanjournal.vip";
+
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-syne",
   subsets: ["latin"],
@@ -38,10 +44,52 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Titan Journal CRM",
-  description: "Internal CRM for Titan Journal",
+  metadataBase: new URL(APP_URL),
+  applicationName: "Titan Journal CRM",
+  title: {
+    default: "Titan Journal CRM",
+    template: "%s | Titan Journal CRM",
+  },
+  description:
+    "Titan Journal CRM, empowering financial freedom through smart market education.",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
-    icon: "/assets/logo/titan-logo-03.svg",
+    icon: [
+      { url: "/assets/logo/titan-logo-03.svg", type: "image/svg+xml" },
+      {
+        url: "/assets/logo/email-logo-icon.png",
+        sizes: "160x160",
+        type: "image/png",
+      },
+    ],
+    shortcut: ["/assets/logo/email-logo-icon.png"],
+    apple: [{ url: "/assets/logo/email-logo-icon.png", sizes: "160x160" }],
+  },
+  openGraph: {
+    title: "Titan Journal CRM",
+    description:
+      "Titan Journal CRM, empowering financial freedom through smart market education.",
+    url: APP_URL,
+    siteName: "Titan Journal CRM",
+    images: [
+      {
+        url: "/assets/logo/Titan%20Trade%20Circle%20Official%20Logo-03.png",
+        width: 9000,
+        height: 9000,
+        alt: "Titan Journal logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Titan Journal CRM",
+    description:
+      "Titan Journal CRM, empowering financial freedom through smart market education.",
+    images: ["/assets/logo/Titan%20Trade%20Circle%20Official%20Logo-03.png"],
   },
 };
 
