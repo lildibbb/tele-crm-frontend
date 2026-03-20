@@ -41,4 +41,25 @@ test.describe("Lead Detail Page", () => {
     await superadminPage.waitForLoadState("networkidle");
     await expect(superadminPage.locator('[data-testid="lead-detail-interaction-history"]')).toBeVisible({ timeout: 10000 });
   });
+
+  test("lead detail avoids horizontal overflow on tablet @smoke", async ({ superadminPage }) => {
+    await superadminPage.setViewportSize({ width: 1024, height: 900 });
+    const hasLeads = await navigateToFirstLead(superadminPage);
+    if (!hasLeads) {
+      test.skip(true, "No leads in test data");
+      return;
+    }
+
+    await superadminPage.locator('[data-testid^="lead-row-"]').first().click();
+    await superadminPage.waitForLoadState("networkidle");
+    await expect(superadminPage.locator('[data-testid="lead-detail-page"]')).toBeVisible({ timeout: 10000 });
+
+    const hasHorizontalOverflow = await superadminPage.evaluate(() => {
+      const leadDetailPage = document.querySelector('[data-testid="lead-detail-page"]') as HTMLElement | null;
+      if (!leadDetailPage) return true;
+      return leadDetailPage.scrollWidth > leadDetailPage.clientWidth + 1;
+    });
+
+    expect(hasHorizontalOverflow).toBe(false);
+  });
 });

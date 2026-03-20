@@ -25,7 +25,6 @@ import {
   Star,
   Robot,
   X,
-  DownloadSimple,
   File,
 } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,7 +33,6 @@ import { useSetHandover } from "@/queries/useLeadsQuery";
 import { useAuthStore } from "@/store/authStore";
 import { attachmentsApi, leadsApi } from "@/lib/api";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -47,6 +45,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, formatDateTime, timeAgo, getInitials } from "@/lib/format";
 import { LEAD_STATUS_BADGE } from "@/lib/badge-config";
+import MobileAttachmentAnnotationDialog from "@/components/chat/MobileAttachmentAnnotationDialog";
+import { toast } from "sonner";
+import MobileImageViewerDialog from "@/components/mobile/MobileImageViewerDialog";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 type MediaItem = {
@@ -107,11 +108,13 @@ function InfoCard({ card }: { card: InfoCardData }) {
       type="button"
       onClick={card.copyable ? handleCopy : undefined}
       className={cn(
-        "flex items-start gap-3 p-3.5 rounded-xl bg-card border border-border-subtle",
-        "transition-all duration-150 text-left w-full",
-        card.copyable && "active:scale-[0.97] active:bg-elevated",
+        "relative flex items-start gap-3 p-3.5 rounded-2xl bg-card/60 backdrop-blur-xl border border-white/10 shadow-[0_4px_20px_rgb(0,0,0,0.04)]",
+        "transition-all duration-150 text-left w-full overflow-hidden group",
+        card.copyable && "active:scale-[0.97] active:bg-elevated/40",
       )}
     >
+      {/* Subtle glass reflection */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <div className="w-8 h-8 rounded-lg bg-elevated flex items-center justify-center shrink-0 mt-0.5">
         {card.icon}
       </div>
@@ -170,10 +173,10 @@ function TimelineBubble({
       {/* Bubble */}
       <div
         className={cn(
-          "flex-1 rounded-xl px-3.5 py-2.5 mb-2",
+          "flex-1 rounded-2xl px-3.5 py-2.5 mb-2 shadow-sm border",
           entry.type === "milestone"
-            ? "bg-elevated border border-border-subtle"
-            : "bg-card border border-border-subtle",
+            ? "bg-elevated/60 backdrop-blur-xl border-white/5"
+            : "bg-card/60 backdrop-blur-xl border-white/10",
         )}
       >
         <div className="flex items-start gap-2">
@@ -272,6 +275,10 @@ export default function MobileLeadDetail({
   const [messageText, setMessageText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [mediaPreview, setMediaPreview] = useState<MediaItem | null>(null);
+  const [annotationTarget, setAnnotationTarget] = useState<{
+    sourceUrl: string;
+    sourceFileName: string;
+  } | null>(null);
   const handoverMutation = useSetHandover();
   const [menuOpen, setMenuOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -528,8 +535,28 @@ export default function MobileLeadDetail({
       {/* ── Scrollable content ────────────────────────────────────────── */}
       <main
         className="flex-1 overflow-y-auto overscroll-contain"
-        style={{ paddingBottom: "calc(100px + env(safe-area-inset-bottom))" }}
+        style={{
+          WebkitOverflowScrolling: "touch",
+          paddingBottom: "calc(80px + env(safe-area-inset-bottom))",
+        }}
       >
+        {/* ── Quick Action Bar — Chat CTA ───────────────────────────── */}
+        {lead.id && (
+          <div className="px-4 py-3 border-b border-border-subtle bg-card/50">
+            <button
+              onClick={() => router.push(`/leads/chat?id=${lead.id}`)}
+              className="w-full h-[48px] rounded-xl bg-crimson text-white flex items-center justify-center gap-2.5 font-sans font-bold text-[14px] active:scale-[0.97] transition-transform shadow-md shadow-crimson/15"
+            >
+              <ChatCircleDots size={18} weight="bold" />
+              Open Chat
+              {interactions.length > 0 && (
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-white/20 text-[11px] font-mono font-semibold">
+                  {interactions.length}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
         {/* ── Avatar Hero ──────────────────────────────────────────────── */}
         <section className="relative px-4 pt-6 pb-5">
           <div className="relative flex flex-col items-center gap-3">
@@ -628,10 +655,13 @@ export default function MobileLeadDetail({
           <section className="px-4 mb-4">
             <div
               className={cn(
-                "rounded-2xl p-5 flex flex-col items-center gap-2 bg-elevated",
+                "relative flex flex-col items-center gap-2 rounded-3xl p-5 bg-card/60 backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden",
               )}
             >
-              <div className="flex items-center justify-between w-full">
+              {/* Subtle glass reflection */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-50 pointer-events-none" />
+
+              <div className="relative flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                   <CurrencyDollar
                     size={20}
@@ -646,10 +676,10 @@ export default function MobileLeadDetail({
                   {status === "DEPOSIT_CONFIRMED" ? "✓ Verified" : "⏳ Pending"}
                 </Badge>
               </div>
-              <span className="font-mono font-bold text-[36px] leading-none text-text-primary mt-1">
+              <span className="relative font-mono font-bold text-[36px] leading-none text-text-primary mt-1">
                 {lead.depositBalance}
               </span>
-              <span className="font-sans text-[12px] text-text-muted">
+              <span className="relative font-sans text-[12px] text-text-muted">
                 Last updated {timeAgo(lead.updatedAt)}
               </span>
             </div>
@@ -678,46 +708,51 @@ export default function MobileLeadDetail({
                 {attachments.length}
               </span>
             </h2>
-            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-none">
-              {attachments.map((file) => {
-                const isImg = file.mimeType?.startsWith("image/");
-                const isVid = file.mimeType?.startsWith("video/");
-                const fileName =
-                  file.fileKey?.split("/").pop() ??
-                  file.fileUrl?.split("/").pop() ??
-                  "File";
-                return (
-                  <button
-                    key={file.id}
-                    onClick={() =>
-                      setMediaPreview({
-                        url: file.fileUrl,
-                        type: isImg ? "image" : isVid ? "video" : "file",
-                        name: fileName,
-                        mimeType: file.mimeType,
-                        size: file.size,
-                      })
-                    }
-                    className="shrink-0 snap-start w-[110px] h-[80px] rounded-xl overflow-hidden bg-elevated border border-border-subtle active:scale-[0.95] transition-transform relative group"
-                  >
-                    {isImg ? (
-                      <img
-                        src={file.fileUrl}
-                        alt={fileName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-text-muted">
-                        <File size={24} weight="duotone" />
-                        <span className="text-[9px] font-sans truncate max-w-[80px] px-1">
-                          {fileName}
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                  </button>
-                );
-              })}
+            <div
+              className="max-h-[260px] overflow-y-auto pr-1"
+              style={{ scrollbarWidth: "thin" }}
+            >
+              <div className="grid grid-cols-2 gap-2">
+                {attachments.map((file) => {
+                  const isImg = file.mimeType?.startsWith("image/");
+                  const isVid = file.mimeType?.startsWith("video/");
+                  const fileName =
+                    file.fileKey?.split("/").pop() ??
+                    file.fileUrl?.split("/").pop() ??
+                    "File";
+                  return (
+                    <button
+                      key={file.id}
+                      onClick={() =>
+                        setMediaPreview({
+                          url: file.fileUrl,
+                          type: isImg ? "image" : isVid ? "video" : "file",
+                          name: fileName,
+                          mimeType: file.mimeType,
+                          size: file.size,
+                        })
+                      }
+                      className="relative h-[100px] overflow-hidden rounded-xl border border-border-subtle bg-elevated active:scale-[0.95] transition-transform group"
+                    >
+                      {isImg ? (
+                        <img
+                          src={file.fileUrl}
+                          alt={fileName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-text-muted">
+                          <File size={24} weight="duotone" />
+                          <span className="max-w-[90px] truncate px-1 text-[9px] font-sans">
+                            {fileName}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}
@@ -740,29 +775,11 @@ export default function MobileLeadDetail({
             </div>
           </section>
         )}
-
-        {/* ── Chat Button ────────────────────────────────────────────── */}
-        {lead.id && (
-          <section className="px-4 mb-5">
-            <button
-              onClick={() => router.push(`/leads/chat?id=${lead.id}`)}
-              className="w-full h-[52px] rounded-xl bg-card border border-border-subtle flex items-center justify-center gap-2.5 font-sans font-bold text-[15px] text-crimson active:scale-[0.97] transition-transform shadow-sm"
-            >
-              <ChatCircleDots size={20} weight="bold" />
-              Open Chat
-              {interactions.length > 0 && (
-                <span className="ml-1 px-2 py-0.5 rounded-full bg-crimson/10 text-[11px] font-mono font-semibold text-crimson">
-                  {interactions.length}
-                </span>
-              )}
-            </button>
-          </section>
-        )}
       </main>
 
       {/* ── Sticky Action Bar — status-dependent ──────────────────────── */}
       {(canVerify || onRevert || onReopen) && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border-subtle px-4 pt-3 pb-[calc(76px+env(safe-area-inset-bottom))]">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border-subtle px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))]">
           <div className="flex gap-3">
             {/* DEPOSIT_REPORTED → Verify + Reject */}
             {canVerify && (
@@ -912,58 +929,43 @@ export default function MobileLeadDetail({
       </Sheet>
 
       {/* ── Media Lightbox ── */}
-      {mediaPreview && (
-        <Dialog open onOpenChange={() => setMediaPreview(null)}>
-          <DialogContent className="max-w-sm mx-4 p-0 overflow-hidden rounded-2xl bg-[#0a0a0f] border-border-subtle">
-            <div className="relative">
-              <button
-                onClick={() => setMediaPreview(null)}
-                className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-              >
-                <X size={16} />
-              </button>
-              <div className="flex items-center justify-center min-h-[200px] max-h-[60vh] overflow-hidden bg-black">
-                {mediaPreview.type === "image" ? (
-                  <img
-                    src={mediaPreview.url}
-                    alt={mediaPreview.name}
-                    className="w-full max-h-[60vh] object-contain"
-                  />
-                ) : mediaPreview.type === "video" ? (
-                  <video
-                    src={mediaPreview.url}
-                    controls
-                    className="w-full max-h-[60vh] object-contain"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center gap-3 p-10 text-white/60">
-                    <File size={48} weight="duotone" />
-                    <p className="text-sm">{mediaPreview.name}</p>
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-black/40">
-                <p className="text-[12px] font-sans text-white/80 truncate flex-1 mr-3">
-                  {mediaPreview.name}
-                </p>
-                {mediaPreview.url && (
-                  <button
-                    onClick={() => {
-                      const a = document.createElement("a");
-                      a.href = mediaPreview.url;
-                      a.download = mediaPreview.name;
-                      a.click();
-                    }}
-                    className="shrink-0 px-3 h-7 rounded-lg bg-white/10 border border-white/20 text-[11px] font-semibold text-white/70 flex items-center gap-1.5 hover:bg-white/20 transition-colors"
-                  >
-                    <DownloadSimple size={13} /> Download
-                  </button>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      <MobileImageViewerDialog
+        open={Boolean(mediaPreview)}
+        item={
+          mediaPreview
+            ? {
+                url: mediaPreview.url,
+                name: mediaPreview.name,
+                type: mediaPreview.type,
+                mimeType: mediaPreview.mimeType,
+              }
+            : null
+        }
+        onClose={() => setMediaPreview(null)}
+        onEdit={(item) => {
+          if (!item.url?.trim()) return;
+          setAnnotationTarget({
+            sourceUrl: item.url.trim(),
+            sourceFileName: item.name || "image",
+          });
+          setMediaPreview(null);
+        }}
+      />
+      <MobileAttachmentAnnotationDialog
+        open={Boolean(annotationTarget)}
+        sourceUrl={annotationTarget?.sourceUrl ?? null}
+        sourceFileName={annotationTarget?.sourceFileName ?? "image"}
+        onClose={() => setAnnotationTarget(null)}
+        onSave={(editedFile) => {
+          const objectUrl = URL.createObjectURL(editedFile);
+          const link = document.createElement("a");
+          link.href = objectUrl;
+          link.download = editedFile.name;
+          link.click();
+          URL.revokeObjectURL(objectUrl);
+          toast.success("Edited image ready for sharing.");
+        }}
+      />
     </div>
   );
 }

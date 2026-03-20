@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
@@ -43,7 +43,11 @@ import {
 } from "@/queries/useLeadsQuery";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/queries/queryKeys";
-import { leadsApi } from "@/lib/api/leads";
+import { LEAD_REPLY_REQUIRED_MESSAGE, leadsApi } from "@/lib/api/leads";
+import {
+  canSendLeadReply,
+  normalizeLeadReplyMessage,
+} from "@/lib/reply/leadReplyContract";
 import type { Interaction } from "@/lib/schemas/lead.schema";
 import { LeadStatus } from "@/types/enums";
 import { parseApiData } from "@/lib/api/parseResponse";
@@ -74,6 +78,14 @@ import {
 import { useIsMaintenanceBlocked } from "@/hooks/useIsMaintenanceBlocked";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { validateReplyAttachmentFile } from "@/lib/replyAttachmentPolicy";
+import {
+  getAttachmentDisplayName,
+  isImageMime,
+  isVideoMime,
+  parseInteractionAttachmentMetadata,
+} from "@/lib/chat-media";
+import AttachmentAnnotationDialog from "@/components/chat/AttachmentAnnotationDialog";
 
 // ── Interaction → display mappings ───────────────────────────────────────────
 
@@ -138,11 +150,11 @@ function getFileName(attachment: Attachment): string {
 }
 
 function isImage(mimeType: string | null | undefined): boolean {
-  return !!mimeType?.startsWith("image/");
+  return isImageMime(mimeType);
 }
 
 function isVideo(mimeType: string | null | undefined): boolean {
-  return !!mimeType?.startsWith("video/");
+  return isVideoMime(mimeType);
 }
 
 // ── Media Lightbox ───────────────────────────────────────────────────────────
@@ -155,32 +167,53 @@ type MediaItem = {
   size?: number | null;
 };
 
+type AnnotationTarget = {
+  sourceUrl: string;
+  sourceFileName: string;
+};
+
 function MediaLightbox({
   item,
   onClose,
+  onEdit,
+  editAttachLabel,
 }: {
   item: MediaItem;
   onClose: () => void;
+  onEdit?: (item: MediaItem) => void;
+  editAttachLabel?: string;
 }) {
+  const handleDownload = () => {
+    if (!item.url) return;
+    const a = document.createElement("a");
+    a.href = item.url;
+    a.download = item.name;
+    a.click();
+  };
+
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl p-0 overflow-hidden rounded-2xl bg-[#0a0a0f] border-border-subtle">
+      <DialogContent className="max-w-[96vw] overflow-hidden rounded-2xl border-border-subtle bg-[#0a0a0f] p-0 sm:max-w-4xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{item.name}</DialogTitle>
+          <DialogDescription>Attachment preview</DialogDescription>
+        </DialogHeader>
         <div className="relative">
-          {/* Close button */}
           <button
+            type="button"
             onClick={onClose}
-            className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-black/80 transition-colors"
+            className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/65 text-white/80 transition-colors hover:bg-black/80 hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>
-          {/* Media content */}
-          <div className="flex items-center justify-center min-h-[280px] max-h-[70vh] overflow-hidden">
+
+          <div className="flex min-h-[280px] items-center justify-center overflow-hidden bg-black max-h-[72vh]">
             {item.type === "video" ? (
               <video
                 src={item.url || undefined}
                 controls
                 autoPlay
-                className="w-full max-h-[70vh] object-contain"
+                className="w-full max-h-[72vh] object-contain"
                 style={{ background: "#000" }}
               >
                 <p className="text-white/60 p-8 text-center text-sm">
@@ -195,7 +228,7 @@ function MediaLightbox({
                   "https://placehold.co/800x500/1a1a2e/555?text=Proof+Image"
                 }
                 alt={item.name}
-                className="w-full max-h-[70vh] object-contain"
+                className="w-full max-h-[72vh] object-contain"
               />
             ) : (
               <div className="flex flex-col items-center gap-4 p-12 text-text-muted">
@@ -212,32 +245,46 @@ function MediaLightbox({
               </div>
             )}
           </div>
-          {/* Footer */}
-          <div className="flex items-center justify-between px-5 py-3 bg-elevated/80 backdrop-blur-sm border-t border-border-subtle">
-            <div>
-              <p className="text-sm font-sans font-medium text-text-primary">
+
+          <div
+            className="border-t border-white/10 bg-[#101520] px-3 py-3 sm:px-5"
+            style={{
+              paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+            }}
+          >
+            <div className="mb-2 min-w-0 sm:mb-0">
+              <p className="truncate text-sm font-sans font-medium text-white">
                 {item.name}
               </p>
-              <p className="text-[11px] font-sans text-text-muted capitalize">
+              <p className="truncate text-[11px] font-sans text-white/60 capitalize">
                 {item.mimeType ?? item.type}
                 {item.size ? ` · ${formatFileSize(item.size)}` : ""}
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 text-xs h-7"
-              onClick={() => {
-                if (item.url) {
-                  const a = document.createElement("a");
-                  a.href = item.url;
-                  a.download = item.name;
-                  a.click();
-                }
-              }}
-            >
-              <DownloadSimple className="h-3.5 w-3.5" /> Download
-            </Button>
+
+            <div className="flex flex-col gap-2 sm:mt-2 sm:flex-row sm:justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 gap-2 border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white sm:h-8 sm:text-xs"
+                onClick={handleDownload}
+                disabled={!item.url}
+              >
+                <DownloadSimple className="h-3.5 w-3.5" />
+                Download
+              </Button>
+              {item.type === "image" && onEdit && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-10 gap-2 bg-white text-black hover:bg-white/90 sm:h-8 sm:text-xs"
+                  onClick={() => onEdit(item)}
+                >
+                  <PencilSimple className="h-3.5 w-3.5" />
+                  {editAttachLabel ?? "Edit & attach"}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>
@@ -305,6 +352,16 @@ export default function LeadDetailClient() {
     }
   }, [lead?.handoverMode]);
   const [replyText, setReplyText] = useState("");
+  const [replyFile, setReplyFile] = useState<File | null>(null);
+  const replyFilePreviewUrl = useMemo(
+    () => (replyFile ? URL.createObjectURL(replyFile) : null),
+    [replyFile],
+  );
+  useEffect(() => {
+    return () => {
+      if (replyFilePreviewUrl) URL.revokeObjectURL(replyFilePreviewUrl);
+    };
+  }, [replyFilePreviewUrl]);
   const [messages, setMessages] = useState<ReturnType<typeof mapToMessage>[]>(
     [],
   );
@@ -344,10 +401,14 @@ export default function LeadDetailClient() {
   const [editPhone, setEditPhone] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [mediaPreview, setMediaPreview] = useState<MediaItem | null>(null);
+  const [annotationTarget, setAnnotationTarget] = useState<AnnotationTarget | null>(
+    null,
+  );
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const replyFileInputRef = useRef<HTMLInputElement>(null);
   const isInitialMessagesLoad = useRef(true);
 
   // ── Mobile view ──
@@ -442,9 +503,14 @@ export default function LeadDetailClient() {
   };
 
   const handleSend = async () => {
-    if (!replyText.trim()) return;
-    const text = replyText.trim();
+    const text = normalizeLeadReplyMessage(replyText);
+    const file = replyFile;
+    if (!canSendLeadReply(text, file)) {
+      toast.error(LEAD_REPLY_REQUIRED_MESSAGE);
+      return;
+    }
     setReplyText("");
+    setReplyFile(null);
     // Optimistic update
     const now = new Date();
     const optimisticMsg = {
@@ -455,14 +521,23 @@ export default function LeadDetailClient() {
         minute: "2-digit",
       }),
       content: text,
-      metadata: null as Record<string, unknown> | null,
+      metadata: file
+        ? ({
+            fileName: file.name,
+            mimeType: file.type,
+            size: file.size,
+          } as Record<string, unknown>)
+        : (null as Record<string, unknown> | null),
     };
     setMessages((prev) => [...prev, optimisticMsg]);
     try {
-      await leadsApi.reply(id, text);
-    } catch {
-      toast.error(t(K.lead.toast.sendFailed));
+      await leadsApi.reply(id, { message: text, file });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t(K.lead.toast.sendFailed),
+      );
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
+      if (file) setReplyFile(file);
     }
   };
 
@@ -509,42 +584,42 @@ export default function LeadDetailClient() {
     <TooltipProvider>
       <div data-testid="lead-detail-page" className="space-y-5 animate-in-up">
         {/* ── Breadcrumb ── */}
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
             asChild
             data-testid="lead-detail-back-btn"
-            className="gap-1.5 text-text-secondary hover:text-text-primary h-8 px-2"
+            className="h-8 shrink-0 gap-1.5 px-2 text-text-secondary hover:text-text-primary"
           >
             <Link href="/leads">
               <CaretLeft className="h-3.5 w-3.5" /> {t("nav.leadIntelligence")}
             </Link>
           </Button>
-          <span className="text-text-muted text-sm">/</span>
-          <span className="text-text-primary text-sm font-sans">
+          <span className="shrink-0 text-sm text-text-muted">/</span>
+          <span className="min-w-0 flex-1 truncate text-sm font-sans text-text-primary">
             {lead.displayName}
           </span>
         </div>
 
         {/* ── Main grid ── */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-4">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,38%)]">
           {/* ════ LEFT COLUMN ════ */}
-          <div className="space-y-4">
+          <div className="min-w-0 space-y-4">
             {/* ── Profile Panel ── */}
             <div className="bg-elevated rounded-xl overflow-hidden">
               {/* Header strip */}
               <div className="px-5 py-4 bg-card border-b border-border-subtle shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   {/* Avatar + name */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
                     <Avatar className="w-14 h-14 flex-shrink-0 border-2 border-crimson/30">
                       <AvatarFallback className="bg-crimson/15 text-crimson font-bold text-xl">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <h2 className="text-xl font-bold text-text-primary leading-tight mb-1">
+                    <div className="min-w-0">
+                      <h2 className="mb-1 truncate text-xl leading-tight font-bold text-text-primary">
                         {lead.displayName}
                       </h2>
                       <div className="flex items-center gap-1.5 flex-wrap">
@@ -834,102 +909,94 @@ export default function LeadDetailClient() {
                 </div>
               ) : (
                 <div className="p-4">
-                  {/* Horizontal scroll carousel */}
                   <div
-                    className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory"
-                    style={{ scrollbarWidth: "none" }}
+                    className="max-h-[320px] overflow-y-auto pr-1"
+                    style={{ scrollbarWidth: "thin" }}
                   >
-                    {attachments.map((file) => {
-                      const name = getFileName(file);
-                      const img = isImage(file.mimeType);
-                      const vid = isVideo(file.mimeType);
-                      const mediaType: "image" | "video" | "file" = img
-                        ? "image"
-                        : vid
-                          ? "video"
-                          : "file";
-                      return (
-                        <button
-                          key={file.id}
-                          type="button"
-                          onClick={() =>
-                            setMediaPreview({
-                              url: file.fileUrl,
-                              type: mediaType,
-                              name,
-                              mimeType: file.mimeType,
-                              size: file.size,
-                            })
-                          }
-                          className="group flex-shrink-0 snap-start w-44 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 rounded-xl"
-                        >
-                          {/* Thumbnail / icon area */}
-                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-card border border-border-subtle group-hover:border-accent/40 transition-all mb-2.5 shadow-sm">
-                            {img && file.fileUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={file.fileUrl}
-                                alt={name}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
-                            ) : vid && file.fileUrl ? (
-                              <div className="w-full h-full flex items-center justify-center bg-black/50">
-                                <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
-                                  <Play
-                                    size={14}
-                                    className="text-white ml-0.5"
-                                    weight="fill"
-                                  />
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {attachments.map((file) => {
+                        const name = getFileName(file);
+                        const img = isImage(file.mimeType);
+                        const vid = isVideo(file.mimeType);
+                        const mediaType: "image" | "video" | "file" = img
+                          ? "image"
+                          : vid
+                            ? "video"
+                            : "file";
+                        return (
+                          <button
+                            key={file.id}
+                            type="button"
+                            onClick={() =>
+                              setMediaPreview({
+                                url: file.fileUrl,
+                                type: mediaType,
+                                name,
+                                mimeType: file.mimeType,
+                                size: file.size,
+                              })
+                            }
+                            className="group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 rounded-xl"
+                          >
+                            <div className="relative mb-2.5 aspect-video w-full overflow-hidden rounded-xl border border-border-subtle bg-card shadow-sm transition-all group-hover:border-accent/40">
+                              {img && file.fileUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={file.fileUrl}
+                                  alt={name}
+                                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              ) : vid && file.fileUrl ? (
+                                <div className="flex h-full w-full items-center justify-center bg-black/50">
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10">
+                                    <Play
+                                      size={14}
+                                      className="ml-0.5 text-white"
+                                      weight="fill"
+                                    />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center bg-card/60 shadow-sm">
+                                  <FileTypeBadge mimeType={file.mimeType} size={36} />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all group-hover:bg-black/20">
+                                <div className="rounded-full bg-black/60 p-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                                  <ArrowSquareOut size={12} className="text-white" />
                                 </div>
                               </div>
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-card/60 shadow-sm">
-                                <FileTypeBadge
-                                  mimeType={file.mimeType}
-                                  size={36}
-                                />
-                              </div>
-                            )}
-                            {/* Hover overlay */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full p-1.5">
-                                <ArrowSquareOut
-                                  size={12}
-                                  className="text-white"
-                                />
-                              </div>
                             </div>
-                          </div>
-                          {/* File info */}
-                          <div className="px-0.5">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                              <FileTypeChip mimeType={file.mimeType} />
-                              <p className="text-[11px] font-sans font-medium text-text-primary truncate flex-1">
-                                {name}
-                              </p>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              {file.size && (
-                                <span className="text-[10px] font-mono text-text-muted">
-                                  {formatFileSize(file.size)}
-                                </span>
-                              )}
-                              <span className="text-[10px] font-mono text-text-muted ml-auto">
-                                {new Date(file.uploadedAt).toLocaleDateString(
-                                  "en-GB",
-                                  { day: "numeric", month: "short" },
+                            <div className="px-0.5">
+                              <div className="mb-0.5 flex items-center gap-1.5">
+                                <FileTypeChip mimeType={file.mimeType} />
+                                <p className="flex-1 truncate text-[11px] font-medium text-text-primary">
+                                  {name}
+                                </p>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                {file.size && (
+                                  <span className="font-mono text-[10px] text-text-muted">
+                                    {formatFileSize(file.size)}
+                                  </span>
                                 )}
-                              </span>
+                                <span className="ml-auto font-mono text-[10px] text-text-muted">
+                                  {new Date(file.uploadedAt).toLocaleDateString("en-GB", {
+                                    day: "numeric",
+                                    month: "short",
+                                  })}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </button>
-                      );
-                    })}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  {attachments.length > 3 && (
+                  {attachments.length > 6 && (
                     <p className="text-[10px] text-text-muted font-sans text-center mt-1.5 flex items-center justify-center gap-1">
                       <CaretRight size={10} /> Scroll to see{" "}
-                      {attachments.length - 3} more
+                      {attachments.length - 6} more
                     </p>
                   )}
                 </div>
@@ -999,7 +1066,7 @@ export default function LeadDetailClient() {
           {/* end left column */}
 
           {/* ════ RIGHT COLUMN — Chat ════ */}
-          <div className="bg-elevated rounded-xl overflow-hidden flex flex-col h-[640px] min-h-[500px]">
+          <div className="min-w-0 bg-elevated rounded-xl overflow-hidden flex flex-col h-[clamp(420px,68vh,700px)] min-h-[420px]">
             {/* Handover control */}
             <div className="p-4 bg-card border-b border-border-subtle space-y-3 shadow-sm">
               <p className="text-[11px] font-sans font-semibold text-text-muted uppercase tracking-wider">
@@ -1071,16 +1138,17 @@ export default function LeadDetailClient() {
                   const isAgent = msg.side === "agent";
                   const isBot = msg.side === "bot";
 
-                  // Detect attachment in metadata
-                  const meta = msg.metadata as
-                    | Record<string, unknown>
-                    | null
-                    | undefined;
-                  const attachMime = meta?.mimeType as string | undefined;
-                  const attachName = (meta?.fileName ??
-                    meta?.file_name ??
-                    meta?.caption) as string | undefined;
-                  const hasAttachment = !!(attachMime ?? attachName);
+                  const attachmentMeta = parseInteractionAttachmentMetadata(
+                    msg.metadata,
+                  );
+                  const attachMime = attachmentMeta.mimeType;
+                  const attachName = getAttachmentDisplayName(
+                    attachmentMeta.fileName,
+                    attachmentMeta.fileUrl,
+                  );
+                  const hasInlineMedia = Boolean(
+                    attachmentMeta.previewType && attachmentMeta.fileUrl,
+                  );
 
                   return (
                     <div
@@ -1106,8 +1174,42 @@ export default function LeadDetailClient() {
                             Bot
                           </p>
                         )}
-                        {/* Attachment chip */}
-                        {hasAttachment && (
+                        {hasInlineMedia && attachmentMeta.fileUrl && (
+                          <div
+                            className={`mb-1.5 rounded-lg overflow-hidden border ${isUser ? "border-border-subtle bg-elevated/60" : "border-border-default bg-card/40"}`}
+                          >
+                            {attachmentMeta.previewType === "image" ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMediaPreview({
+                                    url: attachmentMeta.fileUrl!,
+                                    type: "image",
+                                    name: attachName,
+                                    mimeType: attachMime,
+                                  })
+                                }
+                                className="block w-full text-left"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={attachmentMeta.fileUrl}
+                                  alt={attachName}
+                                  className="w-full max-h-56 object-cover"
+                                />
+                              </button>
+                            ) : (
+                              <video
+                                src={attachmentMeta.fileUrl}
+                                controls
+                                preload="metadata"
+                                className="w-full max-h-64 bg-black object-contain"
+                              />
+                            )}
+                          </div>
+                        )}
+                        {/* Attachment chip fallback */}
+                        {attachmentMeta.hasAttachment && !hasInlineMedia && (
                           <div
                             className={`flex items-center gap-1.5 mb-1.5 px-2 py-1.5 rounded-lg ${isUser ? "bg-elevated" : "bg-card/40"}`}
                           >
@@ -1137,7 +1239,89 @@ export default function LeadDetailClient() {
             <div
               className={`p-4 border-t border-border-subtle ${!handover ? "opacity-50 pointer-events-none" : ""}`}
             >
+              <input
+                ref={replyFileInputRef}
+                type="file"
+                className="hidden"
+                onChange={(e) => {
+                  const selected = e.target.files?.[0] ?? null;
+                  if (!selected) return;
+                  const error = validateReplyAttachmentFile(selected);
+                  if (error) {
+                    toast.error(error);
+                    e.currentTarget.value = "";
+                    return;
+                  }
+                  setReplyFile(selected);
+                }}
+              />
+              {replyFile && (
+                <div className="mb-2 flex items-start justify-between gap-2 rounded-md border border-border-subtle bg-card px-3 py-2">
+                  <div className="flex min-w-0 items-start gap-2">
+                    {replyFile.type.startsWith("image/") && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={replyFilePreviewUrl ?? undefined}
+                        alt={replyFile.name}
+                        className="h-14 w-14 shrink-0 rounded-md border border-border-subtle object-cover"
+                      />
+                    )}
+                    {!replyFile.type.startsWith("image/") &&
+                      replyFile.type.startsWith("video/") && (
+                        <video
+                          src={replyFilePreviewUrl ?? undefined}
+                          className="h-14 w-14 shrink-0 rounded-md border border-border-subtle bg-black object-cover"
+                        />
+                      )}
+                    <p className="truncate text-xs font-sans text-text-secondary">
+                      {replyFile.name} ({formatFileSize(replyFile.size)})
+                    </p>
+                  </div>
+                  <div className="ml-3 flex items-center gap-1">
+                    {replyFile.type.startsWith("image/") &&
+                      replyFilePreviewUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setAnnotationTarget({
+                              sourceUrl: replyFilePreviewUrl,
+                              sourceFileName: replyFile.name,
+                            })
+                          }
+                          className="h-7 gap-1 px-2 text-xs"
+                        >
+                          <PencilSimple className="h-3.5 w-3.5" />{" "}
+                          {t(K.lead.annotation.edit)}
+                        </Button>
+                      )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReplyFile(null);
+                        if (replyFileInputRef.current)
+                          replyFileInputRef.current.value = "";
+                      }}
+                      className="text-text-muted hover:text-text-primary"
+                      aria-label="Remove selected file"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => replyFileInputRef.current?.click()}
+                  className="self-end flex-shrink-0 h-9 w-9"
+                  aria-label="Attach file"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
                 <Textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
@@ -1159,8 +1343,8 @@ export default function LeadDetailClient() {
                 />
                 <Button
                   onClick={() => void handleSend()}
-                  disabled={!replyText.trim()}
                   size="icon"
+                  disabled={!canSendLeadReply(replyText, replyFile)}
                   className="bg-crimson hover:bg-crimson/90 text-white self-end flex-shrink-0 h-9 w-9"
                 >
                   <PaperPlaneRight className="h-4 w-4" />
@@ -1442,8 +1626,34 @@ export default function LeadDetailClient() {
           <MediaLightbox
             item={mediaPreview}
             onClose={() => setMediaPreview(null)}
+            editAttachLabel={t(K.lead.annotation.editAttach)}
+            onEdit={(item) => {
+              if (!item.url?.trim()) {
+                toast.error(t(K.lead.annotation.noSource));
+                return;
+              }
+              setMediaPreview(null);
+              setAnnotationTarget({
+                sourceUrl: item.url.trim(),
+                sourceFileName: item.name || "image",
+              });
+            }}
           />
         )}
+        <AttachmentAnnotationDialog
+          open={Boolean(annotationTarget)}
+          sourceUrl={annotationTarget?.sourceUrl ?? null}
+          sourceFileName={annotationTarget?.sourceFileName ?? "image"}
+          onClose={() => setAnnotationTarget(null)}
+          onSave={(editedFile) => {
+            const validationError = validateReplyAttachmentFile(editedFile);
+            if (validationError) {
+              toast.error(validationError);
+              return;
+            }
+            setReplyFile(editedFile);
+          }}
+        />
       </div>
     </TooltipProvider>
   );

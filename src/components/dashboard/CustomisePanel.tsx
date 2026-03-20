@@ -34,6 +34,7 @@ import {
   Lightning,
   TrendUp,
   ArrowCounterClockwise,
+  Clock,
 } from "@phosphor-icons/react";
 import {
   useDashboardLayoutStore,
@@ -46,14 +47,21 @@ const WIDGET_ICONS: Record<WidgetId, React.ElementType> = {
   "kpi-cards": ChartBar,
   "funnel-activity": GitBranch,
   "action-strip": Lightning,
+  "pending-tasks": Clock,
   "trend-charts": TrendUp,
 };
 
 // ── Sortable row ──────────────────────────────────────────────────────────────
 function SortableWidgetRow({ widget }: { widget: DashboardWidget }) {
   const { toggleWidget } = useDashboardLayoutStore();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: widget.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: widget.id });
 
   const Icon = WIDGET_ICONS[widget.id];
   const style: React.CSSProperties = {
@@ -140,7 +148,10 @@ export function CustomisePanelTrigger() {
 
       {/* Sheet panel */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-[320px] sm:w-[360px] p-0 flex flex-col">
+        <SheetContent
+          side="right"
+          className="w-[320px] sm:w-[360px] p-0 flex flex-col"
+        >
           <SheetHeader className="px-5 pt-5 pb-4 border-b border-border-subtle">
             <SheetTitle className="text-[15px] font-semibold text-text-primary flex items-center gap-2">
               <Sliders size={16} weight="duotone" className="text-primary" />

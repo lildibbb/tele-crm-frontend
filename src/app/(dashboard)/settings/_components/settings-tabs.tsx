@@ -18,6 +18,7 @@ import { IntegrationsTab } from "./integrations-tab";
 import { useAuthStore } from "@/store/authStore";
 import { UserRole } from "@/types/enums";
 import { useFeatureVisibility } from "@/queries/useMaintenanceQuery";
+import { useT, K } from "@/i18n";
 
 const ALL_SETTINGS_TABS = [
   {
@@ -58,6 +59,7 @@ const ALL_SETTINGS_TABS = [
 ];
 
 function SettingsTabsInner() {
+  const t = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -82,10 +84,18 @@ function SettingsTabsInner() {
     !isSuperAdmin && !googleSheets && !googleDriveServiceAccount && !googleDriveOAuth2;
 
   const SETTINGS_TABS = useMemo(() => {
-    const byRole = ALL_SETTINGS_TABS.filter((t) => role && t.roles.includes(role));
-    if (allGoogleHidden) return byRole.filter((t) => t.value !== "integrations");
+    const byRole = ALL_SETTINGS_TABS.filter((tab) => role && tab.roles.includes(role));
+    if (allGoogleHidden) return byRole.filter((tab) => tab.value !== "integrations");
     return byRole;
   }, [role, allGoogleHidden]);
+
+  const tabLabelMap: Record<string, string> = {
+    "bot-config": t(K.settings.botConfig),
+    "knowledge-base": t(K.settings.knowledgeBase),
+    commands: t(K.settings.commands),
+    team: t(K.settings.team),
+    integrations: t(K.settings.integrations),
+  };
 
   const tabQuery = searchParams.get("tab");
   const defaultTab = SETTINGS_TABS.some((t) => t.value === tabQuery)
@@ -139,9 +149,9 @@ function SettingsTabsInner() {
               className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-text-secondary data-[state=active]:text-crimson whitespace-nowrap rounded-lg transition-colors"
             >
               <tab.icon size={15} strokeWidth={1.8} />
-              {tab.name}
-            </TabsTrigger>
-          ))}
+               {tabLabelMap[tab.value] ?? tab.name}
+             </TabsTrigger>
+           ))}
         </TabsList>
 
         <div className="flex flex-col pb-2 relative overflow-hidden">

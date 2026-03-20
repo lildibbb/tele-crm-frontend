@@ -89,6 +89,7 @@ import {
 import { toast } from "sonner";
 import { useMaintenanceConfig } from "@/queries/useMaintenanceQuery";
 import { FeatureDisabledBanner } from "@/components/maintenance/FeatureDisabledBanner";
+import { useT } from "@/i18n";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -140,6 +141,16 @@ interface SortableCommandRowProps {
   onToggleActive: (id: string, isActive: boolean) => void;
   onToggleShowInMenu: (id: string, current: boolean) => void;
   onToggleShowInKeyboard: (id: string, current: boolean) => void;
+  labels: {
+    menuTooltip: string;
+    keyboardTooltip: string;
+    activeTooltip: string;
+    deleteTitle: string;
+    deleteDescriptionPrefix: string;
+    deleteDescriptionSuffix: string;
+    cancel: string;
+    delete: string;
+  };
 }
 
 function SortableCommandRow({
@@ -150,6 +161,7 @@ function SortableCommandRow({
   onToggleActive,
   onToggleShowInMenu,
   onToggleShowInKeyboard,
+  labels,
 }: SortableCommandRowProps) {
   const {
     attributes,
@@ -236,7 +248,7 @@ function SortableCommandRow({
               </div>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
-              Show in Telegram menu
+              {labels.menuTooltip}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -256,7 +268,7 @@ function SortableCommandRow({
               </div>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
-              Show as keyboard button
+              {labels.keyboardTooltip}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -274,7 +286,7 @@ function SortableCommandRow({
               </div>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-xs">
-              Active / Inactive
+              {labels.activeTooltip}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -303,20 +315,20 @@ function SortableCommandRow({
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete command</AlertDialogTitle>
+              <AlertDialogTitle>{labels.deleteTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete the{" "}
+                {labels.deleteDescriptionPrefix}{" "}
                 <span className="font-mono text-crimson">/{cmd.command}</span>{" "}
-                command. This action cannot be undone.
+                {labels.deleteDescriptionSuffix}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{labels.cancel}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => onDelete(cmd.id)}
                 className="bg-danger text-white hover:bg-danger/90"
               >
-                Delete
+                {labels.delete}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -329,6 +341,17 @@ function SortableCommandRow({
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function CommandsTab() {
+  const t = useT();
+  const rowLabels = {
+    menuTooltip: t("settings.commandsTab.menuTooltip"),
+    keyboardTooltip: t("settings.commandsTab.keyboardTooltip"),
+    activeTooltip: t("settings.commandsTab.activeTooltip"),
+    deleteTitle: t("settings.commandsTab.deleteTitle"),
+    deleteDescriptionPrefix: t("settings.commandsTab.deleteDescriptionPrefix"),
+    deleteDescriptionSuffix: t("settings.commandsTab.deleteDescriptionSuffix"),
+    cancel: t("common.cancel"),
+    delete: t("settings.commandsTab.delete"),
+  };
   const { data: maintenanceConfig } = useMaintenanceConfig();
   const commandMenuEnabled = maintenanceConfig?.featureFlags.commandMenu ?? true;
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -377,10 +400,10 @@ export function CommandsTab() {
           showInMenu: data.showInMenu,
           showInKeyboard: data.showInKeyboard,
         });
-        toast.success("Command saved");
+        toast.success(t("settings.commandsTab.toast.saved"));
       } else {
         await create({ ...data, order: items.length });
-        toast.success("New command created");
+        toast.success(t("settings.commandsTab.toast.created"));
       }
       setDrawerOpen(false);
       setEditId(null);
@@ -389,7 +412,7 @@ export function CommandsTab() {
       setLiveContent(EMPTY_TIPTAP_DOC);
       await fetchAll();
     } catch {
-      toast.error("Couldn't save this command. Please try again.");
+      toast.error(t("settings.commandsTab.toast.saveError"));
     } finally {
       isSubmittingRef.current = false;
     }
@@ -466,13 +489,13 @@ export function CommandsTab() {
     async (id: string) => {
       try {
         await remove(id);
-        toast.success("Command removed");
+        toast.success(t("settings.commandsTab.toast.removeSuccess"));
         await fetchAll();
       } catch {
-        toast.error("Couldn't delete this command. Please try again.");
+        toast.error(t("settings.commandsTab.toast.removeError"));
       }
     },
-    [remove, fetchAll],
+    [remove, fetchAll, t],
   );
 
   // ── DnD handlers ──────────────────────────────────────────────────────────
@@ -505,12 +528,12 @@ export function CommandsTab() {
 
       try {
         await reorder({ items: orderItems });
-        toast.success("Order saved");
+        toast.success(t("settings.commandsTab.toast.orderSaved"));
       } catch {
-        toast.error("Couldn't reorder. Please try again.");
+        toast.error(t("settings.commandsTab.toast.orderError"));
       }
     },
-    [items, reorder],
+    [items, reorder, t],
   );
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -518,18 +541,20 @@ export function CommandsTab() {
   return (
     <div data-testid="commands-tab" className="space-y-5 animate-in-up relative">
       {!commandMenuEnabled && (
-        <FeatureDisabledBanner feature="Command Menus" />
+        <FeatureDisabledBanner feature={t("settings.commandsTab.feature")} />
       )}
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-text-primary">Command Menu</h2>
+          <h2 className="text-xl font-bold text-text-primary">
+            {t("settings.commandsTab.title")}
+          </h2>
           <p className="text-text-secondary text-sm font-sans mt-1">
-            Manage bot commands, reorder by dragging, and configure visibility
+            {t("settings.commandsTab.subtitle")}
           </p>
         </div>
         <Button data-testid="commands-add-btn" onClick={openAdd} size="sm" className="gap-1.5 flex-shrink-0">
-          <Plus className="h-4 w-4" /> Add Command
+          <Plus className="h-4 w-4" /> {t("settings.commandsTab.addCommand")}
         </Button>
       </div>
 
@@ -542,22 +567,22 @@ export function CommandsTab() {
               #
             </span>
             <span className="text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider">
-              Command
+              {t("settings.commandsTab.col.command")}
             </span>
             <span className="text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider">
-              Label
+              {t("settings.commandsTab.col.label")}
             </span>
             <span className="hidden xl:block text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider">
-              Content
+              {t("settings.commandsTab.col.content")}
             </span>
             <span className="text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider text-center">
-              Menu
+              {t("settings.commandsTab.col.menu")}
             </span>
             <span className="text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider text-center">
-              Keyboard
+              {t("settings.commandsTab.col.keyboard")}
             </span>
             <span className="text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider text-center">
-              Active
+              {t("settings.commandsTab.col.active")}
             </span>
             <span className="text-[11px] font-sans font-medium text-text-muted uppercase tracking-wider" />
           </div>
@@ -579,14 +604,13 @@ export function CommandsTab() {
                 <Terminal className="h-7 w-7 text-text-muted" />
               </div>
               <p className="font-sans text-sm font-medium text-text-primary mb-1.5">
-                No commands configured
+                {t("settings.commandsTab.empty.title")}
               </p>
               <p className="font-sans text-[13px] text-text-secondary mb-6 max-w-[320px] text-center leading-relaxed">
-                Create your first command to define how the bot responds to user
-                interactions in Telegram.
+                {t("settings.commandsTab.empty.subtitle")}
               </p>
               <Button onClick={openAdd} size="sm" className="gap-1.5 shadow-sm">
-                <Plus className="h-4 w-4" /> Create Command
+                <Plus className="h-4 w-4" /> {t("settings.commandsTab.empty.create")}
               </Button>
             </div>
           ) : (
@@ -613,6 +637,7 @@ export function CommandsTab() {
                         onToggleActive={toggleActive}
                         onToggleShowInMenu={toggleShowInMenu}
                         onToggleShowInKeyboard={toggleShowInKeyboard}
+                        labels={rowLabels}
                       />
                     ))}
                   </AnimatePresence>
@@ -644,7 +669,9 @@ export function CommandsTab() {
           <SheetHeader className="px-6 py-4 border-b border-border-subtle flex-shrink-0">
             <div className="flex items-center justify-between gap-3">
               <SheetTitle className="font-bold text-xl text-text-primary">
-                {editId ? "Edit Command" : "New Command"}
+                {editId
+                  ? t("settings.commandsTab.drawer.editTitle")
+                  : t("settings.commandsTab.drawer.newTitle")}
               </SheetTitle>
               {/* Mobile-only edit/preview pill */}
               <div className="sm:hidden flex items-center gap-0.5 bg-elevated p-1 rounded-xl flex-shrink-0">
@@ -658,7 +685,7 @@ export function CommandsTab() {
                       : "text-text-muted hover:text-text-secondary",
                   )}
                 >
-                  <PencilLine className="h-3.5 w-3.5" /> Edit
+                  <PencilLine className="h-3.5 w-3.5" /> {t("settings.commandsTab.edit")}
                 </button>
                 <button
                   type="button"
@@ -670,7 +697,7 @@ export function CommandsTab() {
                       : "text-text-muted hover:text-text-secondary",
                   )}
                 >
-                  <Eye className="h-3.5 w-3.5" /> Preview
+                  <Eye className="h-3.5 w-3.5" /> {t("settings.commandsTab.preview")}
                 </button>
               </div>
             </div>
@@ -699,11 +726,13 @@ export function CommandsTab() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs text-text-secondary">
-                              Command Slug
+                              {t("settings.commandsTab.form.commandSlug")}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="e.g. register"
+                                placeholder={t(
+                                  "settings.commandsTab.form.commandSlugPlaceholder",
+                                )}
                                 className="font-mono text-sm h-8"
                                 disabled={!!editId}
                                 {...field}
@@ -720,11 +749,13 @@ export function CommandsTab() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs text-text-secondary">
-                              Button Label
+                              {t("settings.commandsTab.form.buttonLabel")}
                             </FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Shown in Telegram menu"
+                                placeholder={t(
+                                  "settings.commandsTab.form.buttonLabelPlaceholder",
+                                )}
                                 className="h-8"
                                 {...field}
                               />
@@ -740,11 +771,13 @@ export function CommandsTab() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-xs text-text-secondary">
-                            Description
+                            {t("settings.commandsTab.form.description")}
                           </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Internal note (not visible to users)"
+                              placeholder={t(
+                                "settings.commandsTab.form.descriptionPlaceholder",
+                              )}
                               className="h-8"
                               {...field}
                             />
@@ -764,7 +797,7 @@ export function CommandsTab() {
                             <div className="flex items-center gap-2">
                               <Menu className="h-3.5 w-3.5 text-text-muted" />
                               <span className="text-xs font-sans text-text-secondary">
-                                Show in menu
+                                {t("settings.commandsTab.form.showInMenu")}
                               </span>
                             </div>
                             <Switch
@@ -783,7 +816,7 @@ export function CommandsTab() {
                             <div className="flex items-center gap-2">
                               <Keyboard className="h-3.5 w-3.5 text-text-muted" />
                               <span className="text-xs font-sans text-text-secondary">
-                                Keyboard button
+                                {t("settings.commandsTab.form.keyboardButton")}
                               </span>
                             </div>
                             <Switch
@@ -801,10 +834,10 @@ export function CommandsTab() {
                   <div className="flex flex-col flex-1 overflow-hidden px-6 py-4">
                     <div className="flex-shrink-0 mb-2">
                       <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
-                        Message Content
+                        {t("settings.commandsTab.form.messageContent")}
                       </p>
                       <p className="text-[11px] font-sans text-text-muted mt-0.5">
-                        Rich text sent when this command is triggered
+                        {t("settings.commandsTab.form.messageContentHint")}
                       </p>
                     </div>
                     <Controller
@@ -818,7 +851,9 @@ export function CommandsTab() {
                             field.onChange(json);
                             setLiveContent(json as TiptapDoc);
                           }}
-                          placeholder="Enter the message content..."
+                          placeholder={t(
+                            "settings.commandsTab.form.messageContentPlaceholder",
+                          )}
                           fillHeight
                         />
                       )}
@@ -836,7 +871,7 @@ export function CommandsTab() {
                   <div className="px-4 py-4 space-y-4">
                     {/* Preview label */}
                     <p className="text-[11px] font-sans font-semibold text-text-secondary uppercase tracking-wider">
-                      Live Preview
+                      {t("settings.commandsTab.livePreview")}
                     </p>
 
                     <TelegramPreview tiptapJson={liveContent} />
@@ -844,12 +879,12 @@ export function CommandsTab() {
                     {/* Meta preview */}
                     <div className="space-y-2 pt-1">
                       <p className="text-[10px] font-sans font-semibold text-text-muted uppercase tracking-wider">
-                        Command Info
+                        {t("settings.commandsTab.commandInfo")}
                       </p>
                       <div className="bg-elevated/50 rounded-lg p-3 space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] text-text-muted font-sans">
-                            Slug
+                            {t("settings.commandsTab.slug")}
                           </span>
                           <span className="text-[11px] text-crimson font-mono">
                             /{form.watch("command") || "---"}
@@ -857,7 +892,7 @@ export function CommandsTab() {
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] text-text-muted font-sans">
-                            Label
+                            {t("settings.commandsTab.col.label")}
                           </span>
                           <span className="text-[11px] text-text-primary font-sans truncate max-w-[140px]">
                             {form.watch("label") || "---"}
@@ -865,20 +900,22 @@ export function CommandsTab() {
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] text-text-muted font-sans">
-                            Menu
+                            {t("settings.commandsTab.col.menu")}
                           </span>
                           <span className="text-[11px] text-text-secondary font-sans">
-                            {form.watch("showInMenu") ? "Visible" : "Hidden"}
+                            {form.watch("showInMenu")
+                              ? t("settings.commandsTab.visible")
+                              : t("settings.commandsTab.hidden")}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-[11px] text-text-muted font-sans">
-                            Keyboard
+                            {t("settings.commandsTab.col.keyboard")}
                           </span>
                           <span className="text-[11px] text-text-secondary font-sans">
                             {form.watch("showInKeyboard")
-                              ? "Visible"
-                              : "Hidden"}
+                              ? t("settings.commandsTab.visible")
+                              : t("settings.commandsTab.hidden")}
                           </span>
                         </div>
                       </div>
@@ -895,7 +932,7 @@ export function CommandsTab() {
                   className="flex-1"
                   onClick={() => setDrawerOpen(false)}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -903,7 +940,9 @@ export function CommandsTab() {
                   disabled={form.formState.isSubmitting}
                 >
                   <Save className="h-4 w-4" />{" "}
-                  {form.formState.isSubmitting ? "Saving..." : "Save Command"}
+                  {form.formState.isSubmitting
+                    ? t("settings.commandsTab.drawer.saving")
+                    : t("settings.commandsTab.drawer.save")}
                 </Button>
               </div>
             </form>

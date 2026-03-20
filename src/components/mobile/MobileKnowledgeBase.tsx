@@ -179,7 +179,11 @@ function AddEntrySheet({
 
   const handleAddText = async () => {
     if (!title.trim() || !content.trim()) return;
-    await createText.mutateAsync({ title: title.trim(), content: content.trim(), type: "TEXT" });
+    await createText.mutateAsync({
+      title: title.trim(),
+      content: content.trim(),
+      type: "TEXT",
+    });
     handleClose();
   };
 
@@ -236,7 +240,7 @@ function AddEntrySheet({
                     Upload File
                   </p>
                   <p className="font-sans text-[12px] text-text-muted mt-0.5">
-                    PDF, DOCX, or image file
+                    PDF, DOCX, images, or videos
                   </p>
                 </div>
               </button>
@@ -246,7 +250,10 @@ function AddEntrySheet({
         )}
 
         {mode === "text" && (
-          <div className="px-5 pt-2 pb-6 flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: "calc(90dvh - 80px)" }}>
+          <div
+            className="px-5 pt-2 pb-6 flex flex-col gap-3 overflow-y-auto"
+            style={{ maxHeight: "calc(90dvh - 80px)" }}
+          >
             <SheetHeader className="mb-1 text-left">
               <SheetTitle className="font-sans font-bold text-[18px] text-text-primary">
                 Add Text Entry
@@ -332,7 +339,7 @@ function AddEntrySheet({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.docx,.doc,.png,.jpg,.jpeg"
+                accept=".pdf,.docx,.doc,.png,.jpg,.jpeg,.webp,.gif,.mp4,.mov,.m4v"
                 className="hidden"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
@@ -375,7 +382,8 @@ function EntryRow({
 }) {
   const updateKb = useUpdateKb();
   const isFile = isFileEntry(entry);
-  const isProcessing = entry.status === KbStatus.PROCESSING || entry.status === KbStatus.PENDING;
+  const isProcessing =
+    entry.status === KbStatus.PROCESSING || entry.status === KbStatus.PENDING;
 
   return (
     <div className="flex items-center gap-3 px-4 py-3">
@@ -439,7 +447,7 @@ function EntryRow({
 
 // ── Props & main ──────────────────────────────────────────────────────────────
 
-export type MobileKnowledgeBaseProps = Record<never, never>
+export type MobileKnowledgeBaseProps = Record<never, never>;
 
 export default function MobileKnowledgeBase({}: MobileKnowledgeBaseProps) {
   const { user } = useAuthStore();

@@ -1,0 +1,1 @@
+export { KnowledgeBaseTab } from "./KnowledgeBaseTab";

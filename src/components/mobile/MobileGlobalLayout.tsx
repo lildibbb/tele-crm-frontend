@@ -34,7 +34,10 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/store/authStore";
-import { useMaintenanceConfig, useFeatureVisibility } from "@/queries/useMaintenanceQuery";
+import {
+  useMaintenanceConfig,
+  useFeatureVisibility,
+} from "@/queries/useMaintenanceQuery";
 import { UserRole } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import { useT } from "@/i18n";
@@ -45,6 +48,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/": "Command Center",
   "/leads": "Lead Intelligence",
   "/verification": "Verification",
+  "/pending-tasks": "Pending Tasks",
   "/broadcasts": "Broadcasts",
   "/follow-ups": "Follow-ups",
   "/audit-logs": "Audit Logs",
@@ -79,7 +83,7 @@ function getPageTitle(pathname: string): string {
 
 // ── Tab navigation ─────────────────────────────────────────────────────────────
 
-type TabId = "home" | "leads" | "verify" | "more";
+type TabId = "home" | "leads" | "tasks" | "verify" | "more";
 
 interface Tab {
   id: TabId;
@@ -93,6 +97,12 @@ function getTabsForRole(role: UserRole): Tab[] {
     return [
       { id: "home", label: "Overview", Icon: Crown, href: "/admin/overview" },
       { id: "leads", label: "Team", Icon: Users, href: "/settings/team" },
+      {
+        id: "tasks",
+        label: "Tasks",
+        Icon: ClipboardText,
+        href: "/pending-tasks",
+      },
       {
         id: "verify",
         label: "Audit",
@@ -110,6 +120,12 @@ function getTabsForRole(role: UserRole): Tab[] {
       href: "/",
     },
     { id: "leads", label: "Leads", Icon: Users, href: "/leads" },
+    {
+      id: "tasks",
+      label: "Tasks",
+      Icon: ClipboardText,
+      href: "/pending-tasks",
+    },
     { id: "verify", label: "Verify", Icon: ShieldCheck, href: "/verification" },
     { id: "more", label: "More", Icon: DotsThreeOutline },
   ];
@@ -135,10 +151,7 @@ interface QuickLink {
  * disappears from the drawer when the superadmin has toggled it off.
  * Superadmins always see all links regardless of visibility flags.
  */
-function getQuickLinks(
-  role: UserRole,
-  showFollowUps: boolean,
-): QuickLink[] {
+function getQuickLinks(role: UserRole, showFollowUps: boolean): QuickLink[] {
   const common: QuickLink[] = [
     { label: "Analytics", href: "/analytics", Icon: ChartBar },
     { label: "Broadcasts", href: "/broadcasts", Icon: Megaphone },

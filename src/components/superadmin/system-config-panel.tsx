@@ -105,6 +105,13 @@ export const CONFIG_SECTIONS: {
         type: "text",
       },
       {
+        key: "telegram.adminChatId",
+        label: "Telegram Admin Chat ID",
+        description:
+          "Owner/admin Telegram chat ID used for command scope and internal notifications. SystemConfig value overrides env TELEGRAM_ADMIN_CHAT_ID.",
+        type: "number",
+      },
+      {
         key: "bot.groupId",
         label: "Group Forum ID",
         description:
@@ -509,8 +516,56 @@ export function SystemConfigPanel() {
     fields: FieldDef[],
   ) => {
     setErrMsg(null);
+    
+    // Validate number fields before saving
+    for (const f of fields) {
+      if (f.type === "number") {
+        const value = getValue(f.key);
+        
+        // Empty string is allowed - will use backend default
+        if (value === "") {
+          continue;
+        }
+        
+        const numValue = Number(value);
+        
+        // Check if value is a valid number
+        if (isNaN(numValue) || numValue < 0) {
+          setErrMsg(`${f.label} must be a valid positive number or leave empty for default`);
+          return;
+        }
+        
+        // Specific validation for AI_MAX_TOKENS
+        if (f.key === "ai.maxTokens") {
+          if (numValue < 50 || numValue > 16000) {
+            setErrMsg(`${f.label} must be between 50 and 16000`);
+            return;
+          }
+        }
+        
+        // Validation for rate limits
+        if (f.key === "ai.rateLimitPerMinute") {
+          if (numValue === 0) {
+            setErrMsg(`${f.label} cannot be 0 (this blocks all requests)`);
+            return;
+          }
+          if (numValue > 1000) {
+            setErrMsg(`${f.label} cannot exceed 1000`);
+            return;
+          }
+        }
+      }
+    }
+    
     const updates: Record<string, string> = {};
-    for (const f of fields) updates[f.key] = getValue(f.key);
+    for (const f of fields) {
+      const value = getValue(f.key);
+      // Only include non-empty values in updates (empty = use backend default)
+      if (value !== "") {
+        updates[f.key] = value;
+      }
+    }
+    
     try {
       await upsertManyMutation.mutateAsync(updates);
       setSaved(sectionTitle);

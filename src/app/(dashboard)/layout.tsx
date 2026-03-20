@@ -22,6 +22,7 @@ const PAGE_TITLE_KEYS: Record<string, string> = {
   "/": "nav.commandCenter",
   "/leads": "nav.leadIntelligence",
   "/verification": "nav.verificationQueue",
+  "/pending-tasks": "nav.pendingTasks",
   "/analytics": "nav.analytics",
   "/settings": "settings.botConfig",
   "/settings/knowledge-base": "settings.knowledgeBase",

@@ -82,6 +82,13 @@ function getQuickLinks(role: UserRole): QuickLink[] {
     iconColor: "text-gold",
     iconBg: "bg-gold-subtle",
   };
+  const pendingTasks: QuickLink = {
+    Icon: ClipboardText,
+    label: "Pending Tasks",
+    href: "/pending-tasks",
+    iconColor: "text-info",
+    iconBg: "bg-[color-mix(in_srgb,var(--info)_12%,transparent)]",
+  };
   const broadcasts: QuickLink = {
     Icon: Megaphone,
     label: "Broadcasts",
@@ -105,12 +112,36 @@ function getQuickLinks(role: UserRole): QuickLink[] {
   };
 
   if (role === "SUPERADMIN") {
-    return [analytics, auditLogs, followUps, broadcasts, settings, profile];
+    return [
+      analytics,
+      auditLogs,
+      pendingTasks,
+      followUps,
+      broadcasts,
+      settings,
+      profile,
+    ];
   }
   if (role === "OWNER" || role === "ADMIN") {
-    return [analytics, auditLogs, followUps, broadcasts, settings, profile];
+    return [
+      analytics,
+      auditLogs,
+      pendingTasks,
+      followUps,
+      broadcasts,
+      settings,
+      profile,
+    ];
   }
-  return [followUps, broadcasts, settings, profile, auditLogs, analytics];
+  return [
+    pendingTasks,
+    followUps,
+    broadcasts,
+    settings,
+    profile,
+    auditLogs,
+    analytics,
+  ];
 }
 
 // ── Quick Link Cell ────────────────────────────────────────────────────────────

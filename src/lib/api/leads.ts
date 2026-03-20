@@ -14,6 +14,65 @@ import type {
   ListInteractionsParams,
 } from "@/lib/schemas/lead.schema";
 import type { ApiResponse } from "@/lib/schemas/common";
+import {
+  canSendLeadReply,
+  normalizeLeadReplyMessage,
+} from "@/lib/reply/leadReplyContract";
+
+type LeadReplyInput =
+  | string
+  | {
+      message?: string;
+      file?: File | null;
+    };
+
+export const LEAD_REPLY_REQUIRED_MESSAGE = "Message is required.";
+
+function extractReplyErrorMessage(error: unknown): string {
+  const fallback = "Failed to send message.";
+
+  if (typeof error === "object" && error !== null) {
+    const maybeError = error as {
+      response?: {
+        data?: {
+          message?: unknown;
+          error?: unknown;
+        };
+      };
+      message?: unknown;
+    };
+    const message = maybeError.response?.data?.message;
+
+    if (Array.isArray(message)) {
+      const joined = message
+        .filter((item): item is string => typeof item === "string")
+        .join(", ")
+        .trim();
+      if (joined) return joined;
+    }
+
+    if (typeof message === "string" && message.trim()) {
+      return message.trim();
+    }
+
+    if (
+      typeof maybeError.response?.data?.error === "string" &&
+      maybeError.response.data.error.trim()
+    ) {
+      return maybeError.response.data.error.trim();
+    }
+
+    if (typeof maybeError.message === "string" && maybeError.message.trim()) {
+      return maybeError.message.trim();
+    }
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message.trim();
+  }
+
+  return fallback;
+}
 
 export const leadsApi = {
   /**
@@ -132,8 +191,38 @@ export const leadsApi = {
   /**
    * Send a manual reply to a lead via Telegram from the dashboard.
    */
-  reply: (id: string, message: string) =>
-    apiClient.post<ApiResponse<{ sent: boolean }>>(`/leads/${id}/reply`, {
-      message,
-    }),
+  reply: async (id: string, input: LeadReplyInput) => {
+    const payload =
+      typeof input === "string"
+        ? { message: input, file: undefined }
+        : { message: input.message ?? "", file: input.file ?? undefined };
+    const message = normalizeLeadReplyMessage(payload.message);
+    const hasFile = Boolean(payload.file);
+
+    if (!canSendLeadReply(message, payload.file)) {
+      throw new Error(LEAD_REPLY_REQUIRED_MESSAGE);
+    }
+
+    try {
+      if (hasFile) {
+        const form = new FormData();
+        form.append("message", message);
+        form.append("attachment", payload.file as File);
+        return await apiClient.post<ApiResponse<{ sent: boolean }>>(
+          `/leads/${id}/reply`,
+          form,
+          { headers: { "Content-Type": "multipart/form-data" } },
+        );
+      }
+
+      return await apiClient.post<ApiResponse<{ sent: boolean }>>(
+        `/leads/${id}/reply`,
+        {
+          message,
+        },
+      );
+    } catch (error) {
+      throw new Error(extractReplyErrorMessage(error));
+    }
+  },
 };

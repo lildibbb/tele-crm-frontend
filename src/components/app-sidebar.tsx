@@ -92,6 +92,17 @@ const ALL_NAV_ITEMS = [
     roles: [UserRole.OWNER, UserRole.ADMIN, UserRole.STAFF],
   },
   {
+    href: "/pending-tasks",
+    icon: ClipboardText,
+    labelKey: "nav.pendingTasks",
+    roles: [
+      UserRole.OWNER,
+      UserRole.ADMIN,
+      UserRole.STAFF,
+      UserRole.SUPERADMIN,
+    ],
+  },
+  {
     href: "/broadcasts",
     icon: Megaphone,
     labelKey: "nav.broadcasts",
