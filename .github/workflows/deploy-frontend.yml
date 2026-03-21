@@ -134,11 +134,16 @@ jobs:
           set -euo pipefail
           [ -n "${CLOUDFLARE_API_TOKEN:-}" ] || { echo "Missing CLOUDFLARE_API_TOKEN (staging environment secret)"; exit 1; }
           [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ] || { echo "Missing CLOUDFLARE_ACCOUNT_ID (staging environment secret)"; exit 1; }
-          RESPONSE="$(curl -fsS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CF_PAGES_PROJECT}")"
-          echo "$RESPONSE" | jq -e '.success == true' >/dev/null || {
+          CF_URL="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CF_PAGES_PROJECT}"
+          HTTP_CODE="$(curl -sS -o cf-preflight.json -w "%{http_code}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "$CF_URL")"
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "Cloudflare preflight HTTP ${HTTP_CODE}. Check account/token/project mapping for staging."
+            cat cf-preflight.json
+            exit 1
+          fi
+          jq -e '.success == true' cf-preflight.json >/dev/null || {
             echo "Cloudflare preflight failed. Check account/token/project mapping for staging.";
-            echo "$RESPONSE" | jq -r '.errors // []';
+            jq -r '.errors // []' cf-preflight.json;
             exit 1;
           }
 
@@ -173,11 +178,16 @@ jobs:
           set -euo pipefail
           [ -n "${CLOUDFLARE_API_TOKEN:-}" ] || { echo "Missing CLOUDFLARE_API_TOKEN (production environment secret)"; exit 1; }
           [ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ] || { echo "Missing CLOUDFLARE_ACCOUNT_ID (production environment secret)"; exit 1; }
-          RESPONSE="$(curl -fsS -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CF_PAGES_PROJECT}")"
-          echo "$RESPONSE" | jq -e '.success == true' >/dev/null || {
+          CF_URL="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects/${CF_PAGES_PROJECT}"
+          HTTP_CODE="$(curl -sS -o cf-preflight.json -w "%{http_code}" -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" "$CF_URL")"
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "Cloudflare preflight HTTP ${HTTP_CODE}. Check account/token/project mapping for production."
+            cat cf-preflight.json
+            exit 1
+          fi
+          jq -e '.success == true' cf-preflight.json >/dev/null || {
             echo "Cloudflare preflight failed. Check account/token/project mapping for production.";
-            echo "$RESPONSE" | jq -r '.errors // []';
+            jq -r '.errors // []' cf-preflight.json;
             exit 1;
           }
 
