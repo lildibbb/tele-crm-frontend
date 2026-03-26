@@ -6,6 +6,8 @@ export type ParsedInteractionAttachment = {
   fileName?: string;
   previewType: ChatAttachmentPreviewType | null;
   hasAttachment: boolean;
+  isMultiAttachment?: boolean;
+  allAttachments?: Array<{ kbId?: string; fileUrl: string; mimeType?: string; fileName?: string }>;
 };
 
 const URL_KEYS = new Set(
@@ -144,6 +146,26 @@ export function getAttachmentDisplayName(
 export function parseInteractionAttachmentMetadata(
   metadata: unknown,
 ): ParsedInteractionAttachment {
+  // Check for multi-attachments first
+  const attachmentsArray = (metadata as Record<string, unknown>)?.attachments;
+  if (Array.isArray(attachmentsArray) && attachmentsArray.length > 0) {
+    const first = attachmentsArray[0];
+    return {
+      fileUrl: first.fileUrl,
+      mimeType: first.mimeType,
+      fileName: first.fileName,
+      previewType: first.mimeType
+        ? isImageMime(first.mimeType) ? "image"
+        : isVideoMime(first.mimeType) ? "video"
+        : null
+        : null,
+      hasAttachment: true,
+      isMultiAttachment: attachmentsArray.length > 1,
+      allAttachments: attachmentsArray,
+    };
+  }
+
+  // Fallback to single attachment parsing (existing code)
   const rawFileUrl = findFirstStringByKeys(metadata, URL_KEYS);
   const mimeType = findFirstStringByKeys(metadata, MIME_KEYS)?.toLowerCase();
   const rawFileName = findFirstStringByKeys(metadata, NAME_KEYS);
