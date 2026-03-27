@@ -449,14 +449,21 @@ function CreateUserModal({
   const createUser = useCreateSuperadminUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [telegramId, setTelegramId] = useState("");
   const [role, setRole] = useState<UserRole>(UserRole.STAFF);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createUser.mutateAsync({ email, password, role });
+      await createUser.mutateAsync({
+        email,
+        password,
+        role,
+        telegramId: telegramId.trim() || undefined,
+      });
       setEmail("");
       setPassword("");
+      setTelegramId("");
       setRole(UserRole.STAFF);
       onClose();
     } catch {
@@ -497,6 +504,18 @@ function CreateUserModal({
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="cu-telegram-id">{t(K.superadmin.users.telegramId)}</Label>
+            <Input
+              id="cu-telegram-id"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder={t(K.superadmin.users.telegramIdPlaceholder)}
+              value={telegramId}
+              onChange={(e) => setTelegramId(e.target.value.replace(/\D+/g, ""))}
             />
           </div>
           <div className="space-y-1.5">

@@ -37,6 +37,12 @@ export const CreateUserSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   role: UserRoleSchema,
+  telegramId: z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "Telegram ID must contain digits only")
+    .optional()
+    .or(z.literal("")),
 });
 
 export type CreateUserInput = z.infer<typeof CreateUserSchema>;

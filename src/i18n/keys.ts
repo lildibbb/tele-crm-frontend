@@ -814,6 +814,7 @@ export const K = {
       password: "superadmin.users.password",
       passwordPlaceholder: "superadmin.users.passwordPlaceholder",
       emailPlaceholder: "superadmin.users.emailPlaceholder",
+      telegramIdPlaceholder: "superadmin.users.telegramIdPlaceholder",
       // Force password modal
       forcePasswordReset: "superadmin.users.forcePasswordReset",
       forcePasswordDesc: "superadmin.users.forcePasswordDesc",
