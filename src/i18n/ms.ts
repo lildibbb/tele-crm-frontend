@@ -846,6 +846,7 @@ const ms: Record<string, string> = {
   "superadmin.users.password": "Kata Laluan",
   "superadmin.users.passwordPlaceholder": "Minimum 8 aksara",
   "superadmin.users.emailPlaceholder": "pengguna@syarikat.com",
+  "superadmin.users.telegramIdPlaceholder": "contoh 123456789",
   "superadmin.users.forcePasswordReset": "Paksa Tetap Semula Kata Laluan",
   "superadmin.users.forcePasswordDesc": "Semua sesi akan dibatalkan.",
   "superadmin.users.newPassword": "Kata Laluan Baharu",

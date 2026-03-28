@@ -320,18 +320,60 @@ function TMASubmitPageContent() {
             </div>
             <div className="mb-4">
               <p className="text-[11px] mb-2" style={{ color: textSub }}>
-                Follow these steps in your HFM portal to locate your ID.
+                Follow all steps below to locate your MyHF ID on web and app.
               </p>
-              <div className="rounded-xl border border-border bg-card overflow-hidden">
-                <img
-                  src="/assets/find-myhf-id.jpg"
-                  alt="How to find HFM ID"
-                  className="w-full h-auto object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = "none";
-                  }}
-                />
+              <div className="space-y-3">
+                {[
+                  {
+                    src: "/submission-steps/web-step-1.jpeg",
+                    platform: "WEB",
+                    title: "Web Step 1",
+                  },
+                  {
+                    src: "/submission-steps/web-step-2.jpeg",
+                    platform: "WEB",
+                    title: "Web Step 2",
+                  },
+                  {
+                    src: "/submission-steps/app-step-1.jpeg",
+                    platform: "APP",
+                    title: "App Step 1",
+                  },
+                  {
+                    src: "/submission-steps/app-step-2.jpeg",
+                    platform: "APP",
+                    title: "App Step 2",
+                  },
+                ].map((step, index) => (
+                  <div
+                    key={step.src}
+                    className="rounded-xl border border-border bg-card overflow-hidden"
+                  >
+                    <div
+                      className="px-3 py-2 border-b text-xs font-sans font-medium flex items-center justify-between gap-2"
+                      style={{ color: textMain, borderColor: border }}
+                    >
+                      <span>
+                        {index + 1}. {step.title}
+                      </span>
+                      <span
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        style={{
+                          background:
+                            step.platform === "WEB" ? "#EFF6FF" : "#F0FDF4",
+                          color: step.platform === "WEB" ? "#1D4ED8" : "#166534",
+                        }}
+                      >
+                        {step.platform}
+                      </span>
+                    </div>
+                    <img
+                      src={step.src}
+                      alt={step.title}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 

@@ -845,6 +845,7 @@
   "superadmin.users.password": "Password",
   "superadmin.users.passwordPlaceholder": "Min 8 characters",
   "superadmin.users.emailPlaceholder": "user@company.com",
+  "superadmin.users.telegramIdPlaceholder": "e.g. 123456789",
   "superadmin.users.forcePasswordReset": "Force Password Reset",
   "superadmin.users.forcePasswordDesc": "All sessions will be revoked.",
   "superadmin.users.newPassword": "New Password",

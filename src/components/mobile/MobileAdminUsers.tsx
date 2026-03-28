@@ -414,6 +414,7 @@ function CreateUserSheet({
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [telegramId, setTelegramId] = useState("");
   const [role, setRole] = useState<string>(UserRole.STAFF);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -424,6 +425,7 @@ function CreateUserSheet({
     if (!open) {
       setEmail("");
       setPassword("");
+      setTelegramId("");
       setRole(UserRole.STAFF);
       setShowPassword(false);
       setError("");
@@ -440,8 +442,17 @@ function CreateUserSheet({
       setError("Password must be at least 8 characters.");
       return;
     }
+    if (telegramId.trim() && !/^\d+$/.test(telegramId.trim())) {
+      setError("Telegram ID must contain digits only.");
+      return;
+    }
     createUser.mutate(
-      { email: email.trim(), password, role: role as UserResponse["role"] },
+      {
+        email: email.trim(),
+        password,
+        role: role as UserResponse["role"],
+        telegramId: telegramId.trim() || undefined,
+      },
       {
         onSuccess: () => onClose(),
         onError: (err) =>
@@ -507,6 +518,22 @@ function CreateUserSheet({
                 )}
               </button>
             </div>
+          </div>
+
+          {/* Telegram ID (optional) */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+              Telegram ID (Optional)
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={telegramId}
+              onChange={(e) => setTelegramId(e.target.value.replace(/\D+/g, ""))}
+              placeholder="123456789"
+              className="w-full h-11 px-3 rounded-xl bg-elevated border border-border-subtle text-[13px] font-sans text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-crimson/30"
+            />
           </div>
 
           {/* Role */}
